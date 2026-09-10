@@ -116,7 +116,7 @@ const Home = () => {
             ))}
           </Row>
 
-          <Card title="Welcome to the Home Page" style={{ marginTop: 24 }}>
+          <Card style={{ marginTop: 24 }}>
             <div style={{ display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>
               <Button type="primary" icon={<UserOutlined />}>
                 Know More
