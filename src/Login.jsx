@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Form, Input, Button, Checkbox, Card, Typography, Alert, Flex, message } from 'antd';
+import { Form, Input, Button, Checkbox, Card, Typography, Alert, message } from 'antd';
 import { UserOutlined, LockOutlined, GoogleOutlined } from '@ant-design/icons';
 
 const { Title, Text } = Typography;
@@ -73,7 +73,7 @@ const Login = () => {
           </Form.Item>
 
           <Form.Item>
-            <Flex gap={12}>
+            <div style={{ display: 'flex', gap: 12 }}>
               <Button type="primary" htmlType="submit" size="large" loading={submitting} style={{ flex: 1 }}>
                 Sign in
               </Button>
@@ -85,7 +85,7 @@ const Login = () => {
               >
                 Google
               </Button>
-            </Flex>
+            </div>
           </Form.Item>
         </Form>
       </Card>
