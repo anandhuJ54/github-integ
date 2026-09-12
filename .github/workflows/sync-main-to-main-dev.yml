@@ -1,0 +1,295 @@
+name: Sync main to main-dev
+
+on:
+  schedule:
+    - cron: "*/15 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: sync-main-to-main-dev
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    name: Sync main into main-dev
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout main-dev (full history)
+        uses: actions/checkout@v4
+        with:
+          ref: main-dev
+          fetch-depth: 0
+          persist-credentials: true
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Configure git identity
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Sync origin/main into main-dev
+        env:
+          TRIGGER: ${{ github.event_name }}
+          RUN_ID: ${{ github.run_id }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          set -euo pipefail
+
+          TIMESTAMP="$(date -u +"%Y-%m-%dT%H:%M:%SZ")"
+          MERGE_MSG="Merge origin/main into main-dev"
+
+          echo "== Sync started =="
+          echo "Trigger: ${TRIGGER}"
+          echo "Run: ${RUN_URL}"
+          echo "Timestamp (UTC): ${TIMESTAMP}"
+
+          CHECKOUT_SHA="$(git rev-parse HEAD)"
+          echo "main-dev SHA at checkout: ${CHECKOUT_SHA}"
+
+          echo "Fetching origin/main and origin/main-dev..."
+          git fetch origin main main-dev
+
+          MAIN_SHA="$(git rev-parse origin/main)"
+          FRESH_MAIN_DEV_SHA="$(git rev-parse origin/main-dev)"
+          echo "origin/main SHA:        ${MAIN_SHA}"
+          echo "origin/main-dev SHA:    ${FRESH_MAIN_DEV_SHA}"
+
+          write_run_info() {
+            cat >> "$GITHUB_STEP_SUMMARY" <<EOF
+
+          ## Main -> Main-Dev Sync
+
+          ### Run Information
+          | Item | Value |
+          |------|-------|
+          | Source | origin/main |
+          | Target | main-dev |
+          | Trigger | ${TRIGGER} |
+          | Run | [${RUN_ID}](${RUN_URL}) |
+
+          ### Commit Information
+          | Item | Commit |
+          |------|--------|
+          | origin/main | \`${MAIN_SHA}\` |
+          | main-dev before sync | \`${CHECKOUT_SHA}\` |
+          $1
+          EOF
+          }
+
+          # --- Race check #1: did main-dev move between checkout and now? ---
+          if [ "$FRESH_MAIN_DEV_SHA" != "$CHECKOUT_SHA" ]; then
+            echo "main-dev advanced remotely since checkout (${CHECKOUT_SHA} -> ${FRESH_MAIN_DEV_SHA})."
+            write_run_info "| main-dev after sync | (unchanged, not pushed) |"
+            cat >> "$GITHUB_STEP_SUMMARY" <<EOF
+
+          ### Changes
+          - Changes detected: unknown (aborted before check)
+          - Merge performed: No
+          - Push performed: No
+
+          ### Result
+
+          ⚠️ Status: PUSH REJECTED
+
+          Reason:
+          main-dev changed while synchronization was running.
+
+          Action:
+          Nothing was force-pushed or overwritten.
+          The next scheduled run can retry safely.
+          EOF
+            echo "Result: PUSH REJECTED (remote advanced before merge attempt)"
+            exit 1
+          fi
+
+          # --- Is origin/main already fully contained in main-dev? ---
+          set +e
+          git merge-base --is-ancestor origin/main HEAD
+          MB_RC=$?
+          set -e
+
+          if [ "$MB_RC" -eq 0 ]; then
+            echo "origin/main is already an ancestor of main-dev. Nothing to do."
+            write_run_info "| main-dev after sync | \`${CHECKOUT_SHA}\` (unchanged) |"
+            cat >> "$GITHUB_STEP_SUMMARY" <<EOF
+
+          ### Changes
+          - Changes detected: No
+          - Merge performed: No
+          - Push performed: No
+
+          ### Result
+
+          ✅ Status: UP TO DATE
+
+          origin/main has no new changes to synchronize.
+
+          No merge required.
+          No push performed.
+          EOF
+            echo "Result: UP TO DATE"
+            exit 0
+          elif [ "$MB_RC" -ne 1 ]; then
+            echo "ERROR: merge-base --is-ancestor failed unexpectedly (exit $MB_RC)"
+            exit 1
+          fi
+
+          echo "origin/main has commits not yet in main-dev. Merge required."
+
+          # --- Attempt merge (plain merge: fast-forwards when possible, else a merge commit) ---
+          set +e
+          git merge origin/main -m "$MERGE_MSG"
+          MERGE_RC=$?
+          set -e
+
+          if [ "$MERGE_RC" -ne 0 ]; then
+            echo "Merge failed (exit $MERGE_RC). Detecting conflicted files..."
+            CONFLICTED_FILES="$(git diff --name-only --diff-filter=U || true)"
+            echo "Conflicted files:"
+            echo "$CONFLICTED_FILES"
+            git merge --abort || true
+            echo "Merge aborted. Nothing will be pushed."
+
+            write_run_info "| main-dev after sync | (unchanged, merge aborted) |"
+            {
+              echo ""
+              echo "### Changes"
+              echo "- Changes detected: Yes"
+              echo "- Merge performed: No (conflict)"
+              echo "- Push performed: No"
+              echo ""
+              echo "### Conflicted files"
+              if [ -n "$CONFLICTED_FILES" ]; then
+                while IFS= read -r f; do echo "- $f"; done <<< "$CONFLICTED_FILES"
+              else
+                echo "(none reported)"
+              fi
+              echo ""
+              echo "### Result"
+              echo ""
+              echo "❌ Status: CONFLICT"
+              echo ""
+              echo "Action:"
+              echo "Merge aborted."
+              echo "Nothing was pushed to main-dev."
+              echo ""
+              echo "Manual conflict resolution is required."
+            } >> "$GITHUB_STEP_SUMMARY"
+
+            echo "Result: CONFLICT"
+            exit 1
+          fi
+
+          AFTER_SHA="$(git rev-parse HEAD)"
+          echo "Merge succeeded locally. New main-dev SHA (local): ${AFTER_SHA}"
+
+          # --- Race check #2: did main-dev move while we were merging? ---
+          echo "Re-checking origin/main-dev before push..."
+          git fetch origin main-dev
+          RECHECK_SHA="$(git rev-parse origin/main-dev)"
+
+          if [ "$RECHECK_SHA" != "$CHECKOUT_SHA" ]; then
+            echo "main-dev advanced remotely during the merge (${CHECKOUT_SHA} -> ${RECHECK_SHA}). Not pushing."
+            write_run_info "| main-dev after sync | (local merge only, not pushed) |"
+            cat >> "$GITHUB_STEP_SUMMARY" <<EOF
+
+          ### Changes
+          - Changes detected: Yes
+          - Merge performed: Yes (local only)
+          - Push performed: No
+
+          ### Result
+
+          ⚠️ Status: PUSH REJECTED
+
+          Reason:
+          main-dev changed while synchronization was running.
+
+          Action:
+          Nothing was force-pushed or overwritten.
+          The next scheduled run can retry safely.
+          EOF
+            echo "Result: PUSH REJECTED (remote advanced during merge)"
+            exit 1
+          fi
+
+          # --- Push (never forced) ---
+          echo "Pushing main-dev to origin..."
+          set +e
+          PUSH_OUTPUT="$(git push origin main-dev 2>&1)"
+          PUSH_RC=$?
+          set -e
+          echo "$PUSH_OUTPUT"
+
+          if [ "$PUSH_RC" -eq 0 ]; then
+            write_run_info "| main-dev after sync | \`${AFTER_SHA}\` |"
+            cat >> "$GITHUB_STEP_SUMMARY" <<EOF
+
+          ### Changes
+          - Changes detected: Yes
+          - Merge performed: Yes
+          - Push performed: Yes
+
+          ### Result
+
+          ✅ Status: SUCCESS
+
+          Source: origin/main
+          Target: main-dev
+
+          Merge: Successful
+          Push: Successful
+          Merge commit: \`${AFTER_SHA}\`
+
+          main-dev is now synchronized with origin/main.
+          EOF
+            echo "Result: SUCCESS"
+            exit 0
+          fi
+
+          if echo "$PUSH_OUTPUT" | grep -Eiq '\[rejected\]|non-fast-forward|fetch first|stale info'; then
+            write_run_info "| main-dev after sync | (local merge only, not pushed) |"
+            cat >> "$GITHUB_STEP_SUMMARY" <<EOF
+
+          ### Changes
+          - Changes detected: Yes
+          - Merge performed: Yes (local only)
+          - Push performed: No
+
+          ### Result
+
+          ⚠️ Status: PUSH REJECTED
+
+          Reason:
+          main-dev changed while synchronization was running.
+
+          Action:
+          Nothing was force-pushed or overwritten.
+          The next scheduled run can retry safely.
+          EOF
+            echo "Result: PUSH REJECTED (race detected at push time)"
+            exit 1
+          else
+            write_run_info "| main-dev after sync | (local merge only, not pushed) |"
+            cat >> "$GITHUB_STEP_SUMMARY" <<EOF
+
+          ### Changes
+          - Changes detected: Yes
+          - Merge performed: Yes (local only)
+          - Push performed: No
+
+          ### Result
+
+          ❌ Status: FAILURE
+
+          Push failed for a reason other than a simple remote-advance race
+          (see job logs — possible causes: branch protection on main-dev,
+          insufficient GITHUB_TOKEN permissions, or a transient network error).
+          EOF
+            echo "Result: FAILURE (push error, see logs above)"
+            exit 1
+          fi

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Form, Input, Button, Checkbox, Card, Typography, Alert, message } from 'antd';
 import { UserOutlined, LockOutlined, GoogleOutlined } from '@ant-design/icons';
+import { login, SAMPLE_USERNAME, SAMPLE_PASSWORD } from './auth.js';
 
 const { Title, Text } = Typography;
 
@@ -16,7 +17,7 @@ const Login = () => {
 
     setTimeout(() => {
       setSubmitting(false);
-      if (username && password) {
+      if (login(username, password)) {
         navigate('/home');
       } else {
         setError('Invalid username or password.');
@@ -41,6 +42,13 @@ const Login = () => {
           </Title>
           <Text type="secondary">Welcome back, please enter your details.</Text>
         </div>
+
+        <Alert
+          type="info"
+          message={`Sample login: ${SAMPLE_USERNAME} / ${SAMPLE_PASSWORD}`}
+          style={{ marginBottom: 16 }}
+          showIcon
+        />
 
         {error && (
           <Alert
