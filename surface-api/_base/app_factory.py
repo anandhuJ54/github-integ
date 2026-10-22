@@ -6,15 +6,25 @@ error shape) once so every service is consistent.
 """
 from __future__ import annotations
 
-from collections.abc import Iterable
+from collections.abc import AsyncIterator, Iterable
+from contextlib import asynccontextmanager
 
 from fastapi import APIRouter, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from _base.core.db import close_pools
+
+
+@asynccontextmanager
+async def _lifespan(app: FastAPI) -> AsyncIterator[None]:
+    # Pools open lazily on first DB use; close them here so sockets are released on shutdown.
+    yield
+    close_pools()
+
 
 def create_app(title: str, routers: Iterable[APIRouter]) -> FastAPI:
     """Build a FastAPI app for a deployable service from a set of Surface routers."""
-    app = FastAPI(title=title)
+    app = FastAPI(title=title, lifespan=_lifespan)
 
     app.add_middleware(
         CORSMiddleware,

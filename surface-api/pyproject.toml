@@ -10,6 +10,8 @@ dependencies = [
     "starlette>=0.40,<0.42",
     "uvicorn[standard]>=0.32",
     "psycopg[binary]>=3.2",
+    # Connection pooling for the read/write split (primary + optional read replica).
+    "psycopg-pool>=3.2",
     "pyjwt>=2.9",
 ]
 
