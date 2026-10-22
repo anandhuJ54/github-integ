@@ -8,85 +8,86 @@
 /tools/                       @BuyersRoad/eng-core
 /.github/                     @BuyersRoad/eng-core
 /.claude/                     @BuyersRoad/eng-core
-/api/base/                    @BuyersRoad/eng-core
-/ui/base/                     @BuyersRoad/eng-core
-/api/migrations/              @BuyersRoad/eng-core
+/surface-api/_base/           @BuyersRoad/eng-core
+/surface-ui/_base/            @BuyersRoad/eng-core
+/surface-api/migrations/      @BuyersRoad/eng-core
 /reference/                   @BuyersRoad/eng-core
+/Dockerfile                   @BuyersRoad/eng-core
 
 # 01 Sales Engine / Growth Hub
-/api/sales/                   @BuyersRoad/surface-sales
-/ui/sales/                    @BuyersRoad/surface-sales
+/surface-api/sales/           @BuyersRoad/surface-sales
+/surface-ui/sales/            @BuyersRoad/surface-sales
 /contracts/sales/             @BuyersRoad/surface-sales
-/spec/sales/                  @BuyersRoad/surface-sales
+/surface-spec/sales/          @BuyersRoad/surface-sales
 
 # 02 Marketing Engine
-/api/marketing/               @BuyersRoad/surface-marketing
-/ui/marketing/                @BuyersRoad/surface-marketing
+/surface-api/marketing/       @BuyersRoad/surface-marketing
+/surface-ui/marketing/        @BuyersRoad/surface-marketing
 /contracts/marketing/         @BuyersRoad/surface-marketing
-/spec/marketing/              @BuyersRoad/surface-marketing
+/surface-spec/marketing/      @BuyersRoad/surface-marketing
 
 # 03 Online Search
-/api/search/                  @BuyersRoad/surface-search
-/ui/search/                   @BuyersRoad/surface-search
+/surface-api/search/          @BuyersRoad/surface-search
+/surface-ui/search/           @BuyersRoad/surface-search
 /contracts/search/            @BuyersRoad/surface-search
-/spec/search/                 @BuyersRoad/surface-search
+/surface-spec/search/         @BuyersRoad/surface-search
 
 # 04 SRP — Locations & Professionals
-/api/srp/                     @BuyersRoad/surface-srp
-/ui/srp/                      @BuyersRoad/surface-srp
+/surface-api/srp/             @BuyersRoad/surface-srp
+/surface-ui/srp/              @BuyersRoad/surface-srp
 /contracts/srp/               @BuyersRoad/surface-srp
-/spec/srp/                    @BuyersRoad/surface-srp
+/surface-spec/srp/            @BuyersRoad/surface-srp
 
 # 05 XMP
-/api/xmp/                     @BuyersRoad/surface-xmp
-/ui/xmp/                      @BuyersRoad/surface-xmp
+/surface-api/xmp/             @BuyersRoad/surface-xmp
+/surface-ui/xmp/              @BuyersRoad/surface-xmp
 /contracts/xmp/               @BuyersRoad/surface-xmp
-/spec/xmp/                    @BuyersRoad/surface-xmp
+/surface-spec/xmp/            @BuyersRoad/surface-xmp
 
 # 06 Campaigns
-/api/campaigns/               @BuyersRoad/surface-campaigns
-/ui/campaigns/                @BuyersRoad/surface-campaigns
+/surface-api/campaigns/       @BuyersRoad/surface-campaigns
+/surface-ui/campaigns/        @BuyersRoad/surface-campaigns
 /contracts/campaigns/         @BuyersRoad/surface-campaigns
-/spec/campaigns/              @BuyersRoad/surface-campaigns
+/surface-spec/campaigns/      @BuyersRoad/surface-campaigns
 
 # 07 ETL
-/api/etl/                     @BuyersRoad/surface-etl
-/ui/etl/                      @BuyersRoad/surface-etl
+/surface-api/etl/             @BuyersRoad/surface-etl
+/surface-ui/etl/              @BuyersRoad/surface-etl
 /contracts/etl/               @BuyersRoad/surface-etl
-/spec/etl/                    @BuyersRoad/surface-etl
+/surface-spec/etl/            @BuyersRoad/surface-etl
 
 # 08 Graph
-/api/graph/                   @BuyersRoad/surface-graph
-/ui/graph/                    @BuyersRoad/surface-graph
+/surface-api/graph/           @BuyersRoad/surface-graph
+/surface-ui/graph/            @BuyersRoad/surface-graph
 /contracts/graph/             @BuyersRoad/surface-graph
-/spec/graph/                  @BuyersRoad/surface-graph
+/surface-spec/graph/          @BuyersRoad/surface-graph
 
 # 09 NORA / OS kernel
-/api/nora_os/                 @BuyersRoad/surface-nora-os
-/ui/nora-os/                  @BuyersRoad/surface-nora-os
+/surface-api/nora_os/         @BuyersRoad/surface-nora-os
+/surface-ui/nora-os/          @BuyersRoad/surface-nora-os
 /contracts/nora-os/           @BuyersRoad/surface-nora-os
-/spec/nora-os/                @BuyersRoad/surface-nora-os
+/surface-spec/nora-os/        @BuyersRoad/surface-nora-os
 
 # 10 Skills
-/api/skills/                  @BuyersRoad/surface-skills
-/ui/skills/                   @BuyersRoad/surface-skills
+/surface-api/skills/          @BuyersRoad/surface-skills
+/surface-ui/skills/           @BuyersRoad/surface-skills
 /contracts/skills/            @BuyersRoad/surface-skills
-/spec/skills/                 @BuyersRoad/surface-skills
+/surface-spec/skills/         @BuyersRoad/surface-skills
 
 # 11 Conversion Agents
-/api/conversion_agents/       @BuyersRoad/surface-conversion-agents
-/ui/conversion-agents/        @BuyersRoad/surface-conversion-agents
-/contracts/conversion-agents/ @BuyersRoad/surface-conversion-agents
-/spec/conversion-agents/      @BuyersRoad/surface-conversion-agents
+/surface-api/conversion_agents/   @BuyersRoad/surface-conversion-agents
+/surface-ui/conversion-agents/    @BuyersRoad/surface-conversion-agents
+/contracts/conversion-agents/     @BuyersRoad/surface-conversion-agents
+/surface-spec/conversion-agents/  @BuyersRoad/surface-conversion-agents
 
 # 12 Admin
-/api/admin/                   @BuyersRoad/surface-admin
-/ui/admin/                    @BuyersRoad/surface-admin
+/surface-api/admin/           @BuyersRoad/surface-admin
+/surface-ui/admin/            @BuyersRoad/surface-admin
 /contracts/admin/             @BuyersRoad/surface-admin
-/spec/admin/                  @BuyersRoad/surface-admin
+/surface-spec/admin/          @BuyersRoad/surface-admin
 
 # 13 Ops
-/api/ops/                     @BuyersRoad/surface-ops
-/ui/ops/                      @BuyersRoad/surface-ops
+/surface-api/ops/             @BuyersRoad/surface-ops
+/surface-ui/ops/              @BuyersRoad/surface-ops
 /contracts/ops/               @BuyersRoad/surface-ops
-/spec/ops/                    @BuyersRoad/surface-ops
+/surface-spec/ops/            @BuyersRoad/surface-ops

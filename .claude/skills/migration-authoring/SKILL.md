@@ -19,4 +19,4 @@ description: Author a database migration correctly for this repo (SQL file + jou
 5. Never edit an already-applied migration; write a new one.
 6. In `plan.md` write: backup table name (`zz_backup_<t>_<date>`), the human-approved apply step, the **JOIN** verification query (match counts against the canonical table), rollback.
 7. Add the `docs/ETL-Enhancements.md` entry (trigger, evidence, change, verification, still open).
-8. Run `uv run python -m tools.lint.lint_all` — it must pass. **Do not apply the migration**; applying is a human-approved step (`uv run python -m api.migrate apply`, run by a human after backup + JOIN verification).
+8. Run `python3 tools/lint/lint_all.py` — it must pass. **Do not apply the migration**; applying is a human-approved step (`cd surface-api && uv run python -m migrate apply`, run by a human after backup + JOIN verification).

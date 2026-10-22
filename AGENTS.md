@@ -12,7 +12,7 @@
 # AGENTS.md — Expertise Engine constitution
 
 This file is the **single constitution** for every agent and every human working in this repository.
-`CLAUDE.md` only imports this file. Each Surface adds its own rules in `spec/<surface>/AGENTS.md`.
+`CLAUDE.md` only imports this file. Each Surface adds its own rules in `surface-spec/<surface>/AGENTS.md`.
 A Surface's rules can be **stricter** than these, never looser.
 
 **Precedence when sources disagree:** live database > this file > `docs/NORA_OS_ENGINEERING_DIRECTIVE.md` >
@@ -32,17 +32,17 @@ intent.md  spec.md    plan.md     evidence.md                    │
    └──────── findings become new intents, tests, lints, context ─┘
 ```
 
-- One increment = one folder `spec/<surface>/<increment>/` = one branch = one worktree = one PR.
+- One increment = one folder `surface-spec/<surface>/<increment>/` = one branch = one worktree = one PR.
 - Start from `templates/` (shared). Add the Surface's extra sections from its `template-additions.md`. Never remove a shared section.
 - **No implementation without an approved `intent.md` + `spec.md`** (exception: the small-fix path below).
-- **Small-fix path:** a bug fix or small change inside one Surface, with no schema, security, money, identity or shared-core change and no open decision touched, may skip the `spec/<surface>/<increment>/` folder and fill the "Small fix" section (Intent, Evidence) of the PR template instead. CI accepts either the folder or that section.
+- **Small-fix path:** a bug fix or small change inside one Surface, with no schema, security, money, identity or shared-core change and no open decision touched, may skip the `surface-spec/<surface>/<increment>/` folder and fill the "Small fix" section (Intent, Evidence) of the PR template instead. CI accepts either the folder or that section.
 - **Test-first.** Write the failing test, then the code.
 - **No merge without `evidence.md`** (or, on the small-fix path, the filled Small fix section). It must say what was tested and how, and **what remains unverified**. "It compiles" is not done.
 - Every Observe finding re-enters the loop as one of: a new intent, a test or eval, a lint rule or hook, or a context update. The loop is closed only when that artifact exists.
 
 **Context loading order** (load in this order; later files add detail and can be stricter, never looser):
 1. This file (`AGENTS.md`, via `CLAUDE.md`).
-2. The owning Surface's `spec/<surface>/AGENTS.md`, then its `CONTEXT.md`.
+2. The owning Surface's `surface-spec/<surface>/AGENTS.md`, then its `CONTEXT.md`.
 3. The task: the increment's `intent.md` → `spec.md` → `plan.md`, plus the contracts it touches in `contracts/`.
 4. Only then other docs, checked against precedence and "Known-stale docs". Verify DB facts live (read-only) rather than trusting a doc.
 
@@ -57,35 +57,36 @@ Use the shared skills in `.claude/skills/`:
 
 ## 2. Repository layout and ownership
 
-A Surface is one domain across three parallel trees (see §4). Names: the Python tree
-(`api/`) uses `snake_case` (`nora_os`, `conversion_agents`); `ui/` and `spec/` use
+A Surface is one domain across the trees (see §4). Each tree is a self-contained project
+owning its own build config. Names: the backend tree (`surface-api/`) uses `snake_case`
+(`nora_os`, `conversion_agents`); `surface-ui/`, `contracts/` and `surface-spec/` use
 `kebab-case` (`nora-os`, `conversion-agents`).
 
 ```
 AGENTS.md  CLAUDE.md  templates/  .claude/  .github/
 contracts/<surface>/   events/ + capabilities/*.json (+ OpenAPI) each Surface publishes (versioned, code-consumed)
-api/                   Python/FastAPI backend (package `api`)
-  base/                shared FastAPI: app_factory.py + core (auth.py, db.py, compliance.py)
-  app.py               mounts Surface routers (uvicorn api.app:app)
-  migrate.py           migration runner (python -m api.migrate status|apply)
+surface-api/           self-contained Python/FastAPI project (its own pyproject.toml)
+  _base/               shared FastAPI: app_factory.py + core (auth.py, db.py, compliance.py)
+  app.py               mounts Surface routers (cd surface-api && uvicorn app:app)
+  migrate.py           migration runner (cd surface-api && python -m migrate status|apply)
   migrations/          the ONE shared migration history: NNNN_*.sql + meta/_journal.json
-  <surface>/           one Python package per Surface (snake_case), private to it
+  <surface>/           one top-level Python package per Surface (snake_case), private to it
     routers/           one module per capability
-ui/                    React SPA frontends (TypeScript)
-  base/                shared design system (@v3/ui)
+surface-ui/            self-contained React SPA workspace (its own package.json, bun workspaces)
+  _base/               shared design system (@v3/ui)
   <surface>/           one React app per Surface (kebab-case), private to it
-spec/                  governance docs (human-authored prose)
+surface-spec/          governance docs (human-authored prose)
   <surface>/
     AGENTS.md CONTEXT.md   this Surface's local constitution + context
     <increment>/           intent.md · spec.md · plan.md · evidence.md
 docs/  reference/  scripts/
-tools/lint/            security, canon, migration and boundary checks
+tools/                 enforcement (lint, ci, hooks) — plain stdlib Python, run with python3
 ```
 
-- **A Surface owns** its three homes (`api/<surface>`, `ui/<surface>`, `spec/<surface>`), its `contracts/<surface>`, and the tables it logically owns (the physical migration stream is shared — see §4). Ownership is mapped in `.github/CODEOWNERS`.
+- **A Surface owns** its three homes (`surface-api/<surface>`, `surface-ui/<surface>`, `surface-spec/<surface>`), its `contracts/<surface>`, and the tables it logically owns (the physical migration stream is shared — see §4). Ownership is mapped in `.github/CODEOWNERS`.
 - **A Surface never edits** another Surface's internals or tables. Reads go through governed views/queries; writes go through capabilities; reactions go through events.
-- **One app, one login — composed, not shared internals (§4).** A frontend app bundles a chosen set of `ui/<surface>` apps; a backend service mounts a chosen set of `api/<surface>` routers. `ui/<surface>` calls **only** its own `api/<surface>`, via a client generated from `contracts/<surface>`. Cross-Surface reaction goes through the events/capabilities in `contracts/`, never a direct import or call (lint: `boundary/*`). Hiding UI is not security: permissions are checked server-side in FastAPI (or the DB). A new or changed cross-Surface interface is a PR to `contracts/<surface>`, reviewed by the owning Surface.
-- **Shared core:** `AGENTS.md`, `templates/`, `api/base/`, `ui/base/`, `.claude/`, `tools/lint/`. Changes need a PR reviewed for all Surfaces.
+- **One app, one login — composed, not shared internals (§4).** A frontend app bundles a chosen set of `surface-ui/<surface>` apps; a backend service mounts a chosen set of `surface-api/<surface>` routers. `surface-ui/<surface>` calls **only** its own `surface-api/<surface>`, via a client generated from `contracts/<surface>`. Cross-Surface reaction goes through the events/capabilities in `contracts/`, never a direct import or call (lint: `boundary/*`). Hiding UI is not security: permissions are checked server-side in FastAPI (or the DB). A new or changed cross-Surface interface is a PR to `contracts/<surface>`, reviewed by the owning Surface.
+- **Shared core:** `AGENTS.md`, `templates/`, `surface-api/_base/`, `surface-ui/_base/`, `.claude/`, `tools/`. Changes need a PR reviewed for all Surfaces.
 
 ## 3. Hard rules
 
@@ -141,34 +142,41 @@ tools/lint/            security, canon, migration and boundary checks
 > needs a recorded ruling. The database and all DB-side governance are **unchanged** —
 > that is deliberate: the real control boundary lives in Postgres, not the app language.
 
-- **Three parallel trees** (split by layer because the runtimes differ): `api/` (Python/FastAPI),
-  `ui/` (React SPA/TypeScript), `spec/` (governance + contracts). A Surface is the same domain across all
-  three — e.g. `api/sales`, `ui/sales`, `spec/sales`. Names: the Python tree uses `snake_case` (valid packages:
-  `nora_os`, `conversion_agents`); `ui/` and `spec/` use `kebab-case` (`nora-os`, `conversion-agents`).
-- **Frontend:** React 19 SPA · Vite · Tailwind v4 · shadcn/Radix in `ui/<surface>/`; shared design system in
-  `ui/base/` (`@v3/ui`). No server-side rendering runtime; the SPA is static-hostable.
-- **Backend:** **Python · FastAPI** in `api/<surface>/` (package `api.<surface>`); shared app factory, auth
-  (Supabase JWT verification + RLS context), DB access and the compliance gate in `api/base/`. `api/app.py`
-  mounts Surface routers. Deployed as FastAPI services (containers), **not** edge functions.
+- **Self-contained trees** (split by layer because the runtimes differ; each tree owns its own
+  build config — the repo root has no `pyproject.toml` or `package.json`): `surface-api/` (Python/FastAPI),
+  `surface-ui/` (React SPA/TypeScript), `surface-spec/` (governance), `contracts/` (the seam). A Surface is the
+  same domain across the trees — e.g. `surface-api/sales`, `surface-ui/sales`, `surface-spec/sales`. Names: the
+  backend tree uses `snake_case` (valid packages: `nora_os`, `conversion_agents`); `surface-ui/`, `contracts/`
+  and `surface-spec/` use `kebab-case` (`nora-os`, `conversion-agents`).
+- **Frontend:** React 19 SPA · Vite · Tailwind v4 · shadcn/Radix in `surface-ui/<surface>/`; shared design
+  system in `surface-ui/_base/` (`@v3/ui`). `surface-ui/` is a self-contained bun workspace
+  (`cd surface-ui && bun install`). No server-side rendering runtime; the SPA is static-hostable.
+- **Backend:** **Python · FastAPI** in `surface-api/<surface>/` (top-level package `<surface>`); shared app
+  factory, auth (Supabase JWT verification + RLS context), DB access and the compliance gate in
+  `surface-api/_base/`. `surface-api/` is a self-contained uv project; `app.py` mounts Surface routers
+  (`cd surface-api && uvicorn app:app`). Imports are internal and top-level: `from _base.core.auth import ...`,
+  `from sales.routers.health import ...`. Deployed as FastAPI services (containers), **not** edge functions.
   Batch/ETL/ML stays in `tools/*.py`.
-- **The FE↔BE seam is the contract — its own top-level tree, not under `spec/`.** Each Surface publishes
+- **The FE↔BE seam is the contract — its own top-level tree, not under `surface-spec/`.** Each Surface publishes
   versioned events + capabilities (+ OpenAPI) under `contracts/<surface>/`; the React client is generated from
-  it and other Surfaces consume it. (`spec/` holds human prose increments; `contracts/` holds machine-readable,
-  code-consumed schemas — keep them separate.) `ui/<surface>` calls **only** its own `api/<surface>`;
-  cross-Surface reaction goes through the events/capabilities in `contracts/`, never a direct import or call.
+  it and other Surfaces consume it. (`surface-spec/` holds human prose increments; `contracts/` holds
+  machine-readable, code-consumed schemas — keep them separate.) `surface-ui/<surface>` calls **only** its own
+  `surface-api/<surface>`; cross-Surface reaction goes through the events/capabilities in `contracts/`, never a
+  direct import or call.
 - **Governed decisions stay deterministic and server-side (§3):** authorization, claims, pricing, compliance,
   send eligibility, score rules and persistence are decided in FastAPI (or the DB), never in the browser, and
   all writes go through the governed Postgres functions. Models handle language only.
-- **Enforcement note:** the TS-era lint/hooks (`tools/lint`, `guard.ts`) do not read Python. Until Python
-  equivalents exist (`ruff` + a boundary check), the DB-side controls (RLS, `FORCE ROW LEVEL SECURITY`,
-  `SECURITY DEFINER` functions, narrow grants) are the real gate — keep them authoritative.
-- **Deployables are compositions, not Surfaces.** A backend service mounts a chosen set of `api/<surface>`
-  routers; a frontend app bundles a chosen set of `ui/<surface>` apps — so a few (e.g. graph, sales, marketing)
-  can ship separately while sharing `api/base`, `ui/base` and one database.
+- **Enforcement note:** the boundary/canon/security lint is `tools/lint/lint_all.py` (plain stdlib Python, run
+  as `python3 tools/lint/lint_all.py`). The DB-side controls (RLS, `FORCE ROW LEVEL SECURITY`,
+  `SECURITY DEFINER` functions, narrow grants) remain the real gate — keep them authoritative.
+- **Deployables are compositions, not Surfaces.** A backend service mounts a chosen set of
+  `surface-api/<surface>` routers; a frontend app bundles a chosen set of `surface-ui/<surface>` apps — so a few
+  (e.g. graph, sales, marketing) can ship separately while sharing `surface-api/_base`, `surface-ui/_base` and
+  one database.
 - **Migrations:**
-  - **One shared database ⇒ one migration history:** write them in `api/migrations/NNNN_*.sql` with a
-    `meta/_journal.json` entry; apply with `python -m api.migrate`. A Surface logically owns its tables
-    (naming + `rls-grant-review`), but the physical migration stream is singular and common.
+  - **One shared database ⇒ one migration history:** write them in `surface-api/migrations/NNNN_*.sql` with a
+    `meta/_journal.json` entry; apply with `cd surface-api && python -m migrate`. A Surface logically owns its
+    tables (naming + `rls-grant-review`), but the physical migration stream is singular and common.
     `supabase/migrations/` is historical.
   - Never edit an applied migration.
   - Merged migrations are **not** applied automatically. Apply them through a human-approved step: backup (`zz_backup_*`), apply, verify by JOIN, then log.
@@ -186,10 +194,11 @@ tools/lint/            security, canon, migration and boundary checks
   - Lovable works in a sandbox; its output reaches `main` through a normal PR.
 - **Before every PR:**
   ```
-  uv run ruff check api tools        # Python lint
-  uv run pytest                      # Python tests
-  bun run -F ui/* build              # TS build/typecheck for the frontends (or: tsc -p each ui app)
-  uv run python -m tools.lint.lint_all   # security / canon / migration / boundary lint (ratchet)
+  cd surface-api && uv run ruff check .    # Python lint (backend project)
+  cd surface-api && uv run pytest          # Python tests (backend project)
+  cd surface-ui && bun install && for d in */; do [ "$d" = _base/ ] || bunx tsc --noEmit -p "$d"; done
+                                           # TS typecheck per frontend app
+  python3 tools/lint/lint_all.py           # security / canon / migration / boundary lint (ratchet)
   ```
   CI runs the same checks plus Surface tests and evals. Name tests `*.test.ts` and evals `*.eval.test.ts` (`bun test` ignores any other name); evals that call a model skip unless `RUN_EVALS=1`.
   `tools/lint/baseline.json` only shrinks: CI compares against the base branch's copy and fails a PR that adds entries. Adding a new lint rule is the one exception: it needs its own baseline-transition PR, reviewed by shared core.
@@ -218,24 +227,25 @@ When work depends on one of these, state the dependency, propose options if usef
 
 ## 7. Surfaces
 
-Each Surface lives in three homes: `api/<snake>`, `ui/<kebab>`, `spec/<kebab>` (the `api/`
-package name is `snake_case`, so `nora_os` and `conversion_agents`).
+Each Surface lives in three homes: `surface-api/<snake>`, `surface-ui/<kebab>`,
+`surface-spec/<kebab>` (the `surface-api/` package name is `snake_case`, so `nora_os` and
+`conversion_agents`).
 
-| # | Surface | api/ | ui/ | spec/ |
+| # | Surface | surface-api/ | surface-ui/ | surface-spec/ |
 |---|---|---|---|---|
-| 01 | Sales Engine / Growth Hub | `api/sales` | `ui/sales` | `spec/sales` |
-| 02 | Marketing Engine | `api/marketing` | `ui/marketing` | `spec/marketing` |
-| 03 | Online Search | `api/search` | `ui/search` | `spec/search` |
-| 04 | SRP — Locations & Professionals | `api/srp` | `ui/srp` | `spec/srp` |
-| 05 | XMP | `api/xmp` | `ui/xmp` | `spec/xmp` |
-| 06 | Campaigns | `api/campaigns` | `ui/campaigns` | `spec/campaigns` |
-| 07 | ETL | `api/etl` | `ui/etl` | `spec/etl` |
-| 08 | Graph | `api/graph` | `ui/graph` | `spec/graph` |
-| 09 | NORA / OS kernel | `api/nora_os` | `ui/nora-os` | `spec/nora-os` |
-| 10 | Skills | `api/skills` | `ui/skills` | `spec/skills` |
-| 11 | Conversion Agents | `api/conversion_agents` | `ui/conversion-agents` | `spec/conversion-agents` |
-| 12 | Admin | `api/admin` | `ui/admin` | `spec/admin` |
-| 13 | Ops | `api/ops` | `ui/ops` | `spec/ops` |
+| 01 | Sales Engine / Growth Hub | `surface-api/sales` | `surface-ui/sales` | `surface-spec/sales` |
+| 02 | Marketing Engine | `surface-api/marketing` | `surface-ui/marketing` | `surface-spec/marketing` |
+| 03 | Online Search | `surface-api/search` | `surface-ui/search` | `surface-spec/search` |
+| 04 | SRP — Locations & Professionals | `surface-api/srp` | `surface-ui/srp` | `surface-spec/srp` |
+| 05 | XMP | `surface-api/xmp` | `surface-ui/xmp` | `surface-spec/xmp` |
+| 06 | Campaigns | `surface-api/campaigns` | `surface-ui/campaigns` | `surface-spec/campaigns` |
+| 07 | ETL | `surface-api/etl` | `surface-ui/etl` | `surface-spec/etl` |
+| 08 | Graph | `surface-api/graph` | `surface-ui/graph` | `surface-spec/graph` |
+| 09 | NORA / OS kernel | `surface-api/nora_os` | `surface-ui/nora-os` | `surface-spec/nora-os` |
+| 10 | Skills | `surface-api/skills` | `surface-ui/skills` | `surface-spec/skills` |
+| 11 | Conversion Agents | `surface-api/conversion_agents` | `surface-ui/conversion-agents` | `surface-spec/conversion-agents` |
+| 12 | Admin | `surface-api/admin` | `surface-ui/admin` | `surface-spec/admin` |
+| 13 | Ops | `surface-api/ops` | `surface-ui/ops` | `surface-spec/ops` |
 
 ## 8. Control status — what is actually enforced
 
@@ -243,17 +253,17 @@ Read this before relying on a control. **Enforced** = blocks a merge or an edit 
 
 | Control | Where | Status |
 |---|---|---|
-| Build/typecheck (`ui/*` frontends) and Python checks (`api/`, `tools/`, `contracts/`) | `core-gates` | Implemented — enforced once branch protection requires `core-gates` |
-| Tests (`uv run pytest`) | `core-gates` | Implemented — as above |
+| Build/typecheck (`surface-ui/*` frontends) and Python checks (`surface-api/` ruff + the `tools/` stdlib lint) | `core-gates` | Implemented — enforced once branch protection requires `core-gates` |
+| Tests (`cd surface-api && uv run pytest`) | `core-gates` | Implemented — as above |
 | Surface tests and evals (`*.eval.test.ts`, `RUN_EVALS=1`) | `surface-NN-*` | Implemented, path-filtered |
 | Security / canon / migration / boundary lint (incl. ENABLE **and** FORCE RLS on new tables), ratchet against the base branch baseline | `tools/lint/lint_all.py` in `core-gates` | Implemented — as above |
-| Evidence or small-fix section required when anything but Markdown changes: evidence must be added/modified (not an unchanged rename), filled in with real content (placeholder-only text such as TODO/TBD is rejected), and belong to the touched Surface; small fix only for ≤200 lines, one Surface, no high-risk paths (`tools/ci/risk.ts`) | `pr-evidence` (`tools/ci/check-evidence.ts`, tested) | Implemented — enforced once branch protection requires `pr-evidence`. For `api/`/`ui/` changes not yet mapped to a Surface, any Surface's filled evidence is accepted |
+| Evidence or small-fix section required when anything but Markdown changes: evidence must be added/modified (not an unchanged rename), filled in with real content (placeholder-only text such as TODO/TBD is rejected), and belong to the touched Surface; small fix only for ≤200 lines, one Surface, no high-risk paths (`tools/ci/risk.py`) | `pr-evidence` (`tools/ci/check_evidence.py`, tested) | Implemented — enforced once branch protection requires `pr-evidence`. For `surface-api/`/`surface-ui/` changes not yet mapped to a Surface, any Surface's filled evidence is accepted |
 | Secret scan | `core-gates` (gitleaks) | Implemented — as above |
-| AI review, risk-tiered (same high-risk rule as the evidence gate, `tools/ci/risk.ts`), after the `core-gates` checks pass (it does not wait for `pr-evidence`); superseded runs cancelled | `core-gates` → `ai-review` | Implemented; needs the `ANTHROPIC_API_KEY` repo secret. Advisory, not a merge gate |
+| AI review, risk-tiered (same high-risk rule as the evidence gate, `tools/ci/risk.py`), after the `core-gates` checks pass (it does not wait for `pr-evidence`); superseded runs cancelled | `core-gates` → `ai-review` | Implemented; needs the `ANTHROPIC_API_KEY` repo secret. Advisory, not a merge gate |
 | Mirror pushes only the commit that passed `core-gates` on `main` | `sync-to-destination.yml` | Implemented |
 | Agent edit guard (applied migrations, `.env`, always-true policies, anon/PUBLIC grants, secrets) | `.claude/settings.json` → `tools/hooks/guard.py` | **Partial** — blocks the Edit/Write/MultiEdit tools in Claude Code sessions using this repo's settings. Shell commands (e.g. `sed`, `>`), other tools and humans are not covered; CI lint is the backstop |
 | Deny force-push, push to `main`, reading `.env` | `.claude/settings.json` | **Partial** — matches the listed command patterns only; other spellings (e.g. `git push origin HEAD:main`, `cat .env`) are not caught. Branch protection is the real control |
-| Cross-Surface interaction only through `contracts/<surface>` (no `ui/<surface>` → another Surface's `api`/`ui` internals; `ui/<surface>` calls only its own `api/<surface>`) | lint `boundary/cross-surface-import`, `boundary/app-imports-surface-internals` in `core-gates` | Implemented — as above |
+| Cross-Surface interaction only through `contracts/<surface>` (no `surface-ui/<surface>` → another Surface's `surface-api`/`surface-ui` internals; `surface-ui/<surface>` calls only its own `surface-api/<surface>`) | lint `boundary/cross-surface-import` in `core-gates` | Implemented — as above |
 | Surface ownership and review routing | `.github/CODEOWNERS` | **Placeholder** — team handles must be created in GitHub |
 | Required checks, required reviews, no self-merge, no force-push to `main` | GitHub branch protection | **Placeholder** — not stored in this repo; open decision O8 |
 | Second approval for schema, security, money and identity changes | §4 | Documentation, until CODEOWNERS teams and branch protection exist |

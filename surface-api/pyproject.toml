@@ -1,5 +1,5 @@
 [project]
-name = "v3-experiencesrp"
+name = "surface-api"
 version = "0.1.0"
 description = "Expertise Engine — React SPA + FastAPI, Surface-oriented"
 requires-python = ">=3.11"
@@ -21,27 +21,16 @@ dev = [
 ]
 
 [tool.ruff]
-# Python-side lint — the boundary/security checks the TS lint used to provide must be
-# re-expressed here over time. DB-side controls (RLS, governed functions) stay authoritative.
+# Python-side lint for this self-contained backend project. DB-side controls (RLS, governed
+# functions) stay authoritative; the repo-level enforcement lint lives in tools/ (stdlib).
 target-version = "py311"
 line-length = 100
-# Legacy ETL scripts copied verbatim from the old repo — not yet cleaned; lint `api/` and
-# the new tooling (tools/lint, tools/ci, tools/hooks), not these.
-extend-exclude = [
-    "tools/batch_generate",
-    "tools/economics",
-    "tools/enrichment",
-    "tools/etl",
-    "tools/listings",
-    "tools/category_brief",
-    "tools/single_pro",
-    "tools/generate_projection.py",
-    "tools/projection_linter.py",
-]
 
 [tool.ruff.lint]
 # B008: calling Depends()/Security() in argument defaults is the idiomatic FastAPI pattern.
-ignore = ["B008"]
+# N999: the project-root dir (`surface-api`) is hyphenated by design — it is not an importable
+# module; the importable top-level packages (`_base`, `sales`, …) are all valid names.
+ignore = ["B008", "N999"]
 
 [tool.pytest.ini_options]
 testpaths = ["."]

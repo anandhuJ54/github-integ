@@ -8,38 +8,41 @@ keeping the Surface model and the one shared Supabase Postgres.
 > functions), not in the app language. Swapping TypeScript → Python is safe because of
 > that. See the **Stack amendment** at the top of [`AGENTS.md`](AGENTS.md) §4.
 
-## Layout — parallel trees (`api` · `ui` · `contracts` · `spec`)
+## Layout — self-contained trees (`surface-api` · `surface-ui` · `surface-spec` · `contracts`)
 
-Split by layer, because the runtimes differ (Python vs TypeScript). A Surface is the same
-domain across the trees — e.g. `api/sales`, `ui/sales`, `contracts/sales`, `spec/sales`.
-`contracts/` is its own tree (not under `spec/`): it is machine-readable, versioned, and
-consumed by code — both `api` and `ui` read it, and other Surfaces depend on it.
+Three self-contained project trees, each owning its own build config, plus repo-level shared
+dirs. A Surface is the same domain across the trees — e.g. `surface-api/sales`,
+`surface-ui/sales`, `contracts/sales`, `surface-spec/sales`. `contracts/` is its own
+top-level tree (not under `surface-spec/`): it is machine-readable, versioned, and consumed
+by code — both the backend and the frontend read it, and other Surfaces depend on it.
+
+The repo root has **no** `pyproject.toml` and **no** `package.json`; each tree owns its own.
 
 ```
 AGENTS.md                 root constitution (stack amended for React SPA + FastAPI)
-Dockerfile                backend image (FastAPI `api` package)
-pyproject.toml            Python backend project
-package.json              JS workspaces (ui/*)
+Dockerfile                backend image (builds surface-api/ only)
 templates/                shared increment templates (intent/spec/plan/evidence)
 reference/                gcid universe + category data (the seed gate)
 docs/                     engineering docs incl. ETL-Enhancements.md (the §4 change-log)
+tools/                    enforcement — plain stdlib Python, run with python3 (no project)
+scripts/                  dev/ops helpers
 
 contracts/                versioned interface schemas (consumed by code, cross-Surface)
   sales/ … ops/           events/ + capabilities/*.v1.json + openapi  (the FE↔BE + cross-Surface seam)
 
-api/                      Python backend (package `api`)
-  base/                   shared FastAPI: app_factory + core (auth, db, compliance)
+surface-api/              self-contained Python/FastAPI project (its own pyproject.toml)
+  _base/                  shared FastAPI: app_factory + core (auth, db, compliance)
   migrations/             the ONE shared migration history (one DB ⇒ one journal)
-  migrate.py              migration runner  (python -m api.migrate status|apply)
-  app.py                  dev entry — mounts Surface routers (uvicorn api.app:app)
-  sales/ … ops/           one Python package per Surface (snake_case: nora_os, conversion_agents)
+  migrate.py              migration runner  (cd surface-api && uv run python -m migrate status|apply)
+  app.py                  dev entry — mounts Surface routers (uvicorn app:app)
+  sales/ … ops/           one top-level Python package per Surface (snake_case: nora_os, conversion_agents)
     routers/              one module per capability
 
-ui/                       React SPA frontends (TypeScript)
-  base/                   shared design system (@v3/ui) ← no duplicated components
+surface-ui/               self-contained React SPA workspace (its own package.json, bun workspaces)
+  _base/                  shared design system (@v3/ui) ← no duplicated components
   sales/ … ops/           one React app per Surface (kebab-case: nora-os, conversion-agents)
 
-spec/                     governance docs (prose: human-authored increments)
+surface-spec/             governance docs (prose: human-authored increments)
   sales/ … ops/
     AGENTS.md CONTEXT.md  this Surface's local constitution + context
     <increment>/          intent.md · spec.md · plan.md · evidence.md
@@ -47,35 +50,41 @@ spec/                     governance docs (prose: human-authored increments)
 
 ## Key rules (see AGENTS.md for the full constitution)
 
-- **Surface = domain across the three trees. Deployable = composition of Surfaces.**
-  A backend service mounts whichever `api/<surface>` routers it ships; a frontend app
-  bundles whichever `ui/<surface>` apps it ships — so graph / sales / marketing can
-  deploy on independent cadences while sharing `api/base`, `ui/base`, and one database.
-- **FE↔BE seam is the contract.** `ui/<surface>` calls only its own `api/<surface>`, via a
-  client generated from `contracts/<surface>`. Cross-Surface reaction goes through the
+- **Surface = domain across the trees. Deployable = composition of Surfaces.**
+  A backend service mounts whichever `surface-api/<surface>` routers it ships; a frontend app
+  bundles whichever `surface-ui/<surface>` apps it ships — so graph / sales / marketing can
+  deploy on independent cadences while sharing `surface-api/_base`, `surface-ui/_base`, and one database.
+- **FE↔BE seam is the contract.** `surface-ui/<surface>` calls only its own `surface-api/<surface>`,
+  via a client generated from `contracts/<surface>`. Cross-Surface reaction goes through the
   events/capabilities in `contracts/`, never a direct call or import.
-- **Migrations are common.** One Postgres ⇒ one history under `api/migrations`.
+- **Internal imports.** Backend imports are top-level and internal: `from _base.core.auth import ...`,
+  `from sales.routers.health import ...`. Frontend imports shared code from `@v3/ui` (= `surface-ui/_base`).
+- **Migrations are common.** One Postgres ⇒ one history under `surface-api/migrations`.
 - **Governed decisions stay deterministic + server-side:** auth, claims, pricing,
   compliance, send eligibility, scoring, persistence — in FastAPI or the DB, never the browser.
 
 ## Run
 
 ```
-# backend (/sales/hello works without env; DB/auth routes need DATABASE_URL / SUPABASE_JWT_SECRET)
-uv run uvicorn api.app:app --reload          # http://localhost:8000/sales/hello
-#   or containerized:
+# backend — surface-api/ is a self-contained uv project
+#   (/sales/hello works without env; DB/auth routes need DATABASE_URL / SUPABASE_JWT_SECRET)
+cd surface-api && uv run uvicorn app:app --reload          # http://localhost:8000/sales/hello
+#   or containerized (build from the repo root):
 docker build -t v3-api . && docker run -p 8000:8000 --env-file .env v3-api
 
-# frontend
-bun install && bun --cwd ui/sales dev        # http://localhost:5173  (proxies /api → :8000)
+# frontend — surface-ui/ is a self-contained bun workspace
+cd surface-ui && bun install && bun --cwd sales dev        # http://localhost:5173  (proxies /api → :8000)
 
 # migrations (human-approved apply)
-uv run python -m api.migrate status
+cd surface-api && uv run python -m migrate status
+
+# enforcement lint (plain stdlib Python, no project)
+python3 tools/lint/lint_all.py
 ```
 
 ## Status
 
-Scaffold. `api/base/core` (auth/db/compliance), the `api/sales` example router, and
-`ui/sales` (runnable React page calling `/api/sales/hello`) demonstrate the end-to-end
-pattern; other Surfaces are stubs ready for increments. The §4 stack change still needs a
-recorded ruling (touches O2/O9/O12).
+Scaffold. `surface-api/_base/core` (auth/db/compliance), the `surface-api/sales` example
+router, and `surface-ui/sales` (runnable React page calling `/api/sales/hello`) demonstrate the
+end-to-end pattern; other Surfaces are stubs ready for increments. The §4 stack change still
+needs a recorded ruling (touches O2/O9/O12).

@@ -5,9 +5,9 @@ there is a single, globally-numbered, linear migration stream here — never a p
 sequence (two Surfaces can't each own "migration 0005" against one schema).
 
 ## Where
-- All migrations live in `api/migrations/NNNN_*.sql`.
+- All migrations live in `surface-api/migrations/NNNN_*.sql`.
 - One `meta/_journal.json` tracks the single applied head.
-- Apply with the runner: `uv run python -m api.migrate status|apply`.
+- Apply with the runner, from the backend project: `cd surface-api && uv run python -m migrate status|apply`.
 
 ## Ownership without per-Surface folders
 - A Surface owns its tables **logically** — by table naming and by CODEOWNERS routing on
@@ -33,7 +33,7 @@ skills. Every new table:
 3. Verify by **JOIN match count**, not an isolated row count
 4. Log the change in `docs/ETL-Enhancements.md` (trigger, evidence, change, verification, still-open)
 
-## Why migrations are common but `api/` and `ui/` are per-Surface
+## Why migrations are common but `surface-api/` and `surface-ui/` are per-Surface
 Code has clean import boundaries, so it co-locates by domain. The database is one shared
 mutable resource with one coherent order — it cannot be sharded by Surface. Different
 natures, different placement.

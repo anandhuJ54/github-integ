@@ -1,13 +1,21 @@
-# keep the backend image small — only `api/` is copied, exclude everything else
+# Keep the backend image small — only surface-api/ is copied; exclude everything else.
 surface-ui/
 surface-spec/
+contracts/
 reference/
 templates/
 docs/
+tools/
+scripts/
+.github/
+.claude/
+.lovable/
 node_modules/
 **/__pycache__/
 **/*.pyc
 .venv/
+**/.venv/
+.ruff_cache/
 .git/
 *.md
 .env

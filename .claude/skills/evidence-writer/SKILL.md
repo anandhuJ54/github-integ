@@ -6,7 +6,7 @@ description: Produce evidence.md for an increment - acceptance-criteria results,
 # Evidence writer
 
 1. Map every acceptance criterion in `spec.md` to the test/check that proves it; record PASS/FAIL with the command or CI link.
-2. Run locally: `uv run ruff check api tools`, `uv run pytest`, `bun run -F ui/* build` (TS build/typecheck), `uv run python -m tools.lint.lint_all`. Paste summaries (not full logs).
+2. Run locally: `cd surface-api && uv run ruff check . && uv run pytest`, `cd surface-ui && bun run build` (TS build/typecheck), `python3 tools/lint/lint_all.py`. Paste summaries (not full logs).
 3. Skills / AI output: eval suite, score, threshold, budget used.
 4. Data changes: read-only live queries with **JOIN match counts**; never isolated row counts.
 5. Applied changes: list exactly what was applied, where, by which approved step — or "None".
