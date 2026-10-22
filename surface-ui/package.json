@@ -1,0 +1,7 @@
+{
+  "name": "surface-ui",
+  "private": true,
+  "description": "React SPA frontends. Each Surface is a workspace; shared design system in _base (@v3/ui).",
+  "workspaces": ["*"],
+  "packageManager": "bun@1.1.0"
+}

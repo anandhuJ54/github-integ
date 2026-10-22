@@ -1,0 +1,29 @@
+name: pr-evidence
+# Evidence gate (required check). Separate from core-gates so that editing the PR description
+# re-runs only this check, never the paid AI review, and can never overwrite a core-gates result.
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize, reopened, ready_for_review, edited]
+permissions:
+  contents: read
+concurrency:
+  group: pr-evidence-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+jobs:
+  evidence:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: astral-sh/setup-uv@v4
+        with:
+          python-version: "3.11"
+      - name: Install Python deps
+        run: uv sync --frozen
+      - name: Evidence or small-fix section present and filled (blocking)
+        env:
+          BASE_REF: origin/${{ github.base_ref }}
+          PR_BODY: ${{ github.event.pull_request.body }}
+        run: uv run python tools/ci/check_evidence.py

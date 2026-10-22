@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "srp/capabilities/get-claim-status.v1.json",
+  "title": "srp.get_claim_status v1",
+  "description": "Typed read of a profile's current claim status. Read-only: no side effects, so no idempotency key. Unknown profiles return status=unknown, never an error.",
+  "name": "srp.get_claim_status",
+  "version": 1,
+  "side_effects": [],
+  "dry_run": false,
+  "scope": {
+    "principal": "user_or_service",
+    "tenant_scoped": true,
+    "entity_scoped": true,
+    "permission_check": "server-side (platform PDP)"
+  },
+  "entitlement": { "gate": "srp.read", "limits": "none" },
+  "input": {
+    "type": "object",
+    "required": ["profile_id"],
+    "additionalProperties": false,
+    "properties": {
+      "profile_id": { "type": "string" }
+    }
+  },
+  "output": {
+    "type": "object",
+    "required": ["status", "as_of"],
+    "properties": {
+      "status": { "enum": ["claimed", "unclaimed", "unknown"] },
+      "trust_tier": {
+        "enum": ["self_declared", "imported", "platform_observed", "authority_verified", "owner_verified"]
+      },
+      "as_of": { "type": "string", "format": "date-time" }
+    }
+  },
+  "errors": [
+    { "code": "not_entitled", "http": 403 },
+    { "code": "not_implemented", "http": 501 }
+  ]
+}

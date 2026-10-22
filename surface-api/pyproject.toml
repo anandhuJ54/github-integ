@@ -1,0 +1,48 @@
+[project]
+name = "v3-experiencesrp"
+version = "0.1.0"
+description = "Expertise Engine — React SPA + FastAPI, Surface-oriented"
+requires-python = ">=3.11"
+dependencies = [
+    # Pin the fastapi line and its starlette: an unpinned resolve picked
+    # fastapi 0.159 + starlette 1.9 where include_router silently mounts nothing.
+    "fastapi>=0.115,<0.116",
+    "starlette>=0.40,<0.42",
+    "uvicorn[standard]>=0.32",
+    "psycopg[binary]>=3.2",
+    "pyjwt>=2.9",
+]
+
+[dependency-groups]
+# Dev/CI tooling. `uv sync` installs these by default, so core-gates' `ruff`/`pytest` resolve.
+dev = [
+    "ruff>=0.8",
+    "pytest>=8.3",
+]
+
+[tool.ruff]
+# Python-side lint — the boundary/security checks the TS lint used to provide must be
+# re-expressed here over time. DB-side controls (RLS, governed functions) stay authoritative.
+target-version = "py311"
+line-length = 100
+# Legacy ETL scripts copied verbatim from the old repo — not yet cleaned; lint `api/` and
+# the new tooling (tools/lint, tools/ci, tools/hooks), not these.
+extend-exclude = [
+    "tools/batch_generate",
+    "tools/economics",
+    "tools/enrichment",
+    "tools/etl",
+    "tools/listings",
+    "tools/category_brief",
+    "tools/single_pro",
+    "tools/generate_projection.py",
+    "tools/projection_linter.py",
+]
+
+[tool.ruff.lint]
+# B008: calling Depends()/Security() in argument defaults is the idiomatic FastAPI pattern.
+ignore = ["B008"]
+
+[tool.pytest.ini_options]
+testpaths = ["."]
+python_files = ["*_test.py", "test_*.py"]

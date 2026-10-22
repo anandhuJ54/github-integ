@@ -1,0 +1,14 @@
+# keep the backend image small — only `api/` is copied, exclude everything else
+surface-ui/
+surface-spec/
+reference/
+templates/
+docs/
+node_modules/
+**/__pycache__/
+**/*.pyc
+.venv/
+.git/
+*.md
+.env
+.env.*

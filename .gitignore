@@ -1,0 +1,18 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.ruff_cache/
+.pytest_cache/
+
+# Node / Bun
+node_modules/
+dist/
+.vite/
+*.local
+
+# env / secrets — never commit (secrets live in Vault, referenced by name)
+.env
+.env.*
+!.env.example

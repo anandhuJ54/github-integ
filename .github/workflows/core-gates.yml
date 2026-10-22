@@ -1,0 +1,110 @@
+name: core-gates
+# Required on every PR to main (configure as required checks in branch protection, with pr-evidence).
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize, reopened, ready_for_review]
+  push:
+    branches: [main]
+permissions:
+  contents: read
+concurrency:
+  # A new push to the same PR cancels the superseded run (and its AI review).
+  group: core-gates-${{ github.event.pull_request.number || github.sha }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+jobs:
+  gates:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # --- Python backend (api/) + enforcement tooling (tools/) ---
+      - uses: astral-sh/setup-uv@v4
+        with:
+          python-version: "3.11"
+      - name: Install Python deps
+        run: uv sync --frozen
+      - name: Ruff (api, tools)
+        run: uv run ruff check api tools
+      - name: Tests (pytest)
+        run: uv run pytest
+
+      # --- React frontends (ui/*) ---
+      - uses: oven-sh/setup-bun@v2
+      - name: Install JS deps
+        run: bun install --frozen-lockfile
+      - name: Typecheck / build (ui/*)
+        run: |
+          for dir in ui/*/; do
+            [ -f "$dir/tsconfig.json" ] || continue
+            echo "::group::tsc $dir"
+            bunx tsc --noEmit -p "$dir/tsconfig.json"
+            echo "::endgroup::"
+          done
+
+      # --- Security / canon / migration / boundary lint (ratchet) ---
+      - name: Security / canon / migration / boundary lint (ratchet)
+        env:
+          BASE_REF: ${{ github.event_name == 'pull_request' && format('origin/{0}', github.base_ref) || '' }}
+        run: uv run python -m tools.lint.lint_all
+
+      # --- Secret scan ---
+      - name: Secret scan
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # Deterministic checks first; AI review runs only after they pass, tiered by risk.
+  classify:
+    if: github.event_name == 'pull_request' && github.event.pull_request.draft == false
+    needs: gates
+    runs-on: ubuntu-latest
+    outputs:
+      tier: ${{ steps.tier.outputs.tier }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: astral-sh/setup-uv@v4
+        with:
+          python-version: "3.11"
+      - name: Install Python deps
+        run: uv sync --frozen
+      - id: tier
+        env:
+          BASE_REF: origin/${{ github.base_ref }}
+        run: |
+          # Same high-risk rule as the evidence gate (tools/ci/risk.py); renames count by source AND destination.
+          tier=$(uv run python tools/ci/risk.py)
+          echo "tier: $tier"
+          echo "tier=$tier" >> "$GITHUB_OUTPUT"
+
+  ai-review:
+    needs: classify
+    if: needs.classify.outputs.tier != 'small'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: anthropics/claude-code-action@v1
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          # normal: cheaper model, short run. high (schema, security, money, identity, shared core): strongest model.
+          claude_args: >-
+            ${{ needs.classify.outputs.tier == 'high'
+                && '--model claude-opus-5-5 --max-turns 30'
+                || '--model claude-sonnet-5-5 --max-turns 12' }}
+          prompt: |
+            Review tier: ${{ needs.classify.outputs.tier }}. Deterministic gates (ruff, pytest, ui typecheck, lint_all, secret scan, evidence) already run — do not repeat them.
+            Review this pull request against AGENTS.md (root) and the owning surface's AGENTS.md and CONTEXT.md.
+            Apply the canon-review skill; for tier "high" also apply rls-grant-review.
+            Check: ownership boundaries, extend-never-duplicate, governed writes, gated actions,
+            open decisions flagged (never resolved), a test for each acceptance criterion, and that evidence states what remains unverified.
+            Post findings as review comments; mark blocking findings clearly. Human approval from the owning surface is still required.

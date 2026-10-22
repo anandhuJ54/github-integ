@@ -1,0 +1,202 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1789490510033,
+      "tag": "0000_create_exp_us_cities_and_nearby_cities",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1789865556690,
+      "tag": "0001_insurance_team_slack_and_logo_expansion",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1789865609364,
+      "tag": "0002_logo_expansion_row_level_land_and_family_key",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1790369311817,
+      "tag": "0003_exp_territory_logo_profiles",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1791049804381,
+      "tag": "0004_territory_seats",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1791050936654,
+      "tag": "0005_claim_contact_and_verification",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1791050992797,
+      "tag": "0006_claim_audit_actor_safe",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1791051200720,
+      "tag": "0007_territory_group_profiles",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1791051282878,
+      "tag": "0008_territory_group_profiles_fast",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1791051371118,
+      "tag": "0009_claim_queue_verification_entity_cast",
+      "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1791053471180,
+      "tag": "0010_crm_phase1_opportunity_lifecycle",
+      "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1791059047162,
+      "tag": "0011_crm_phase5_integrations_alerts",
+      "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1791059600095,
+      "tag": "0012_crm_phase5_demo_seed_entity_type",
+      "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1791060699282,
+      "tag": "0013_crm_phase5_alert_tiering",
+      "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "7",
+      "when": 1791060869539,
+      "tag": "0014_crm_phase5_stage_actor",
+      "breakpoints": true
+    },
+    {
+      "idx": 15,
+      "version": "7",
+      "when": 1791060973416,
+      "tag": "0015_crm_phase5_alert_accept_actor",
+      "breakpoints": true
+    },
+    {
+      "idx": 16,
+      "version": "7",
+      "when": 1791134684605,
+      "tag": "0016_catalog_admin_write_policies",
+      "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "7",
+      "when": 1791747523426,
+      "tag": "0017_backcommit_nora_os_tables",
+      "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "7",
+      "when": 1791200001000,
+      "tag": "0018_nora_integration_settings",
+      "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "7",
+      "when": 1791200002000,
+      "tag": "0019_registry_node_cardinality",
+      "breakpoints": true
+    },
+    {
+      "idx": 20,
+      "version": "7",
+      "when": 1791820800000,
+      "tag": "0020_score_v5",
+      "breakpoints": true
+    },
+    {
+      "idx": 21,
+      "version": "7",
+      "when": 1791800000000,
+      "tag": "0021_claim_gate",
+      "breakpoints": true
+    },
+    {
+      "idx": 22,
+      "version": "7",
+      "when": 1791760000000,
+      "tag": "0022_graph_upsert",
+      "breakpoints": true
+    },
+    {
+      "idx": 23,
+      "version": "7",
+      "when": 1791763200000,
+      "tag": "0023_search_projection",
+      "breakpoints": true
+    },
+    {
+      "idx": 24,
+      "version": "7",
+      "when": 1791763200000,
+      "tag": "0024_index_floor",
+      "breakpoints": true
+    },
+    {
+      "idx": 25,
+      "version": "7",
+      "when": 1791753000000,
+      "tag": "0025_category_proposals",
+      "breakpoints": true
+    },
+    {
+      "idx": 26,
+      "version": "7",
+      "when": 1791800000000,
+      "tag": "0026_listings_catalog_db",
+      "breakpoints": true
+    },
+    {
+      "idx": 27,
+      "version": "7",
+      "when": 1791830000000,
+      "tag": "0027_single_pro_office",
+      "breakpoints": true
+    }
+  ]
+}

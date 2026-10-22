@@ -1,0 +1,51 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "campaigns/capabilities/send-welcome-email.v1.json",
+  "title": "campaigns.send_welcome_email v1",
+  "description": "The single governed doorway to sending the welcome email after a profile is claimed. Side-effecting, so it REQUIRES an idempotency key. Entitlement, idempotency and content compliance are all checked server-side inside the capability — never by the caller.",
+  "name": "campaigns.send_welcome_email",
+  "version": 1,
+  "dry_run": true,
+  "side_effects": ["sends one email", "records the idempotency key"],
+  "scope": {
+    "principal": "service",
+    "tenant_scoped": true,
+    "entity_scoped": true,
+    "permission_check": "server-side (platform PDP)"
+  },
+  "entitlement": { "gate": "campaigns.email", "limits": "per-plan send quota" },
+  "compliance": {
+    "ruleset": "content_compliance_rules + exp_category_compliance",
+    "when": "server-side, before send"
+  },
+  "triggered_by": "profile.claimed.v1",
+  "input": {
+    "type": "object",
+    "required": ["account_id", "entity_id", "to", "idempotency_key"],
+    "additionalProperties": false,
+    "properties": {
+      "account_id": { "type": "string", "description": "account whose email entitlement is checked" },
+      "entity_id": { "type": "string", "description": "entity id, resolved via exp_entity_for_record" },
+      "to": { "type": "string", "format": "email" },
+      "idempotency_key": {
+        "type": "string",
+        "description": "reuse the triggering event id; makes redelivery a safe noop"
+      },
+      "dry_run": { "type": "boolean", "default": false }
+    }
+  },
+  "output": {
+    "type": "object",
+    "required": ["status"],
+    "additionalProperties": false,
+    "properties": {
+      "status": {
+        "enum": ["sent", "noop_already_sent", "not_entitled", "blocked_compliance"],
+        "description": "mirrors the four gates in the capability, in check order"
+      }
+    }
+  },
+  "errors": [
+    { "code": "not_implemented", "http": 501 }
+  ]
+}

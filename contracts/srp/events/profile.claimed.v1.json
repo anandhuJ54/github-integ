@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "srp/events/profile.claimed.v1.json",
+  "title": "profile.claimed v1",
+  "description": "Emitted when an SRP profile reaches the owner_verified trust tier. May wake NORA.",
+  "x-wakes-nora": true,
+  "type": "object",
+  "required": [
+    "id", "type", "schema_version", "owner",
+    "aggregate_id", "aggregate_version", "occurred_at", "actor", "payload"
+  ],
+  "properties": {
+    "id": { "type": "string", "description": "unique event id" },
+    "type": { "const": "profile.claimed" },
+    "schema_version": { "const": 1 },
+    "owner": { "const": "04-srp" },
+    "aggregate_id": {
+      "type": "string",
+      "description": "entity id, resolved via exp_entity_for_record — never a raw record id"
+    },
+    "aggregate_version": { "type": "integer", "minimum": 1 },
+    "occurred_at": { "type": "string", "format": "date-time" },
+    "actor": { "type": "string", "description": "who caused it (user or service)" },
+    "causation_id": { "type": "string" },
+    "correlation_id": { "type": "string" },
+    "payload": {
+      "type": "object",
+      "required": ["profile_id", "entity_id", "trust_tier"],
+      "additionalProperties": false,
+      "properties": {
+        "profile_id": { "type": "string" },
+        "entity_id": { "type": "string" },
+        "trust_tier": { "const": "owner_verified" },
+        "claimed_at": { "type": "string", "format": "date-time" }
+      }
+    }
+  }
+}
