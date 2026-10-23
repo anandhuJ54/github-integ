@@ -70,7 +70,7 @@ Counts are (reads/writes/rpc) as measured on 2026-10-23.
 - [x] 6. All three pages call `api.*` with the query keys unchanged. No `.from()`/`.rpc()` left; only Supabase auth remains on the claim page.
   - Changed: a new rule's audit entry records the new id (the TS logged null). A refused audit row still keeps the change, as before.
 - [x] 7. Parity PASS 9/9 (2026-10-23, signed in): stats, 5 tabs, entities, plg-rules, claim profile
-- [ ] 8. Click-through: `/claims`, `/emp/plg-rules`, `/claim/sf-a9ee009780abff5cc27f`. The Network tab should show `/api/conversion-agents/…` and no `rest/v1`.
+- [x] 8. Click-through (2026-10-23): `/claims` calls `/api/conversion-agents/claims?tab=pending` (and `claims/stats`) instead of `rest/v1/claim_queue`
 - [ ] 9. Lint ratchet
 
 ### 3. search (7/8/3)
