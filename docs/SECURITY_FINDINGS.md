@@ -9,6 +9,7 @@ approval. No agent applies these. All checks were read-only catalog queries; no 
 | SF-1 | 2026-10-23 | 67 `public` tables have RLS off and give `anon` INSERT/UPDATE/DELETE/TRUNCATE | Open: to fix later |
 | SF-2 | 2026-10-23 | `exp_web_ads` has an always-true policy for `authenticated` | Open: to fix later |
 | SF-3 | 2026-10-23 | `exp_sitemap_rebuild` and `exp_index_sync` (SECURITY DEFINER, no role check) are executable by `anon` | Open: to fix later |
+| SF-5 | 2026-10-23 | 17 ops tables (dev tracker, wiki, `exp_contracts`, `exp_activity_events`) have always-true policies: any signed-in user can read, change and delete all rows | Open: to fix later |
 | SF-4 | 2026-10-23 | The API's DB login (`panneer`) switches to `postgres` on connect; plain `connection()` sessions run with postgres rights | Open: needs a service account |
 
 ## SF-1: RLS off and anon write rights on 67 tables
@@ -54,3 +55,12 @@ Its policy is `ALL` for `authenticated` with `USING (true) WITH CHECK (true)`, s
 
 ## SF-4: personal DB login with postgres rights
 `surface-api/.env` `DATABASE_URL` uses the personal login `panneer`, which has `rolconnlimit = 10` and a 5-minute statement timeout. Its sessions run as `current_user = postgres`. Endpoints use `role_connection(...)`, which does `set local role authenticated|anon|service_role` per transaction, so RLS applies to them. Anything using plain `connection()` (scripts, the migrate runner) runs as postgres. Fix: a dedicated API service account with only the roles it needs.
+
+## SF-5: always-true policies on the ops tables
+Every policy on these tables is `USING (true)` / `WITH CHECK (true)` for `authenticated` (as `ALL`, or separately per command). Any signed-in account can therefore read, change or delete every row:
+- **Wiki:** exp_wiki_spaces, exp_wiki_docs, exp_wiki_comments, exp_wiki_revisions (insert and select only), exp_wiki_watchers
+- **Dev tracker:** exp_dev_launch, exp_dev_teams, exp_dev_projects, exp_dev_members, exp_dev_demo_days, exp_dev_sprints, exp_dev_docs, exp_dev_ideas, exp_dev_sprint_items, exp_dev_idea_votes
+- **Sales and money:** **exp_contracts** (12 rows); also exp_activity_events (138 rows)
+
+exp_dev_config and exp_dev_weekly_updates have RLS off and are already listed under SF-1. The `dev-docs` storage bucket is private.
+The ops port to FastAPI (2026-10-23) keeps today's access exactly (the calls run as the signed-in user); the fix belongs to the security release.
