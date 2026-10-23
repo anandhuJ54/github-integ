@@ -1,0 +1,75 @@
+"""Rendered JSON-LD cache (port of `lib/schema-cache.functions.ts`).
+
+Like the TS, these have no auth middleware and use the service role. The schema JSON travels as
+a string across the call boundary.
+"""
+from __future__ import annotations
+
+import json
+from datetime import UTC, datetime
+
+from psycopg.types.json import Jsonb
+from pydantic import BaseModel, ConfigDict
+
+from _base.core.db import role_connection
+from _base.core.server_fn import FnCall, bad_input, fn_router
+from graph.sqlutil import parse_input, soft_execute, soft_maybe_one
+
+router = fn_router("graph")
+
+
+class _Key(BaseModel):
+    model_config = ConfigDict(strict=True)
+    entityType: str
+    entityId: str
+    pageType: str
+
+
+class _Put(_Key):
+    schemaJson: str
+    nodeCount: int | float
+
+
+def _iso(v: object) -> str | None:
+    if v is None:
+        return None
+    return v.isoformat() if isinstance(v, datetime) else str(v)
+
+
+@router.post("/getCachedSchema")
+def get_cached_schema(call: FnCall) -> dict | None:
+    data = parse_input(_Key, call.data)
+    with role_connection("service_role") as conn:
+        row = soft_maybe_one(
+            conn,
+            "select schema_json, generated_at, is_valid from schema_cache where entity_type = %s "
+            "and entity_id = %s and page_type = %s and is_valid = true",
+            (data.entityType, data.entityId, data.pageType),
+        )
+    if not row:
+        return None
+    return {
+        "schemaJson": json.dumps(row["schema_json"], separators=(",", ":"), ensure_ascii=False),
+        "generatedAt": _iso(row.get("generated_at")),
+    }
+
+
+@router.post("/cacheSchema")
+def cache_schema(call: FnCall) -> dict:
+    data = parse_input(_Put, call.data)
+    try:
+        parsed = json.loads(data.schemaJson)
+    except ValueError as e:
+        raise bad_input(f"schemaJson: {e}") from e
+    with role_connection("service_role", write=True) as conn:
+        soft_execute(  # the TS ignored the upsert's error
+            conn,
+            "insert into schema_cache (entity_type, entity_id, page_type, schema_json, node_count, "
+            "generated_at, invalidated_at, is_valid) values (%s, %s, %s, %s, %s, %s, null, true) "
+            "on conflict (entity_type, entity_id, page_type) do update set "
+            "schema_json = excluded.schema_json, node_count = excluded.node_count, "
+            "generated_at = excluded.generated_at, invalidated_at = null, is_valid = true",
+            (data.entityType, data.entityId, data.pageType, Jsonb(parsed), data.nodeCount,
+             datetime.now(UTC)),
+        )
+    return {"ok": True}
