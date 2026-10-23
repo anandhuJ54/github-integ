@@ -15,10 +15,17 @@ const fn = (exportName: string, current: () => Promise<unknown>, name: string, e
   ...extra,
 });
 
-// rows with equal sort keys come back in any order: compare lists in one order
-const byId = (rows: any[]) => [...rows].sort((a, b) => String(a.id ?? a.key ?? a.gcid).localeCompare(String(b.id ?? b.key ?? b.gcid)));
+// Rows with equal sort keys come back in any order: compare row lists in one order. Only lists
+// where every element is a row with an id/key are sorted; positional arrays (e.g. a slot group's
+// `positions`, where the index is the position and empty spots are null) keep their order.
+const keyOf = (r: any) => String(r.id ?? r.key ?? r.gcid);
+const isRowList = (o: any[]) =>
+  o.length > 0 && o.every((r) => r && typeof r === "object" && !Array.isArray(r) && ("id" in r || "key" in r));
 const sortListsDeep = (o: any): any => {
-  if (Array.isArray(o)) return o.length && typeof o[0] === "object" && o[0] && ("id" in o[0] || "key" in o[0]) ? byId(o).map(sortListsDeep) : o.map(sortListsDeep);
+  if (Array.isArray(o)) {
+    const items = o.map(sortListsDeep);
+    return isRowList(o) ? items.sort((a, b) => keyOf(a).localeCompare(keyOf(b))) : items;
+  }
   if (o && typeof o === "object") return Object.fromEntries(Object.entries(o).map(([k, v]) => [k, sortListsDeep(v)]));
   return o;
 };
