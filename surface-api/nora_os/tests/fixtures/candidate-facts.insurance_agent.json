@@ -1,0 +1,133 @@
+{
+  "source_url": "https://www.statefarm.com/agent/us/tx/austin/jane-doe-x1y2z3",
+  "fetched_at": "2026-10-11T12:00:00.000Z",
+  "jsonld": [
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "BreadcrumbList",
+          "itemListElement": [
+            {
+              "@type": "ListItem",
+              "position": 1,
+              "name": "Agents"
+            }
+          ]
+        },
+        {
+          "@type": "InsuranceAgency",
+          "name": "Jane Doe - State Farm Insurance Agent",
+          "telephone": "(512) 555-0142",
+          "url": "https://www.statefarm.com/agent/us/tx/austin/jane-doe-x1y2z3",
+          "address": {
+            "@type": "PostalAddress",
+            "streetAddress": "100 Congress Ave Ste 200",
+            "addressLocality": "Austin",
+            "addressRegion": "TX",
+            "postalCode": "78701",
+            "addressCountry": "US"
+          },
+          "sameAs": [
+            "https://www.facebook.com/JaneDoeStateFarm",
+            "https://www.linkedin.com/in/janedoe-statefarm"
+          ]
+        }
+      ]
+    }
+  ],
+  "nap": {
+    "name": "Jane Doe",
+    "address": {
+      "text": "100 Congress Ave Ste 200, Austin, TX 78701",
+      "streetAddress": "100 Congress Ave Ste 200",
+      "addressLocality": "Austin",
+      "addressRegion": "TX",
+      "postalCode": "78701"
+    },
+    "phone": "+15125550199",
+    "source": {
+      "name": "page_text",
+      "address": "page_text",
+      "phone": "page_text"
+    }
+  },
+  "sameAs": [
+    {
+      "url": "https://www.facebook.com/JaneDoeStateFarm",
+      "platform": "facebook",
+      "via": "jsonld_sameAs"
+    },
+    {
+      "url": "https://x.com/janedoesf",
+      "platform": "twitter",
+      "via": "page_link"
+    }
+  ],
+  "credentials": [
+    {
+      "text": "Texas Insurance License #1234567",
+      "parsed": {
+        "type": "license",
+        "name": "Texas Insurance License",
+        "number": "1234567",
+        "state": "TX"
+      },
+      "label": null,
+      "via": "page_text"
+    }
+  ],
+  "resolved_url": null,
+  "place_id": null,
+  "links": {
+    "internal": [],
+    "ownedCandidates": []
+  },
+  "text": [
+    {
+      "kind": "title",
+      "text": "Jane Doe - State Farm Insurance Agent in Austin, TX"
+    },
+    {
+      "kind": "heading",
+      "text": "Products offered"
+    },
+    {
+      "kind": "paragraph",
+      "text": "Auto Insurance"
+    },
+    {
+      "kind": "paragraph",
+      "text": "Homeowners Insurance"
+    },
+    {
+      "kind": "paragraph",
+      "text": "Pet Insurance"
+    },
+    {
+      "kind": "paragraph",
+      "text": "Boat Insurance"
+    },
+    {
+      "kind": "paragraph",
+      "text": "Motorcycle Insurance"
+    },
+    {
+      "kind": "paragraph",
+      "text": "Flood Insurance"
+    },
+    {
+      "kind": "paragraph",
+      "text": "Life Insurance"
+    },
+    {
+      "kind": "heading",
+      "text": "About Jane"
+    },
+    {
+      "kind": "paragraph",
+      "text": "Jane has helped Austin families protect what matters since 2009. Hablamos Espa\u00f1ol."
+    }
+  ],
+  "blocked": false
+}
