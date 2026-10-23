@@ -1,7 +1,7 @@
 import { Fragment, useMemo, useState, type ReactNode } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { ChevronDown, ChevronRight } from "lucide-react";
-import { supabase } from "@v3/ui/integrations/supabase/client";
+import { api } from "@v3/ui/lib/server-fn";
 import { Badge } from "@v3/ui/components/ui/badge";
 import { cn } from "@v3/ui/lib/utils";
 
@@ -23,14 +23,6 @@ const STATUS_FILTERS = ["pending", "shallow", "created", "matched", "conflicted"
 type Filters = { gcid: string; sourceId: string; status: string };
 
 /** Applies the gcid / source / status filters in the database query. */
-function withFilters<Q extends { eq: (col: string, v: string) => Q }>(q: Q, f: Filters, includeStatus = true): Q {
-  let out = q;
-  if (f.gcid) out = out.eq("gcid", f.gcid);
-  if (f.sourceId) out = out.eq("source_id", f.sourceId);
-  if (includeStatus && f.status) out = out.eq("resolution_status", f.status);
-  return out;
-}
-
 export function isAddressObject(v: unknown): v is Record<string, unknown> & { text: string } {
   return !!v && typeof v === "object" && !Array.isArray(v) && typeof (v as { text?: unknown }).text === "string";
 }
@@ -270,29 +262,17 @@ export function PipelineTab() {
 
   const { data: sourceRows = [] } = useQuery({
     queryKey: ["exp_etl_sources_for_staging_filters"],
-    queryFn: async () => {
-      const { data, error } = await supabase.from("exp_etl_sources").select("source_id, source_domain, gcid");
-      if (error) throw error;
-      return (data ?? []) as { source_id: string; source_domain: string; gcid: string | null }[];
-    },
+    queryFn: () =>
+      api.get<{ source_id: string; source_domain: string; gcid: string | null }[]>("/etl/console/pipeline/sources"),
   });
 
   // gcids present in staging (checked in the database per known gcid).
   const { data: stagingGcids = [] } = useQuery({
     queryKey: ["exp_etl_staging_gcids", sourceRows.length],
     enabled: sourceRows.length > 0,
-    queryFn: async () => {
+    queryFn: () => {
       const gcids = [...new Set(sourceRows.map((s) => s.gcid).filter((g): g is string => !!g))].sort();
-      const present = await Promise.all(
-        gcids.map(async (g) => {
-          const { count } = await supabase
-            .from("exp_etl_staging")
-            .select("stage_id", { count: "exact", head: true })
-            .eq("gcid", g);
-          return (count ?? 0) > 0 ? g : null;
-        }),
-      );
-      return present.filter((g): g is string => !!g);
+      return api.post<string[]>("/etl/console/pipeline/staging-gcids", { gcids });
     },
   });
 
@@ -316,51 +296,31 @@ export function PipelineTab() {
 
   const { data: counts = {} } = useQuery({
     queryKey: ["exp_etl_staging_counts", filters.gcid, filters.sourceId],
-    queryFn: async () => {
-      const entries = await Promise.all(
-        FUNNEL.map(async (f) => {
-          const { count, error } = await withFilters(
-            supabase.from("exp_etl_staging").select("stage_id", { count: "exact", head: true }),
-            filters,
-            false,
-          ).eq("resolution_status", f.key);
-          if (error) throw error;
-          return [f.key, count ?? 0] as const;
-        }),
-      );
-      return Object.fromEntries(entries) as Record<string, number>;
-    },
+    // one count per FUNNEL status (gcid / source filters, not the status filter)
+    queryFn: () =>
+      api.post<Record<string, number>>("/etl/console/pipeline/funnel", {
+        gcid: filters.gcid || null,
+        source_id: filters.sourceId || null,
+      }),
   });
 
   const { data: sources = {} } = useQuery({
     queryKey: ["exp_etl_sources_domains"],
     queryFn: async () => {
-      const { data, error } = await supabase.from("exp_etl_sources").select("source_id, source_domain");
-      if (error) throw error;
-      return Object.fromEntries(
-        (data ?? []).map((s) => [s.source_id as string, s.source_domain as string]),
-      ) as Record<string, string>;
+      const data = await api.get<{ source_id: string; source_domain: string }[]>("/etl/console/pipeline/source-domains");
+      return Object.fromEntries(data.map((s) => [s.source_id, s.source_domain])) as Record<string, string>;
     },
   });
 
   const { data: pageData, isLoading } = useQuery({
     queryKey: ["exp_etl_staging_page", filters, page],
-    queryFn: async () => {
-      const from = page * PAGE_SIZE;
-      const { data, error, count } = await withFilters(
-        supabase
-          .from("exp_etl_staging")
-          .select(
-            "stage_id, source_id, gcid, entity_type, resolution_status, field_tier, observed_at, payload, identity_candidates",
-            { count: "exact" },
-          ),
-        filters,
-      )
-        .order("observed_at", { ascending: false, nullsFirst: false })
-        .range(from, from + PAGE_SIZE - 1);
-      if (error) throw error;
-      return { rows: (data ?? []) as StageRow[], total: count ?? 0 };
-    },
+    queryFn: () =>
+      api.post<{ rows: StageRow[]; total: number }>("/etl/console/pipeline/page", {
+        gcid: filters.gcid || null,
+        source_id: filters.sourceId || null,
+        status: filters.status || null,
+        page,
+      }),
   });
   const rows = pageData?.rows ?? [];
   const total = pageData?.total ?? 0;

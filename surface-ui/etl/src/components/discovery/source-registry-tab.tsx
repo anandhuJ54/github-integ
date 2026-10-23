@@ -2,7 +2,7 @@ import { Fragment, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ChevronDown, ChevronRight, Info, Network, Pause, Play, RefreshCw, SlidersHorizontal } from "lucide-react";
 import { toast } from "sonner";
-import { supabase } from "@v3/ui/integrations/supabase/client";
+import { api } from "@v3/ui/lib/server-fn";
 import { Badge } from "@v3/ui/components/ui/badge";
 import { Button } from "@v3/ui/components/ui/button";
 import {
@@ -118,28 +118,14 @@ export function SourceRegistryTab() {
 
   const { data: sources = [], isLoading } = useQuery({
     queryKey: ["exp_etl_sources"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("exp_etl_sources")
-        .select(
-          "source_id, gcid, source_domain, source_type, authority_rank, freshness, hierarchy_sourceable, entity_types_available, field_coverage, field_count, daily_quota, min_delay_seconds, pull_window, access_method, robots_tos_status, status, notes, crawl_method",
-        )
-        .order("gcid", { ascending: true })
-        .order("authority_rank", { ascending: true, nullsFirst: false })
-        .limit(2000);
-      if (error) throw error;
-      return (data ?? []) as SourceRow[];
-    },
+    queryFn: () => api.get<SourceRow[]>("/etl/console/registry/sources"),
   });
 
   const setStatus = useMutation({
     mutationFn: async ({ source, status }: { source: SourceRow; status: "active" | "paused" }) => {
-      const { error } = await supabase.rpc("exp_etl_set_source_status", {
-        p_source: source.source_id,
-        p_status: status,
-        p_note: `Set to ${status} from Discovery console`,
+      await api.post("/etl/console/rpc/exp_etl_set_source_status", {
+        args: { p_source: source.source_id, p_status: status, p_note: `Set to ${status} from Discovery console` },
       });
-      if (error) throw error;
       return { source, status };
     },
     onSuccess: async ({ source, status }) => {
@@ -157,13 +143,15 @@ export function SourceRegistryTab() {
       delay: number | null;
       window: string | null;
     }) => {
-      const { error } = await supabase.rpc("exp_etl_set_limits", {
-        p_source: vals.source.source_id,
-        ...(vals.quota != null ? { p_daily_quota: vals.quota } : {}),
-        ...(vals.delay != null ? { p_min_delay: vals.delay } : {}),
-        ...(vals.window ? { p_window: vals.window } : {}),
+      // omitted limits keep the function's defaults, as before
+      await api.post("/etl/console/rpc/exp_etl_set_limits", {
+        args: {
+          p_source: vals.source.source_id,
+          ...(vals.quota != null ? { p_daily_quota: vals.quota } : {}),
+          ...(vals.delay != null ? { p_min_delay: vals.delay } : {}),
+          ...(vals.window ? { p_window: vals.window } : {}),
+        },
       });
-      if (error) throw error;
       return vals;
     },
     onSuccess: async (vals) => {
@@ -184,10 +172,9 @@ export function SourceRegistryTab() {
   // render a button that would just raise the function's exception.
   const remap = useMutation({
     mutationFn: async (source: SourceRow) => {
-      const { data, error } = await supabase.rpc("disco_request_remap_site", {
-        p_source_id: source.source_id,
+      const data = await api.post<number>("/etl/console/rpc/disco_request_remap_site", {
+        args: { p_source_id: source.source_id },
       });
-      if (error) throw error;
       return { source, requestId: Number(data) };
     },
     onSuccess: async ({ source, requestId }) => {
@@ -211,13 +198,9 @@ export function SourceRegistryTab() {
     enabled: remapIds.length > 0,
     queryKey: ["disco_llm_requests_status", remapIds],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("disco_llm_requests")
-        .select("request_id, status")
-        .in("request_id", remapIds);
-      if (error) throw error;
+      const data = await api.post<{ request_id: number; status: string }[]>("/etl/console/requests/status", { ids: remapIds });
       const map: Record<number, string> = {};
-      for (const r of data ?? []) map[Number(r.request_id)] = String(r.status);
+      for (const r of data) map[Number(r.request_id)] = String(r.status);
       return map;
     },
     refetchInterval: (query) => {
@@ -237,16 +220,7 @@ export function SourceRegistryTab() {
   const { data: names = {} } = useQuery({
     enabled: gcids.length > 0,
     queryKey: ["gbp_categories_names", gcids],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("gbp_categories")
-        .select("gcid, display_name")
-        .in("gcid", gcids);
-      if (error) throw error;
-      const map: Record<string, string> = {};
-      for (const r of data ?? []) map[r.gcid as string] = r.display_name as string;
-      return map;
-    },
+    queryFn: () => api.post<Record<string, string>>("/etl/console/hierarchy/category-labels", { gcids }),
   });
 
   // Measured field floor from the latest site contract per (domain, gcid),
@@ -255,14 +229,11 @@ export function SourceRegistryTab() {
   const { data: fieldFloors = {} } = useQuery({
     queryKey: ["disco_site_contract_field_floors"],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("disco_site_contract")
-        .select("domain, category_slug, field_floor, learned_at")
-        .order("learned_at", { ascending: false })
-        .limit(5000);
-      if (error) throw error;
+      const data = await api.get<{ domain: string; category_slug: string; field_floor: number | null }[]>(
+        "/etl/console/registry/field-floors",
+      );
       const map: Record<string, number | null> = {};
-      for (const r of data ?? []) {
+      for (const r of data) {
         const key = `${r.domain}|${r.category_slug}`;
         if (!(key in map)) map[key] = r.field_floor == null ? null : Number(r.field_floor);
       }

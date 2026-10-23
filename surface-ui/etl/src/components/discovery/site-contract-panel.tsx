@@ -2,7 +2,7 @@ import { useState, type ReactNode } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { ChevronRight, Copy } from "lucide-react";
 import { toast } from "sonner";
-import { supabase } from "@v3/ui/integrations/supabase/client";
+import { api } from "@v3/ui/lib/server-fn";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@v3/ui/components/ui/sheet";
 import { Badge } from "@v3/ui/components/ui/badge";
 import { cn } from "@v3/ui/lib/utils";
@@ -164,23 +164,11 @@ export function SiteContractPanel({
   const { data, isLoading } = useQuery({
     enabled: open,
     queryKey: ["site_contract_panel", domain, gcid, sourceId],
-    queryFn: async () => {
-      const sb = supabase as Any;
-      const [c, s, l] = await Promise.all([
-        sb.from("disco_site_contract")
-          .select("roster_pattern, detail_pattern, profile_sitemaps, detail_entity_type, field_floor, learned_at, site_contract:extraction->site_contract")
-          .eq("domain", domain).eq("category_slug", gcid)
-          .order("learned_at", { ascending: false }).limit(1).maybeSingle(),
-        sb.from("exp_etl_sources")
-          .select("status, crawl_method, fetch_tier, page_kinds, daily_quota, min_delay_seconds, test_results")
-          .eq("source_id", sourceId).maybeSingle(),
-        sb.from("disco_llm_requests")
-          .select("summary:response->site_contract_summary")
-          .eq("tool", "map_site").eq("prompt_input->>domain", domain)
-          .order("created_at", { ascending: false }).limit(1).maybeSingle(),
-      ]);
-      return { contract: c.data as Any, source: s.data as Any, summary: (l.error ? null : l.data?.summary) as Any };
-    },
+    // the latest contract, the source row and the last map summary, in one request
+    queryFn: () =>
+      api.get<{ contract: Any; source: Any; summary: Any }>("/etl/console/site-contract", {
+        params: { domain, gcid, source_id: sourceId },
+      }),
   });
 
   const c = data?.contract;

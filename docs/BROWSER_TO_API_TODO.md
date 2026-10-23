@@ -161,8 +161,23 @@ Counts are (reads/writes/rpc) as measured on 2026-10-23.
 - [ ] 8. Click-through: open pages only. Every button writes (SF-5).
 - [ ] 9. Lint ratchet
 
-### 7. etl (42/0/18)
-- [ ] 1 · [ ] 2 · [ ] 3 · [ ] 4 · [ ] 5 · [ ] 6 · [ ] 7 parity · [ ] 8 · [ ] 9
+### 7. etl (actually ~65 call sites + 19 RPCs, 14 files, one page `/discovery`) · branch `migrate/api-etl`
+- [x] 1. Endpoints under `/etl/console/` (`etl/routers/console_data.py`):
+  - Group 1 (tabs + hierarchy): AI cost, field yield, required fields, runs, schedules, source stats, manual company add, hierarchy sources/search/brands/labels/table/counts/tree, entity detail (1 request)
+  - Group 2: pipeline (sources, staging gcids, funnel, page), site contract + proposals + accept state, source states (1 request incl. queue counts), done pages, registry, category population (search, job, sources, proposal, runs, staged, contracts, map/method attempts, discovery running)
+  - Writes: 11 governed functions through one allow-listed `POST rpc/{name}` (each parameter cast to its DB type; omitted ones keep the defaults), plus `sources/run`, `field-floor`, `schedules/active` and `companies/manual`
+- [x] 2. Tables: exp_etl_* (cost events, frontier, jobs, runs, sources, staging, field floors, hydrate jobs), disco_* (jobs, llm requests, proposals, site contract), exp_entity, exp_rel, gbp_categories
+- [x] 3. `etl/queries/{common,tabs,hierarchy,sources}.py`. The PostgREST embeds with filters (`!inner`, `not.is.null`, `is null`, to-one objects) are rebuilt as EXISTS / json_agg subqueries.
+- [x] 4. pytest (`etl/queries/queries_test.py`). Live read-only smoke as the signed-in user: every read works.
+  - Security: every table has RLS on (read-only to `authenticated`), and writes go only through SECURITY DEFINER functions. **SF-6**: `disco_activate` and `disco_request_remap_site` have no role check and are anon-callable.
+  - **No gated function was run** (schedules, run, reharvest, activate, discover).
+- [x] 5. `contracts/etl/openapi.json`
+- [x] 6. etl makes no direct Supabase calls.
+- [ ] 7. Parity:
+  - Group 1: 24/24 PASS (2026-10-24), including every embed case (brand `or`, office `!inner`, unofficed `is null`, entity panel)
+  - Group 2: cases added (pipeline, site contract, source states, registry, population for 2 categories); not run yet
+- [ ] 8. Click-through: open `/discovery` and its tabs only. Every button is a gated or role-checked ETL action.
+- [ ] 9. Lint ratchet
 
 ### 8. graph (42/19/6)
 - [ ] 1 · [ ] 2 · [ ] 3 · [ ] 4 · [ ] 5 · [ ] 6 · [ ] 7 parity · [ ] 8 · [ ] 9

@@ -13,7 +13,8 @@ import {
   Search,
 } from "lucide-react";
 import { toast } from "sonner";
-import { supabase } from "@v3/ui/integrations/supabase/client";
+import { api } from "@v3/ui/lib/server-fn";
+
 import { SiteContractPanel } from "@v3/etl/components/discovery/site-contract-panel";
 import { useDiscoverMore, useSourceActions } from "@v3/etl/components/discovery/source-actions";
 import { AddWebsitesButton } from "@v3/etl/components/discovery/add-websites-dialog";
@@ -44,6 +45,10 @@ import {
   isBlockedMethod,
   isReadyMethod,
 } from "@v3/etl/components/discovery/crawl-method";
+
+const P = "/etl/console/population";
+const rpc = <T = unknown,>(name: string, args: Record<string, unknown>) =>
+  api.post<T>(`/etl/console/rpc/${name}`, { args });
 
 type Category = { gcid: string; display_name: string };
 
@@ -132,20 +137,16 @@ export function CategoryPopulationTab() {
     // then names containing it. "Restaurant" is inside 389 names, and an alphabetical first 12 never reached it.
     queryFn: async () => {
       const term = q.trim();
-      const pat = term.replace(/[\\%_]/g, (c) => `\\${c}`);
+      // the id / starts-with / contains lookups (the API escapes the pattern and builds the gcid)
+      const { byId, starts, contains } = await api.get<{ byId: Category[]; starts: Category[]; contains: Category[] }>(
+        `${P}/category-search`,
+        { params: { q: term } },
+      );
       const asGcid = term.toLowerCase().startsWith("gcid:")
         ? term.toLowerCase()
         : `gcid:${term.toLowerCase().replace(/[^a-z0-9]+/g, "_").replace(/^_+|_+$/g, "")}`;
-      const base = () => supabase.from("gbp_categories").select("gcid, display_name");
-      const [byId, starts, contains] = await Promise.all([
-        base().eq("gcid", asGcid).limit(1),
-        base().ilike("display_name", `${pat}%`).order("display_name").limit(12),
-        base().ilike("display_name", `%${pat}%`).order("display_name").limit(12),
-      ]);
-      const error = byId.error ?? starts.error ?? contains.error;
-      if (error) throw error;
       const lower = term.toLowerCase();
-      const all = [...(byId.data ?? []), ...(starts.data ?? []), ...(contains.data ?? [])] as Category[];
+      const all = [...byId, ...starts, ...contains];
       const exact = all.filter((c) => c.gcid === asGcid || c.display_name.toLowerCase() === lower);
       const seen = new Set<string>();
       return [...exact, ...all].filter((c) => !seen.has(c.gcid) && seen.add(c.gcid)).slice(0, 12);
@@ -157,46 +158,20 @@ export function CategoryPopulationTab() {
   const { data: job = null } = useQuery({
     enabled: !!gcid,
     queryKey: ["etl_job", gcid],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("exp_etl_jobs")
-        .select("job_id, gcid, stage, status, active")
-        .eq("gcid", gcid!)
-        .maybeSingle();
-      if (error) throw error;
-      return (data ?? null) as Job | null;
-    },
+    queryFn: () => api.get<Job | null>(`${P}/job`, { params: { gcid: gcid! } }),
   });
 
   const { data: sources = [], isLoading: sourcesLoading } = useQuery({
     enabled: !!gcid,
     queryKey: ["etl_pop_sources", gcid],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("exp_etl_sources")
-        .select("source_id, gcid, source_domain, crawl_method, status, notes, role_in_discovery")
-        .eq("gcid", gcid!)
-        .eq("role_in_discovery", "hierarchy_source")
-        .order("authority_rank", { ascending: true, nullsFirst: false });
-      if (error) throw error;
-      return (data ?? []) as PopSource[];
-    },
+    queryFn: () => api.get<PopSource[]>(`${P}/sources`, { params: { gcid: gcid! } }),
   });
 
   const { data: proposal = null } = useQuery({
     enabled: !!gcid,
     queryKey: ["disco_proposal", gcid],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("disco_proposals")
-        .select("proposal_id, payload, decided_domains")
-        .eq("category_slug", gcid!)
-        .eq("kind", "company_list")
-        .eq("state", "pending")
-        .order("created_at", { ascending: false })
-        .limit(1)
-        .maybeSingle();
-      if (error) throw error;
+      const data = await api.get(`${P}/proposal`, { params: { gcid: gcid! } });
       return data as {
         proposal_id: number;
         payload: {
@@ -219,30 +194,16 @@ export function CategoryPopulationTab() {
   const { data: runs = [] } = useQuery({
     enabled: sourceIds.length > 0,
     queryKey: ["etl_pop_runs", sourceIds],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("exp_etl_runs")
-        .select(
-          "run_id, source_id, started_at, finished_at, pages_fetched, staged, created, matched, entities_yielded",
-        )
-        .in("source_id", sourceIds)
-        .order("started_at", { ascending: false });
-      if (error) throw error;
-      return (data ?? []) as Run[];
-    },
+    queryFn: () => api.post<Run[]>(`${P}/runs`, { ids: sourceIds }),
   });
 
   const { data: staged = [] } = useQuery({
     enabled: sourceIds.length > 0,
     queryKey: ["etl_pop_staged", sourceIds],
+    // capped at 1000 rows, as the REST read was (docs/BROWSER_TO_API_FOLLOWUPS.md)
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("exp_etl_staging")
-        .select("source_id, entity_type, resolution_status")
-        .in("source_id", sourceIds)
-        .limit(5000);
-      if (error) throw error;
-      return (data ?? []) as {
+      const data = await api.post(`${P}/staged`, { ids: sourceIds });
+      return data as {
         source_id: string;
         entity_type: string | null;
         resolution_status: string | null;
@@ -255,14 +216,8 @@ export function CategoryPopulationTab() {
     enabled: !!gcid,
     queryKey: ["disco_site_contract", gcid],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("disco_site_contract")
-        .select(
-          "domain, learned_at, method_evidence, detail_pattern, contract_version:extraction->site_contract->version",
-        )
-        .eq("category_slug", gcid!);
-      if (error) throw error;
-      return (data ?? []) as unknown as {
+      const data = await api.get(`${P}/site-contracts`, { params: { gcid: gcid! } });
+      return data as {
         domain: string;
         learned_at: string | null;
         method_evidence: { where_profiles_live?: string | null } | null;
@@ -300,17 +255,8 @@ export function CategoryPopulationTab() {
     enabled: !!gcid,
     queryKey: ["etl_pop_map_attempts", gcid],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("disco_llm_requests")
-        .select(
-          "request_id, status, created_at, domain:prompt_input->>domain, error:response->>error, map_step:response->>map_step",
-        )
-        .eq("tool", "map_site")
-        .eq("prompt_input->>category", gcid!)
-        .order("request_id", { ascending: false })
-        .limit(500);
-      if (error) throw error;
-      return (data ?? []) as unknown as {
+      const data = await api.get(`${P}/map-attempts`, { params: { gcid: gcid! } });
+      return data as {
         request_id: number;
         status: string | null;
         created_at: string | null;
@@ -381,17 +327,10 @@ export function CategoryPopulationTab() {
   const { data: methodAttempts = [] } = useQuery({
     enabled: !!gcid,
     queryKey: ["etl_pop_method_attempts", gcid],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("disco_llm_requests")
-        .select("request_id, status, domain:prompt_input->>domain")
-        .eq("tool", "classify_method")
-        .eq("prompt_input->>category", gcid!)
-        .order("request_id", { ascending: false })
-        .limit(500);
-      if (error) throw error;
-      return (data ?? []) as unknown as { request_id: number; status: string | null; domain: string | null }[];
-    },
+    queryFn: () =>
+      api.get<{ request_id: number; status: string | null; domain: string | null }[]>(`${P}/method-attempts`, {
+        params: { gcid: gcid! },
+      }),
     refetchInterval: (q) => {
       const rows = (q.state.data as { status: string | null; domain: string | null }[] | undefined) ?? [];
       if (rows.some((r) => r.status === "pending" || r.status === "sent")) return 15000;
@@ -425,21 +364,7 @@ export function CategoryPopulationTab() {
   const { data: donePagesByDomain = {} } = useQuery({
     enabled: sourceDomains.length > 0,
     queryKey: ["etl_pop_done_pages", sourceDomains],
-    queryFn: async () => {
-      const entries = await Promise.all(
-        sourceDomains.map(async (d) => {
-          const { count, error } = await supabase
-            .from("exp_etl_frontier")
-            .select("frontier_id", { count: "exact", head: true })
-            .eq("domain", d)
-            .eq("kind", "detail_page")
-            .eq("status", "done");
-          if (error) throw error;
-          return [d, count ?? 0] as const;
-        }),
-      );
-      return Object.fromEntries(entries) as Record<string, number>;
-    },
+    queryFn: () => api.post<Record<string, number>>("/etl/console/done-pages", { domains: sourceDomains }),
   });
 
   // default every discovered company to checked (skipped when empty so a
@@ -460,8 +385,7 @@ export function CategoryPopulationTab() {
 
   const activate = useMutation({
     mutationFn: async () => {
-      const { error } = await supabase.rpc("exp_etl_activate_category", { p_gcid: gcid! });
-      if (error) throw error;
+      await rpc("exp_etl_activate_category", { p_gcid: gcid! });
     },
     onSuccess: async () => {
       toast.success(`Population started for ${selected?.display_name}`);
@@ -474,11 +398,7 @@ export function CategoryPopulationTab() {
   const approve = useMutation({
     mutationFn: async () => {
       const ids = sources.filter((s) => checked[s.source_id]).map((s) => s.source_id);
-      const { error } = await supabase.rpc("exp_etl_approve_companies", {
-        p_gcid: gcid!,
-        p_source_ids: ids,
-      });
-      if (error) throw error;
+      await rpc("exp_etl_approve_companies", { p_gcid: gcid!, p_source_ids: ids });
       return ids.length;
     },
     onSuccess: async (n) => {
@@ -499,11 +419,7 @@ export function CategoryPopulationTab() {
       const domains = pendingCompanies
         .map((c) => c.domain)
         .filter((d) => checked[d]);
-      const { error } = await supabase.rpc("disco_confirm_companies", {
-        p_proposal_id: proposal.proposal_id,
-        p_approved_domains: domains,
-      });
-      if (error) throw error;
+      await rpc("disco_confirm_companies", { p_proposal_id: proposal.proposal_id, p_approved_domains: domains });
       return domains.length;
     },
     onSuccess: async (n) => {
@@ -526,13 +442,7 @@ export function CategoryPopulationTab() {
   const { data: roundRunning = false } = useQuery({
     enabled: !!gcid,
     queryKey: ["disco_discover_running", gcid],
-    queryFn: async () => {
-      const { count, error } = await (supabase as any).from("disco_jobs")
-        .select("job_id", { count: "exact", head: true })
-        .eq("category_slug", gcid!).eq("step", "discover").in("status", ["queued", "running", "awaiting_ai"]);
-      if (error) throw error;
-      return (count ?? 0) > 0;
-    },
+    queryFn: () => api.get<boolean>(`${P}/discover-running`, { params: { gcid: gcid! } }),
     refetchInterval: (q) => (q.state.data ? 20000 : false),
   });
 

@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import type { ParityCase } from "./types";
+import { api } from "@v3/ui/lib/server-fn";
 
 // ETL /discovery: the legacy queries (copied verbatim from surface-ui/etl/src/components/discovery
 // at migrate/from-experiencesrp-clone, where they were inline in components) against the
@@ -297,4 +298,167 @@ export const cases: ParityCase[] = [
     api: (c: any) => ({ method: "GET", path: `/etl/console/hierarchy/entities/${c.office}` }),
     normalize: (r: any) => ({ ...deep(r), out: sortRows(r.out), incoming: r.incoming.map((i: any) => ({ ...i, rows: sortRows(i.rows) })) }),
   },
+
+  // ===== group 2: pipeline, site contract, source states, registry, category population =====
+  {
+    name: "pipeline: sources",
+    legacy: async (sb: any) => (await sb.from("exp_etl_sources").select("source_id, source_domain, gcid")).data ?? [],
+    api: { method: "GET", path: "/etl/console/pipeline/sources" },
+    normalize: unordered,
+  },
+  {
+    name: "pipeline: gcids with staging rows",
+    prepare: async (sb: any) => [...new Set(((await sb.from("exp_etl_sources").select("gcid")).data ?? []).map((r: any) => r.gcid).filter(Boolean))].sort(),
+    legacy: async (sb: any, gcids: string[]) => {
+      const present = await Promise.all(gcids.map(async (g) => {
+        const { count } = await sb.from("exp_etl_staging").select("stage_id", { count: "exact", head: true }).eq("gcid", g);
+        return (count ?? 0) > 0 ? g : null;
+      }));
+      return present.filter(Boolean);
+    },
+    api: (gcids: string[]) => ({ method: "POST", path: "/etl/console/pipeline/staging-gcids", body: { gcids } }),
+  },
+  ...([["all", {}], ["financial_advisor", { gcid: "gcid:financial_advisor" }]] as const).map(([label, f]): ParityCase => ({
+    name: `pipeline: funnel counts (${label})`,
+    legacy: async (sb: any) => {
+      const keys = ["pending", "matched", "created", "corroborated", "conflicted", "shallow", "rejected"];
+      const out: Record<string, number> = {};
+      for (const k of keys) {
+        let q = sb.from("exp_etl_staging").select("stage_id", { count: "exact", head: true });
+        if ((f as any).gcid) q = q.eq("gcid", (f as any).gcid);
+        const { count, error } = await q.eq("resolution_status", k);
+        if (error) throw error;
+        out[k] = count ?? 0;
+      }
+      return out;
+    },
+    api: { method: "POST", path: "/etl/console/pipeline/funnel", body: { gcid: (f as any).gcid ?? null } },
+  })),
+  {
+    name: "pipeline: staging page 0 (financial_advisor, created)",
+    legacy: async (sb: any) => {
+      const { data, error, count } = await sb.from("exp_etl_staging")
+        .select("stage_id, source_id, gcid, entity_type, resolution_status, field_tier, observed_at, payload, identity_candidates", { count: "exact" })
+        .eq("gcid", "gcid:financial_advisor").eq("resolution_status", "created")
+        .order("observed_at", { ascending: false, nullsFirst: false }).range(0, 49);
+      if (error) throw error;
+      return { rows: data ?? [], total: count ?? 0 };
+    },
+    api: { method: "POST", path: "/etl/console/pipeline/page", body: { gcid: "gcid:financial_advisor", status: "created", page: 0 } },
+    // equal observed_at values come back in any order (the API adds stage_id as a tiebreak)
+    normalize: (r: any) => ({ ...r, rows: sortRows(r.rows) }),
+  },
+  {
+    name: "site contract panel (a hierarchy source)",
+    prepare: async (sb: any) => (await sb.from("exp_etl_sources").select("source_id, source_domain, gcid").eq("role_in_discovery", "hierarchy_source").limit(1)).data?.[0],
+    legacy: async (sb: any, s: any) => {
+      const [c, src, l] = await Promise.all([
+        sb.from("disco_site_contract").select("roster_pattern, detail_pattern, profile_sitemaps, detail_entity_type, field_floor, learned_at, site_contract:extraction->site_contract")
+          .eq("domain", s.source_domain).eq("category_slug", s.gcid).order("learned_at", { ascending: false }).limit(1).maybeSingle(),
+        sb.from("exp_etl_sources").select("status, crawl_method, fetch_tier, page_kinds, daily_quota, min_delay_seconds, test_results").eq("source_id", s.source_id).maybeSingle(),
+        sb.from("disco_llm_requests").select("summary:response->site_contract_summary").eq("tool", "map_site").eq("prompt_input->>domain", s.source_domain)
+          .order("created_at", { ascending: false }).limit(1).maybeSingle(),
+      ]);
+      return { contract: c.data, source: src.data, summary: l.error ? null : l.data?.summary ?? null };
+    },
+    api: (s: any) => ({ method: "GET", path: `/etl/console/site-contract?domain=${encodeURIComponent(s.source_domain)}&gcid=${encodeURIComponent(s.gcid)}&source_id=${s.source_id}` }),
+  },
+  {
+    name: "source states (all sources)",
+    prepare: async (sb: any) => (await sb.from("exp_etl_sources").select("source_id, source_domain")).data ?? [],
+    legacy: async (sb: any, sources: any[]) => {
+      const ids = sources.map((s) => s.source_id).sort();
+      const domains = [...new Set(sources.map((s) => s.source_domain))];
+      const [contracts, runs, reqs, props] = await Promise.all([
+        sb.from("disco_site_contract").select("domain, category_slug, detail_pattern, version:extraction->site_contract->>version, record_source:extraction->site_contract->detail_route->>record_source").in("domain", domains),
+        sb.from("exp_etl_runs").select("run_id, source_id, started_at").in("source_id", ids).is("finished_at", null),
+        sb.from("disco_llm_requests").select("request_id, tool, status, domain:prompt_input->>domain, category:prompt_input->>category, step:response->>map_step, error:response->>error")
+          .in("tool", ["map_site", "classify_method"]).in("prompt_input->>domain", domains).order("request_id", { ascending: false }).limit(1000),
+        sb.from("disco_proposals").select("category_slug, domain:payload->>domain").eq("kind", "site_map").eq("state", "pending"),
+      ]);
+      const open = new Set((runs.data ?? []).map((r: any) => r.source_id));
+      const queuedByDomain: Record<string, number | null> = {};
+      for (const s of sources.filter((x) => open.has(x.source_id))) {
+        const { count } = await sb.from("exp_etl_frontier").select("frontier_id", { count: "exact", head: true }).eq("domain", s.source_domain).in("status", ["queued", "fetching"]);
+        queuedByDomain[s.source_domain] = count ?? null;
+      }
+      return { contracts: contracts.data ?? [], runs: runs.data ?? [], reqs: reqs.data ?? [], props: props.data ?? [], queuedByDomain };
+    },
+    api: (sources: any[]) => ({ method: "POST", path: "/etl/console/source-states", body: { sources } }),
+    normalize: (r: any) => ({ ...r, contracts: sortRows(r.contracts), runs: sortRows(r.runs), props: sortRows(r.props) }),
+  },
+  {
+    name: "registry: sources",
+    legacy: async (sb: any) => (await sb.from("exp_etl_sources")
+      .select("source_id, gcid, source_domain, source_type, authority_rank, freshness, hierarchy_sourceable, entity_types_available, field_coverage, field_count, daily_quota, min_delay_seconds, pull_window, access_method, robots_tos_status, status, notes, crawl_method")
+      .order("gcid", { ascending: true }).order("authority_rank", { ascending: true, nullsFirst: false }).limit(2000)).data ?? [],
+    api: { method: "GET", path: "/etl/console/registry/sources" },
+    // equal (gcid, authority_rank) come back in any order
+    normalize: unordered,
+  },
+  {
+    name: "registry: contract field floors",
+    legacy: async (sb: any) => (await sb.from("disco_site_contract").select("domain, category_slug, field_floor, learned_at").order("learned_at", { ascending: false }).limit(5000)).data ?? [],
+    api: { method: "GET", path: "/etl/console/registry/field-floors" },
+  },
+  {
+    name: "population: category search 'restaurant' (3 lookups)",
+    legacy: async (sb: any) => {
+      const base = () => sb.from("gbp_categories").select("gcid, display_name");
+      const [byId, starts, contains] = await Promise.all([
+        base().eq("gcid", "gcid:restaurant").limit(1),
+        base().ilike("display_name", "restaurant%").order("display_name").limit(12),
+        base().ilike("display_name", "%restaurant%").order("display_name").limit(12),
+      ]);
+      return { byId: byId.data ?? [], starts: starts.data ?? [], contains: contains.data ?? [] };
+    },
+    api: { method: "GET", path: "/etl/console/population/category-search?q=restaurant" },
+  },
+  ...(["gcid:financial_advisor", "gcid:insurance_agent"] as const).flatMap((g): ParityCase[] => [
+    {
+      name: `population ${g}: job`,
+      legacy: async (sb: any) => { const { data, error } = await sb.from("exp_etl_jobs").select("job_id, gcid, stage, status, active").eq("gcid", g).maybeSingle(); if (error) throw error; return data ?? null; },
+      api: { method: "GET", path: `/etl/console/population/job?gcid=${encodeURIComponent(g)}` },
+    },
+    {
+      name: `population ${g}: sources`,
+      legacy: async (sb: any) => (await sb.from("exp_etl_sources").select("source_id, gcid, source_domain, crawl_method, status, notes, role_in_discovery")
+        .eq("gcid", g).eq("role_in_discovery", "hierarchy_source").order("authority_rank", { ascending: true, nullsFirst: false })).data ?? [],
+      api: { method: "GET", path: `/etl/console/population/sources?gcid=${encodeURIComponent(g)}` },
+      normalize: unordered,
+    },
+    {
+      name: `population ${g}: pending proposal`,
+      legacy: async (sb: any) => (await sb.from("disco_proposals").select("proposal_id, payload, decided_domains").eq("category_slug", g).eq("kind", "company_list").eq("state", "pending").order("created_at", { ascending: false }).limit(1).maybeSingle()).data ?? null,
+      api: { method: "GET", path: `/etl/console/population/proposal?gcid=${encodeURIComponent(g)}` },
+    },
+    {
+      name: `population ${g}: runs + staged (1000-row cap on both)`,
+      prepare: async (sb: any) => ((await sb.from("exp_etl_sources").select("source_id").eq("gcid", g).eq("role_in_discovery", "hierarchy_source")).data ?? []).map((r: any) => r.source_id),
+      legacy: async (sb: any, ids: string[]) => ({
+        runs: (await sb.from("exp_etl_runs").select("run_id, source_id, started_at, finished_at, pages_fetched, staged, created, matched, entities_yielded").in("source_id", ids).order("started_at", { ascending: false })).data ?? [],
+        staged: (await sb.from("exp_etl_staging").select("source_id, entity_type, resolution_status").in("source_id", ids).limit(5000)).data ?? [],
+      }),
+      current: async (ids: string[]) => ({
+        runs: await api.post("/etl/console/population/runs", { ids }),
+        staged: await api.post("/etl/console/population/staged", { ids }),
+      }),
+      // staged: which 1000 rows come back is the same plan on both sides, but compare as sets
+      normalize: (r: any) => ({ runs: r.runs, staged: sortRows(r.staged) }),
+    },
+    {
+      name: `population ${g}: done pages per domain`,
+      prepare: async (sb: any) => ((await sb.from("exp_etl_sources").select("source_domain").eq("gcid", g).eq("role_in_discovery", "hierarchy_source")).data ?? []).map((r: any) => r.source_domain),
+      legacy: async (sb: any, domains: string[]) => Object.fromEntries(await Promise.all(domains.map(async (d) => {
+        const { count } = await sb.from("exp_etl_frontier").select("frontier_id", { count: "exact", head: true }).eq("domain", d).eq("kind", "detail_page").eq("status", "done");
+        return [d, count ?? 0];
+      }))),
+      api: (domains: string[]) => ({ method: "POST", path: "/etl/console/done-pages", body: { domains } }),
+    },
+    {
+      name: `population ${g}: discovery running`,
+      legacy: async (sb: any) => ((await sb.from("disco_jobs").select("job_id", { count: "exact", head: true }).eq("category_slug", g).eq("step", "discover").in("status", ["queued", "running", "awaiting_ai"])).count ?? 0) > 0,
+      api: { method: "GET", path: `/etl/console/population/discover-running?gcid=${encodeURIComponent(g)}` },
+    },
+  ]),
 ];

@@ -42,7 +42,20 @@ them also get faster), and nothing depends on the truncated behaviour.
 - If made complete: count per professional in SQL (`GROUP BY entity_id` with the same product/social/credential classification), which returns 50 small rows instead of 1,500 raw ones.
 - Code: `surface-api/admin/queries/professionals.py` → `depth()`.
 
-### 1d. Check every remaining Surface for the same pattern
+### 1d. `/discovery` runs tab: frontier matrix (etl)
+- Data: 282,911 `exp_etl_frontier` rows.
+- What the tab reads: `kind, status` for every row (no limit), cut to 1,000, which it then counts into a kind × status matrix.
+- What users see: the matrix counts only the first 1,000 rows, so most kinds and statuses show far too few (or none).
+- If made complete: one `GROUP BY kind, status` count in SQL (a few dozen rows).
+- Code: `surface-api/etl/queries/tabs.py` → `frontier_matrix_rows()`.
+
+### 1e. `/discovery` category population: staged rows per source (etl)
+- What the tab reads: `source_id, entity_type, resolution_status` of the category's staging rows (`limit 5000`), cut to 1,000, then counted per source.
+- What users see: a category with more than 1,000 staged rows (financial_advisor has ~28k) shows partial per-source counts.
+- If made complete: a `GROUP BY source_id, entity_type, resolution_status` count.
+- Code: `surface-api/etl/queries/sources.py` → `population_staged()`.
+
+### 1f. Check every remaining Surface for the same pattern
 Look for any legacy read with a limit over 1,000, or with no limit on a large table. Record each
 one here before porting.
 

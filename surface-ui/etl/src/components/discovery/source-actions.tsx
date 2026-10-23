@@ -8,7 +8,7 @@ import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient, type QueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { FileSearch, MoreHorizontal, Pause, Play, RefreshCw, RotateCcw, SearchCheck, SlidersHorizontal } from "lucide-react";
-import { supabase } from "@v3/ui/integrations/supabase/client";
+import { api } from "@v3/ui/lib/server-fn";
 import { Button } from "@v3/ui/components/ui/button";
 import {
   DropdownMenu,
@@ -30,6 +30,10 @@ import {
 } from "@v3/ui/components/ui/alert-dialog";
 import { SiteContractPanel } from "@v3/etl/components/discovery/site-contract-panel";
 import { useRole } from "@v3/ui/lib/roles";
+
+/** An allow-listed ETL function through the API (the role-checked function decides). */
+const rpc = <T = unknown,>(name: string, args: Record<string, unknown>) =>
+  api.post<T>(`/etl/console/rpc/${name}`, { args });
 
 export type ActionSource = {
   source_id: string;
@@ -78,18 +82,21 @@ export function useSourceStates(sources: ActionSource[]): Record<string, SourceS
     enabled: ids.length > 0,
     queryKey: ["source_states", ids.join(",")],
     queryFn: async () => {
-      const db = supabase as any;
-      const [contracts, runs, reqs, props] = await Promise.all([
-        db.from("disco_site_contract")
-          .select("domain, category_slug, detail_pattern, version:extraction->site_contract->>version, record_source:extraction->site_contract->detail_route->>record_source")
-          .in("domain", domains),
-        db.from("exp_etl_runs").select("run_id, source_id, started_at").in("source_id", ids).is("finished_at", null),
-        db.from("disco_llm_requests")
-          .select("request_id, tool, status, domain:prompt_input->>domain, category:prompt_input->>category, step:response->>map_step, error:response->>error")
-          .in("tool", ["map_site", "classify_method"]).in("prompt_input->>domain", domains)
-          .order("request_id", { ascending: false }).limit(1000),
-        db.from("disco_proposals").select("category_slug, domain:payload->>domain").eq("kind", "site_map").eq("state", "pending"),
-      ]);
+      // contracts, open runs, map / method-check requests, pending proposals and the queued pages
+      // of every domain with an open run, in one request
+      const st = await api.post<{
+        contracts: any[];
+        runs: any[];
+        reqs: any[];
+        props: any[];
+        queuedByDomain: Record<string, number | null>;
+      }>("/etl/console/source-states", {
+        sources: sources.map((s) => ({ source_id: s.source_id, source_domain: s.source_domain })),
+      });
+      const contracts = { data: st.contracts };
+      const runs = { data: st.runs };
+      const reqs = { data: st.reqs };
+      const props = { data: st.props };
       const out: Record<string, SourceState> = {};
       for (const s of sources) {
         const c = (contracts.data ?? []).find((x: any) => x.domain === s.source_domain && x.category_slug === s.gcid);
@@ -112,12 +119,8 @@ export function useSourceStates(sources: ActionSource[]): Record<string, SourceS
           pendingProposal: (props.data ?? []).some((p: any) => p.domain === s.source_domain && p.category_slug === s.gcid),
         };
       }
-      // Queue size only for sources with an open run (a few count queries).
-      await Promise.all(sources.filter((s) => out[s.source_id].runId).map(async (s) => {
-        const { count } = await db.from("exp_etl_frontier").select("frontier_id", { count: "exact", head: true })
-          .eq("domain", s.source_domain).in("status", ["queued", "fetching"]);
-        out[s.source_id].queued = count ?? null;
-      }));
+      // Queue size only for sources with an open run.
+      for (const s of sources) if (out[s.source_id].runId) out[s.source_id].queued = st.queuedByDomain[s.source_domain] ?? null;
       return out;
     },
     refetchInterval: (q) => {
@@ -134,14 +137,11 @@ export function useSourceActions() {
   const { logAudit } = useRole();
   const run = useMutation({
     mutationFn: async (s: ActionSource) => {
-      const { data, error } = await supabase.rpc("exp_etl_run_source", { p_source: s.source_id });
-      if (error) throw error;
-      let seeded: any = null;
-      if (data) {
-        const { data: r } = await (supabase as any).from("exp_etl_runs").select("detail").eq("run_id", data).maybeSingle();
-        seeded = r?.detail ?? null;
-      }
-      return { s, seeded };
+      // run + the new run's seeding detail, in one request
+      const { seeded } = await api.post<{ runId: string | null; seeded: any }>("/etl/console/sources/run", {
+        source_id: s.source_id,
+      });
+      return { s, seeded: seeded ?? null };
     },
     onSuccess: async ({ s, seeded }) => {
       const parts = seeded
@@ -156,8 +156,7 @@ export function useSourceActions() {
   });
   const reharvest = useMutation({
     mutationFn: async (s: ActionSource) => {
-      const { data, error } = await (supabase as any).rpc("exp_etl_reharvest_source", { p_source: s.source_id });
-      if (error) throw error;
+      const data = await rpc<number | null>("exp_etl_reharvest_source", { p_source: s.source_id });
       return { s, n: Number(data ?? 0) };
     },
     onSuccess: async ({ s, n }) => {
@@ -169,8 +168,7 @@ export function useSourceActions() {
   });
   const remap = useMutation({
     mutationFn: async (s: ActionSource) => {
-      const { data, error } = await supabase.rpc("disco_request_remap_site", { p_source_id: s.source_id });
-      if (error) throw error;
+      const data = await rpc<number>("disco_request_remap_site", { p_source_id: s.source_id });
       return { s, requestId: Number(data) };
     },
     onSuccess: async ({ s, requestId }) => {
@@ -182,8 +180,7 @@ export function useSourceActions() {
   });
   const retryMethod = useMutation({
     mutationFn: async (s: ActionSource) => {
-      const { error } = await supabase.rpc("disco_retry_method_classification", { p_source_id: s.source_id });
-      if (error) throw error;
+      await rpc("disco_retry_method_classification", { p_source_id: s.source_id });
       return s;
     },
     onSuccess: async (s) => {
@@ -195,10 +192,9 @@ export function useSourceActions() {
   });
   const setStatus = useMutation({
     mutationFn: async ({ s, status }: { s: ActionSource; status: "active" | "paused" }) => {
-      const { error } = await supabase.rpc("exp_etl_set_source_status", {
+      await rpc("exp_etl_set_source_status", {
         p_source: s.source_id, p_status: status, p_note: `Set to ${status} from Discovery console`,
-      } as any);
-      if (error) throw error;
+      });
       return { s, status };
     },
     onSuccess: async ({ s, status }) => {
@@ -217,8 +213,7 @@ export function useDiscoverMore() {
   const { logAudit } = useRole();
   return useMutation({
     mutationFn: async (gcid: string) => {
-      const { data, error } = await (supabase as any).rpc("disco_activate", { p_category: gcid });
-      if (error) throw error;
+      const data = await rpc("disco_activate", { p_category: gcid });
       return { gcid, job: data };
     },
     onSuccess: async ({ gcid, job }) => {
@@ -266,8 +261,9 @@ export function SourceActionsMenu({ source, state, onLimits }: { source: ActionS
   const method = source.crawl_method ?? "unprobed";
 
   const openReharvest = async () => {
-    const { count } = await (supabase as any).from("exp_etl_frontier").select("frontier_id", { count: "exact", head: true })
-      .eq("domain", source.source_domain).eq("kind", "detail_page").eq("status", "done");
+    const count = (await api.post<Record<string, number>>("/etl/console/done-pages", { domains: [source.source_domain] }))[
+      source.source_domain
+    ];
     if (!count) { toast.info("Nothing harvested yet for this source."); return; }
     setReharvestN(count);
   };

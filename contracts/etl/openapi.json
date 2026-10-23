@@ -1,0 +1,2707 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "etl API",
+    "version": "1"
+  },
+  "paths": {
+    "/etl/console/accept-harvest-state": {
+      "get": {
+        "tags": [
+          "etl"
+        ],
+        "summary": "Accept Harvest State",
+        "operationId": "accept_harvest_state_etl_console_accept_harvest_state_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "domain",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Domain"
+            }
+          },
+          {
+            "name": "gcid",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Gcid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "additionalProperties": true
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "title": "Response Accept Harvest State Etl Console Accept Harvest State Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/etl/console/ai-cost-events": {
+      "get": {
+        "tags": [
+          "etl"
+        ],
+        "summary": "Ai Cost Events",
+        "operationId": "ai_cost_events_etl_console_ai_cost_events_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "since",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Since"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {},
+                  "title": "Response Ai Cost Events Etl Console Ai Cost Events Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/etl/console/companies/manual": {
+      "post": {
+        "tags": [
+          "etl"
+        ],
+        "summary": "Add Companies Manual",
+        "operationId": "add_companies_manual_etl_console_companies_manual_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ManualCompanies"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "title": "Response Add Companies Manual Etl Console Companies Manual Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/etl/console/done-pages": {
+      "post": {
+        "tags": [
+          "etl"
+        ],
+        "summary": "Done Pages",
+        "operationId": "done_pages_etl_console_done_pages_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Domains"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "type": "object",
+                  "title": "Response Done Pages Etl Console Done Pages Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/etl/console/field-floor": {
+      "post": {
+        "tags": [
+          "etl"
+        ],
+        "summary": "Set Field Floor",
+        "operationId": "set_field_floor_etl_console_field_floor_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FieldFloorIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "type": "object",
+                  "title": "Response Set Field Floor Etl Console Field Floor Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/etl/console/field-yield": {
+      "get": {
+        "tags": [
+          "etl"
+        ],
+        "summary": "Field Yield",
+        "operationId": "field_yield_etl_console_field_yield_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "type": "object",
+                  "title": "Response Field Yield Etl Console Field Yield Get"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/etl/console/frontier-matrix": {
+      "get": {
+        "tags": [
+          "etl"
+        ],
+        "summary": "Frontier Matrix",
+        "operationId": "frontier_matrix_etl_console_frontier_matrix_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {},
+                  "type": "array",
+                  "title": "Response Frontier Matrix Etl Console Frontier Matrix Get"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/etl/console/hierarchy/brands": {
+      "get": {
+        "tags": [
+          "etl"
+        ],
+        "summary": "Hier Brands",
+        "operationId": "hier_brands_etl_console_hierarchy_brands_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {},
+                  "type": "array",
+                  "title": "Response Hier Brands Etl Console Hierarchy Brands Get"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/etl/console/hierarchy/category-labels": {
+      "post": {
+        "tags": [
+          "etl"
+        ],
+        "summary": "Hier Labels",
+        "operationId": "hier_labels_etl_console_hierarchy_category_labels_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Gcids"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "type": "object",
+                  "title": "Response Hier Labels Etl Console Hierarchy Category Labels Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/etl/console/hierarchy/category-search": {
+      "get": {
+        "tags": [
+          "etl"
+        ],
+        "summary": "Hier Category Search",
+        "operationId": "hier_category_search_etl_console_hierarchy_category_search_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "term",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 2,
+              "maxLength": 100,
+              "title": "Term"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {},
+                  "title": "Response Hier Category Search Etl Console Hierarchy Category Search Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/etl/console/hierarchy/counts": {
+      "post": {
+        "tags": [
+          "etl"
+        ],
+        "summary": "Hier Counts",
+        "operationId": "hier_counts_etl_console_hierarchy_counts_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/HierFilters"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "type": "object",
+                  "title": "Response Hier Counts Etl Console Hierarchy Counts Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/etl/console/hierarchy/entities/{entity_id}": {
+      "get": {
+        "tags": [
+          "etl"
+        ],
+        "summary": "Hier Entity",
+        "operationId": "hier_entity_etl_console_hierarchy_entities__entity_id__get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "entity_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Entity Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Hier Entity Etl Console Hierarchy Entities  Entity Id  Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/etl/console/hierarchy/office-name": {
+      "get": {
+        "tags": [
+          "etl"
+        ],
+        "summary": "Hier Office Name",
+        "operationId": "hier_office_name_etl_console_hierarchy_office_name_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "office",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Office"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "additionalProperties": true
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "title": "Response Hier Office Name Etl Console Hierarchy Office Name Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/etl/console/hierarchy/sources": {
+      "get": {
+        "tags": [
+          "etl"
+        ],
+        "summary": "Hier Sources",
+        "operationId": "hier_sources_etl_console_hierarchy_sources_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "type": "object",
+                  "title": "Response Hier Sources Etl Console Hierarchy Sources Get"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/etl/console/hierarchy/table": {
+      "post": {
+        "tags": [
+          "etl"
+        ],
+        "summary": "Hier Table",
+        "operationId": "hier_table_etl_console_hierarchy_table_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/HierTableIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "type": "object",
+                  "title": "Response Hier Table Etl Console Hierarchy Table Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/etl/console/hierarchy/tree/advisors": {
+      "get": {
+        "tags": [
+          "etl"
+        ],
+        "summary": "Hier Tree Advisors",
+        "operationId": "hier_tree_advisors_etl_console_hierarchy_tree_advisors_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "office",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Office"
+            }
+          },
+          {
+            "name": "unofficed_brand",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Unofficed Brand"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1,
+              "title": "Page"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Hier Tree Advisors Etl Console Hierarchy Tree Advisors Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/etl/console/hierarchy/tree/offices": {
+      "get": {
+        "tags": [
+          "etl"
+        ],
+        "summary": "Hier Tree Offices",
+        "operationId": "hier_tree_offices_etl_console_hierarchy_tree_offices_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "brand",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Brand"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1,
+              "title": "Page"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Hier Tree Offices Etl Console Hierarchy Tree Offices Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/etl/console/pipeline/funnel": {
+      "post": {
+        "tags": [
+          "etl"
+        ],
+        "summary": "Funnel",
+        "operationId": "funnel_etl_console_pipeline_funnel_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StageFilters"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "type": "object",
+                  "title": "Response Funnel Etl Console Pipeline Funnel Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/etl/console/pipeline/page": {
+      "post": {
+        "tags": [
+          "etl"
+        ],
+        "summary": "Staging Page",
+        "operationId": "staging_page_etl_console_pipeline_page_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StagePage"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "type": "object",
+                  "title": "Response Staging Page Etl Console Pipeline Page Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/etl/console/pipeline/source-domains": {
+      "get": {
+        "tags": [
+          "etl"
+        ],
+        "summary": "Pipeline Source Domains",
+        "operationId": "pipeline_source_domains_etl_console_pipeline_source_domains_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {},
+                  "type": "array",
+                  "title": "Response Pipeline Source Domains Etl Console Pipeline Source Domains Get"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/etl/console/pipeline/sources": {
+      "get": {
+        "tags": [
+          "etl"
+        ],
+        "summary": "Pipeline Sources",
+        "operationId": "pipeline_sources_etl_console_pipeline_sources_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {},
+                  "type": "array",
+                  "title": "Response Pipeline Sources Etl Console Pipeline Sources Get"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/etl/console/pipeline/staging-gcids": {
+      "post": {
+        "tags": [
+          "etl"
+        ],
+        "summary": "Staging Gcids",
+        "operationId": "staging_gcids_etl_console_pipeline_staging_gcids_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Gcids"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {},
+                  "type": "array",
+                  "title": "Response Staging Gcids Etl Console Pipeline Staging Gcids Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/etl/console/population/category-search": {
+      "get": {
+        "tags": [
+          "etl"
+        ],
+        "summary": "Population Category Search",
+        "operationId": "population_category_search_etl_console_population_category_search_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 2,
+              "maxLength": 200,
+              "title": "Q"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Population Category Search Etl Console Population Category Search Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/etl/console/population/discover-running": {
+      "get": {
+        "tags": [
+          "etl"
+        ],
+        "summary": "Population Discover Running",
+        "operationId": "population_discover_running_etl_console_population_discover_running_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "gcid",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Gcid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "boolean",
+                  "title": "Response Population Discover Running Etl Console Population Discover Running Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/etl/console/population/job": {
+      "get": {
+        "tags": [
+          "etl"
+        ],
+        "summary": "Population Job",
+        "operationId": "population_job_etl_console_population_job_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "gcid",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Gcid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "additionalProperties": true
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "title": "Response Population Job Etl Console Population Job Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/etl/console/population/map-attempts": {
+      "get": {
+        "tags": [
+          "etl"
+        ],
+        "summary": "Population Map Attempts",
+        "operationId": "population_map_attempts_etl_console_population_map_attempts_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "gcid",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Gcid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {},
+                  "title": "Response Population Map Attempts Etl Console Population Map Attempts Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/etl/console/population/method-attempts": {
+      "get": {
+        "tags": [
+          "etl"
+        ],
+        "summary": "Population Method Attempts",
+        "operationId": "population_method_attempts_etl_console_population_method_attempts_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "gcid",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Gcid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {},
+                  "title": "Response Population Method Attempts Etl Console Population Method Attempts Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/etl/console/population/proposal": {
+      "get": {
+        "tags": [
+          "etl"
+        ],
+        "summary": "Population Proposal",
+        "operationId": "population_proposal_etl_console_population_proposal_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "gcid",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Gcid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "additionalProperties": true
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "title": "Response Population Proposal Etl Console Population Proposal Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/etl/console/population/runs": {
+      "post": {
+        "tags": [
+          "etl"
+        ],
+        "summary": "Population Runs",
+        "operationId": "population_runs_etl_console_population_runs_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Ids"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {},
+                  "type": "array",
+                  "title": "Response Population Runs Etl Console Population Runs Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/etl/console/population/site-contracts": {
+      "get": {
+        "tags": [
+          "etl"
+        ],
+        "summary": "Population Contracts",
+        "operationId": "population_contracts_etl_console_population_site_contracts_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "gcid",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Gcid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {},
+                  "title": "Response Population Contracts Etl Console Population Site Contracts Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/etl/console/population/sources": {
+      "get": {
+        "tags": [
+          "etl"
+        ],
+        "summary": "Population Sources",
+        "operationId": "population_sources_etl_console_population_sources_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "gcid",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Gcid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {},
+                  "title": "Response Population Sources Etl Console Population Sources Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/etl/console/population/staged": {
+      "post": {
+        "tags": [
+          "etl"
+        ],
+        "summary": "Population Staged",
+        "operationId": "population_staged_etl_console_population_staged_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Ids"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {},
+                  "type": "array",
+                  "title": "Response Population Staged Etl Console Population Staged Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/etl/console/registry/field-floors": {
+      "get": {
+        "tags": [
+          "etl"
+        ],
+        "summary": "Contract Field Floors",
+        "operationId": "contract_field_floors_etl_console_registry_field_floors_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {},
+                  "type": "array",
+                  "title": "Response Contract Field Floors Etl Console Registry Field Floors Get"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/etl/console/registry/sources": {
+      "get": {
+        "tags": [
+          "etl"
+        ],
+        "summary": "Registry Sources",
+        "operationId": "registry_sources_etl_console_registry_sources_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {},
+                  "type": "array",
+                  "title": "Response Registry Sources Etl Console Registry Sources Get"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/etl/console/requests/status": {
+      "post": {
+        "tags": [
+          "etl"
+        ],
+        "summary": "Request Statuses",
+        "operationId": "request_statuses_etl_console_requests_status_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RequestIds"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {},
+                  "type": "array",
+                  "title": "Response Request Statuses Etl Console Requests Status Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/etl/console/rpc/{name}": {
+      "post": {
+        "tags": [
+          "etl"
+        ],
+        "summary": "Call Rpc",
+        "description": "An allow-listed ETL function (sources.ETL_RPCS). Several are gated actions (run, reharvest,\nactivate, discover); the role-checked functions decide, as they did for the browser.",
+        "operationId": "call_rpc_etl_console_rpc__name__post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "name",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Name"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RpcArgs"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "title": "Response Call Rpc Etl Console Rpc  Name  Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/etl/console/runs": {
+      "get": {
+        "tags": [
+          "etl"
+        ],
+        "summary": "Runs",
+        "operationId": "runs_etl_console_runs_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {},
+                  "type": "array",
+                  "title": "Response Runs Etl Console Runs Get"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/etl/console/schedules": {
+      "get": {
+        "tags": [
+          "etl"
+        ],
+        "summary": "Cron List",
+        "operationId": "cron_list_etl_console_schedules_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {},
+                  "type": "array",
+                  "title": "Response Cron List Etl Console Schedules Get"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/etl/console/schedules/active": {
+      "post": {
+        "tags": [
+          "etl"
+        ],
+        "summary": "Cron Set Active",
+        "operationId": "cron_set_active_etl_console_schedules_active_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CronSwitch"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "type": "object",
+                  "title": "Response Cron Set Active Etl Console Schedules Active Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/etl/console/site-contract": {
+      "get": {
+        "tags": [
+          "etl"
+        ],
+        "summary": "Site Contract",
+        "operationId": "site_contract_etl_console_site_contract_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "domain",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Domain"
+            }
+          },
+          {
+            "name": "gcid",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Gcid"
+            }
+          },
+          {
+            "name": "source_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Source Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Site Contract Etl Console Site Contract Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/etl/console/site-proposals": {
+      "get": {
+        "tags": [
+          "etl"
+        ],
+        "summary": "Site Proposals",
+        "operationId": "site_proposals_etl_console_site_proposals_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "domain",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Domain"
+            }
+          },
+          {
+            "name": "gcid",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Gcid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {},
+                  "title": "Response Site Proposals Etl Console Site Proposals Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/etl/console/source-domains": {
+      "post": {
+        "tags": [
+          "etl"
+        ],
+        "summary": "Source Domains",
+        "operationId": "source_domains_etl_console_source_domains_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Ids"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {},
+                  "type": "array",
+                  "title": "Response Source Domains Etl Console Source Domains Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/etl/console/source-gcids": {
+      "get": {
+        "tags": [
+          "etl"
+        ],
+        "summary": "Source Gcids",
+        "operationId": "source_gcids_etl_console_source_gcids_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {},
+                  "type": "array",
+                  "title": "Response Source Gcids Etl Console Source Gcids Get"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/etl/console/source-states": {
+      "post": {
+        "tags": [
+          "etl"
+        ],
+        "summary": "Source States",
+        "operationId": "source_states_etl_console_source_states_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StatesIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "type": "object",
+                  "title": "Response Source States Etl Console Source States Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/etl/console/source-stats": {
+      "get": {
+        "tags": [
+          "etl"
+        ],
+        "summary": "Source Stats",
+        "operationId": "source_stats_etl_console_source_stats_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "gcid",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Gcid"
+            }
+          },
+          {
+            "name": "source",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Source"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {},
+                  "title": "Response Source Stats Etl Console Source Stats Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/etl/console/sources/run": {
+      "post": {
+        "tags": [
+          "etl"
+        ],
+        "summary": "Run Source",
+        "operationId": "run_source_etl_console_sources_run_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SourceId"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "type": "object",
+                  "title": "Response Run Source Etl Console Sources Run Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/etl/console/stats-sources": {
+      "get": {
+        "tags": [
+          "etl"
+        ],
+        "summary": "Stats Sources",
+        "operationId": "stats_sources_etl_console_stats_sources_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {},
+                  "type": "array",
+                  "title": "Response Stats Sources Etl Console Stats Sources Get"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/etl/hello": {
+      "get": {
+        "tags": [
+          "etl"
+        ],
+        "summary": "Hello",
+        "description": "Public endpoint \u2014 no auth/DB. Proves the FE\u2194BE wiring end to end.",
+        "operationId": "hello_etl_hello_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "type": "object",
+                  "title": "Response Hello Etl Hello Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/etl/me": {
+      "get": {
+        "tags": [
+          "etl"
+        ],
+        "summary": "Whoami",
+        "description": "Trivial authed endpoint proving the JWT + routing path works.",
+        "operationId": "whoami_etl_me_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "type": "object",
+                  "title": "Response Whoami Etl Me Get"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "CronSwitch": {
+        "properties": {
+          "jobname": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Jobname"
+          },
+          "active": {
+            "type": "boolean",
+            "title": "Active"
+          }
+        },
+        "type": "object",
+        "required": [
+          "jobname",
+          "active"
+        ],
+        "title": "CronSwitch"
+      },
+      "Domains": {
+        "properties": {
+          "domains": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 1000,
+            "title": "Domains"
+          }
+        },
+        "type": "object",
+        "title": "Domains"
+      },
+      "FieldFloorIn": {
+        "properties": {
+          "gcid": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Gcid"
+          },
+          "required_keys": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 200,
+            "title": "Required Keys"
+          },
+          "min_fields": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Min Fields"
+          },
+          "min_products": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Min Products"
+          },
+          "min_licenses": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Min Licenses"
+          },
+          "notes": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 2000
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Notes"
+          }
+        },
+        "type": "object",
+        "required": [
+          "gcid",
+          "required_keys",
+          "min_fields",
+          "min_products",
+          "min_licenses"
+        ],
+        "title": "FieldFloorIn"
+      },
+      "Gcids": {
+        "properties": {
+          "gcids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 1000,
+            "title": "Gcids"
+          }
+        },
+        "type": "object",
+        "title": "Gcids"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "HierFilters": {
+        "properties": {
+          "gcid": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Gcid"
+          },
+          "source": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source"
+          },
+          "brand": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Brand"
+          },
+          "office": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Office"
+          },
+          "type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Type"
+          },
+          "claim": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Claim"
+          },
+          "q": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 200
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Q"
+          }
+        },
+        "type": "object",
+        "title": "HierFilters"
+      },
+      "HierTableIn": {
+        "properties": {
+          "filters": {
+            "$ref": "#/components/schemas/HierFilters"
+          },
+          "page": {
+            "type": "integer",
+            "maximum": 100000.0,
+            "minimum": 1.0,
+            "title": "Page",
+            "default": 1
+          },
+          "sort": {
+            "type": "string",
+            "enum": [
+              "name",
+              "type",
+              "confidence",
+              "created"
+            ],
+            "title": "Sort",
+            "default": "created"
+          },
+          "dir": {
+            "type": "string",
+            "enum": [
+              "asc",
+              "desc"
+            ],
+            "title": "Dir",
+            "default": "desc"
+          }
+        },
+        "type": "object",
+        "title": "HierTableIn"
+      },
+      "Ids": {
+        "properties": {
+          "ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 1000,
+            "title": "Ids"
+          }
+        },
+        "type": "object",
+        "title": "Ids"
+      },
+      "ManualCompanies": {
+        "properties": {
+          "category": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Category"
+          },
+          "entries": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 500,
+            "title": "Entries"
+          }
+        },
+        "type": "object",
+        "required": [
+          "category",
+          "entries"
+        ],
+        "title": "ManualCompanies"
+      },
+      "RequestIds": {
+        "properties": {
+          "ids": {
+            "items": {
+              "type": "integer"
+            },
+            "type": "array",
+            "maxItems": 1000,
+            "title": "Ids"
+          }
+        },
+        "type": "object",
+        "title": "RequestIds"
+      },
+      "RpcArgs": {
+        "properties": {
+          "args": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Args"
+          }
+        },
+        "type": "object",
+        "title": "RpcArgs"
+      },
+      "SourceId": {
+        "properties": {
+          "source_id": {
+            "type": "string",
+            "title": "Source Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "source_id"
+        ],
+        "title": "SourceId"
+      },
+      "StageFilters": {
+        "properties": {
+          "gcid": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Gcid"
+          },
+          "source_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Id"
+          },
+          "status": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Status"
+          }
+        },
+        "type": "object",
+        "title": "StageFilters"
+      },
+      "StagePage": {
+        "properties": {
+          "gcid": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Gcid"
+          },
+          "source_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Id"
+          },
+          "status": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Status"
+          },
+          "page": {
+            "type": "integer",
+            "maximum": 100000.0,
+            "minimum": 0.0,
+            "title": "Page",
+            "default": 0
+          }
+        },
+        "type": "object",
+        "title": "StagePage"
+      },
+      "StateSource": {
+        "properties": {
+          "source_id": {
+            "type": "string",
+            "title": "Source Id"
+          },
+          "source_domain": {
+            "type": "string",
+            "title": "Source Domain"
+          }
+        },
+        "type": "object",
+        "required": [
+          "source_id",
+          "source_domain"
+        ],
+        "title": "StateSource"
+      },
+      "StatesIn": {
+        "properties": {
+          "sources": {
+            "items": {
+              "$ref": "#/components/schemas/StateSource"
+            },
+            "type": "array",
+            "maxItems": 1000,
+            "title": "Sources"
+          }
+        },
+        "type": "object",
+        "required": [
+          "sources"
+        ],
+        "title": "StatesIn"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      }
+    }
+  }
+}

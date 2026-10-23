@@ -1,8 +1,7 @@
 import { useState, type ReactNode } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useServerFn } from "@v3/ui/lib/server-fn";
+import { api, useServerFn } from "@v3/ui/lib/server-fn";
 import { toast } from "sonner";
-import { supabase } from "@v3/ui/integrations/supabase/client";
 import { Badge } from "@v3/ui/components/ui/badge";
 import { Button } from "@v3/ui/components/ui/button";
 import {
@@ -84,35 +83,15 @@ export function SiteContractProposals({
 
   const { data: proposals } = useQuery({
     queryKey: ["site_contract_proposals", domain, gcid],
-    queryFn: async () => {
-      const { data, error } = await (supabase as Any)
-        .from("disco_proposals")
-        .select("proposal_id, state, created_at, payload")
-        .eq("kind", "site_map")
-        .eq("category_slug", gcid)
-        .eq("payload->>domain", domain)
-        .order("created_at", { ascending: false })
-        .limit(10);
-      if (error) throw error;
-      return (data ?? []) as Any[];
-    },
+    queryFn: () => api.get<Any[]>("/etl/console/site-proposals", { params: { domain, gcid } }),
   });
   // Accept closes a harvest that is still running (disco_accept_site_proposal, 2026-10-15): the dialog says so first.
   const { data: harvest } = useQuery({
     queryKey: ["accept_harvest_state", domain, gcid],
     enabled: confirm === "accept",
-    queryFn: async () => {
-      const db = supabase as Any;
-      const { data: src } = await db.from("exp_etl_sources").select("source_id, status")
-        .eq("source_domain", domain).eq("gcid", gcid).maybeSingle();
-      if (!src || src.status !== "active") return null;
-      const { data: run } = await db.from("exp_etl_runs").select("started_at").eq("source_id", src.source_id)
-        .is("finished_at", null).order("started_at", { ascending: false }).limit(1).maybeSingle();
-      if (!run) return null;
-      const { count } = await db.from("exp_etl_frontier").select("frontier_id", { count: "exact", head: true })
-        .eq("domain", domain).in("status", ["queued", "fetching"]);
-      return { since: String(run.started_at), queued: count ?? 0 };
-    },
+    // null unless the source is active with an open run: then its start and the queued pages
+    queryFn: () =>
+      api.get<{ since: string; queued: number } | null>("/etl/console/accept-harvest-state", { params: { domain, gcid } }),
   });
   const pending = (proposals ?? []).filter((p) => p.state === "pending");
   const current = pending[0] ?? null;
@@ -128,8 +107,9 @@ export function SiteContractProposals({
         const data = await runAccept({ data: { proposalId: current.proposal_id } });
         return { kind, data };
       }
-      const { data, error } = await (supabase as Any).rpc("disco_reject_site_proposal", { p_proposal_id: current.proposal_id });
-      if (error) throw error;
+      const data = await api.post<Any>("/etl/console/rpc/disco_reject_site_proposal", {
+        args: { p_proposal_id: current.proposal_id },
+      });
       return { kind, data };
     },
     onSuccess: async ({ kind, data }) => {
