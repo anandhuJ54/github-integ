@@ -154,7 +154,8 @@ def rls_connection(jwt_claims: dict) -> Iterator[psycopg.Connection]:
 #   publishable/anon client      -> role `anon`          (RLS as a signed-out visitor)
 #   user client (bearer JWT)     -> role `authenticated` (RLS as that user)
 #   supabaseAdmin (service key)  -> role `service_role`  (bypasses RLS; server writes only)
-# `set local role` and the claims are transaction-local, so they end with the lease.
+# The claims and the role are transaction-local (set_config(..., true) is `set local`), so they
+# end with the lease. Both are set in one statement, one round trip, as PostgREST does.
 
 _ROLES = frozenset({"anon", "authenticated", "service_role"})
 
@@ -170,7 +171,10 @@ def role_connection(
         raise ValueError("authenticated role needs the verified JWT claims")
     url = _primary_url() if (write or fresh) else _replica_url()
     claims = jwt_claims if jwt_claims is not None else {"role": role}
-    with _lease(url, claims) as conn:
+    with _lease(url, None) as conn:
         with conn.cursor() as cur:
-            cur.execute(f"set local role {role}")  # role is from the fixed allowlist above
+            cur.execute(
+                "select set_config('request.jwt.claims', %s, true), set_config('role', %s, true)",
+                (json.dumps(claims), role),  # role is from the fixed allowlist above
+            )
         yield conn

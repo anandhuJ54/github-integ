@@ -1,6 +1,7 @@
 """Tests for the server-function plumbing and role-scoped connections (no live DB)."""
 from __future__ import annotations
 
+import json
 from contextlib import contextmanager
 
 import pytest
@@ -87,16 +88,21 @@ def test_role_connection_sets_role_and_claims(leased):
     log, seen = leased
     with db.role_connection("authenticated", {"sub": "u1", "role": "authenticated"}):
         pass
-    assert log == [("set local role authenticated", None)]
-    assert seen == {"url": "postgres://replica", "claims": {"sub": "u1", "role": "authenticated"}}
+    # claims and role in one statement (one round trip), both transaction-local
+    (sql, params), = log
+    assert "set_config('request.jwt.claims', %s, true)" in sql
+    assert "set_config('role', %s, true)" in sql
+    assert params == (json.dumps({"sub": "u1", "role": "authenticated"}), "authenticated")
+    assert seen == {"url": "postgres://replica", "claims": None}
 
 
 def test_role_connection_write_uses_primary(leased):
-    _, seen = leased
+    log, seen = leased
     with db.role_connection("service_role", write=True):
         pass
     assert seen["url"] == "postgres://primary"
-    assert seen["claims"] == {"role": "service_role"}
+    (_, params), = log
+    assert params == (json.dumps({"role": "service_role"}), "service_role")
 
 
 def test_role_connection_rejects_unknown_role_and_missing_claims(leased):

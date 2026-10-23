@@ -78,6 +78,41 @@ def fetch_all(
         return [jsonish(dict(r)) for r in cur.fetchall()]
 
 
+def fetch_many(
+    conn: psycopg.Connection, stmts: dict[str, ClauseElement], *, tolerant: bool = False
+) -> dict[str, list[dict[str, Any]]]:
+    """Run independent SELECTs in one network round trip (psycopg pipeline mode).
+
+    Each statement is capped like fetch_all. With `tolerant=True` a failed statement yields []
+    (as `(await q).data ?? []` did in the TS): the batch is retried one statement at a time,
+    each in a savepoint, so one failure doesn't lose the others.
+    """
+    compiled = {k: compile_sql(capped(v)) for k, v in stmts.items()}
+    try:
+        # SAVEPOINT, every SELECT and RELEASE go out in one round trip. (psycopg's
+        # conn.transaction() waits on each savepoint step inside a pipeline: ~4 trips.)
+        with conn.pipeline():
+            conn.execute("savepoint fetch_many")
+            curs = {k: conn.execute(sql, params) for k, (sql, params) in compiled.items()}
+            conn.execute("release savepoint fetch_many")
+        return {k: [jsonish(dict(r)) for r in cur.fetchall()] for k, cur in curs.items()}
+    except psycopg.Error:
+        # leave the transaction usable for the caller (and for the per-statement retry)
+        conn.execute("rollback to savepoint fetch_many")
+        conn.execute("release savepoint fetch_many")
+        if not tolerant:
+            raise
+    out: dict[str, list[dict[str, Any]]] = {}
+    for k, (sql, params) in compiled.items():
+        try:
+            with conn.transaction(), conn.cursor() as cur:
+                cur.execute(sql, params)
+                out[k] = [jsonish(dict(r)) for r in cur.fetchall()]
+        except psycopg.Error:
+            out[k] = []
+    return out
+
+
 def fetch_one(conn: psycopg.Connection, stmt: ClauseElement) -> dict[str, Any] | None:
     rows = fetch_all(conn, stmt)
     return rows[0] if rows else None
