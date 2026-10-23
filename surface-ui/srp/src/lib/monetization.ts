@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { supabase } from "@v3/ui/integrations/supabase/client";
+import { api } from "@v3/ui/lib/server-fn";
 import type { SearchKind } from "@v3/ui/lib/search";
 import { decodeName } from "@v3/ui/lib/search";
 
@@ -40,11 +40,11 @@ export function sponsoredKey(gcid: string, loc: string) {
 export async function loadSponsoredSlots(gcid: string, loc: string): Promise<SponsoredSlot[]> {
   const key = sponsoredKey(gcid, loc);
   if (!key) return [];
-  const { data } = await supabase.rpc("public_sponsored_slots", {
-    p_gcid: key.gcid,
-    p_geo: key.zip,
-  });
-  return ((data ?? []) as SponsoredSlot[])
+  // As with supabase-js (`data ?? []`), a failed lookup shows no slots rather than an error.
+  const data = await api
+    .get<SponsoredSlot[]>("/srp/sponsored-slots", { params: { gcid: key.gcid, geo: key.zip } })
+    .catch(() => [] as SponsoredSlot[]);
+  return data
     .slice(0, SPONSORED_CAP)
     .map((s) => ({
       ...s,
@@ -79,12 +79,9 @@ export async function loadAdUnits(
   gcid: string | null,
   geo: string | null,
 ): Promise<AdUnit[]> {
-  const { data } = await supabase.rpc("public_ad_units", {
-    p_context: context,
-    p_gcid: gcid ?? "default",
-    p_geo: geo ?? "",
-  });
-  return (data ?? []) as AdUnit[];
+  return api
+    .get<AdUnit[]>("/srp/ad-units", { params: { context, gcid: gcid ?? "default", geo: geo ?? "" } })
+    .catch(() => [] as AdUnit[]);
 }
 
 export function pickVariant(units: AdUnit[], variant: string): AdUnit | null {
@@ -103,12 +100,10 @@ export async function pingPageView(opts: {
   claimCta: boolean;
 }) {
   if (!opts.gcid || !opts.zip) return;
-  await supabase.rpc("public_page_view_ping", {
-    p_gcid: opts.gcid,
-    p_geo_value: opts.zip,
-    p_claim_cta: opts.claimCta,
-    p_geo_type: "zip",
-  });
+  // Impression accounting never breaks the page, as before.
+  await api
+    .post("/srp/page-view", { gcid: opts.gcid, zip: opts.zip, claimCta: opts.claimCta })
+    .catch(() => undefined);
 }
 
 export function usePageViewPing(opts: { gcid: string | null; zip: string | null; claimCta: boolean }) {

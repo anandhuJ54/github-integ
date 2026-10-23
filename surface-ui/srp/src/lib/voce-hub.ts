@@ -1,4 +1,4 @@
-import { supabase } from "@v3/ui/integrations/supabase/client";
+import { api } from "@v3/ui/lib/server-fn";
 import { DEFAULT_QUERY, decodeName, runSearch, type SearchDoc } from "@v3/ui/lib/search";
 import { loadHubArticles, topicsOf, type VoceArticle } from "@v3/ui/lib/voce";
 
@@ -13,12 +13,9 @@ export type HubData = {
 };
 
 async function labelFor(gcid: string): Promise<string> {
-  const { data } = await supabase
-    .from("gbp_categories")
-    .select("display_name, slug")
-    .eq("gcid", gcid)
-    .maybeSingle();
-  const row = data as { display_name?: string | null; slug?: string | null } | null;
+  const row = await api.get<{ display_name?: string | null; slug?: string | null } | null>(
+    `/srp/category-label/${encodeURIComponent(gcid)}`,
+  );
   return decodeName(row?.display_name ?? row?.slug ?? gcid);
 }
 

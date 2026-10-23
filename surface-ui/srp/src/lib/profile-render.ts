@@ -1,8 +1,8 @@
-import { supabase } from "@v3/ui/integrations/supabase/client";
+import { api, ServerFnError } from "@v3/ui/lib/server-fn";
 import {
+  categoryServicesFrom,
   FALLBACK_PROFILE_CONFIG,
-  loadCategoryServices,
-  loadProfileConfig,
+  profileConfigFrom,
   type ProfileConfig,
   type RatingRow,
   type ReviewRow,
@@ -101,20 +101,13 @@ function asStringArray(v: unknown): string[] {
 /**
  * Template row for (gcid, lane), falling back to ('default', lane).
  * The fallback is what lets every gcid render.
+ * `rows`: exp_category_page_template for [gcid, 'default'] × lane (templateRows).
  */
-export async function loadPageTemplate(
+export function pageTemplateFrom(
+  rows: Record<string, unknown>[],
   gcid: string | null | undefined,
   lane: Lane,
-): Promise<PageTemplate> {
-  const keys = gcid ? [gcid, "default"] : ["default"];
-  const { data } = await supabase
-    .from("exp_category_page_template")
-    .select(
-      "gcid, entity_type, sections, required_sections, completeness_floor, hero_cta, schema_type",
-    )
-    .in("gcid", keys)
-    .eq("entity_type", lane);
-  const rows = (data ?? []) as Record<string, unknown>[];
+): PageTemplate {
   const row =
     (gcid ? rows.find((r) => r.gcid === gcid) : undefined) ??
     rows.find((r) => r.gcid === "default");
@@ -293,7 +286,8 @@ export type ProfileBundle = {
   expertise?: ProfileExpertise;
 };
 
-const EXTRA_NODE_TYPES = [
+/** The node types the sections read; the API filters graph_nodes to these (srp/queries/profile.py). */
+export const EXTRA_NODE_TYPES = [
   "menu_item",
   "hours",
   "office_hours",
@@ -337,15 +331,8 @@ function s(v: unknown): string | null {
   return String(v);
 }
 
-async function loadGraphSections(entityType: "professional" | "organization", entityId: string) {
-  const { data } = await supabase
-    .from("graph_nodes")
-    .select("node_type, title, url, extracted_data")
-    .eq("entity_type", entityType)
-    .eq("entity_id", entityId)
-    .eq("is_active", true)
-    .in("node_type", EXTRA_NODE_TYPES);
-  const rows = (data ?? []) as RawNode[];
+/** `rows`: the entity's active graph_nodes of EXTRA_NODE_TYPES (graphNodes). */
+function graphSectionsFrom(rows: RawNode[]) {
   const of = (t: string) => rows.filter((r) => r.node_type === t);
 
   const menu: MenuItem[] = of("menu_item").map((n) => ({
@@ -465,13 +452,7 @@ async function loadGraphSections(entityType: "professional" | "organization", en
   };
 }
 
-async function loadRatings(entityType: string, entityId: string) {
-  const { data } = await supabase
-    .from("aggregate_ratings")
-    .select("source, rating_value, review_count")
-    .eq("entity_type", entityType)
-    .eq("entity_id", entityId);
-  const rows = (data ?? []) as RatingRow[];
+function ratingsFrom(rows: RatingRow[]) {
   return {
     overall: rows.find((r) => r.source === "all") ?? null,
     bySource: rows
@@ -480,40 +461,9 @@ async function loadRatings(entityType: string, entityId: string) {
   };
 }
 
-async function loadReviews(entityType: string, entityId: string) {
-  const { data } = await supabase
-    .from("reviews")
-    .select(
-      "id, rating, body, title, reviewer_name, review_date, source, reply_body, reply_date, is_verified, locations_mentioned",
-    )
-    .eq("entity_type", entityType)
-    .eq("entity_id", entityId)
-    .order("review_date", { ascending: false })
-    .limit(24);
-  return (data ?? []) as ReviewRow[];
-}
-
-async function loadContent(authorType: string, authorId: string) {
-  const { data } = await supabase
-    .from("content_items")
-    .select("id, title, slug, excerpt, cover_image_url, published_at")
-    .eq("author_type", authorType)
-    .eq("author_id", authorId)
-    .eq("status", "published")
-    .order("published_at", { ascending: false })
-    .limit(9);
-  return (data ?? []) as ContentRow[];
-}
-
-async function loadGalleryMedia(entityType: string, entityId: string): Promise<GalleryImage[]> {
-  const { data } = await supabase
-    .from("media_items")
-    .select("id, title, thumbnail_url, source_url, media_type")
-    .eq("entity_type", entityType)
-    .eq("entity_id", entityId)
-    .eq("is_active", true)
-    .limit(24);
-  return ((data ?? []) as Record<string, unknown>[])
+/** `rows`: the entity's active media_items, 24 at most (media). */
+function galleryFrom(rows: Record<string, unknown>[]): GalleryImage[] {
+  return rows
     .map((m) => ({
       url: (s(m.thumbnail_url) ?? s(m.source_url) ?? "") as string,
       title: s(m.title),
@@ -521,69 +471,13 @@ async function loadGalleryMedia(entityType: string, entityId: string): Promise<G
     .filter((g) => g.url.startsWith("http"));
 }
 
-async function loadProfessionalExpertise(entityId: string): Promise<ProfileExpertise> {
-  const [{ data: ringRows }, { data: nodeRows }, { data: edgeRows }] = await Promise.all([
-    supabase
-      .from("exp_ring")
-      .select("ring_key, display_name, sort, color, schema_note")
-      .eq("layer", "proof")
-      .eq("is_active", true)
-      .order("sort", { ascending: true }),
-    supabase
-      .from("graph_nodes")
-      .select(
-        "id, ring_key, ring_layer, node_type, title, url, extracted_data, source, verified, verified_at",
-      )
-      .eq("entity_type", "professional")
-      .eq("entity_id", entityId)
-      .eq("ring_layer", "proof")
-      .eq("is_active", true),
-    supabase
-      .from("graph_edges")
-      .select(
-        "id, to_entity_type, to_entity_id, relationship_type, status, verified",
-      )
-      .eq("edge_type", "recommends")
-      .eq("from_entity_id", entityId),
-  ]);
-
-  const rings = (ringRows ?? []) as ProofRing[];
-  const nodes = (nodeRows ?? []) as ProofNode[];
-  const edges = (edgeRows ?? []) as Array<{
-    id: string;
-    to_entity_type: string | null;
-    to_entity_id: string | null;
-    relationship_type: string | null;
-    status: string | null;
-    verified: boolean | null;
-  }>;
-  const professionalIds = Array.from(
-    new Set(
-      edges
-        .filter((edge) => edge.to_entity_type === "professional")
-        .map((edge) => edge.to_entity_id)
-        .filter((id): id is string => !!id),
-    ),
-  );
-  const organizationIds = Array.from(
-    new Set(
-      edges
-        .filter((edge) => edge.to_entity_type === "organization")
-        .map((edge) => edge.to_entity_id)
-        .filter((id): id is string => !!id),
-    ),
-  );
-  const [{ data: partnerProfessionals }, { data: partnerOrganizations }] = await Promise.all([
-    professionalIds.length
-      ? supabase
-          .from("professionals")
-          .select("id, display_name, first_name, last_name")
-          .in("id", professionalIds)
-      : Promise.resolve({ data: [] }),
-    organizationIds.length
-      ? supabase.from("organizations").select("id, name").in("id", organizationIds)
-      : Promise.resolve({ data: [] }),
-  ]);
+/** `raw`: proof rings, proof nodes, 'recommends' edges and partner names (expertise). */
+function expertiseFrom(raw: RawExpertise): ProfileExpertise {
+  const rings = raw.rings as ProofRing[];
+  const nodes = raw.nodes as ProofNode[];
+  const edges = raw.edges;
+  const partnerProfessionals = raw.partnerProfessionals;
+  const partnerOrganizations = raw.partnerOrganizations;
   const names = new Map<string, string>();
   for (const row of (partnerProfessionals ?? []) as AnyRow[]) {
     const name =
@@ -610,15 +504,66 @@ async function loadProfessionalExpertise(entityId: string): Promise<ProfileExper
   };
 }
 
-async function categoryLabel(gcid: string | null | undefined) {
-  if (!gcid) return null;
-  const { data } = await supabase
-    .from("gbp_categories")
-    .select("display_name, slug")
-    .eq("gcid", gcid)
-    .maybeSingle();
-  const row = data as { display_name?: string | null; slug?: string | null } | null;
+/** `row`: gbp_categories display_name / slug for the gcid (category). */
+function categoryLabelFrom(row: { display_name?: string | null; slug?: string | null } | null) {
   return row?.display_name ?? row?.slug ?? null;
+}
+
+/* ------------------------------------------------------------------ *
+ * Rows from GET /srp/profile/{p|o|c}/{slug} (surface-api/srp/queries/ *
+ * profile.py): what each of the old supabase-js queries returned.     *
+ * ------------------------------------------------------------------ */
+
+type RawExpertise = {
+  rings: AnyRow[];
+  nodes: AnyRow[];
+  edges: Array<{
+    id: string;
+    to_entity_type: string | null;
+    to_entity_id: string | null;
+    relationship_type: string | null;
+    status: string | null;
+    verified: boolean | null;
+  }>;
+  partnerProfessionals: AnyRow[];
+  partnerOrganizations: AnyRow[];
+};
+
+type RawShared = {
+  templateRows: AnyRow[];
+  configRows: Partial<ProfileConfig>[];
+  category: { display_name?: string | null; slug?: string | null } | null;
+  graphNodes: RawNode[];
+  ratings: RatingRow[];
+  reviews: ReviewRow[];
+  content: ContentRow[];
+  media: AnyRow[];
+  taxonomy: { term: string | null; level: string | null }[];
+};
+
+type RawProfessional = RawShared & {
+  pro: AnyRow;
+  office: AnyRow | null;
+  company: AnyRow | null;
+  credentials: CredentialRow[];
+  expertise: RawExpertise;
+};
+
+type RawOrg = RawShared & {
+  org: AnyRow;
+  parent: AnyRow | null;
+  children: AnyRow[];
+  staff: AnyRow[];
+};
+
+/** The profile's rows, or null when no (single) entity has this slug. */
+async function loadRaw<T>(path: string): Promise<T | null> {
+  try {
+    return await api.get<T>(path);
+  } catch (e) {
+    if (e instanceof ServerFnError && e.status === 404) return null;
+    throw e;
+  }
 }
 
 const ORG_COLS =
@@ -660,63 +605,24 @@ export function orgLane(entityType: string | null | undefined): Lane {
  * ------------------------------------------------------------------ */
 
 export async function loadProfessionalBundle(slug: string): Promise<ProfileBundle | null> {
-  const { data: pro } = await supabase
-    .from("professionals")
-    .select(PRO_COLS)
-    .eq("slug", slug)
-    .maybeSingle();
-  if (!pro) return null;
-  const p = pro as AnyRow;
+  const raw = await loadRaw<RawProfessional>(`/srp/profile/p/${encodeURIComponent(slug)}`);
+  if (!raw) return null;
+  const p = raw.pro;
   const gcid = (p.gcid as string | null) ?? null;
+  const office = raw.office;
+  const company = raw.company;
 
-  const { data: officeRow } = p.primary_org_id
-    ? await supabase
-        .from("organizations")
-        .select(ORG_COLS)
-        .eq("id", String(p.primary_org_id))
-        .maybeSingle()
-    : { data: null };
-  const office = (officeRow ?? null) as AnyRow | null;
-  const { data: companyRow } = office?.parent_org_id
-    ? await supabase
-        .from("organizations")
-        .select(ORG_COLS)
-        .eq("id", String(office.parent_org_id))
-        .maybeSingle()
-    : { data: null };
-  const company = (companyRow ?? null) as AnyRow | null;
-
-
-  const [
-    template,
-    config,
-    label,
-    graph,
-    ratings,
-    reviews,
-    content,
-    media,
-    credsRes,
-    taxonomy,
-    expertise,
-  ] =
-    await Promise.all([
-      loadPageTemplate(gcid, "professional"),
-      loadProfileConfig(gcid),
-      categoryLabel(gcid),
-      loadGraphSections("professional", String(p.id)),
-      loadRatings("professional", String(p.id)),
-      loadReviews("professional", String(p.id)),
-      loadContent("professional", String(p.id)),
-      loadGalleryMedia("professional", String(p.id)),
-      supabase
-        .from("credentials")
-        .select("id, name, identifier, issuing_org, issuing_state, verified, verification_url")
-        .eq("professional_id", String(p.id))
-        .eq("is_current", true),
-      loadCategoryServices(gcid),
-      loadProfessionalExpertise(String(p.id)),
-    ]);
+  const template = pageTemplateFrom(raw.templateRows, gcid, "professional");
+  const config = profileConfigFrom(raw.configRows, gcid);
+  const label = gcid ? categoryLabelFrom(raw.category) : null;
+  const graph = graphSectionsFrom(raw.graphNodes);
+  const ratings = ratingsFrom(raw.ratings);
+  const reviews = raw.reviews;
+  const content = raw.content;
+  const media = galleryFrom(raw.media);
+  const credsRes = { data: raw.credentials };
+  const taxonomy = categoryServicesFrom(raw.taxonomy);
+  const expertise = expertiseFrom(raw.expertise);
 
   const attrs = graph.attrs as Record<string, unknown>;
   const name =
@@ -817,63 +723,24 @@ export async function loadProfessionalBundle(slug: string): Promise<ProfileBundl
 }
 
 export async function loadOrgBundle(kind: "o" | "c", slug: string): Promise<ProfileBundle | null> {
-  const { data: orgRow } = await supabase
-    .from("organizations")
-    .select(ORG_COLS)
-    .eq("slug", slug)
-    .maybeSingle();
-  if (!orgRow) return null;
-  const o = orgRow as AnyRow;
+  const raw = await loadRaw<RawOrg>(`/srp/profile/${kind}/${encodeURIComponent(slug)}`);
+  if (!raw) return null;
+  const o = raw.org;
   const gcid = (o.gcid as string | null) ?? null;
   const lane = kind === "c" ? "brand" : orgLane(o.entity_type as string | null);
+  const parent = raw.parent;
 
-  const { data: parentRow } = o.parent_org_id
-    ? await supabase
-        .from("organizations")
-        .select(ORG_COLS)
-        .eq("id", String(o.parent_org_id))
-        .maybeSingle()
-
-    : { data: null };
-  const parent = (parentRow ?? null) as AnyRow | null;
-
-  const [
-    template,
-    config,
-    label,
-    graph,
-    ratings,
-    reviews,
-    content,
-    media,
-    childRes,
-    staffRes,
-    taxonomy,
-  ] = await Promise.all([
-    loadPageTemplate(gcid, lane),
-    loadProfileConfig(gcid),
-    categoryLabel(gcid),
-    loadGraphSections("organization", String(o.id)),
-    loadRatings("organization", String(o.id)),
-    loadReviews("organization", String(o.id)),
-    loadContent("organization", String(o.id)),
-    loadGalleryMedia("organization", String(o.id)),
-    supabase
-      .from("organizations")
-      .select("id, name, slug, logo_url, address_city, address_state")
-      .eq("parent_org_id", String(o.id))
-      .eq("is_active", true)
-      .order("name")
-      .limit(60),
-    supabase
-      .from("professionals")
-      .select("id, display_name, first_name, last_name, slug, photo_url, job_title")
-      .eq("primary_org_id", String(o.id))
-      .eq("is_active", true)
-      .order("search_rank_score", { ascending: false, nullsFirst: false })
-      .limit(60),
-    loadCategoryServices(gcid),
-  ]);
+  const template = pageTemplateFrom(raw.templateRows, gcid, lane);
+  const config = profileConfigFrom(raw.configRows, gcid);
+  const label = gcid ? categoryLabelFrom(raw.category) : null;
+  const graph = graphSectionsFrom(raw.graphNodes);
+  const ratings = ratingsFrom(raw.ratings);
+  const reviews = raw.reviews;
+  const content = raw.content;
+  const media = galleryFrom(raw.media);
+  const childRes = { data: raw.children };
+  const staffRes = { data: raw.staff };
+  const taxonomy = categoryServicesFrom(raw.taxonomy);
 
   const attrs = graph.attrs as Record<string, unknown>;
   const voce = await loadAuthorArticles(String(o.id), String(o.name ?? ""));

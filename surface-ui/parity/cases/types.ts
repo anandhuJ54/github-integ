@@ -8,6 +8,11 @@ export type ParityCase = {
   name: string;
   /** Legacy module, repo-relative, read from PARITY_LEGACY_REF (before the Surface was ported). */
   legacyModule?: string;
+  /**
+   * Other repo files the legacy module imports that the port changed: also read from
+   * PARITY_LEGACY_REF, and the legacy module's `@v3/...` imports of them point at those copies.
+   */
+  legacyDeps?: string[];
   /** Export to call, and its arguments. */
   legacyExport?: string;
   legacyArgs?: unknown[];
@@ -18,7 +23,14 @@ export type ParityCase = {
   legacy?: (sb: typeof supabase, ctx: any) => Promise<unknown>;
   /** Shared input both sides need (e.g. the ids on the current page), fetched the legacy way. */
   prepare?: (sb: typeof supabase) => Promise<unknown>;
-  api: ApiCall | ((ctx: any) => ApiCall);
+  /** The endpoint that replaced the legacy read... */
+  api?: ApiCall | ((ctx: any) => ApiCall);
+  /**
+   * ...or the current (ported) function, which calls the API itself. Compares the finished
+   * result end to end (e.g. a whole profile bundle). Its relative `/api/...` fetches go to
+   * PARITY_API_URL, as the Vite proxy sends them.
+   */
+  current?: (ctx: any) => Promise<unknown>;
   /**
    * Applied to both results before comparing, e.g. to put rows that tie on the legacy sort key
    * into one order (Postgres returns ties in any order). Say which tie it resolves.

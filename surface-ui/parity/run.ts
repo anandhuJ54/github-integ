@@ -33,15 +33,34 @@ const ROOT = join(HERE, "..", "..");
 
 const { cases } = (await import(`./cases/${surface}.ts`)) as { cases: ParityCase[] };
 
+/** `surface-ui/srp/src/lib/x.ts` → `@v3/srp/lib/x` (`_base` is `@v3/ui`). */
+function aliasOf(path: string): string {
+  const m = path.match(/^surface-ui\/([^/]+)\/src\/(.+)\.tsx?$/);
+  if (!m) throw new Error(`not a surface-ui source path: ${path}`);
+  return `@v3/${m[1] === "_base" ? "ui" : m[1]}/${m[2]}`;
+}
+
+function extract(path: string): string {
+  const out = join(HERE, ".legacy", path);
+  mkdirSync(dirname(out), { recursive: true });
+  writeFileSync(out, execFileSync("git", ["show", `${REF}:${path}`], { cwd: ROOT }));
+  return out;
+}
+
 async function legacyModule(
   path: string,
   patches: ParityCase["legacyPatch"] = [],
+  deps: string[] = [],
 ): Promise<Record<string, unknown>> {
   let src = execFileSync("git", ["show", `${REF}:${path}`], { cwd: ROOT }).toString();
   for (const p of patches) {
     if (!src.includes(p.find)) throw new Error(`legacyPatch not found in ${path}: ${p.find}`);
     src = src.split(p.find).join(p.replace);
     console.log(`  patched legacy: ${p.why}`);
+  }
+  for (const dep of deps) {
+    // the legacy module must see the legacy version of what the port changed
+    src = src.split(`"${aliasOf(dep)}"`).join(JSON.stringify(extract(dep)));
   }
   const out = join(HERE, ".legacy", path);
   mkdirSync(dirname(out), { recursive: true });
@@ -75,6 +94,29 @@ if (process.env.PARITY_EMAIL) {
 }
 console.log(`parity ${surface}: ${cases.length} case(s), ${token ? "signed in" : "signed out"}, legacy=${REF}`);
 
+// The ported code fetches `/api/...` (the Vite proxy strips /api). Send those to the API here.
+const realFetch = globalThis.fetch;
+globalThis.fetch = ((input: RequestInfo | URL, init?: RequestInit) => {
+  const url = typeof input === "string" ? input : input instanceof URL ? input.href : input.url;
+  if (url.startsWith("/api/")) return realFetch(`${API}${url.slice(4)}`, init);
+  return realFetch(input, init);
+}) as typeof fetch;
+
+/** The new side: the current function, or the endpoint as JSON (null on 404, like the TS). */
+async function runNew(c: ParityCase, ctx: unknown): Promise<{ ok: true; value: unknown } | { ok: false; error: string }> {
+  if (c.current) {
+    try {
+      return { ok: true, value: JSON.parse(JSON.stringify((await c.current(ctx)) ?? null)) };
+    } catch (e) {
+      return { ok: false, error: (e as { message?: string } | null)?.message ?? String(e) };
+    }
+  }
+  const call = typeof c.api === "function" ? c.api(ctx) : c.api!;
+  const res = await callApi(call);
+  if (!res.ok) return { ok: false, error: `API ${res.status} ${await res.text()}` };
+  return { ok: true, value: await res.json() };
+}
+
 function callApi(call: ApiCall) {
   return fetch(`${API}${call.path}`, {
     method: call.method,
@@ -89,12 +131,11 @@ function callApi(call: ApiCall) {
 let failed = 0;
 for (const c of cases) {
   const ctx = c.prepare ? await c.prepare(supabase) : undefined;
-  const call = typeof c.api === "function" ? c.api(ctx) : c.api;
   let fn: (...a: unknown[]) => Promise<unknown>;
   if (c.legacy) {
     fn = () => c.legacy!(supabase, ctx);
   } else {
-    const mod = await legacyModule(c.legacyModule!, c.legacyPatch);
+    const mod = await legacyModule(c.legacyModule!, c.legacyPatch, c.legacyDeps);
     fn = mod[c.legacyExport!] as (...a: unknown[]) => Promise<unknown>;
   }
   let legacy: unknown;
@@ -103,9 +144,9 @@ for (const c of cases) {
   } catch (e) {
     const msg = (e as { message?: string } | null)?.message;
     if (c.expectRefusal) {
-      const res = await callApi(call);
+      const res = await runNew(c, ctx);
       if (!res.ok) {
-        console.log(`PASS ${c.name}: both refused (legacy: ${msg}; API: ${res.status} ${await res.text()})`);
+        console.log(`PASS ${c.name}: both refused (legacy: ${msg}; new: ${res.error})`);
         continue;
       }
     }
@@ -113,13 +154,13 @@ for (const c of cases) {
     console.log(`FAIL ${c.name}: legacy threw ${msg || "(empty error, usually an RLS-denied or timed-out count)"}`);
     continue;
   }
-  const res = await callApi(call);
+  const res = await runNew(c, ctx);
   if (!res.ok) {
     failed++;
-    console.log(`FAIL ${c.name}: API ${res.status} ${await res.text()}`);
+    console.log(`FAIL ${c.name}: ${res.error}`);
     continue;
   }
-  let api = await res.json();
+  let api = res.value;
   if (c.normalize) {
     legacy = c.normalize(legacy);
     api = c.normalize(api);

@@ -108,8 +108,31 @@ Counts are (reads/writes/rpc) as measured on 2026-10-23.
   - The `/organizations` category dropdown is built from 1,000 of the 38k organizations.
   - `/professionals` graph depth: 50 professionals × ~30 nodes exceeds 1,000 rows, so about 10 of the 50 get no depth figures.
 
-### 5. srp (31/0/3)
-- [ ] 1 · [ ] 2 · [ ] 3 · [ ] 4 · [ ] 5 · [ ] 6 · [ ] 7 parity · [ ] 8 · [ ] 9
+### 5. srp (31/0/3) · branch `migrate/api-srp` · public pages, run as `anon` (or as the signed-in visitor)
+- [x] 1. Endpoints under `/srp/` (`srp/routers/public_profile.py`):
+  - `GET profile/p/{slug}`: about 17 legacy reads in 2 round trips (office, company and partner lookups are subqueries)
+  - `GET profile/{o|c}/{slug}`: about 13 reads in 2 round trips
+  - `GET category-label/{gcid}`
+  - `GET sponsored-slots` and `GET ad-units` (read RPCs); `POST page-view` (the ping RPC)
+- [x] 2. Tables: aggregate_ratings, content_items, credentials, exp_category_page_template, exp_category_profile_config, exp_ring, exp_taxonomy, graph_edges, media_items, reviews
+- [x] 3. `srp/queries/{profile,monetization}.py`
+  - The page logic (fallbacks, merging, JSON-LD) stays in TypeScript and now builds from the API rows: `pageTemplateFrom`, `graphSectionsFrom`, `expertiseFrom`, and so on.
+  - The dead `loadProfessionalProfile` / `loadOrgProfile` in `public-profile.ts` were removed, not ported.
+- [x] 4. pytest (`srp/queries/queries_test.py`), plus a live check as anon.
+  - Security: 12 of the 14 tables have RLS on with read-only anon policies, and the 3 RPCs are SECURITY DEFINER with a pinned search_path.
+  - `exp_category_page_template` and `exp_ring` are SF-1 tables (RLS off, anon write). srp only reads them.
+  - The legacy `exp_ring` read is kept exactly as it was, with no new ring logic (O1).
+- [x] 5. `contracts/srp/openapi.json`
+- [x] 6. srp makes no direct Supabase calls. What remains comes from `_base`: `loadAuthorArticles`, `runSearch`, `loadHubArticles`.
+- [x] 7. Parity PASS 14/14 (2026-10-23, signed out, end to end).
+  - The legacy `loadProfessionalBundle`/`loadOrgBundle` (from git) were compared with the current ones: 5 professionals, 5 organizations and brands (including unknown slugs), sponsored slots, 2 ad-unit lookups and a category label.
+  - Checked that the cases carry real data, e.g. Greg Aldridge: 20 services, 3 credentials, 8 proof rings.
+- [ ] 8. Click-through (signed out): `/p/…`, `/o/…`, `/c/…`, `/find`
+- [ ] 9. Lint ratchet
+- **Speed (shared `_base`).** Each GCP round trip is ~240 ms over the VPN.
+  - `fetch_many` sends a batch through a psycopg pipeline with a manual savepoint, so the whole batch is 1 round trip.
+  - `role_connection` sets claims + role in one `set_config` statement.
+  - A profile went from 13 s to ~1.6 s.
 
 ### 6. ops (23/21/0, 2 storage calls)
 - [ ] 1 · [ ] 2 · [ ] 3 · [ ] 4 · [ ] 5 · [ ] 6 · [ ] 7 parity · [ ] 8 · [ ] 9
