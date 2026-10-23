@@ -1,17 +1,8 @@
 {
-  "compilerOptions": {
-    "target": "ES2022",
-    "lib": ["ES2022", "DOM", "DOM.Iterable"],
-    "module": "ESNext",
-    "moduleResolution": "bundler",
-    "jsx": "react-jsx",
-    "strict": true,
-    "skipLibCheck": true,
-    "types": ["vite/client"],
-    "baseUrl": ".",
-    "paths": {
-      "@v3/ui": ["../_base"]
-    }
-  },
-  "include": ["src"]
+  "extends": "../tsconfig.base.json",
+  "include": [
+    "src",
+    "../app/.generated/routeTree.gen.ts",
+    "../app/src/router.tsx"
+  ]
 }
