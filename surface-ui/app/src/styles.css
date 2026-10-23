@@ -1,7 +1,7 @@
 @import "tailwindcss" source(none);
-/* Composed app: scan every Surface's sources (paths relative to this file). */
-@source "../../*/src";
-@source not "../../*/node_modules";
+/* Composed app: scan every Surface's sources (paths relative to this file). Tailwind does
+   not expand a bare `*` directory segment, so the glob must reach the files. */
+@source "../../*/src/**/*.{ts,tsx}";
 @import "tw-animate-css";
 
 @custom-variant dark (&:is(.dark *));
