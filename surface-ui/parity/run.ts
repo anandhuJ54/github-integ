@@ -128,6 +128,9 @@ function callApi(call: ApiCall) {
   });
 }
 
+// Cases that need legacy modules with per-case arguments (e.g. from `prepare`) load them here.
+(globalThis as any).__legacyModule = (path: string, deps?: string[]) => legacyModule(path, [], deps);
+
 let failed = 0;
 for (const c of cases) {
   const ctx = c.prepare ? await c.prepare(supabase) : undefined;

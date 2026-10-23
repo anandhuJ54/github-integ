@@ -1,11 +1,12 @@
 import { supabase } from "@v3/ui/integrations/supabase/client";
+import { api } from "@v3/ui/lib/server-fn";
 import type { Team } from "@v3/ops/lib/dev-progress";
 
-/* Build module wiki data layer — reads/writes exp_wiki_* (tables owned by the data architect). */
-
-// exp_wiki_* may not be in generated types yet; use an untyped handle.
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const db = supabase as any;
+/*
+ * Build module wiki data layer — reads/writes exp_wiki_* (tables owned by the data architect)
+ * through /ops/wiki/* (surface-api/ops/queries/wiki.py), as the signed-in user. The API sets
+ * author / user_ref from the login (currentUserRef's value).
+ */
 
 export type WikiSpace = {
   id: string;
@@ -60,14 +61,6 @@ export type WikiRevision = {
   edited_by: string | null;
   created_at: string;
 };
-
-const DOC_LIST_COLS =
-  "id,slug,title,category,tags,summary,status,author,is_pinned,sort_order,word_count,created_at,updated_at,space_id,parent_id";
-
-function must<T>(res: { data: T | null; error: { message: string } | null }): T {
-  if (res.error) throw new Error(res.error.message);
-  return res.data as T;
-}
 
 export async function currentUserRef(): Promise<string> {
   const { data } = await supabase.auth.getUser();
@@ -129,54 +122,43 @@ export function teamForSpace(space: WikiSpace, teams: Team[]): Team | null {
 /* ───────── Loaders ───────── */
 
 export async function listSpaces(): Promise<WikiSpace[]> {
-  const [spaces, docs] = await Promise.all([
-    db.from("exp_wiki_spaces").select("*").eq("is_archived", false).order("sort_order").order("name"),
-    db.from("exp_wiki_docs").select("space_id").not("space_id", "is", null),
-  ]);
+  const { spaces, docs } = await api.get<{ spaces: WikiSpace[]; docs: { space_id: string }[] }>(
+    "/ops/wiki/spaces",
+  );
   const counts = new Map<string, number>();
-  for (const d of must<{ space_id: string }[]>(docs) ?? []) counts.set(d.space_id, (counts.get(d.space_id) ?? 0) + 1);
-  return (must<WikiSpace[]>(spaces) ?? []).map((s) => ({ ...s, page_count: counts.get(s.id) ?? 0 }));
+  for (const d of docs) counts.set(d.space_id, (counts.get(d.space_id) ?? 0) + 1);
+  return spaces.map((s) => ({ ...s, page_count: counts.get(s.id) ?? 0 }));
 }
 
-export async function getSpace(key: string): Promise<WikiSpace | null> {
-  return must<WikiSpace | null>(await db.from("exp_wiki_spaces").select("*").eq("key", key).maybeSingle());
+export function getSpace(key: string): Promise<WikiSpace | null> {
+  return api.get<WikiSpace | null>(`/ops/wiki/spaces/${encodeURIComponent(key)}`);
 }
 
 export async function spaceTree(spaceId: string): Promise<{ docs: WikiDoc[]; tree: TreeNode[] }> {
-  const docs = must<WikiDoc[]>(await db.from("exp_wiki_docs").select(DOC_LIST_COLS).eq("space_id", spaceId)) ?? [];
+  const docs = await api.get<WikiDoc[]>(`/ops/wiki/spaces/${encodeURIComponent(spaceId)}/docs`);
   return { docs, tree: buildTree(docs) };
 }
 
-export async function getDoc(spaceId: string, slug: string): Promise<WikiDoc | null> {
-  return must<WikiDoc | null>(
-    await db.from("exp_wiki_docs").select("*").eq("space_id", spaceId).eq("slug", slug).maybeSingle(),
-  );
+export function getDoc(spaceId: string, slug: string): Promise<WikiDoc | null> {
+  return api.get<WikiDoc | null>("/ops/wiki/doc", { params: { space_id: spaceId, slug } });
 }
 
-export async function docComments(docId: string): Promise<WikiComment[]> {
-  return must<WikiComment[]>(await db.from("exp_wiki_comments").select("*").eq("doc_id", docId).order("created_at")) ?? [];
+export function docComments(docId: string): Promise<WikiComment[]> {
+  return api.get<WikiComment[]>(`/ops/wiki/docs/${encodeURIComponent(docId)}/comments`);
 }
 
-export async function docRevisions(docId: string): Promise<WikiRevision[]> {
-  return (
-    must<WikiRevision[]>(
-      await db.from("exp_wiki_revisions").select("*").eq("doc_id", docId).order("created_at", { ascending: false }),
-    ) ?? []
-  );
+export function docRevisions(docId: string): Promise<WikiRevision[]> {
+  return api.get<WikiRevision[]>(`/ops/wiki/docs/${encodeURIComponent(docId)}/revisions`);
 }
 
 export type SearchHit = { id: string; slug: string; title: string; space_key: string | null; space_name: string | null; snippet: string };
 
 export async function searchWiki(q: string): Promise<SearchHit[]> {
   if (!q.trim()) return [];
-  const rows =
-    must<(WikiDoc & { exp_wiki_spaces: { key: string; name: string } | null })[]>(
-      await db
-        .from("exp_wiki_docs")
-        .select("id,slug,title,summary,body_md,exp_wiki_spaces(key,name)")
-        .textSearch("search_tsv", q, { type: "websearch" })
-        .limit(20),
-    ) ?? [];
+  const rows = await api.get<(WikiDoc & { exp_wiki_spaces: { key: string; name: string } | null })[]>(
+    "/ops/wiki/search",
+    { params: { q } },
+  );
   const term = q.trim().split(/\s+/)[0]?.toLowerCase() ?? "";
   return rows.map((r) => {
     const body = (r.body_md ?? "").replace(/[#*`>_[\]()-]/g, " ").replace(/\s+/g, " ");
@@ -193,44 +175,28 @@ export async function searchWiki(q: string): Promise<SearchHit[]> {
   });
 }
 
-export async function isWatching(target: { docId?: string; spaceId?: string }): Promise<boolean> {
-  const me = await currentUserRef();
-  let q = db.from("exp_wiki_watchers").select("id").eq("user_ref", me);
-  q = target.docId ? q.eq("doc_id", target.docId) : q.eq("space_id", target.spaceId);
-  return (must<{ id: string }[]>(await q.limit(1)) ?? []).length > 0;
+export function isWatching(target: { docId?: string; spaceId?: string }): Promise<boolean> {
+  return api.get<boolean>("/ops/wiki/watching", {
+    params: target.docId ? { doc_id: target.docId } : { space_id: target.spaceId },
+  });
 }
 
 /* ───────── Mutations ───────── */
 
-export async function createDoc(input: { spaceId: string; parentId?: string | null; title: string }): Promise<WikiDoc> {
-  const author = await currentUserRef();
-  const base = slugify(input.title);
-  const existing = must<{ slug: string }[]>(await db.from("exp_wiki_docs").select("slug").like("slug", `${base}%`)) ?? [];
-  const taken = new Set(existing.map((e) => e.slug));
-  let slug = base;
-  for (let n = 2; taken.has(slug); n++) slug = `${base}-${n}`;
-  return must<WikiDoc>(
-    await db
-      .from("exp_wiki_docs")
-      .insert({
-        slug,
-        title: input.title,
-        space_id: input.spaceId,
-        parent_id: input.parentId ?? null,
-        body_md: "",
-        author,
-        status: "draft",
-      })
-      .select("*")
-      .single(),
-  );
+export function createDoc(input: { spaceId: string; parentId?: string | null; title: string }): Promise<WikiDoc> {
+  // the API picks a free slug from the title, as this did
+  return api.post<WikiDoc>("/ops/wiki/docs", {
+    space_id: input.spaceId,
+    parent_id: input.parentId ?? null,
+    title: input.title,
+  });
 }
 
 export async function updateDoc(
   id: string,
   patch: Partial<Pick<WikiDoc, "title" | "body_md" | "category" | "tags" | "summary" | "parent_id" | "is_pinned">>,
 ) {
-  must(await db.from("exp_wiki_docs").update(patch).eq("id", id).select("id"));
+  await api.patch(`/ops/wiki/docs/${encodeURIComponent(id)}`, patch);
 }
 
 export async function moveDoc(id: string, parentId: string | null) {
@@ -243,28 +209,17 @@ export async function pinDoc(id: string, pinned: boolean) {
 }
 
 export async function addComment(docId: string, body: string, parentId?: string | null) {
-  const author = await currentUserRef();
-  must(await db.from("exp_wiki_comments").insert({ doc_id: docId, body, parent_id: parentId ?? null, author }).select("id"));
+  await api.post(`/ops/wiki/docs/${encodeURIComponent(docId)}/comments`, { body, parent_id: parentId ?? null });
 }
 
 export async function resolveComment(id: string, resolved = true) {
-  must(await db.from("exp_wiki_comments").update({ resolved }).eq("id", id).select("id"));
+  await api.patch(`/ops/wiki/comments/${encodeURIComponent(id)}`, { resolved });
 }
 
-export async function toggleWatch(target: { docId?: string; spaceId?: string }): Promise<boolean> {
-  const me = await currentUserRef();
-  let q = db.from("exp_wiki_watchers").select("id").eq("user_ref", me);
-  q = target.docId ? q.eq("doc_id", target.docId) : q.eq("space_id", target.spaceId);
-  const rows = must<{ id: string }[]>(await q) ?? [];
-  if (rows.length) {
-    must(await db.from("exp_wiki_watchers").delete().in("id", rows.map((r) => r.id)).select("id"));
-    return false;
-  }
-  must(
-    await db
-      .from("exp_wiki_watchers")
-      .insert({ user_ref: me, doc_id: target.docId ?? null, space_id: target.spaceId ?? null })
-      .select("id"),
-  );
-  return true;
+export function toggleWatch(target: { docId?: string; spaceId?: string }): Promise<boolean> {
+  // watching after the toggle
+  return api.post<boolean>("/ops/wiki/watch", {
+    doc_id: target.docId ?? null,
+    space_id: target.spaceId ?? null,
+  });
 }

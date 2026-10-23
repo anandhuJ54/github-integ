@@ -3,8 +3,8 @@
 Regenerate with `uv run --env-file .env python -m _base.schema.generate` (see generate.py).
 """
 # ruff: noqa
-from sqlalchemy import BigInteger, Boolean, CheckConstraint, Column, Computed, Date, DateTime, ForeignKeyConstraint, Index, Integer, MetaData, Numeric, PrimaryKeyConstraint, SmallInteger, String, Table, Text, UniqueConstraint, Uuid, text
-from sqlalchemy.dialects.postgresql import ARRAY, INET, JSONB
+from sqlalchemy import BigInteger, Boolean, CheckConstraint, Column, Computed, Date, DateTime, ForeignKeyConstraint, Identity, Index, Integer, MetaData, Numeric, PrimaryKeyConstraint, SmallInteger, String, Table, Text, UniqueConstraint, Uuid, text
+from sqlalchemy.dialects.postgresql import ARRAY, INET, JSONB, TSVECTOR
 
 metadata = MetaData()
 
@@ -81,6 +81,24 @@ t_aggregate_ratings = Table(
     schema='public'
 )
 
+t_disco_jobs = Table(
+    'disco_jobs', metadata,
+    Column('job_id', BigInteger, Identity(always=True, start=1, increment=1, minvalue=1, maxvalue=9223372036854775807, cycle=False, cache=1), primary_key=True, autoincrement=True),
+    Column('category_slug', Text, nullable=False),
+    Column('step', Text, nullable=False),
+    Column('status', Text, nullable=False, server_default=text("'queued'::text")),
+    Column('payload', JSONB, nullable=False, server_default=text("'{}'::jsonb")),
+    Column('result', JSONB),
+    Column('note', Text),
+    Column('created_at', DateTime(True), nullable=False, server_default=text('now()')),
+    Column('updated_at', DateTime(True), nullable=False, server_default=text('now()')),
+    CheckConstraint("status = ANY (ARRAY['queued'::text, 'running'::text, 'awaiting_ai'::text, 'awaiting_human'::text, 'done'::text, 'blocked'::text, 'error'::text])", name='disco_jobs_status_check'),
+    CheckConstraint("step = ANY (ARRAY['activate'::text, 'discover'::text, 'method'::text, 'run'::text, 'refresh'::text, 'remap'::text])", name='disco_jobs_step_check'),
+    PrimaryKeyConstraint('job_id', name='disco_jobs_pkey'),
+    Index('idx_disco_jobs_open', 'step', 'status', postgresql_where="(status = ANY (ARRAY['queued'::text, 'awaiting_ai'::text]))"),
+    schema='public'
+)
+
 t_entity_compliance = Table(
     'entity_compliance', metadata,
     Column('entity_type', Text, primary_key=True),
@@ -108,6 +126,27 @@ t_entity_compliance = Table(
     CheckConstraint("entity_type = ANY (ARRAY['professional'::text, 'organization'::text])", name='entity_compliance_entity_type_check'),
     PrimaryKeyConstraint('entity_type', 'entity_id', name='entity_compliance_pkey'),
     Index('idx_compliance_entity', 'entity_type', 'entity_id'),
+    schema='public'
+)
+
+t_exp_activity_events = Table(
+    'exp_activity_events', metadata,
+    Column('id', Uuid, primary_key=True, server_default=text('gen_random_uuid()')),
+    Column('event_type', Text, nullable=False),
+    Column('subject_type', Text),
+    Column('subject_id', Text),
+    Column('account_id', Text),
+    Column('logo', Text),
+    Column('location', Text),
+    Column('actor', Text),
+    Column('value', JSONB, server_default=text("'{}'::jsonb")),
+    Column('occurred_at', DateTime(True), server_default=text('now()')),
+    Column('is_demo', Boolean, server_default=text('false')),
+    Column('source', Text, server_default=text("'manual'::text")),
+    Column('external_id', Text),
+    Column('demo_batch', Text),
+    PrimaryKeyConstraint('id', name='exp_activity_events_pkey'),
+    Index('ix_activity_external', 'source', 'external_id'),
     schema='public'
 )
 
@@ -141,6 +180,47 @@ t_exp_category_profile_config = Table(
     Column('show_prequalify', Boolean, server_default=text('false')),
     Column('updated_at', DateTime(True), server_default=text('now()')),
     PrimaryKeyConstraint('gcid', name='exp_category_profile_config_pkey'),
+    schema='public'
+)
+
+t_exp_dev_config = Table(
+    'exp_dev_config', metadata,
+    Column('id', Uuid, primary_key=True, server_default=text('gen_random_uuid()')),
+    Column('reminder_day', Text, server_default=text("'Thursday'::text")),
+    Column('reminder_time', Text, server_default=text("'09:00'::text")),
+    Column('due_day', Text, server_default=text("'Friday'::text")),
+    Column('due_time', Text, server_default=text("'09:00'::text")),
+    Column('digest_day', Text, server_default=text("'Friday'::text")),
+    Column('digest_time', Text, server_default=text("'12:00'::text")),
+    Column('from_email', Text),
+    Column('provider', Text, server_default=text("'resend'::text")),
+    Column('created_at', DateTime(True), server_default=text('now()')),
+    PrimaryKeyConstraint('id', name='exp_dev_config_pkey'),
+    schema='public'
+)
+
+t_exp_dev_launch = Table(
+    'exp_dev_launch', metadata,
+    Column('id', Uuid, primary_key=True, server_default=text('gen_random_uuid()')),
+    Column('phase', Text, nullable=False),
+    Column('launch_date', Date, nullable=False),
+    Column('program_start', Date, nullable=False),
+    Column('created_at', DateTime(True), server_default=text('now()')),
+    PrimaryKeyConstraint('id', name='exp_dev_launch_pkey'),
+    schema='public'
+)
+
+t_exp_dev_teams = Table(
+    'exp_dev_teams', metadata,
+    Column('id', Uuid, primary_key=True, server_default=text('gen_random_uuid()')),
+    Column('name', Text, nullable=False),
+    Column('lane', Text, nullable=False),
+    Column('team_type', Text, nullable=False),
+    Column('leader', Text),
+    Column('target_size', Integer),
+    Column('sort_order', Integer, server_default=text('100')),
+    Column('created_at', DateTime(True), server_default=text('now()')),
+    PrimaryKeyConstraint('id', name='exp_dev_teams_pkey'),
     schema='public'
 )
 
@@ -208,6 +288,30 @@ t_exp_ring = Table(
     schema='public'
 )
 
+t_exp_sales_reps = Table(
+    'exp_sales_reps', metadata,
+    Column('id', Uuid, primary_key=True, server_default=text('gen_random_uuid()')),
+    Column('name', Text, nullable=False),
+    Column('email', Text),
+    Column('role', Text, nullable=False),
+    Column('group_key', Text, nullable=False),
+    Column('created_at', DateTime(True), server_default=text('now()')),
+    Column('is_demo', Boolean, server_default=text('false')),
+    Column('on_duty', Boolean, server_default=text('true')),
+    Column('backup_rep_id', Uuid),
+    Column('photo_url', Text),
+    Column('title', Text),
+    Column('team_name', Text),
+    Column('phone', Text),
+    Column('sdrcloud_url', Text),
+    Column('attribution_target', Numeric),
+    Column('hire_date', Date),
+    Column('slack_channel', Text),
+    Column('demo_batch', Text),
+    PrimaryKeyConstraint('id', name='exp_sales_reps_pkey'),
+    schema='public'
+)
+
 t_exp_taxonomy = Table(
     'exp_taxonomy', metadata,
     Column('id', Uuid, primary_key=True, server_default=text('gen_random_uuid()')),
@@ -246,6 +350,25 @@ t_exp_taxonomy = Table(
     Index('idx_exp_taxonomy_concept', 'gcid', 'concept_slug', postgresql_where='(concept_slug IS NOT NULL)'),
     Index('idx_exp_taxonomy_gcid', 'gcid'),
     Index('uq_taxonomy_term', 'level', 'term_slug', unique=True),
+    schema='public'
+)
+
+t_exp_wiki_spaces = Table(
+    'exp_wiki_spaces', metadata,
+    Column('id', Uuid, primary_key=True, server_default=text('gen_random_uuid()')),
+    Column('key', Text, nullable=False),
+    Column('name', Text, nullable=False),
+    Column('description', Text),
+    Column('owner', Text),
+    Column('team_key', Text),
+    Column('icon', Text, server_default=text("'book'::text")),
+    Column('color', Text, server_default=text("'slate'::text")),
+    Column('sort_order', Integer, nullable=False, server_default=text('0')),
+    Column('is_archived', Boolean, nullable=False, server_default=text('false')),
+    Column('created_at', DateTime(True), nullable=False, server_default=text('now()')),
+    Column('updated_at', DateTime(True), nullable=False, server_default=text('now()')),
+    PrimaryKeyConstraint('id', name='exp_wiki_spaces_pkey'),
+    UniqueConstraint('key', name='exp_wiki_spaces_key_key'),
     schema='public'
 )
 
@@ -405,6 +528,60 @@ t_exp_claim = Table(
     schema='public'
 )
 
+t_exp_contracts = Table(
+    'exp_contracts', metadata,
+    Column('id', Uuid, primary_key=True, server_default=text('gen_random_uuid()')),
+    Column('org_id', Text),
+    Column('account_id', Text),
+    Column('name', Text, nullable=False),
+    Column('status', Text, nullable=False, server_default=text("'draft'::text")),
+    Column('start_date', Date),
+    Column('end_date', Date),
+    Column('terms', JSONB, server_default=text("'{}'::jsonb")),
+    Column('token_package', Integer, server_default=text('0')),
+    Column('mrr', Numeric),
+    Column('created_by', Text),
+    Column('created_at', DateTime(True), server_default=text('now()')),
+    Column('is_demo', Boolean, server_default=text('false')),
+    Column('sold_by', Uuid),
+    Column('net', Numeric),
+    Column('cost', Numeric),
+    Column('margin_pct', Numeric),
+    Column('approval_state', Text, nullable=False, server_default=text("'not_required'::text")),
+    Column('approval_note', Text),
+    Column('demo_batch', Text),
+    Column('contract_number', Text),
+    Column('quote_id', Uuid),
+    Column('opportunity_id', Uuid),
+    Column('parent_contract_id', Uuid),
+    Column('contract_type', Text, server_default=text("'new'::text")),
+    Column('acv', Numeric),
+    Column('payment_terms', Text),
+    Column('billing_frequency', Text),
+    Column('auto_renew', Boolean, server_default=text('true')),
+    Column('renewal_term_months', Integer),
+    Column('notice_period_days', Integer),
+    Column('notice_deadline', Date),
+    Column('special_terms', Text),
+    Column('current_version', Integer, server_default=text('1')),
+    Column('signing_version', Integer),
+    Column('is_locked', Boolean, server_default=text('false')),
+    Column('executed_at', DateTime(True)),
+    Column('document_hash', Text),
+    Column('stage', Text),
+    Column('billing_mode', Text, server_default=text("'annual'::text")),
+    Column('expiration_at', DateTime(True)),
+    Column('renewal_uplift_pct', Numeric, server_default=text('7')),
+    Column('total_recurring', Numeric),
+    Column('total_one_time', Numeric),
+    Column('master_agreement_url', Text, server_default=text("'https://www.experience.com/software-and-subscription-agreement'::text")),
+    Column('master_agreement_version', Text, server_default=text("'06-16-2025'::text")),
+    ForeignKeyConstraint(['sold_by'], ['public.exp_sales_reps.id'], ondelete='SET NULL', name='exp_contracts_sold_by_fkey'),
+    PrimaryKeyConstraint('id', name='exp_contracts_pkey'),
+    Index('exp_contracts_sold_by_idx', 'sold_by'),
+    schema='public'
+)
+
 t_exp_control_grants = Table(
     'exp_control_grants', metadata,
     Column('id', Uuid, primary_key=True, server_default=text('gen_random_uuid()')),
@@ -419,6 +596,100 @@ t_exp_control_grants = Table(
     PrimaryKeyConstraint('id', name='exp_control_grants_pkey'),
     UniqueConstraint('user_id', 'role', 'scope_type', 'scope_id', name='exp_control_grants_user_id_role_scope_type_scope_id_key'),
     Index('exp_control_grants_user_idx', 'user_id'),
+    schema='public'
+)
+
+t_exp_dev_demo_days = Table(
+    'exp_dev_demo_days', metadata,
+    Column('id', Uuid, primary_key=True, server_default=text('gen_random_uuid()')),
+    Column('team_id', Uuid),
+    Column('title', Text, nullable=False),
+    Column('demo_date', Date, nullable=False),
+    Column('notes', Text),
+    Column('created_at', DateTime(True), server_default=text('now()')),
+    ForeignKeyConstraint(['team_id'], ['public.exp_dev_teams.id'], ondelete='CASCADE', name='exp_dev_demo_days_team_id_fkey'),
+    PrimaryKeyConstraint('id', name='exp_dev_demo_days_pkey'),
+    schema='public'
+)
+
+t_exp_dev_docs = Table(
+    'exp_dev_docs', metadata,
+    Column('id', Uuid, primary_key=True, server_default=text('gen_random_uuid()')),
+    Column('team_id', Uuid),
+    Column('title', Text, nullable=False),
+    Column('doc_type', Text, server_default=text("'doc'::text")),
+    Column('storage_path', Text),
+    Column('url', Text),
+    Column('body', Text),
+    Column('updated_by', Text),
+    Column('updated_at', DateTime(True), server_default=text('now()')),
+    Column('created_at', DateTime(True), server_default=text('now()')),
+    ForeignKeyConstraint(['team_id'], ['public.exp_dev_teams.id'], ondelete='CASCADE', name='exp_dev_docs_team_id_fkey'),
+    PrimaryKeyConstraint('id', name='exp_dev_docs_pkey'),
+    schema='public'
+)
+
+t_exp_dev_ideas = Table(
+    'exp_dev_ideas', metadata,
+    Column('id', Uuid, primary_key=True, server_default=text('gen_random_uuid()')),
+    Column('team_id', Uuid),
+    Column('title', Text, nullable=False),
+    Column('description', Text),
+    Column('submitted_by', Text),
+    Column('votes', Integer, server_default=text('0')),
+    Column('status', Text, server_default=text("'parked'::text")),
+    Column('created_at', DateTime(True), server_default=text('now()')),
+    ForeignKeyConstraint(['team_id'], ['public.exp_dev_teams.id'], ondelete='CASCADE', name='exp_dev_ideas_team_id_fkey'),
+    PrimaryKeyConstraint('id', name='exp_dev_ideas_pkey'),
+    schema='public'
+)
+
+t_exp_dev_members = Table(
+    'exp_dev_members', metadata,
+    Column('id', Uuid, primary_key=True, server_default=text('gen_random_uuid()')),
+    Column('team_id', Uuid),
+    Column('name', Text, nullable=False),
+    Column('role', Text, nullable=False),
+    Column('created_at', DateTime(True), server_default=text('now()')),
+    Column('email', Text),
+    Column('is_lead', Boolean, server_default=text('false')),
+    Column('is_demo', Boolean, server_default=text('false')),
+    ForeignKeyConstraint(['team_id'], ['public.exp_dev_teams.id'], ondelete='CASCADE', name='exp_dev_members_team_id_fkey'),
+    PrimaryKeyConstraint('id', name='exp_dev_members_pkey'),
+    schema='public'
+)
+
+t_exp_dev_projects = Table(
+    'exp_dev_projects', metadata,
+    Column('id', Uuid, primary_key=True, server_default=text('gen_random_uuid()')),
+    Column('team_id', Uuid),
+    Column('name', Text, nullable=False),
+    Column('description', Text),
+    Column('success_criteria', Text),
+    Column('priority', Text, server_default=text("'P2'::text")),
+    Column('status', Text, server_default=text("'not_started'::text")),
+    Column('deadline', Date),
+    Column('progress_pct', Integer, server_default=text('0')),
+    Column('created_at', DateTime(True), server_default=text('now()')),
+    Column('updated_at', DateTime(True), server_default=text('now()')),
+    CheckConstraint("priority = ANY (ARRAY['P0'::text, 'P1'::text, 'P2'::text, 'P3'::text])", name='exp_dev_projects_priority_check'),
+    CheckConstraint('progress_pct >= 0 AND progress_pct <= 100', name='exp_dev_projects_progress_pct_check'),
+    ForeignKeyConstraint(['team_id'], ['public.exp_dev_teams.id'], ondelete='CASCADE', name='exp_dev_projects_team_id_fkey'),
+    PrimaryKeyConstraint('id', name='exp_dev_projects_pkey'),
+    schema='public'
+)
+
+t_exp_dev_sprints = Table(
+    'exp_dev_sprints', metadata,
+    Column('id', Uuid, primary_key=True, server_default=text('gen_random_uuid()')),
+    Column('team_id', Uuid),
+    Column('name', Text, nullable=False),
+    Column('goal', Text),
+    Column('start_date', Date),
+    Column('end_date', Date),
+    Column('created_at', DateTime(True), server_default=text('now()')),
+    ForeignKeyConstraint(['team_id'], ['public.exp_dev_teams.id'], ondelete='CASCADE', name='exp_dev_sprints_team_id_fkey'),
+    PrimaryKeyConstraint('id', name='exp_dev_sprints_pkey'),
     schema='public'
 )
 
@@ -502,6 +773,37 @@ t_exp_vertical_node_registry = Table(
     Index('idx_vnr_required', 'gcid', 'required_for_score'),
     Index('idx_vnr_ring', 'gcid', 'ring'),
     Index('idx_vnr_schema', 'schema_type'),
+    schema='public'
+)
+
+t_exp_wiki_docs = Table(
+    'exp_wiki_docs', metadata,
+    Column('id', Uuid, primary_key=True, server_default=text('gen_random_uuid()')),
+    Column('slug', Text, nullable=False),
+    Column('title', Text, nullable=False),
+    Column('category', Text, nullable=False, server_default=text("'General'::text")),
+    Column('tags', ARRAY(Text()), nullable=False, server_default=text("'{}'::text[]")),
+    Column('summary', Text),
+    Column('body_md', Text, nullable=False, server_default=text("''::text")),
+    Column('status', Text, nullable=False, server_default=text("'published'::text")),
+    Column('source_file', Text),
+    Column('author', Text, nullable=False, server_default=text("'system'::text")),
+    Column('is_pinned', Boolean, nullable=False, server_default=text('false')),
+    Column('sort_order', Integer, nullable=False, server_default=text('0')),
+    Column('word_count', Integer, nullable=False, server_default=text('0')),
+    Column('created_at', DateTime(True), nullable=False, server_default=text('now()')),
+    Column('updated_at', DateTime(True), nullable=False, server_default=text('now()')),
+    Column('search_tsv', TSVECTOR, Computed("to_tsvector('english'::regconfig, ((((COALESCE(title, ''::text) || ' '::text) || COALESCE(summary, ''::text)) || ' '::text) || COALESCE(body_md, ''::text)))", persisted=True)),
+    Column('space_id', Uuid),
+    Column('parent_id', Uuid),
+    ForeignKeyConstraint(['parent_id'], ['public.exp_wiki_docs.id'], ondelete='SET NULL', name='exp_wiki_docs_parent_id_fkey'),
+    ForeignKeyConstraint(['space_id'], ['public.exp_wiki_spaces.id'], ondelete='SET NULL', name='exp_wiki_docs_space_id_fkey'),
+    PrimaryKeyConstraint('id', name='exp_wiki_docs_pkey'),
+    UniqueConstraint('slug', name='exp_wiki_docs_slug_key'),
+    Index('idx_wiki_cat', 'category'),
+    Index('idx_wiki_docs_parent', 'parent_id'),
+    Index('idx_wiki_docs_space', 'space_id'),
+    Index('idx_wiki_search', 'search_tsv', postgresql_using='gin'),
     schema='public'
 )
 
@@ -659,6 +961,59 @@ t_claim_queue = Table(
     schema='public'
 )
 
+t_exp_dev_idea_votes = Table(
+    'exp_dev_idea_votes', metadata,
+    Column('id', Uuid, primary_key=True, server_default=text('gen_random_uuid()')),
+    Column('idea_id', Uuid),
+    Column('voter', Text, nullable=False),
+    Column('created_at', DateTime(True), server_default=text('now()')),
+    ForeignKeyConstraint(['idea_id'], ['public.exp_dev_ideas.id'], ondelete='CASCADE', name='exp_dev_idea_votes_idea_id_fkey'),
+    PrimaryKeyConstraint('id', name='exp_dev_idea_votes_pkey'),
+    UniqueConstraint('idea_id', 'voter', name='exp_dev_idea_votes_idea_id_voter_key'),
+    schema='public'
+)
+
+t_exp_dev_sprint_items = Table(
+    'exp_dev_sprint_items', metadata,
+    Column('id', Uuid, primary_key=True, server_default=text('gen_random_uuid()')),
+    Column('sprint_id', Uuid),
+    Column('project_id', Uuid),
+    Column('title', Text, nullable=False),
+    Column('assignee', Text),
+    Column('status', Text, server_default=text("'todo'::text")),
+    Column('priority', Text, server_default=text("'P2'::text")),
+    Column('created_at', DateTime(True), server_default=text('now()')),
+    Column('deep_instructions', Text),
+    Column('is_gate', Boolean, server_default=text('false')),
+    Column('canon_ref', Text),
+    Column('order_no', Integer),
+    CheckConstraint("priority = ANY (ARRAY['P0'::text, 'P1'::text, 'P2'::text, 'P3'::text])", name='exp_dev_sprint_items_priority_check'),
+    ForeignKeyConstraint(['project_id'], ['public.exp_dev_projects.id'], ondelete='SET NULL', name='exp_dev_sprint_items_project_id_fkey'),
+    ForeignKeyConstraint(['sprint_id'], ['public.exp_dev_sprints.id'], ondelete='CASCADE', name='exp_dev_sprint_items_sprint_id_fkey'),
+    PrimaryKeyConstraint('id', name='exp_dev_sprint_items_pkey'),
+    schema='public'
+)
+
+t_exp_dev_weekly_updates = Table(
+    'exp_dev_weekly_updates', metadata,
+    Column('id', Uuid, primary_key=True, server_default=text('gen_random_uuid()')),
+    Column('team_id', Uuid),
+    Column('member_id', Uuid),
+    Column('week_start', Date, nullable=False),
+    Column('status', Text, server_default=text("'pending'::text")),
+    Column('self_progress_pct', Integer),
+    Column('highlights', Text),
+    Column('blockers', Text),
+    Column('next_week', Text),
+    Column('submitted_at', DateTime(True)),
+    Column('created_at', DateTime(True), server_default=text('now()')),
+    ForeignKeyConstraint(['member_id'], ['public.exp_dev_members.id'], ondelete='CASCADE', name='exp_dev_weekly_updates_member_id_fkey'),
+    ForeignKeyConstraint(['team_id'], ['public.exp_dev_teams.id'], ondelete='CASCADE', name='exp_dev_weekly_updates_team_id_fkey'),
+    PrimaryKeyConstraint('id', name='exp_dev_weekly_updates_pkey'),
+    UniqueConstraint('member_id', 'week_start', name='exp_dev_weekly_updates_member_id_week_start_key'),
+    schema='public'
+)
+
 t_exp_etl_staging = Table(
     'exp_etl_staging', metadata,
     Column('stage_id', Uuid, primary_key=True, server_default=text('gen_random_uuid()')),
@@ -684,6 +1039,52 @@ t_exp_etl_staging = Table(
     Index('idx_staging_detail_url_gcid', 'detail_url', 'gcid', postgresql_where='(detail_url IS NOT NULL)'),
     Index('idx_staging_gcid_source_observed', 'gcid', 'source_id', 'observed_at'),
     Index('idx_staging_pending', 'resolution_status', postgresql_where="(resolution_status = 'pending'::text)"),
+    schema='public'
+)
+
+t_exp_wiki_comments = Table(
+    'exp_wiki_comments', metadata,
+    Column('id', Uuid, primary_key=True, server_default=text('gen_random_uuid()')),
+    Column('doc_id', Uuid, nullable=False),
+    Column('parent_id', Uuid),
+    Column('author', Text, nullable=False, server_default=text("'system'::text")),
+    Column('body', Text, nullable=False),
+    Column('resolved', Boolean, nullable=False, server_default=text('false')),
+    Column('created_at', DateTime(True), nullable=False, server_default=text('now()')),
+    ForeignKeyConstraint(['doc_id'], ['public.exp_wiki_docs.id'], ondelete='CASCADE', name='exp_wiki_comments_doc_id_fkey'),
+    ForeignKeyConstraint(['parent_id'], ['public.exp_wiki_comments.id'], ondelete='CASCADE', name='exp_wiki_comments_parent_id_fkey'),
+    PrimaryKeyConstraint('id', name='exp_wiki_comments_pkey'),
+    Index('idx_wiki_comments_doc', 'doc_id', 'created_at'),
+    schema='public'
+)
+
+t_exp_wiki_revisions = Table(
+    'exp_wiki_revisions', metadata,
+    Column('id', Uuid, primary_key=True, server_default=text('gen_random_uuid()')),
+    Column('doc_id', Uuid, nullable=False),
+    Column('title', Text),
+    Column('category', Text),
+    Column('summary', Text),
+    Column('body_md', Text),
+    Column('edited_by', Text, server_default=text("'system'::text")),
+    Column('created_at', DateTime(True), nullable=False, server_default=text('now()')),
+    ForeignKeyConstraint(['doc_id'], ['public.exp_wiki_docs.id'], ondelete='CASCADE', name='exp_wiki_revisions_doc_id_fkey'),
+    PrimaryKeyConstraint('id', name='exp_wiki_revisions_pkey'),
+    Index('idx_wiki_rev_doc', 'doc_id', 'created_at'),
+    schema='public'
+)
+
+t_exp_wiki_watchers = Table(
+    'exp_wiki_watchers', metadata,
+    Column('id', Uuid, primary_key=True, server_default=text('gen_random_uuid()')),
+    Column('doc_id', Uuid),
+    Column('space_id', Uuid),
+    Column('user_ref', Text, nullable=False),
+    Column('created_at', DateTime(True), nullable=False, server_default=text('now()')),
+    ForeignKeyConstraint(['doc_id'], ['public.exp_wiki_docs.id'], ondelete='CASCADE', name='exp_wiki_watchers_doc_id_fkey'),
+    ForeignKeyConstraint(['space_id'], ['public.exp_wiki_spaces.id'], ondelete='CASCADE', name='exp_wiki_watchers_space_id_fkey'),
+    PrimaryKeyConstraint('id', name='exp_wiki_watchers_pkey'),
+    Index('idx_wiki_watch_uniq', 'user_ref', unique=True),
     schema='public'
 )
 

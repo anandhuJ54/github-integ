@@ -13,17 +13,26 @@ from __future__ import annotations
 
 import datetime as _dt
 import decimal
+import logging
 import uuid
 from typing import Any
 
 import psycopg
+from sqlalchemy import literal
 from sqlalchemy.dialects.postgresql import psycopg as _pg_psycopg
-from sqlalchemy.sql import ClauseElement, Select
+from sqlalchemy.sql import ClauseElement, ColumnElement, Select
 
 _DIALECT = _pg_psycopg.dialect()
+_log = logging.getLogger(__name__)
 
 # Rows per response, matching the self-hosted PostgREST max-rows.
 MAX_ROWS = 1000
+
+
+def typed(column: ColumnElement, value: Any) -> ColumnElement:
+    """`value` bound with `column`'s type. Comparing a Date/DateTime column with an ISO string
+    otherwise binds the string as VARCHAR, which Postgres won't compare with a date."""
+    return literal(value, type_=column.type)
 
 
 def capped(stmt: ClauseElement, max_rows: int | None = MAX_ROWS) -> ClauseElement:
@@ -108,7 +117,10 @@ def fetch_many(
             with conn.transaction(), conn.cursor() as cur:
                 cur.execute(sql, params)
                 out[k] = [jsonish(dict(r)) for r in cur.fetchall()]
-        except psycopg.Error:
+        except psycopg.Error as exc:
+            # tolerated like the TS's `data ?? []`, but never silently: a bug looks like no rows
+            _log.warning("fetch_many: %r failed, returning no rows: %s: %s",
+                         k, type(exc).__name__, exc.diag.message_primary if exc.diag else exc)
             out[k] = []
     return out
 

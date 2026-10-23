@@ -22,7 +22,7 @@ import {
   Users,
 } from "lucide-react";
 import type { ReactNode } from "react";
-import { supabase } from "@v3/ui/integrations/supabase/client";
+import { api } from "@v3/ui/lib/server-fn";
 import { EmpLayout } from "@v3/ui/components/emp-layout";
 import { PageBody, PageHeader, StatTile } from "@v3/ui/components/console/primitives";
 import { Button } from "@v3/ui/components/ui/button";
@@ -57,14 +57,6 @@ const cf = new Intl.NumberFormat("en-US", {
   currency: "USD",
   maximumFractionDigits: 0,
 });
-
-async function count(table: string, apply?: (q: any) => any) {
-  let q = supabase.from(table as never).select("*", { count: "exact", head: true });
-  if (apply) q = apply(q);
-  const { count: c, error } = await q;
-  if (error) throw error;
-  return c ?? 0;
-}
 
 function isoDaysAgo(days: number) {
   return new Date(Date.now() - days * 86_400_000).toISOString();
@@ -151,6 +143,10 @@ function useProfiles() {
       const d7 = isoDaysAgo(7);
       const d14 = isoDaysAgo(14);
       const today = startOfTodayIso();
+      // the 14 counts (professionals + organizations), from /ops/console/profiles
+      const c = await api.get<Record<string, number>>("/ops/console/profiles", {
+        params: { d7, d14, today },
+      });
       const [
         pros,
         orgs,
@@ -166,22 +162,9 @@ function useProfiles() {
         orgsClaimsPrev,
         prosClaimsToday,
         orgsClaimsToday,
-      ] = await Promise.all([
-        count("professionals"),
-        count("organizations"),
-        count("professionals", (q) => q.gte("created_at", d7)),
-        count("organizations", (q) => q.gte("created_at", d7)),
-        count("professionals", (q) => q.gte("created_at", d14).lt("created_at", d7)),
-        count("organizations", (q) => q.gte("created_at", d14).lt("created_at", d7)),
-        count("professionals", (q) => q.eq("claimed", true)),
-        count("organizations", (q) => q.eq("claimed", true)),
-        count("professionals", (q) => q.gte("claimed_at", d7)),
-        count("organizations", (q) => q.gte("claimed_at", d7)),
-        count("professionals", (q) => q.gte("claimed_at", d14).lt("claimed_at", d7)),
-        count("organizations", (q) => q.gte("claimed_at", d14).lt("claimed_at", d7)),
-        count("professionals", (q) => q.gte("claimed_at", today)),
-        count("organizations", (q) => q.gte("claimed_at", today)),
-      ]);
+      ] = ["total", "new7", "prev7", "claimed", "claims7", "claimsPrev7", "claimsToday"].flatMap(
+        (k) => [c[`pros_${k}`] ?? 0, c[`orgs_${k}`] ?? 0],
+      );
       const total = pros + orgs;
       const claimed = prosClaimed + orgsClaimed;
       return {
@@ -202,11 +185,10 @@ function useRevenue() {
   return useQuery({
     queryKey: ["home", "revenue"],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("exp_contracts")
-        .select("id,status,mrr,end_date");
-      if (error) throw error;
-      const active = (data ?? []).filter((r) => r.status === "active");
+      const data = await api.get<
+        { id: string; status: string | null; mrr: number | null; end_date: string | null }[]
+      >("/ops/console/revenue");
+      const active = data.filter((r) => r.status === "active");
       const mrr = active.reduce((s, r) => s + Number(r.mrr ?? 0), 0);
       const horizon = new Date(Date.now() + 90 * 86_400_000);
       const expiring = active.filter(
@@ -222,13 +204,13 @@ function useCategoryIntel() {
     queryKey: ["home", "categories"],
     queryFn: async () => {
       const today = startOfTodayIso();
-      const [active, total, etlRunning, prosToday, orgsToday] = await Promise.all([
-        count("gbp_categories", (q) => q.eq("status", "active")),
-        count("gbp_categories"),
-        count("disco_jobs", (q) => q.in("status", ["queued", "awaiting_ai", "running"])),
-        count("professionals", (q) => q.gte("created_at", today)),
-        count("organizations", (q) => q.gte("created_at", today)),
-      ]);
+      const { active, total, etlRunning, prosToday, orgsToday } = await api.get<{
+        active: number;
+        total: number;
+        etlRunning: number;
+        prosToday: number;
+        orgsToday: number;
+      }>("/ops/console/categories", { params: { today } });
       return {
         active,
         notActive: total - active,
@@ -246,12 +228,10 @@ function useNoraEvents() {
     queryFn: async () => {
       const d30 = isoDaysAgo(30);
       const d60 = isoDaysAgo(60);
-      const { data, error } = await supabase
-        .from("exp_activity_events")
-        .select("event_type,occurred_at")
-        .gte("occurred_at", d60);
-      if (error) throw error;
-      const rows = data ?? [];
+      const rows = await api.get<{ event_type: string | null; occurred_at: string | null }[]>(
+        "/ops/console/nora-events",
+        { params: { since: d60 } },
+      );
       const inWindow = (r: { occurred_at: string | null }, from: string, to?: string) =>
         r.occurred_at != null && r.occurred_at >= from && (!to || r.occurred_at < to);
       const tally = (type: string, from: string, to?: string) =>

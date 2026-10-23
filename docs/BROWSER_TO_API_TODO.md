@@ -134,9 +134,24 @@ Counts are (reads/writes/rpc) as measured on 2026-10-23.
   - `role_connection` sets claims + role in one `set_config` statement.
   - A profile went from 13 s to ~1.6 s.
 
-### 6. ops (23/21/0, 2 storage calls)
-- [ ] 1 · [ ] 2 · [ ] 3 · [ ] 4 · [ ] 5 · [ ] 6 · [ ] 7 parity · [ ] 8 · [ ] 9
-- Storage calls need their own design.
+### 6. ops (actually ~75 call sites, 2 storage calls) · branch `migrate/api-ops`
+- [x] 1. Endpoints under `/ops/` (`ops/routers/console_data.py`):
+  - Dev tracker reads: `dev/overview`, `dev/teams/{id}`, `dev/open-gates`, `dev/board`, `dev/weekly`
+  - Dev tracker writes: an allow-listed `POST`/`PATCH`/`DELETE dev/{entity}[/{id}]` for 10 tracker tables, `PUT dev/weekly-updates` (upsert) and `POST dev/ideas/{id}/vote`
+  - Wiki reads: spaces, space, docs, doc, comments, revisions, search, watching
+  - Wiki writes: create/update doc, comment, resolve, watch toggle
+  - Console: profiles (19 counts → 2 queries), revenue, categories, nora-events
+- [x] 2. Tables: exp_dev_* (12), exp_wiki_* (5), exp_contracts, exp_activity_events, disco_jobs
+- [x] 3. `ops/queries/{dev,wiki,console}.py`
+  - Who-fields (author, updated_by, submitted_by, voter, user_ref) are now set by the server from the login (same value: email, else id), so they can't be spoofed.
+- [x] 4. pytest (`ops/queries/queries_test.py`). Live smoke as the signed-in user: every read returns data.
+  - Security: SF-5 (always-true policies on 17 ops tables, incl. exp_contracts). exp_dev_config and exp_dev_weekly_updates are SF-1.
+  - Found and fixed: comparing Date/DateTime columns with ISO strings bound them as VARCHAR. New `_base.core.sql.typed()`; the tolerant fallback now logs a warning instead of hiding errors.
+- [x] 5. `contracts/ops/openapi.json`
+- [x] 6. No direct table calls are left. What remains is Supabase auth and the 2 storage calls (document upload and signed URL), which wait for the storage design.
+- [ ] 7. Parity: 20 cases in `surface-ui/parity/cases/ops.ts` (legacy loaders from git vs current, end to end)
+- [ ] 8. Click-through: open pages only. Every button writes (SF-5).
+- [ ] 9. Lint ratchet
 
 ### 7. etl (42/0/18)
 - [ ] 1 · [ ] 2 · [ ] 3 · [ ] 4 · [ ] 5 · [ ] 6 · [ ] 7 parity · [ ] 8 · [ ] 9
