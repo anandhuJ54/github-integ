@@ -53,6 +53,7 @@ one here before porting.
 | Search Surface: RLS off and full `anon` grants on 7 tables, plus anon-executable indexing functions | `BROWSER_TO_API_TODO.md` → search | On hold; needs the O12 rulings |
 | "Sign in with Lovable" on the claim page still uses the Supabase cloud project | `BROWSER_TO_API_TODO.md` → Phase 0 | Deferred |
 | `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` unset in `surface-api/.env` (prompt-bundle export, claim identity, claim OTP need them) | `BROWSER_TO_API_TODO.md` → Phase 0 | Open |
-| The API connects with a personal DB login (5-minute timeout, ~10-connection limit); needs a service account | `BROWSER_TO_API_TODO.md` → Phase 0 | Open |
+| The API connects with a personal DB login (`panneer`): 5-minute timeout and `rolconnlimit = 10`, shared by every tool using that login. The role also switches to `postgres` on connect, so plain `connection()` sessions run with postgres rights; `role_connection` still drops to `authenticated` per request. Needs a dedicated service account. Until then, keep `DB_POOL_MAX=4` in `surface-api/.env` | `BROWSER_TO_API_TODO.md` → Phase 0 | Open |
+| Optional: answer a pool timeout with "503 database busy" instead of a bare 500 | Seen in admin parity 2026-10-23 | Not started |
 | `exp_disco_worker_config` is missing on GCP; three ETL tick functions read it | ETL audit 2026-10-23 | Open; ETL crons are gated (O9) |
 | `tools/lint/lint_all.py` doesn't exist on this branch, so the per-Surface lint ratchet (step 9) is blocked | `BROWSER_TO_API_TODO.md` → Phase 0 | Open |
