@@ -345,8 +345,15 @@ export const cases: ParityCase[] = [
       return { rows: data ?? [], total: count ?? 0 };
     },
     api: { method: "POST", path: "/etl/console/pipeline/page", body: { gcid: "gcid:financial_advisor", status: "created", page: 0 } },
-    // equal observed_at values come back in any order (the API adds stage_id as a tiebreak)
-    normalize: (r: any) => ({ ...r, rows: sortRows(r.rows) }),
+    // 25,809 of these rows share one observed_at (a bulk load), so "the first 50 by observed_at" is any
+    // 50 of them: the legacy page got an arbitrary 50, the API a stable 50 (stage_id tiebreak). Compare
+    // what the sort determines: the total, the observed_at sequence, and that every row fits the filters.
+    normalize: (r: any) => ({
+      total: r.total,
+      observed: r.rows.map((x: any) => x.observed_at),
+      allMatch: r.rows.every((x: any) => x.gcid === "gcid:financial_advisor" && x.resolution_status === "created"),
+      count: r.rows.length,
+    }),
   },
   {
     name: "site contract panel (a hierarchy source)",
