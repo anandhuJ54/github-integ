@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { useQuery, keepPreviousData } from "@tanstack/react-query";
 import { Building2, BadgeCheck, Gauge, Plug, ExternalLink } from "lucide-react";
-import { supabase } from "@v3/ui/integrations/supabase/client";
+import { api } from "@v3/ui/lib/server-fn";
 import { EmpLayout } from "@v3/ui/components/emp-layout";
 import {
   PageBody,
@@ -100,42 +100,17 @@ function OrganizationsPage() {
 
   const { data: gcidOptions } = useQuery({
     queryKey: ["org-gcid-options"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("organizations")
-        .select("gcid")
-        .not("gcid", "is", null)
-        .limit(5000);
-      if (error) throw error;
-      const set = new Set((data ?? []).map((r) => r.gcid as string));
-      return Array.from(set).sort();
-    },
+    queryFn: () => api.get<string[]>("/admin/organizations/categories"),
     staleTime: 5 * 60_000,
   });
 
   const { data, isLoading } = useQuery({
     queryKey: ["organizations", search, gcidFilter, statusFilter, scopeFilter, page],
     placeholderData: keepPreviousData,
-    queryFn: async () => {
-      let q = supabase
-        .from("organizations")
-        .select(ORG_COLUMNS, { count: "exact" })
-        .order("search_rank_score", { ascending: false, nullsFirst: false })
-        .order("name", { ascending: true })
-        .range(page * PAGE_SIZE, page * PAGE_SIZE + PAGE_SIZE - 1);
-
-      if (search.trim()) q = q.ilike("name", `%${search.trim()}%`);
-      if (gcidFilter !== "all") q = q.eq("gcid", gcidFilter);
-      if (statusFilter === "claimed") q = q.eq("claimed", true);
-      if (statusFilter === "unclaimed") q = q.not("claimed", "is", true);
-      if (statusFilter === "scored") q = q.not("search_rank_score", "is", null);
-      if (scopeFilter === "real") q = q.not("is_demo", "is", true);
-      if (scopeFilter === "demo") q = q.eq("is_demo", true);
-
-      const { data: rows, count, error } = await q;
-      if (error) throw error;
-      return { rows: (rows ?? []) as unknown as OrgRow[], count: count ?? 0 };
-    },
+    queryFn: () =>
+      api.get<{ rows: OrgRow[]; count: number }>("/admin/organizations", {
+        params: { search, gcid: gcidFilter, status: statusFilter, scope: scopeFilter, page },
+      }),
   });
 
   const rows = data?.rows ?? [];

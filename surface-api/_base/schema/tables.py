@@ -3,11 +3,94 @@
 Regenerate with `uv run --env-file .env python -m _base.schema.generate` (see generate.py).
 """
 # ruff: noqa
-from sqlalchemy import BigInteger, Boolean, CheckConstraint, Column, Computed, DateTime, ForeignKeyConstraint, Index, Integer, MetaData, Numeric, PrimaryKeyConstraint, SmallInteger, Table, Text, UniqueConstraint, Uuid, text
+from sqlalchemy import BigInteger, Boolean, CheckConstraint, Column, Computed, DateTime, ForeignKeyConstraint, Index, Integer, MetaData, Numeric, PrimaryKeyConstraint, SmallInteger, String, Table, Text, UniqueConstraint, Uuid, text
 from sqlalchemy.dialects.postgresql import ARRAY, INET, JSONB
 
 metadata = MetaData()
 
+
+t_users = Table(
+    'users', metadata,
+    Column('instance_id', Uuid),
+    Column('id', Uuid, primary_key=True),
+    Column('aud', String(255)),
+    Column('role', String(255)),
+    Column('email', String(255)),
+    Column('encrypted_password', String(255)),
+    Column('email_confirmed_at', DateTime(True)),
+    Column('invited_at', DateTime(True)),
+    Column('confirmation_token', String(255)),
+    Column('confirmation_sent_at', DateTime(True)),
+    Column('recovery_token', String(255)),
+    Column('recovery_sent_at', DateTime(True)),
+    Column('email_change_token_new', String(255)),
+    Column('email_change', String(255)),
+    Column('email_change_sent_at', DateTime(True)),
+    Column('last_sign_in_at', DateTime(True)),
+    Column('raw_app_meta_data', JSONB),
+    Column('raw_user_meta_data', JSONB),
+    Column('is_super_admin', Boolean),
+    Column('created_at', DateTime(True)),
+    Column('updated_at', DateTime(True)),
+    Column('phone', Text, server_default=text('NULL::character varying')),
+    Column('phone_confirmed_at', DateTime(True)),
+    Column('phone_change', Text, server_default=text("''::character varying")),
+    Column('phone_change_token', String(255), server_default=text("''::character varying")),
+    Column('phone_change_sent_at', DateTime(True)),
+    Column('confirmed_at', DateTime(True), Computed('LEAST(email_confirmed_at, phone_confirmed_at)', persisted=True)),
+    Column('email_change_token_current', String(255), server_default=text("''::character varying")),
+    Column('email_change_confirm_status', SmallInteger, server_default=text('0')),
+    Column('banned_until', DateTime(True)),
+    Column('reauthentication_token', String(255), server_default=text("''::character varying")),
+    Column('reauthentication_sent_at', DateTime(True)),
+    Column('is_sso_user', Boolean, nullable=False, server_default=text('false'), comment='Auth: Set this column to true when the account comes from SSO. These accounts can have duplicate emails.'),
+    Column('deleted_at', DateTime(True)),
+    Column('is_anonymous', Boolean, nullable=False, server_default=text('false')),
+    CheckConstraint('email_change_confirm_status >= 0 AND email_change_confirm_status <= 2', name='users_email_change_confirm_status_check'),
+    PrimaryKeyConstraint('id', name='users_pkey'),
+    UniqueConstraint('phone', name='users_phone_key'),
+    Index('confirmation_token_idx', 'confirmation_token', postgresql_where="((confirmation_token)::text !~ '^[0-9 ]*$'::text)", unique=True),
+    Index('email_change_token_current_idx', 'email_change_token_current', postgresql_where="((email_change_token_current)::text !~ '^[0-9 ]*$'::text)", unique=True),
+    Index('email_change_token_new_idx', 'email_change_token_new', postgresql_where="((email_change_token_new)::text !~ '^[0-9 ]*$'::text)", unique=True),
+    Index('reauthentication_token_idx', 'reauthentication_token', postgresql_where="((reauthentication_token)::text !~ '^[0-9 ]*$'::text)", unique=True),
+    Index('recovery_token_idx', 'recovery_token', postgresql_where="((recovery_token)::text !~ '^[0-9 ]*$'::text)", unique=True),
+    Index('users_email_partial_key', 'email', postgresql_where='(is_sso_user = false)', unique=True),
+    Index('users_instance_id_email_idx', 'instance_id'),
+    Index('users_instance_id_idx', 'instance_id'),
+    Index('users_is_anonymous_idx', 'is_anonymous'),
+    schema='auth',
+    comment='Auth: Stores user login data within a secure schema.'
+)
+
+t_entity_compliance = Table(
+    'entity_compliance', metadata,
+    Column('entity_type', Text, primary_key=True),
+    Column('entity_id', Uuid, primary_key=True),
+    Column('license_displayed', Boolean, server_default=text('false')),
+    Column('license_display_verified', Boolean, server_default=text('false')),
+    Column('disclaimers_shown', Boolean, server_default=text('false')),
+    Column('disclaimers_accepted', Boolean, server_default=text('false')),
+    Column('disclaimers_accepted_at', DateTime(True)),
+    Column('age_gate_active', Boolean, server_default=text('false')),
+    Column('age_gate_verified_at', DateTime(True)),
+    Column('terms_accepted', Boolean, server_default=text('false')),
+    Column('terms_accepted_at', DateTime(True)),
+    Column('terms_version', Text),
+    Column('privacy_accepted', Boolean, server_default=text('false')),
+    Column('privacy_accepted_at', DateTime(True)),
+    Column('gdpr_consent', Boolean, server_default=text('false')),
+    Column('gdpr_consent_at', DateTime(True)),
+    Column('ccpa_opt_out', Boolean, server_default=text('false')),
+    Column('compliance_score', SmallInteger, server_default=text('0')),
+    Column('missing_items', ARRAY(Text())),
+    Column('last_reviewed', DateTime(True)),
+    Column('created_at', DateTime(True), server_default=text('now()')),
+    Column('updated_at', DateTime(True), server_default=text('now()')),
+    CheckConstraint("entity_type = ANY (ARRAY['professional'::text, 'organization'::text])", name='entity_compliance_entity_type_check'),
+    PrimaryKeyConstraint('entity_type', 'entity_id', name='entity_compliance_pkey'),
+    Index('idx_compliance_entity', 'entity_type', 'entity_id'),
+    schema='public'
+)
 
 t_exp_entity = Table(
     'exp_entity', metadata,
@@ -152,6 +235,26 @@ t_audit_log = Table(
     schema='public'
 )
 
+t_content_compliance_rules = Table(
+    'content_compliance_rules', metadata,
+    Column('id', Uuid, primary_key=True, server_default=text('gen_random_uuid()')),
+    Column('gcid', Text),
+    Column('rule_name', Text, nullable=False),
+    Column('rule_type', Text, nullable=False),
+    Column('rule_value', Text, nullable=False),
+    Column('applies_to', ARRAY(Text()), nullable=False),
+    Column('severity', Text, nullable=False),
+    Column('is_active', Boolean, server_default=text('true')),
+    Column('created_at', DateTime(True), server_default=text('now()')),
+    CheckConstraint("rule_type = ANY (ARRAY['prohibited_phrase'::text, 'required_disclosure'::text, 'age_gate'::text, 'license_display'::text, 'category_restriction'::text])", name='content_compliance_rules_rule_type_check'),
+    CheckConstraint("severity = ANY (ARRAY['block'::text, 'warn'::text, 'require_disclosure'::text])", name='content_compliance_rules_severity_check'),
+    ForeignKeyConstraint(['gcid'], ['public.gbp_categories.gcid'], name='content_compliance_rules_gcid_fkey'),
+    PrimaryKeyConstraint('id', name='content_compliance_rules_pkey'),
+    Index('idx_ccr_gcid', 'gcid'),
+    Index('idx_ccr_type', 'rule_type'),
+    schema='public'
+)
+
 t_exp_category_compliance = Table(
     'exp_category_compliance', metadata,
     Column('gcid', Text, primary_key=True),
@@ -206,6 +309,23 @@ t_exp_claim = Table(
     PrimaryKeyConstraint('claim_id', name='exp_claim_pkey'),
     Index('idx_exp_claim_entity_user', 'entity_id', 'user_id', 'status'),
     Index('idx_one_owner_claim', 'entity_id', postgresql_where="((claim_type = 'owner'::text) AND (status = 'verified'::text))", unique=True),
+    schema='public'
+)
+
+t_exp_control_grants = Table(
+    'exp_control_grants', metadata,
+    Column('id', Uuid, primary_key=True, server_default=text('gen_random_uuid()')),
+    Column('user_id', Uuid, nullable=False),
+    Column('role', Text, nullable=False),
+    Column('scope_type', Text, nullable=False, server_default=text("'global'::text")),
+    Column('scope_id', Text, nullable=False, server_default=text("'*'::text")),
+    Column('is_primary', Boolean, nullable=False, server_default=text('false')),
+    Column('created_at', DateTime(True), nullable=False, server_default=text('now()')),
+    CheckConstraint("role = ANY (ARRAY['super_admin'::text, 'architect'::text, 'analyst'::text, 'owner'::text, 'manager'::text, 'billing_admin'::text, 'viewer'::text])", name='exp_control_grants_role_check'),
+    ForeignKeyConstraint(['user_id'], ['auth.users.id'], ondelete='CASCADE', name='exp_control_grants_user_id_fkey'),
+    PrimaryKeyConstraint('id', name='exp_control_grants_pkey'),
+    UniqueConstraint('user_id', 'role', 'scope_type', 'scope_id', name='exp_control_grants_user_id_role_scope_type_scope_id_key'),
+    Index('exp_control_grants_user_idx', 'user_id'),
     schema='public'
 )
 
@@ -375,6 +495,42 @@ t_plg_rules = Table(
     UniqueConstraint('rule_name', name='plg_rules_rule_name_key'),
     Index('idx_plg_gcid', 'gcid'),
     Index('idx_plg_type', 'rule_type', 'is_active'),
+    schema='public'
+)
+
+t_search_rank_scores = Table(
+    'search_rank_scores', metadata,
+    Column('id', Uuid, primary_key=True, server_default=text('gen_random_uuid()')),
+    Column('entity_type', Text, nullable=False),
+    Column('entity_id', Uuid, nullable=False),
+    Column('gcid', Text),
+    Column('total_score', SmallInteger, nullable=False, server_default=text('0')),
+    Column('max_possible', SmallInteger, nullable=False, server_default=text('850')),
+    Column('score_pct', Numeric(5, 2)),
+    Column('score_reviews', SmallInteger, server_default=text('0')),
+    Column('score_profile', SmallInteger, server_default=text('0')),
+    Column('score_listings', SmallInteger, server_default=text('0')),
+    Column('score_content', SmallInteger, server_default=text('0')),
+    Column('score_web_analytics', SmallInteger, server_default=text('0')),
+    Column('score_connections', SmallInteger, server_default=text('0')),
+    Column('local_rank', SmallInteger),
+    Column('local_rank_of', SmallInteger),
+    Column('local_market', Text),
+    Column('top_pct', SmallInteger),
+    Column('previous_score', SmallInteger),
+    Column('score_change_7d', SmallInteger),
+    Column('score_change_30d', SmallInteger),
+    Column('gaps', JSONB),
+    Column('next_milestone', SmallInteger),
+    Column('next_milestone_gap', SmallInteger),
+    Column('calculated_at', DateTime(True), server_default=text('now()')),
+    CheckConstraint("entity_type = ANY (ARRAY['professional'::text, 'organization'::text])", name='search_rank_scores_entity_type_check'),
+    ForeignKeyConstraint(['gcid'], ['public.gbp_categories.gcid'], name='search_rank_scores_gcid_fkey'),
+    PrimaryKeyConstraint('id', name='search_rank_scores_pkey'),
+    UniqueConstraint('entity_type', 'entity_id', name='unique_entity_score'),
+    Index('idx_srs_entity', 'entity_type', 'entity_id'),
+    Index('idx_srs_gcid', 'gcid', 'total_score'),
+    Index('idx_srs_market', 'local_market', 'total_score'),
     schema='public'
 )
 

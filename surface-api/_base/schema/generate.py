@@ -18,14 +18,19 @@ from pathlib import Path
 TABLES = [
     "audit_log",
     "claim_queue",
+    "content_compliance_rules",
+    "entity_compliance",
     "exp_category_compliance",
+    "exp_control_grants",
     "exp_etl_field_floors",
     "exp_etl_staging",
+    "gbp_categories",
     "graph_nodes",
     "organizations",
     "plg_events",
     "plg_rules",
     "professionals",
+    "search_rank_scores",
 ]
 
 OUT = Path(__file__).with_name("tables.py")

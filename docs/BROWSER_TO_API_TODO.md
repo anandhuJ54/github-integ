@@ -88,8 +88,25 @@ Counts are (reads/writes/rpc) as measured on 2026-10-23.
   1. A migration (written, not applied) to enable and force RLS on those tables, add admin-only policies, fix the `exp_web_ads` policy, revoke anon/PUBLIC grants and restrict EXECUTE. Applying it is gated and needs a second approval.
   2. Whether the FastAPI search endpoints check for a `super_admin`/`architect` console role, or mirror today's DB rules.
 
-### 4. admin (19/2/1)
-- [ ] 1 · [ ] 2 · [ ] 3 · [ ] 4 · [ ] 5 · [ ] 6 · [ ] 7 parity · [ ] 8 · [ ] 9
+### 4. admin (19/2/1) · branch `migrate/api-admin`
+- [x] 1. Endpoints under `/admin/` (`admin/routers/console_pages.py`):
+  - `/professionals`: `GET professionals/categories` (replaces the walk of up to 200 requests with one `SELECT DISTINCT`), `GET professionals/stats` (4 counts in one query), `GET professionals?…` (paged, exact count), `POST professionals/{scores,depth,extras}`
+  - `/organizations`: `GET organizations/categories`, `GET organizations?…`
+  - `/compliance`: `GET compliance/coverage`, `GET compliance/entities`
+  - `/admin/users`: `GET control-users`, `GET control-grants`, `POST control-grants`, `DELETE control-grants/{id}`. These are identity changes and need a second approval; the DB keeps them `super_admin`-only.
+- [x] 2. Tables: content_compliance_rules, entity_compliance, exp_control_grants, gbp_categories, search_rank_scores
+- [x] 3. `admin/queries/{professionals,organizations,compliance,grants}.py`
+- [x] 4. pytest (`admin/queries/queries_test.py`). Live read-only smoke as the signed-in user: all reads work, and control-users is correctly `forbidden` for a non-super_admin.
+  - Security check: RLS is on for every admin table and no anon write policy exists. `list_control_users` and the grant writes are guarded by `has_control_role(…, 'super_admin')`.
+- [x] 5. `contracts/admin/openapi.json`
+- [x] 6. All four pages call `api.*` with the query keys unchanged. `loadOrgStats` and `logAudit` are `_base` code and move with `_base`.
+- [ ] 7. Parity: 15 cases in `surface-ui/parity/cases/admin.ts`
+- [ ] 8. Click-through
+- [ ] 9. Lint ratchet
+- **Gaps that already exist, kept as-is because of the 1,000-row cap.** Each would need an explicit `max_rows` decision to change.
+  - `/compliance` shows only 1,000 of the 4,041 categories.
+  - The `/organizations` category dropdown is built from 1,000 of the 38k organizations.
+  - `/professionals` graph depth: 50 professionals × ~30 nodes exceeds 1,000 rows, so about 10 of the 50 get no depth figures.
 
 ### 5. srp (31/0/3)
 - [ ] 1 · [ ] 2 · [ ] 3 · [ ] 4 · [ ] 5 · [ ] 6 · [ ] 7 parity · [ ] 8 · [ ] 9

@@ -19,7 +19,7 @@ import { mkdirSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { supabase } from "@v3/ui/integrations/supabase/client";
-import type { ParityCase } from "./cases/types";
+import type { ApiCall, ParityCase } from "./cases/types";
 
 const surface = process.argv[2];
 if (!surface) {
@@ -75,11 +75,24 @@ if (process.env.PARITY_EMAIL) {
 }
 console.log(`parity ${surface}: ${cases.length} case(s), ${token ? "signed in" : "signed out"}, legacy=${REF}`);
 
+function callApi(call: ApiCall) {
+  return fetch(`${API}${call.path}`, {
+    method: call.method,
+    headers: {
+      ...(call.body !== undefined ? { "content-type": "application/json" } : {}),
+      ...(token ? { authorization: `Bearer ${token}` } : {}),
+    },
+    body: call.body !== undefined ? JSON.stringify(call.body) : undefined,
+  });
+}
+
 let failed = 0;
 for (const c of cases) {
+  const ctx = c.prepare ? await c.prepare(supabase) : undefined;
+  const call = typeof c.api === "function" ? c.api(ctx) : c.api;
   let fn: (...a: unknown[]) => Promise<unknown>;
   if (c.legacy) {
-    fn = () => c.legacy!(supabase);
+    fn = () => c.legacy!(supabase, ctx);
   } else {
     const mod = await legacyModule(c.legacyModule!, c.legacyPatch);
     fn = mod[c.legacyExport!] as (...a: unknown[]) => Promise<unknown>;
@@ -88,19 +101,19 @@ for (const c of cases) {
   try {
     legacy = JSON.parse(JSON.stringify(await fn(...(c.legacyArgs ?? []))));
   } catch (e) {
-    failed++;
     const msg = (e as { message?: string } | null)?.message;
+    if (c.expectRefusal) {
+      const res = await callApi(call);
+      if (!res.ok) {
+        console.log(`PASS ${c.name}: both refused (legacy: ${msg}; API: ${res.status} ${await res.text()})`);
+        continue;
+      }
+    }
+    failed++;
     console.log(`FAIL ${c.name}: legacy threw ${msg || "(empty error, usually an RLS-denied or timed-out count)"}`);
     continue;
   }
-  const res = await fetch(`${API}${c.api.path}`, {
-    method: c.api.method,
-    headers: {
-      ...(c.api.body !== undefined ? { "content-type": "application/json" } : {}),
-      ...(token ? { authorization: `Bearer ${token}` } : {}),
-    },
-    body: c.api.body !== undefined ? JSON.stringify(c.api.body) : undefined,
-  });
+  const res = await callApi(call);
   if (!res.ok) {
     failed++;
     console.log(`FAIL ${c.name}: API ${res.status} ${await res.text()}`);

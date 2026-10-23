@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Loader2, Plus, ShieldCheck, Trash2, UserCog } from "lucide-react";
-import { supabase } from "@v3/ui/integrations/supabase/client";
+import { api } from "@v3/ui/lib/server-fn";
 import { EmpLayout } from "@v3/ui/components/emp-layout";
 import { Button } from "@v3/ui/components/ui/button";
 import { Badge } from "@v3/ui/components/ui/badge";
@@ -62,23 +62,13 @@ function UsersAndGrantsPage() {
   const usersQuery = useQuery({
     queryKey: ["control-users"],
     enabled: isSuperAdmin,
-    queryFn: async () => {
-      const { data, error } = await supabase.rpc("list_control_users");
-      if (error) throw error;
-      return (data ?? []) as DirectoryUser[];
-    },
+    queryFn: () => api.get<DirectoryUser[]>("/admin/control-users"),
   });
 
   const grantsQuery = useQuery({
     queryKey: ["control-grants-all"],
     enabled: isSuperAdmin,
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("exp_control_grants")
-        .select("id, user_id, role, scope_type, scope_id, is_primary");
-      if (error) throw error;
-      return (data ?? []) as GrantRow[];
-    },
+    queryFn: () => api.get<GrantRow[]>("/admin/control-grants"),
   });
 
   const grantsByUser = useMemo(() => {
@@ -91,10 +81,7 @@ function UsersAndGrantsPage() {
 
   const assign = useMutation({
     mutationFn: async ({ userId, role }: { userId: string; role: ControlRole }) => {
-      const { error } = await supabase
-        .from("exp_control_grants")
-        .insert({ user_id: userId, role });
-      if (error) throw error;
+      await api.post("/admin/control-grants", { user_id: userId, role });
       await logAudit("grant.assign", userId, { role, acting_role: activeRole });
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["control-grants-all"] }),
@@ -102,8 +89,7 @@ function UsersAndGrantsPage() {
 
   const revoke = useMutation({
     mutationFn: async (grant: GrantRow) => {
-      const { error } = await supabase.from("exp_control_grants").delete().eq("id", grant.id);
-      if (error) throw error;
+      await api.delete(`/admin/control-grants/${grant.id}`);
       await logAudit("grant.revoke", grant.user_id, {
         role: grant.role,
         acting_role: activeRole,
