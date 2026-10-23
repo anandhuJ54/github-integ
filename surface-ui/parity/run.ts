@@ -33,8 +33,16 @@ const ROOT = join(HERE, "..", "..");
 
 const { cases } = (await import(`./cases/${surface}.ts`)) as { cases: ParityCase[] };
 
-async function legacyModule(path: string): Promise<Record<string, unknown>> {
-  const src = execFileSync("git", ["show", `${REF}:${path}`], { cwd: ROOT });
+async function legacyModule(
+  path: string,
+  patches: ParityCase["legacyPatch"] = [],
+): Promise<Record<string, unknown>> {
+  let src = execFileSync("git", ["show", `${REF}:${path}`], { cwd: ROOT }).toString();
+  for (const p of patches) {
+    if (!src.includes(p.find)) throw new Error(`legacyPatch not found in ${path}: ${p.find}`);
+    src = src.split(p.find).join(p.replace);
+    console.log(`  patched legacy: ${p.why}`);
+  }
   const out = join(HERE, ".legacy", path);
   mkdirSync(dirname(out), { recursive: true });
   writeFileSync(out, src);
@@ -69,7 +77,7 @@ console.log(`parity ${surface}: ${cases.length} case(s), ${token ? "signed in" :
 
 let failed = 0;
 for (const c of cases) {
-  const mod = await legacyModule(c.legacyModule);
+  const mod = await legacyModule(c.legacyModule, c.legacyPatch);
   const fn = mod[c.legacyExport] as (...a: unknown[]) => Promise<unknown>;
   let legacy: unknown;
   try {
@@ -97,6 +105,7 @@ for (const c of cases) {
   const diffs: string[] = [];
   diff(legacy, api, "$", diffs);
   const real = diffs.filter((d) => !c.ignore?.some((p) => d.startsWith(`${p}:`) || d.startsWith(`${p}.`)));
+  for (const p of c.ignore ?? []) console.log(`  not compared: ${p} (verify separately)`);
   if (real.length) {
     failed++;
     console.log(`FAIL ${c.name}: ${real.length} difference(s)`);

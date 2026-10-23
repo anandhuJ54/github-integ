@@ -33,9 +33,12 @@ Counts are (reads/writes/rpc) as measured on 2026-10-23.
 - [x] `_base/core/sql.py` runs a Core statement on a `role_connection` (with IN-list expansion and PostgREST-shaped rows)
 - [x] `_base/contracts.py` exports the OpenAPI for each Surface, and `contracts_test.py` fails when a contract is stale
 - [x] Parity harness `surface-ui/parity/run.ts`: legacy function from the pre-port git ref vs the API, same login, JSON diff
-- [ ] **Blocker: both sides on one database.** The UI's `VITE_SUPABASE_URL` is the Supabase cloud project, but the API's `DATABASE_URL` is GCP. They differ (on 2026-10-23, professionals had 124,830 rows on cloud and 115,867 on GCP), so parity can't pass until they match.
-- [ ] **Blocker: API JWT verification.** `SUPABASE_URL` (JWKS) or `SUPABASE_JWT_SECRET` must be set in `surface-api/.env` for the project that issues the login.
-- [ ] **Blocker: a parity login.** The account in `PARITY_EMAIL`/`PARITY_PASSWORD` must have RLS access to each Surface's tables. The ETL tables return 0 rows to anon.
+- [x] Both sides on one database: the UI uses `https://supabase.selfhost.qa.experience.com` and the API uses GCP Postgres (2026-10-23)
+- [x] API JWT verification: `SUPABASE_JWT_SECRET` (HS256) is set from the DB's `app.settings.jwt_secret`
+- [x] Parity login: an email/password account on self-hosted works
+- [ ] The API connects with a personal DB login (5min timeout). It needs a dedicated service account before any shared deploy.
+- [ ] `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` in `surface-api/.env` (prompt-bundle export, claim identity, claim OTP need them)
+- [ ] The Lovable sign-in on the claim page still uses the cloud project (deferred)
 - [ ] `tools/lint/lint_all.py` doesn't exist on this branch yet; the ratchet in step 9 depends on it.
 
 ## Surfaces
@@ -47,8 +50,11 @@ Counts are (reads/writes/rpc) as measured on 2026-10-23.
 - [x] 4. pytest (`etl_monitor_test.py`); live smoke as service_role on GCP: the response validates (31,355 staged, 3 floors)
 - [x] 5. `contracts/nora-os/openapi.json`
 - [x] 6. `etl-monitor.ts` calls `api.get`; the query key `["etl-run-monitor"]` is unchanged. The Surface now has 0 direct Supabase calls.
-- [ ] 7. Parity PASS (waiting on the Phase 0 blockers)
-- [ ] 8. Click-through of the `/nora-os` console
+- [ ] 7. Parity PASS. The UI now points at self-hosted GCP (same DB as the API: 115,867 professionals both ways).
+  - On GCP the legacy read **fails**: its three `graph_nodes` counts exceed the 8s `statement_timeout` of the `authenticated` role. The parity case patches those three out (`legacyPatch`) and lists `$.yield.nodes` as not compared.
+  - Node counts checked against SQL as `authenticated`, and they match: 259,038 product_service, 105,517 social_profile, 211,423 credential. The API returns the whole monitor in about 4–6s.
+  - Still to do: a parity run of the remaining fields with a real login.
+- [x] 8. Click-through of the `/nora-os` console (2026-10-23): the panel renders from `/api/nora-os/etl-monitor`, and no `rest/v1/exp_*` or `rest/v1/graph_nodes` calls are made
 - [ ] 9. Lint ratchet
 
 ### 2. conversion-agents (7/7/0)
