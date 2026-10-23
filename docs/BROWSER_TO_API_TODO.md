@@ -149,7 +149,9 @@ Counts are (reads/writes/rpc) as measured on 2026-10-23.
   - Found and fixed: comparing Date/DateTime columns with ISO strings bound them as VARCHAR. New `_base.core.sql.typed()`; the tolerant fallback now logs a warning instead of hiding errors.
 - [x] 5. `contracts/ops/openapi.json`
 - [x] 6. No direct table calls are left. What remains is Supabase auth and the 2 storage calls (document upload and signed URL), which wait for the storage design.
-- [ ] 7. Parity: 20 cases in `surface-ui/parity/cases/ops.ts` (legacy loaders from git vs current, end to end)
+- [x] 7. Parity PASS 20/20 (2026-10-23, signed in): legacy loaders from git vs current, end to end, plus the 4 console panels.
+  - Non-empty data: overview (14 teams), board (16 sprints, 67 items), weekly 2026-08-24 (5 updates), 8 spaces, search "canon" (3 hits) and "ring" (1 hit), 12 contracts.
+  - Wiki comments are 0 in the DB.
 - [ ] 8. Click-through: open pages only. Every button writes (SF-5).
 - [ ] 9. Lint ratchet
 

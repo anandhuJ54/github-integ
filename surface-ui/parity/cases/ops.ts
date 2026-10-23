@@ -78,8 +78,8 @@ export const cases: ParityCase[] = [
   legacyFn(WIKI, "getDoc", (c) => [c.spaceId, c.slug], (c) => wikiNow.getDoc(c.spaceId, c.slug), "wiki: doc"),
   legacyFn(WIKI, "docComments", (c) => [c.docId], (c) => wikiNow.docComments(c.docId), "wiki: comments"),
   legacyFn(WIKI, "docRevisions", (c) => [c.docId], (c) => wikiNow.docRevisions(c.docId), "wiki: revisions"),
-  legacyFn(WIKI, "searchWiki", () => ["canon"], () => wikiNow.searchWiki("canon"), "wiki: search 'canon'", { normalize: byId }),
-  legacyFn(WIKI, "searchWiki", () => ["sprint gate"], () => wikiNow.searchWiki("sprint gate"), "wiki: search 'sprint gate'", { normalize: byId }),
+  legacyFn(WIKI, "searchWiki", () => ["canon"], () => wikiNow.searchWiki("canon"), "wiki: search 'canon' (3 hits)", { normalize: byId }),
+  legacyFn(WIKI, "searchWiki", () => ["ring"], () => wikiNow.searchWiki("ring"), "wiki: search 'ring' (1 hit)", { normalize: byId }),
   legacyFn(WIKI, "isWatching", (c) => [{ spaceId: c.spaceId }], (c) => wikiNow.isWatching({ spaceId: c.spaceId }), "wiki: watching a space"),
   {
     // console.tsx useProfiles(): the 14 counts
