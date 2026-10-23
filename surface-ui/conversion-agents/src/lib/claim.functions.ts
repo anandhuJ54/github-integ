@@ -1,4 +1,4 @@
-// Client shim: the server implementation moved to FastAPI (surface-api/conversion_agents).
+// Client shim: the server implementation moved to FastAPI (surface-api/nora_os).
 // Each export keeps the createServerFn call shape: fn({ data }) -> Promise<result>.
 import { serverFn } from "@v3/ui/lib/server-fn";
 // Types copied from lib/nora/claim-gate.ts (server-side; ported to FastAPI).
@@ -21,6 +21,6 @@ export type ClaimResponse = {
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type Db = any;
 
-export const submitClaim = serverFn<ClaimResponse>("conversion_agents", "submitClaim");
-export const verifyClaimCode = serverFn<ClaimResponse>("conversion_agents", "verifyClaimCode");
-export const releaseClaim = serverFn("conversion_agents", "releaseClaim");
+export const submitClaim = serverFn<ClaimResponse>("nora_os", "submitClaim");
+export const verifyClaimCode = serverFn<ClaimResponse>("nora_os", "verifyClaimCode");
+export const releaseClaim = serverFn("nora_os", "releaseClaim");
