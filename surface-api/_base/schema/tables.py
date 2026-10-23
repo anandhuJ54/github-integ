@@ -4,7 +4,7 @@ Regenerate with `uv run --env-file .env python -m _base.schema.generate` (see ge
 """
 # ruff: noqa
 from sqlalchemy import BigInteger, Boolean, CheckConstraint, Column, Computed, DateTime, ForeignKeyConstraint, Index, Integer, MetaData, Numeric, PrimaryKeyConstraint, SmallInteger, Table, Text, UniqueConstraint, Uuid, text
-from sqlalchemy.dialects.postgresql import ARRAY, JSONB
+from sqlalchemy.dialects.postgresql import ARRAY, INET, JSONB
 
 metadata = MetaData()
 
@@ -127,6 +127,85 @@ t_user_accounts = Table(
     UniqueConstraint('supabase_user_id', name='user_accounts_supabase_user_id_key'),
     Index('idx_users_email', 'email'),
     Index('idx_users_supa', 'supabase_user_id'),
+    schema='public'
+)
+
+t_audit_log = Table(
+    'audit_log', metadata,
+    Column('id', Uuid, primary_key=True, server_default=text('gen_random_uuid()')),
+    Column('user_id', Uuid),
+    Column('impersonating', Uuid),
+    Column('action', Text, nullable=False),
+    Column('entity_type', Text, nullable=False),
+    Column('entity_id', Uuid),
+    Column('field_changes', JSONB),
+    Column('ip_address', INET),
+    Column('user_agent', Text),
+    Column('request_id', Text),
+    Column('created_at', DateTime(True), server_default=text('now()')),
+    ForeignKeyConstraint(['impersonating'], ['public.user_accounts.id'], name='audit_log_impersonating_fkey'),
+    ForeignKeyConstraint(['user_id'], ['public.user_accounts.id'], name='audit_log_user_id_fkey'),
+    PrimaryKeyConstraint('id', name='audit_log_pkey'),
+    Index('idx_audit_created', 'created_at'),
+    Index('idx_audit_entity', 'entity_type', 'entity_id'),
+    Index('idx_audit_user', 'user_id'),
+    schema='public'
+)
+
+t_exp_category_compliance = Table(
+    'exp_category_compliance', metadata,
+    Column('gcid', Text, primary_key=True),
+    Column('display_license_on_profile', Boolean, server_default=text('false')),
+    Column('display_license_on_content', Boolean, server_default=text('false')),
+    Column('display_license_on_ads', Boolean, server_default=text('false')),
+    Column('display_license_on_email', Boolean, server_default=text('false')),
+    Column('license_display_format', Text),
+    Column('license_label', Text),
+    Column('required_disclaimers', ARRAY(Text())),
+    Column('disclaimer_placement', ARRAY(Text())),
+    Column('content_restrictions', ARRAY(Text())),
+    Column('prohibited_phrases', ARRAY(Text())),
+    Column('required_disclosures', ARRAY(Text())),
+    Column('age_gate_required', Boolean, server_default=text('false')),
+    Column('age_gate_minimum', SmallInteger, server_default=text('18')),
+    Column('age_gate_type', Text),
+    Column('hipaa_applies', Boolean, server_default=text('false')),
+    Column('coppa_applies', Boolean, server_default=text('false')),
+    Column('glba_applies', Boolean, server_default=text('false')),
+    Column('ferpa_applies', Boolean, server_default=text('false')),
+    Column('regulated_by', ARRAY(Text())),
+    Column('advertising_rules_url', Text),
+    Column('compliance_notes', Text),
+    Column('review_verification_required', Boolean, server_default=text('false')),
+    Column('review_transaction_required', Boolean, server_default=text('false')),
+    Column('created_at', DateTime(True), server_default=text('now()')),
+    Column('updated_at', DateTime(True), server_default=text('now()')),
+    ForeignKeyConstraint(['gcid'], ['public.gbp_categories.gcid'], name='exp_category_compliance_gcid_fkey'),
+    PrimaryKeyConstraint('gcid', name='exp_category_compliance_pkey'),
+    schema='public'
+)
+
+t_exp_claim = Table(
+    'exp_claim', metadata,
+    Column('claim_id', Uuid, primary_key=True, server_default=text('gen_random_uuid()')),
+    Column('entity_id', Uuid, nullable=False),
+    Column('user_id', Uuid, nullable=False),
+    Column('claim_type', Text, nullable=False, server_default=text("'owner'::text")),
+    Column('status', Text, nullable=False, server_default=text("'pending'::text")),
+    Column('evidence', JSONB),
+    Column('verified_at', DateTime(True)),
+    Column('created_at', DateTime(True), nullable=False, server_default=text('now()')),
+    Column('trust_tier', SmallInteger, nullable=False, server_default=text('0')),
+    Column('tier_path', Text),
+    Column('released_at', DateTime(True)),
+    Column('updated_at', DateTime(True), nullable=False, server_default=text('now()')),
+    CheckConstraint("claim_type = 'owner'::text", name='exp_claim_claim_type_check'),
+    CheckConstraint("status = ANY (ARRAY['pending'::text, 'verified'::text, 'rejected'::text, 'revoked'::text])", name='exp_claim_status_check'),
+    CheckConstraint('trust_tier >= 0 AND trust_tier <= 2', name='exp_claim_trust_tier_check'),
+    ForeignKeyConstraint(['entity_id'], ['public.exp_entity.entity_id'], name='exp_claim_entity_id_fkey'),
+    PrimaryKeyConstraint('claim_id', name='exp_claim_pkey'),
+    Index('idx_exp_claim_entity_user', 'entity_id', 'user_id', 'status'),
+    Index('idx_one_owner_claim', 'entity_id', postgresql_where="((claim_type = 'owner'::text) AND (status = 'verified'::text))", unique=True),
     schema='public'
 )
 
@@ -272,6 +351,65 @@ t_organizations = Table(
     schema='public'
 )
 
+t_plg_rules = Table(
+    'plg_rules', metadata,
+    Column('id', Uuid, primary_key=True, server_default=text('gen_random_uuid()')),
+    Column('gcid', Text),
+    Column('rule_name', Text, nullable=False),
+    Column('rule_type', Text, nullable=False),
+    Column('trigger_condition', JSONB, nullable=False),
+    Column('priority', SmallInteger, server_default=text('5')),
+    Column('headline', Text, nullable=False),
+    Column('body', Text, nullable=False),
+    Column('cta_text', Text, nullable=False),
+    Column('cta_action', Text, nullable=False),
+    Column('cta_url', Text),
+    Column('requires_upgrade', Boolean, server_default=text('false')),
+    Column('upgrade_tier', Text),
+    Column('icon', Text),
+    Column('is_active', Boolean, server_default=text('true')),
+    Column('created_at', DateTime(True), server_default=text('now()')),
+    CheckConstraint("rule_type = ANY (ARRAY['banner'::text, 'modal'::text, 'email'::text, 'push'::text, 'score_card'::text, 'dashboard_tip'::text, 'upgrade_prompt'::text])", name='plg_rules_rule_type_check'),
+    ForeignKeyConstraint(['gcid'], ['public.gbp_categories.gcid'], name='plg_rules_gcid_fkey'),
+    PrimaryKeyConstraint('id', name='plg_rules_pkey'),
+    UniqueConstraint('rule_name', name='plg_rules_rule_name_key'),
+    Index('idx_plg_gcid', 'gcid'),
+    Index('idx_plg_type', 'rule_type', 'is_active'),
+    schema='public'
+)
+
+t_claim_queue = Table(
+    'claim_queue', metadata,
+    Column('id', Uuid, primary_key=True, server_default=text('gen_random_uuid()')),
+    Column('entity_type', Text, nullable=False),
+    Column('entity_id', Uuid, nullable=False),
+    Column('claimant_user_id', Uuid),
+    Column('claimant_email', Text, nullable=False),
+    Column('claimant_name', Text),
+    Column('confidence_score', SmallInteger, nullable=False),
+    Column('confidence_signals', JSONB, server_default=text("'{}'::jsonb")),
+    Column('match_method', Text),
+    Column('status', Text, server_default=text("'pending'::text")),
+    Column('reviewed_by', Uuid),
+    Column('reviewed_at', DateTime(True)),
+    Column('review_notes', Text),
+    Column('created_at', DateTime(True), server_default=text('now()')),
+    Column('updated_at', DateTime(True), server_default=text('now()')),
+    Column('trust_tier', SmallInteger),
+    Column('claim_id', Uuid),
+    CheckConstraint("entity_type = ANY (ARRAY['professional'::text, 'organization'::text])", name='claim_queue_entity_type_check'),
+    CheckConstraint("status = ANY (ARRAY['pending'::text, 'auto_approved'::text, 'manual_review'::text, 'approved'::text, 'rejected'::text, 'conflict'::text, 'released'::text])", name='claim_queue_status_check'),
+    ForeignKeyConstraint(['claim_id'], ['public.exp_claim.claim_id'], name='claim_queue_claim_id_fkey'),
+    ForeignKeyConstraint(['claimant_user_id'], ['public.user_accounts.id'], name='claim_queue_claimant_user_id_fkey'),
+    ForeignKeyConstraint(['reviewed_by'], ['public.user_accounts.id'], name='claim_queue_reviewed_by_fkey'),
+    PrimaryKeyConstraint('id', name='claim_queue_pkey'),
+    Index('idx_claim_email', 'claimant_email'),
+    Index('idx_claim_entity', 'entity_type', 'entity_id'),
+    Index('idx_claim_queue_claim', 'claim_id'),
+    Index('idx_claim_status', 'status'),
+    schema='public'
+)
+
 t_exp_etl_staging = Table(
     'exp_etl_staging', metadata,
     Column('stage_id', Uuid, primary_key=True, server_default=text('gen_random_uuid()')),
@@ -345,6 +483,24 @@ t_graph_nodes = Table(
     Index('idx_nodes_ring', 'entity_type', 'entity_id', 'ring'),
     Index('idx_nodes_source', 'source', 'source_id'),
     Index('idx_nodes_type', 'node_type'),
+    schema='public'
+)
+
+t_plg_events = Table(
+    'plg_events', metadata,
+    Column('id', Uuid, primary_key=True, server_default=text('gen_random_uuid()')),
+    Column('entity_type', Text, nullable=False),
+    Column('entity_id', Uuid, nullable=False),
+    Column('rule_id', Uuid, nullable=False),
+    Column('fired_at', DateTime(True), server_default=text('now()')),
+    Column('dismissed_at', DateTime(True)),
+    Column('converted_at', DateTime(True)),
+    Column('conversion_type', Text),
+    CheckConstraint("entity_type = ANY (ARRAY['professional'::text, 'organization'::text])", name='plg_events_entity_type_check'),
+    ForeignKeyConstraint(['rule_id'], ['public.plg_rules.id'], name='plg_events_rule_id_fkey'),
+    PrimaryKeyConstraint('id', name='plg_events_pkey'),
+    Index('idx_plg_events_entity', 'entity_type', 'entity_id'),
+    Index('idx_plg_events_rule', 'rule_id'),
     schema='public'
 )
 

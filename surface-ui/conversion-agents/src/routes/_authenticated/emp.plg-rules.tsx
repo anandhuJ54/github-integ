@@ -11,7 +11,7 @@ import {
   ToggleRight,
   Layers,
 } from "lucide-react";
-import { supabase } from "@v3/ui/integrations/supabase/client";
+import { api } from "@v3/ui/lib/server-fn";
 import { EmpLayout } from "@v3/ui/components/emp-layout";
 import { Card } from "@v3/ui/components/ui/card";
 import { Badge } from "@v3/ui/components/ui/badge";
@@ -66,6 +66,8 @@ type EventStat = {
   conversions: number;
 };
 
+const errorMessage = (e: unknown) => (e instanceof Error ? e.message : String(e));
+
 const TYPE_COLORS: Record<string, string> = {
   banner: "bg-blue-100 text-blue-700",
   modal: "bg-violet-100 text-violet-700",
@@ -95,42 +97,13 @@ function PlgRulesPage() {
   });
 
   const load = async () => {
-    const [ruleRes, eventRes] = await Promise.all([
-      supabase
-        .from("plg_rules")
-        .select(
-          "id,gcid,rule_name,rule_type,trigger_condition,priority,headline,body,cta_text,cta_action,cta_url,requires_upgrade,upgrade_tier,icon,is_active,created_at",
-        )
-        .order("priority", { ascending: true })
-        .order("rule_name", { ascending: true })
-        .limit(2000),
-      supabase
-        .from("plg_events")
-        .select("rule_id,fired_at,dismissed_at,converted_at")
-        .limit(50000),
-    ]);
-
-    setRules(((ruleRes.data ?? []) as Rule[]));
-
-    const map = new Map<string, EventStat>();
-    for (const e of ((eventRes.data ?? []) as Array<{
-      rule_id: string;
-      fired_at: string | null;
-      dismissed_at: string | null;
-      converted_at: string | null;
-    }>)) {
-      const cur = map.get(e.rule_id) ?? {
-        rule_id: e.rule_id,
-        fires: 0,
-        dismissals: 0,
-        conversions: 0,
-      };
-      if (e.fired_at) cur.fires += 1;
-      if (e.dismissed_at) cur.dismissals += 1;
-      if (e.converted_at) cur.conversions += 1;
-      map.set(e.rule_id, cur);
+    try {
+      const res = await api.get<{ rules: Rule[]; stats: EventStat[] }>("/conversion-agents/plg-rules");
+      setRules(res.rules);
+      setStats(new Map(res.stats.map((st) => [st.rule_id, st])));
+    } catch (e) {
+      toast.error("Failed to load rules", { description: errorMessage(e) });
     }
-    setStats(map);
     setLoading(false);
   };
 
@@ -172,41 +145,31 @@ function PlgRulesPage() {
   const totalActive = rules.filter((r) => r.is_active).length;
 
   const toggleActive = async (r: Rule, value: boolean) => {
-    const { error } = await supabase
-      .from("plg_rules")
-      .update({ is_active: value })
-      .eq("id", r.id);
-    if (error) return toast.error("Failed to update", { description: error.message });
-    await supabase.from("audit_log").insert({
-      action: value ? "plg_rule.activate" : "plg_rule.deactivate",
-      entity_type: "plg_rule",
-      entity_id: r.id,
-      field_changes: { is_active: value },
-    } as any);
+    try {
+      await api.patch(`/conversion-agents/plg-rules/${r.id}/active`, { is_active: value });
+    } catch (e) {
+      return toast.error("Failed to update", { description: errorMessage(e) });
+    }
     setRules((prev) => prev.map((x) => (x.id === r.id ? { ...x, is_active: value } : x)));
   };
 
   const duplicate = async (r: Rule) => {
-    const { id: _id, created_at: _ca, ...rest } = r;
-    const { error } = await supabase.from("plg_rules").insert({
-      ...rest,
-      rule_name: `${r.rule_name} (Copy)`,
-      is_active: false,
-    } as any);
-    if (error) return toast.error("Duplicate failed", { description: error.message });
+    try {
+      await api.post(`/conversion-agents/plg-rules/${r.id}/duplicate`);
+    } catch (e) {
+      return toast.error("Duplicate failed", { description: errorMessage(e) });
+    }
     toast.success("Rule duplicated");
     load();
   };
 
   const remove = async (r: Rule) => {
     if (!confirm(`Delete rule "${r.rule_name}"?`)) return;
-    const { error } = await supabase.from("plg_rules").delete().eq("id", r.id);
-    if (error) return toast.error("Delete failed", { description: error.message });
-    await supabase.from("audit_log").insert({
-      action: "plg_rule.delete",
-      entity_type: "plg_rule",
-      entity_id: r.id,
-    } as any);
+    try {
+      await api.delete(`/conversion-agents/plg-rules/${r.id}`);
+    } catch (e) {
+      return toast.error("Delete failed", { description: errorMessage(e) });
+    }
     toast.success("Rule deleted");
     load();
   };
@@ -513,17 +476,14 @@ function RuleEditor({
       icon: form.icon || null,
       is_active: form.is_active ?? true,
     };
-    const res = isEdit
-      ? await supabase.from("plg_rules").update(payload as any).eq("id", form.id!)
-      : await supabase.from("plg_rules").insert(payload as any);
+    try {
+      if (isEdit) await api.put(`/conversion-agents/plg-rules/${form.id!}`, payload);
+      else await api.post("/conversion-agents/plg-rules", payload);
+    } catch (e) {
+      setSubmitting(false);
+      return toast.error("Save failed", { description: errorMessage(e) });
+    }
     setSubmitting(false);
-    if (res.error) return toast.error("Save failed", { description: res.error.message });
-    await supabase.from("audit_log").insert({
-      action: isEdit ? "plg_rule.update" : "plg_rule.create",
-      entity_type: "plg_rule",
-      entity_id: form.id ?? null,
-      field_changes: payload,
-    } as any);
     toast.success(isEdit ? "Rule updated" : "Rule created");
     onClose();
     onSaved();

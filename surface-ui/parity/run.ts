@@ -77,8 +77,13 @@ console.log(`parity ${surface}: ${cases.length} case(s), ${token ? "signed in" :
 
 let failed = 0;
 for (const c of cases) {
-  const mod = await legacyModule(c.legacyModule, c.legacyPatch);
-  const fn = mod[c.legacyExport] as (...a: unknown[]) => Promise<unknown>;
+  let fn: (...a: unknown[]) => Promise<unknown>;
+  if (c.legacy) {
+    fn = () => c.legacy!(supabase);
+  } else {
+    const mod = await legacyModule(c.legacyModule!, c.legacyPatch);
+    fn = mod[c.legacyExport!] as (...a: unknown[]) => Promise<unknown>;
+  }
   let legacy: unknown;
   try {
     legacy = JSON.parse(JSON.stringify(await fn(...(c.legacyArgs ?? []))));

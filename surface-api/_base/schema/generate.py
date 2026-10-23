@@ -16,9 +16,15 @@ from pathlib import Path
 
 # Tables read or written through SQLAlchemy Core (`_base.schema.tables`). Keep sorted.
 TABLES = [
+    "audit_log",
+    "claim_queue",
+    "exp_category_compliance",
     "exp_etl_field_floors",
     "exp_etl_staging",
     "graph_nodes",
+    "organizations",
+    "plg_events",
+    "plg_rules",
     "professionals",
 ]
 

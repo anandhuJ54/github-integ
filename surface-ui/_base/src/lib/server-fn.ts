@@ -28,7 +28,7 @@ async function authHeaders(): Promise<Record<string, string>> {
 
 /** One request to FastAPI through the /api proxy, with the user's JWT; throws ServerFnError. */
 async function request<Out>(
-  method: "GET" | "POST",
+  method: "GET" | "POST" | "PUT" | "PATCH" | "DELETE",
   path: string,
   opts: { body?: unknown; signal?: AbortSignal } = {},
 ): Promise<Out> {
@@ -70,6 +70,12 @@ export const api = {
     request<Out>("GET", withQuery(path, opts.params), { signal: opts.signal }),
   post: <Out>(path: string, body?: unknown, opts: { signal?: AbortSignal } = {}) =>
     request<Out>("POST", path, { body: body ?? null, signal: opts.signal }),
+  put: <Out>(path: string, body: unknown, opts: { signal?: AbortSignal } = {}) =>
+    request<Out>("PUT", path, { body, signal: opts.signal }),
+  patch: <Out>(path: string, body: unknown, opts: { signal?: AbortSignal } = {}) =>
+    request<Out>("PATCH", path, { body, signal: opts.signal }),
+  delete: <Out>(path: string, opts: { signal?: AbortSignal } = {}) =>
+    request<Out>("DELETE", path, { signal: opts.signal }),
 };
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

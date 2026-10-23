@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Check, Inbox, X } from "lucide-react";
-import { supabase } from "@v3/ui/integrations/supabase/client";
+import { api } from "@v3/ui/lib/server-fn";
 import { BrandAvatar, PersonAvatar } from "@v3/ui/components/sales/entity-avatar";
 import { EmpLayout } from "@v3/ui/components/emp-layout";
 import { Button } from "@v3/ui/components/ui/button";
@@ -94,36 +94,16 @@ function ClaimsPage() {
 
   const { data: stats } = useQuery({
     queryKey: ["claim-stats"],
-    queryFn: async () => {
-      const counts = await Promise.all([
-        supabase.from("claim_queue").select("*", { count: "exact", head: true }).eq("status", "pending"),
-        supabase.from("claim_queue").select("*", { count: "exact", head: true }).in("status", ["auto_approved", "approved"]),
-        supabase.from("claim_queue").select("*", { count: "exact", head: true }).eq("status", "manual_review"),
-        supabase.from("claim_queue").select("*", { count: "exact", head: true }).eq("status", "conflict"),
-      ]);
-      return {
-        pending: counts[0].count ?? 0,
-        approved: counts[1].count ?? 0,
-        manual: counts[2].count ?? 0,
-        conflict: counts[3].count ?? 0,
-      };
-    },
+    queryFn: () =>
+      api.get<{ pending: number; approved: number; manual: number; conflict: number }>(
+        "/conversion-agents/claims/stats",
+      ),
   });
 
   const tabConfig = TABS.find((t) => t.id === tab)!;
   const { data: claims, isLoading } = useQuery({
     queryKey: ["claims", tab],
-    queryFn: async () => {
-      let q = supabase
-        .from("claim_queue")
-        .select("*")
-        .order("created_at", { ascending: false })
-        .limit(200);
-      if (tabConfig.filter) q = q.in("status", tabConfig.filter);
-      const { data, error } = await q;
-      if (error) throw error;
-      return (data ?? []) as Claim[];
-    },
+    queryFn: () => api.get<Claim[]>("/conversion-agents/claims", { params: { tab: tabConfig.id } }),
   });
 
   const profIds = useMemo(() => Array.from(new Set((claims ?? []).filter(c => c.entity_type === "professional").map(c => c.entity_id))), [claims]);
@@ -132,41 +112,10 @@ function ClaimsPage() {
   const { data: entities } = useQuery({
     queryKey: ["claim-entities", profIds, orgIds],
     enabled: profIds.length > 0 || orgIds.length > 0,
-    queryFn: async () => {
-      const [pros, orgs] = await Promise.all([
-        profIds.length
-          ? supabase
-              .from("professionals")
-              .select("id, display_name, first_name, last_name, gcid, photo_url")
-              .in("id", profIds)
-          : Promise.resolve({
-              data: [] as {
-                id: string;
-                display_name: string | null;
-                first_name: string | null;
-                last_name: string | null;
-                gcid: string | null;
-                photo_url: string | null;
-              }[],
-            }),
-        orgIds.length
-          ? supabase.from("organizations").select("id, name, gcid, logo_url").in("id", orgIds)
-          : Promise.resolve({ data: [] as { id: string; name: string; gcid: string | null; logo_url: string | null }[] }),
-      ]);
-      const map: Record<string, { name: string; gcid: string | null; imageUrl: string | null; kind: "professional" | "organization" }> = {};
-      (pros.data ?? []).forEach((p) => {
-        map[p.id] = {
-          name: p.display_name || [p.first_name, p.last_name].filter(Boolean).join(" ") || "Unnamed",
-          gcid: p.gcid,
-          imageUrl: p.photo_url ?? null,
-          kind: "professional",
-        };
-      });
-      (orgs.data ?? []).forEach((o) => {
-        map[o.id] = { name: o.name, gcid: o.gcid, imageUrl: o.logo_url ?? null, kind: "organization" };
-      });
-      return map;
-    },
+    queryFn: () =>
+      api.post<
+        Record<string, { name: string; gcid: string | null; imageUrl: string | null; kind: "professional" | "organization" }>
+      >("/conversion-agents/claims/entities", { professionalIds: profIds, organizationIds: orgIds }),
 
   });
 
@@ -174,17 +123,10 @@ function ClaimsPage() {
     mutationFn: async ({ id, status, review_notes }: { id: string; status: string; review_notes: string }) => {
       // Governed adjudication: approve binds both sides (exp_claim + professionals.claimed +
       // owner grant) at T2; reject closes the claim. Audit is written by the function.
-      const { error } = await (
-        supabase.rpc as unknown as (
-          fn: string,
-          args: Record<string, unknown>,
-        ) => Promise<{ error: { message: string } | null }>
-      )("exp_claim_queue_adjudicate", {
-        p_queue: id,
-        p_approve: status === "approved",
-        p_note: review_notes || null,
+      await api.post(`/conversion-agents/claims/${encodeURIComponent(id)}/adjudicate`, {
+        approve: status === "approved",
+        note: review_notes || null,
       });
-      if (error) throw new Error(error.message);
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["claims"] });

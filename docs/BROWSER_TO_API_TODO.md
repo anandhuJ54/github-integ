@@ -57,8 +57,20 @@ Counts are (reads/writes/rpc) as measured on 2026-10-23.
 - [x] 8. Click-through of the `/nora-os` console (2026-10-23): the panel renders from `/api/nora-os/etl-monitor`, and no `rest/v1/exp_*` or `rest/v1/graph_nodes` calls are made
 - [ ] 9. Lint ratchet
 
-### 2. conversion-agents (7/7/0)
-- [ ] 1 · [ ] 2 · [ ] 3 · [ ] 4 · [ ] 5 · [ ] 6 · [ ] 7 parity · [ ] 8 · [ ] 9
+### 2. conversion-agents (7/7/1) · branch `migrate/api-conversion-agents`
+- [x] 1. Endpoints under `/conversion-agents/`:
+  - `/claims`: `GET claims/stats` (the 4 counts, now 1 query), `GET claims?tab=`, `POST claims/entities`, `POST claims/{id}/adjudicate` (the `exp_claim_queue_adjudicate` RPC)
+  - `/emp/plg-rules`: `GET plg-rules`, then `POST`, `PUT`, `PATCH …/active`, `POST …/duplicate` and `DELETE`, each writing its audit_log row in the same transaction
+  - `/claim/{slug}`: `GET claim-profile/{slug}`
+- [x] 2. Tables: audit_log, claim_queue, exp_category_compliance, organizations, plg_events, plg_rules
+- [x] 3. `conversion_agents/queries/{claims,plg_rules,claim_profile}.py`, `conversion_agents/routers/{claims,plg_rules,claim_profile}.py`
+- [x] 4. pytest (`queries_test.py`). Live read-only smoke as the signed-in user: 0 claims and 0 PLG rules are visible to that account under RLS (GCP has 90 and 9), and the claim profile resolves.
+- [x] 5. `contracts/conversion-agents/openapi.json`
+- [x] 6. All three pages call `api.*` with the query keys unchanged. No `.from()`/`.rpc()` left; only Supabase auth remains on the claim page.
+  - Changed: a new rule's audit entry records the new id (the TS logged null). A refused audit row still keeps the change, as before.
+- [ ] 7. Parity: cases in `surface-ui/parity/cases/conversion-agents.ts` (stats, 5 tabs, entities, plg-rules, claim profile)
+- [ ] 8. Click-through: `/claims`, `/emp/plg-rules`, `/claim/sf-a9ee009780abff5cc27f`. The Network tab should show `/api/conversion-agents/…` and no `rest/v1`.
+- [ ] 9. Lint ratchet
 
 ### 3. search (7/8/3)
 - [ ] 1 · [ ] 2 · [ ] 3 · [ ] 4 · [ ] 5 · [ ] 6 · [ ] 7 parity · [ ] 8 · [ ] 9

@@ -1,7 +1,7 @@
 import { createFileRoute, notFound, Link } from "@tanstack/react-router";
 import { useSuspenseQuery, queryOptions } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
-import { useServerFn } from "@v3/ui/lib/server-fn";
+import { api, ServerFnError, useServerFn } from "@v3/ui/lib/server-fn";
 import { supabase } from "@v3/ui/integrations/supabase/client";
 import { lovable } from "@v3/conversion-agents/integrations/lovable";
 import { submitClaim, verifyClaimCode } from "@v3/conversion-agents/lib/claim.functions";
@@ -24,30 +24,38 @@ import {
 
 type ClaimResult = Awaited<ReturnType<typeof submitClaim>>;
 
+type ClaimProf = {
+  id: string;
+  first_name: string;
+  last_name: string;
+  display_name: string | null;
+  slug: string;
+  headline: string | null;
+  photo_url: string | null;
+  address_city: string | null;
+  address_state: string | null;
+  gcid: string | null;
+  claimed: boolean | null;
+  search_rank_score: number | null;
+  local_rank: number | null;
+  local_rank_of: number | null;
+  gbp_connected: boolean | null;
+  bio: string | null;
+  primary_license_type: string | null;
+};
+
 function profileQuery(slug: string) {
   return queryOptions({
     queryKey: ["claim-profile", slug],
     queryFn: async () => {
-      const { data: prof, error } = await supabase
-        .from("professionals")
-        .select(
-          "id, first_name, last_name, display_name, slug, headline, photo_url, address_city, address_state, gcid, claimed, search_rank_score, local_rank, local_rank_of, gbp_connected, bio, primary_license_type",
-        )
-        .eq("slug", slug)
-        .maybeSingle();
-      if (error) throw error;
-      if (!prof) throw notFound();
-
-      let licenseLabel = "License Number";
-      if (prof.gcid) {
-        const { data: comp } = await supabase
-          .from("exp_category_compliance")
-          .select("license_label")
-          .eq("gcid", prof.gcid)
-          .maybeSingle();
-        if (comp?.license_label) licenseLabel = comp.license_label;
+      try {
+        return await api.get<{ prof: ClaimProf; licenseLabel: string }>(
+          `/conversion-agents/claim-profile/${encodeURIComponent(slug)}`,
+        );
+      } catch (e) {
+        if (e instanceof ServerFnError && e.status === 404) throw notFound();
+        throw e;
       }
-      return { prof, licenseLabel };
     },
   });
 }
