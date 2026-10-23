@@ -28,6 +28,8 @@ import psycopg
 from psycopg.rows import dict_row
 from psycopg_pool import ConnectionPool
 
+from _base.core.config import get_settings
+
 # One pool per distinct URL, created on first use and reused thereafter.
 _pools: dict[str, ConnectionPool] = {}
 
@@ -46,7 +48,21 @@ def _replica_url() -> str:
 def _pool(url: str) -> ConnectionPool:
     pool = _pools.get(url)
     if pool is None:
-        pool = ConnectionPool(url, kwargs={"row_factory": dict_row}, open=True)
+        # Bounded, per-worker pool. Total DB connections = replicas × workers × max_size, so
+        # these must stay under the database's connection cap (see _base.core.config). check=
+        # validates a leased connection is still live — important behind the Supabase
+        # transaction pooler and against a replica that may recycle sockets.
+        s = get_settings()
+        pool = ConnectionPool(
+            url,
+            min_size=s.db_pool_min,
+            max_size=s.db_pool_max,
+            timeout=s.db_pool_timeout,
+            max_idle=s.db_pool_max_idle,
+            check=ConnectionPool.check_connection,
+            kwargs={"row_factory": dict_row},
+            open=True,
+        )
         _pools[url] = pool
     return pool
 

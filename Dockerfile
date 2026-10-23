@@ -21,6 +21,7 @@ RUN uv pip install --system --no-cache \
     "starlette>=0.40,<0.42" \
     "uvicorn[standard]>=0.32" \
     "psycopg[binary]>=3.2" \
+    "psycopg-pool>=3.2" \
     "pyjwt>=2.9"
 
 # Backend source only (DATABASE_URL / SUPABASE_JWT_SECRET come from the environment).
@@ -28,4 +29,9 @@ RUN uv pip install --system --no-cache \
 COPY surface-api/ ./
 
 EXPOSE 8000
-CMD ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "8000"]
+
+# Multiple worker processes per container. WEB_CONCURRENCY tunes it per environment
+# (default 2); each worker gets its own DB pool, so keep workers × DB_POOL_MAX under the
+# database connection cap. Shell form so the env var expands. Prefer scaling by replicas on
+# an orchestrator that load-balances; use workers to fill a single box's cores.
+CMD uvicorn app:app --host 0.0.0.0 --port 8000 --workers ${WEB_CONCURRENCY:-2}

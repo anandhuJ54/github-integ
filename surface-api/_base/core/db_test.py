@@ -17,10 +17,14 @@ from _base.core import db
 
 @pytest.fixture(autouse=True)
 def _clean_pools():
-    """Each test starts with no cached pools."""
+    """Each test starts with no cached pools and freshly-resolved settings."""
+    from _base.core.config import get_settings
+
     db._pools.clear()
+    get_settings.cache_clear()
     yield
     db._pools.clear()
+    get_settings.cache_clear()
 
 
 # --- fakes ---------------------------------------------------------------
@@ -69,6 +73,12 @@ class _FakePool:
         self.log: list = []
         self.closed = False
         _FakePool.instances.append(self)
+
+    # Referenced as `check=ConnectionPool.check_connection` in db._pool; present so the
+    # monkeypatched pool class exposes the same attribute the real one does.
+    @staticmethod
+    def check_connection(conn):
+        return None
 
     def connection(self):
         return _FakeConnCtx(_FakeConn(self.log))
@@ -135,6 +145,21 @@ def test_pool_is_lazy_and_reused_per_url(fake_pool):
     assert b1 is not a1                 # distinct per url
     assert len(fake_pool.instances) == 2
     assert a1.kwargs["kwargs"]["row_factory"] is db.dict_row
+    # Pool is bounded, not unbounded: sizing comes from settings (defaults here).
+    assert a1.kwargs["min_size"] == 1
+    assert a1.kwargs["max_size"] == 10
+    assert a1.kwargs["timeout"] == 10.0
+    assert a1.kwargs["check"] is db.ConnectionPool.check_connection
+
+
+def test_pool_sizing_reads_env(monkeypatch, fake_pool):
+    monkeypatch.setenv("DB_POOL_MIN", "2")
+    monkeypatch.setenv("DB_POOL_MAX", "25")
+    monkeypatch.setenv("DB_POOL_TIMEOUT", "5")
+    p = db._pool("postgres://sized")
+    assert p.kwargs["min_size"] == 2
+    assert p.kwargs["max_size"] == 25
+    assert p.kwargs["timeout"] == 5.0
 
 
 # --- RLS context (criterion 4) ------------------------------------------
