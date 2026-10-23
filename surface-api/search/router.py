@@ -6,6 +6,7 @@ from __future__ import annotations
 
 from fastapi import APIRouter
 
+from search.routers.console_data import router as console_data_router
 from search.routers.health import router as health_router
 from search.routers.search_assistant import router as search_assistant_router
 from search.routers.search_presentation_fn import router as search_presentation_fn_router
@@ -16,3 +17,4 @@ router.include_router(health_router)
 router.include_router(search_presentation_fn_router)
 router.include_router(site_indexing_fn_router)
 router.include_router(search_assistant_router)
+router.include_router(console_data_router)

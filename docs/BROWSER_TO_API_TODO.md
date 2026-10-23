@@ -73,20 +73,25 @@ Counts are (reads/writes/rpc) as measured on 2026-10-23.
 - [x] 8. Click-through (2026-10-23): `/claims` calls `/api/conversion-agents/claims?tab=pending` (and `claims/stats`) instead of `rest/v1/claim_queue`
 - [ ] 9. Lint ratchet
 
-### 3. search (7/8/3) — **ON HOLD (2026-10-23): security finding, needs a ruling (O12)**
-- [ ] 1 · [ ] 2 · [ ] 3 · [ ] 4 · [ ] 5 · [ ] 6 · [ ] 7 parity · [ ] 8 · [ ] 9
-- All the calls are in `surface-ui/search/src/lib/search-console.ts`.
-  - Pages: `/search`, `/search/indexing`, `/search/sponsored`, `/search/ads`, `/search/voce`.
-  - Tables: `gbp_categories` (4,041 rows, so the legacy read hits the 1,000-row cap), `exp_page_views_rollup`, `exp_index_*`, `exp_sitemap_partition`, `exp_sponsored_*`, `exp_web_ads`.
-  - RPCs: `exp_sitemap_rebuild`, `exp_index_submit_tick`, `exp_index_sync`. These are gated indexing actions; never trigger them as a test.
-- **Security finding** from a read-only catalog check on GCP:
-  - These 7 tables have RLS **off**, and `anon` holds full grants including DELETE and TRUNCATE: `exp_index_agent`, `exp_index_queue`, `exp_index_submission_log`, `exp_page_views_rollup`, `exp_sitemap_partition`, `exp_sponsored_pricing`, `exp_sponsored_slots`. A signed-out REST read with only the public anon key returned rows.
-  - `exp_web_ads` has an always-true policy for `authenticated`.
-  - All 10 tables grant `anon` full rights.
-  - `exp_sitemap_rebuild` and `exp_index_sync` (SECURITY DEFINER, no role check) are executable by `anon`. `exp_index_submit_tick` is gated by `exp_index_enabled()`, which is currently false.
-- Decisions needed before resuming:
-  1. A migration (written, not applied) to enable and force RLS on those tables, add admin-only policies, fix the `exp_web_ads` policy, revoke anon/PUBLIC grants and restrict EXECUTE. Applying it is gated and needs a second approval.
-  2. Whether the FastAPI search endpoints check for a `super_admin`/`architect` console role, or mirror today's DB rules.
+### 3. search (7/8/3) · branch `migrate/api-search` · resumed 2026-10-23 (the DB fix is deferred to SF-1..3)
+- [x] 1. Endpoints under `/search/console/` (`search/routers/console_data.py`):
+  - Reads: `category-labels`, `launched-categories`, `overview`, `indexing` (5 coverage counts in 1 query), `sponsored`, `ads`
+  - Writes: index agent on/off, index config (upsert), sponsored pricing, slot assign/lock/release/create, ad create/update/delete
+  - The 3 indexing RPCs (gated actions)
+- [x] 2. Tables: exp_page_views_rollup, exp_index_agent, exp_index_queue, exp_sitemap_partition, exp_index_submission_log, exp_index_config, exp_sponsored_pricing, exp_sponsored_slots, exp_web_ads
+- [x] 3. `search/queries/console.py`
+  - Ruling: mirror today's access (the API runs as the signed-in user); the DB fix is deferred.
+  - `site_indexing_enabled` is now also refused server-side.
+  - Pricing and ad patches are allow-listed.
+- [x] 4. pytest (`search/queries/queries_test.py`). Live read-only smoke as the signed-in user: all 6 reads work.
+  - The indexing config shows 0 rows for a non-super_admin (RLS).
+  - The coverage counts are real: 116,198 held, 19,882 pending.
+  - **The indexing RPCs were not run** (gated).
+- [x] 5. `contracts/search/openapi.json`
+- [x] 6. The search pages make no direct Supabase calls.
+- [ ] 7. Parity: 6 loader cases in `surface-ui/parity/cases/search.ts` (Maps compared as entries)
+- [ ] 8. Click-through: open pages only. Never press Rebuild sitemap, Submit tick, Sync queue or any save button.
+- [ ] 9. Lint ratchet
 
 ### 4. admin (19/2/1) · branch `migrate/api-admin`
 - [x] 1. Endpoints under `/admin/` (`admin/routers/console_pages.py`):

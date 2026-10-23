@@ -106,7 +106,7 @@ globalThis.fetch = ((input: RequestInfo | URL, init?: RequestInit) => {
 async function runNew(c: ParityCase, ctx: unknown): Promise<{ ok: true; value: unknown } | { ok: false; error: string }> {
   if (c.current) {
     try {
-      return { ok: true, value: JSON.parse(JSON.stringify((await c.current(ctx)) ?? null)) };
+      return { ok: true, value: toJson(await c.current(ctx)) };
     } catch (e) {
       return { ok: false, error: (e as { message?: string } | null)?.message ?? String(e) };
     }
@@ -131,6 +131,14 @@ function callApi(call: ApiCall) {
 // Cases that need legacy modules with per-case arguments (e.g. from `prepare`) load them here.
 (globalThis as any).__legacyModule = (path: string, deps?: string[]) => legacyModule(path, [], deps);
 
+/** JSON that keeps Maps and Sets (as their entries), so a loader returning a Map is compared. */
+const toJson = (v: unknown) =>
+  JSON.parse(
+    JSON.stringify(v ?? null, (_k, val) =>
+      val instanceof Map ? { $map: [...val.entries()] } : val instanceof Set ? { $set: [...val] } : val,
+    ),
+  );
+
 let failed = 0;
 for (const c of cases) {
   const ctx = c.prepare ? await c.prepare(supabase) : undefined;
@@ -143,7 +151,7 @@ for (const c of cases) {
   }
   let legacy: unknown;
   try {
-    legacy = JSON.parse(JSON.stringify(await fn(...(c.legacyArgs ?? []))));
+    legacy = toJson(await fn(...(c.legacyArgs ?? [])));
   } catch (e) {
     const msg = (e as { message?: string } | null)?.message;
     if (c.expectRefusal) {

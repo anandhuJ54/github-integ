@@ -1,37 +1,24 @@
-import { supabase } from "@v3/ui/integrations/supabase/client";
+import { api } from "@v3/ui/lib/server-fn";
 import type { Json } from "@v3/ui/integrations/supabase/types";
 import { parseIndexingEnabled, SITE_INDEXING_KEY } from "@v3/ui/lib/index-floor";
 
 /* ────────────────────────────────────────────────────────────
    Search — control plane for the public growth engine.
-   Every number here is a live table read. Nothing is fabricated:
-   an empty table surfaces as an empty array and the UI renders
-   an honest "instrument to activate" state.
+   Every number here is a live table read, through /search/console/*
+   (surface-api/search/queries/console.py) as the signed-in user.
+   Nothing is fabricated: an empty table surfaces as an empty array
+   and the UI renders an honest "instrument to activate" state.
    ──────────────────────────────────────────────────────────── */
 
-const rows = <T,>(res: { data: unknown; error: { message: string } | null }) => {
-  if (res.error) throw new Error(res.error.message);
-  return (res.data ?? []) as T[];
-};
-
-async function run(p: PromiseLike<{ error: { message: string } | null }>) {
-  const { error } = await p;
-  if (error) throw new Error(error.message);
-  return true;
-}
-
-const db = supabase as unknown as { from: (table: string) => any };
+const C = "/search/console";
+const ok = (p: Promise<unknown>) => p.then(() => true as const);
 
 /* ───────────── Shared: friendly category labels ───────────── */
 
 export type CategoryLabel = { gcid: string; display_name: string | null; slug: string | null };
 
 export async function loadCategoryLabels(): Promise<Map<string, string>> {
-  const res = await supabase
-    .from("gbp_categories")
-    .select("gcid, display_name, slug")
-    .order("display_name", { ascending: true });
-  const list = rows<CategoryLabel>(res);
+  const list = await api.get<CategoryLabel[]>(`${C}/category-labels`);
   return new Map(list.map((c) => [c.gcid, c.display_name ?? c.slug ?? c.gcid]));
 }
 
@@ -122,15 +109,10 @@ export function viewsForCategory(list: RollupRow[], gcid: string | null) {
 }
 
 export async function loadSearchOverview() {
-  const [res, labels] = await Promise.all([
-    supabase
-      .from("exp_page_views_rollup")
-      .select("*")
-      .order("day", { ascending: false })
-      .limit(5000),
+  const [list, labels] = await Promise.all([
+    api.get<RollupRow[]>(`${C}/overview`),
     loadCategoryLabels(),
   ]);
-  const list = rows<RollupRow>(res);
   return { rollup: list, labels, totals: rollupTotals(list), volume: volumeByCategoryGeo(list) };
 }
 
@@ -211,30 +193,21 @@ export const INDEX_CONFIG_KEYS = [
 export const HELD_PARTITION = "held-below-floor";
 
 export async function loadIndexing() {
-  const coverageQuery = Promise.all(
-    QUEUE_STATES.map(async (state) => {
-      const { count } = await db
-        .from("exp_index_queue")
-        .select("id", { count: "exact", head: true })
-        .eq("state", state);
-      return { state, count: (count as number | null) ?? null };
-    }),
-  );
-  const [agents, queue, partitions, log, config, labels, coverage] = await Promise.all([
-    supabase.from("exp_index_agent").select("*").order("gcid", { ascending: true }),
-    supabase
-      .from("exp_index_queue")
-      .select("*")
-      .order("thoroughness_pct", { ascending: false })
-      .limit(500),
-    db.from("exp_sitemap_partition").select("*").order("min_score", { ascending: false }),
-    db.from("exp_index_submission_log").select("*").order("submitted_at", { ascending: false }).limit(100),
-    db.from("exp_index_config").select("key, value, updated_at"),
+  // agents, queue (500), partitions, log (100), config and the per-state coverage counts
+  const [ix, labels] = await Promise.all([
+    api.get<{
+      agents: IndexAgentRow[];
+      queue: IndexQueueRow[];
+      partitions: SitemapPartitionRow[];
+      log: SubmissionLogRow[];
+      config: IndexConfigRow[];
+      coverage: QueueCoverage;
+    }>(`${C}/indexing`),
     loadCategoryLabels(),
-    coverageQuery,
   ]);
-  const agentRows = rows<IndexAgentRow>(agents);
-  const queueRows = rows<IndexQueueRow>(queue);
+  const agentRows = ix.agents;
+  const queueRows = ix.queue;
+  const coverage = ix.coverage;
   const totals = agentRows.reduce(
     (a, r) => ({
       discovered: a.discovered + n(r.discovered),
@@ -245,7 +218,7 @@ export async function loadIndexing() {
     }),
     { discovered: 0, built: 0, indexed: 0, held: 0, active: 0 },
   );
-  const allConfig = rows<IndexConfigRow>(config);
+  const allConfig = ix.config;
   const siteSwitch = allConfig.find((c) => c.key === SITE_INDEXING_KEY) ?? null;
   const configRows = allConfig.filter((c) =>
     INDEX_CONFIG_KEYS.some((k) => k.key === c.key),
@@ -253,8 +226,8 @@ export async function loadIndexing() {
   return {
     agents: agentRows,
     queue: queueRows,
-    partitions: rows<SitemapPartitionRow>(partitions),
-    log: rows<SubmissionLogRow>(log),
+    partitions: ix.partitions,
+    log: ix.log,
     config: new Map(configRows.map((c) => [c.key, c.value ?? ""])),
     labels,
     totals,
@@ -270,45 +243,26 @@ export async function loadIndexing() {
 
 export const searchMutations = {
   setAgentActive: (id: string, active: boolean) =>
-    run(db.from("exp_index_agent").update({ active }).eq("id", id)),
+    ok(api.patch(`${C}/index-agents/${encodeURIComponent(id)}`, { active })),
 
   setIndexConfig: (key: string, value: string) => {
-    // The site-wide switch is flipped only through setSiteIndexing (super admin).
+    // The site-wide switch is flipped only through setSiteIndexing (super admin); the API refuses it too.
     if (key === SITE_INDEXING_KEY) throw new Error("Use the site indexing switch (super admin)");
-    return run(db.from("exp_index_config").upsert({ key, value, updated_at: new Date().toISOString() }));
+    return ok(api.put(`${C}/index-config/${encodeURIComponent(key)}`, { value }));
   },
 
-  rebuildSitemap: async () => {
-    const { data, error } = await (supabase as unknown as {
-      rpc: (fn: string, args?: Record<string, unknown>) => Promise<{ data: unknown; error: { message: string } | null }>;
-    }).rpc("exp_sitemap_rebuild");
-    if (error) throw new Error(error.message);
-    return data as Record<string, number | string>;
-  },
+  rebuildSitemap: () => api.post<Record<string, number | string>>(`${C}/sitemap/rebuild`),
 
-  submitTick: async (batch: number) => {
-    const { data, error } = await (supabase as unknown as {
-      rpc: (fn: string, args?: Record<string, unknown>) => Promise<{ data: unknown; error: { message: string } | null }>;
-    }).rpc("exp_index_submit_tick", { p_batch: batch });
-    if (error) throw new Error(error.message);
-    return data as Record<string, unknown>;
-  },
+  submitTick: (batch: number) => api.post<Record<string, unknown>>(`${C}/index/submit-tick`, { batch }),
 
   /** exp_index_sync: queue score / completeness / state from search_documents + v5 scores. */
-  syncQueue: async () => {
-    const { data, error } = await (supabase as unknown as {
-      rpc: (fn: string, args?: Record<string, unknown>) => Promise<{ data: unknown; error: { message: string } | null }>;
-    }).rpc("exp_index_sync", {});
-    if (error) throw new Error(error.message);
-    return data as Record<string, unknown>;
-  },
-
+  syncQueue: () => api.post<Record<string, unknown>>(`${C}/index/sync`),
 
   /* Sponsored rate card */
   updatePricing: (
     id: string,
     patch: Partial<Pick<SponsoredPricingRow, "tier" | "spots" | "pricing_mode" | "monthly_price" | "floor_price" | "price_per_1k_views" | "notes">>,
-  ) => run(db.from("exp_sponsored_pricing").update(patch).eq("id", id)),
+  ) => ok(api.patch(`${C}/sponsored-pricing/${encodeURIComponent(id)}`, patch)),
 
   /* Sponsored slots */
   assignSlot: (
@@ -321,54 +275,12 @@ export const searchMutations = {
       pricing_mode?: string | null;
       per_1k?: number | null;
     },
-  ) =>
-    run(
-      db
-        .from("exp_sponsored_slots")
-        .update({
-          advertiser_name: patch.advertiser_name,
-          price: patch.price,
-          status: patch.status,
-          pricing_mode: patch.pricing_mode ?? null,
-          locked_price: patch.lock ? patch.price : null,
-          locked_per_1k: patch.lock ? (patch.per_1k ?? null) : null,
-          locked_at: patch.lock ? new Date().toISOString() : null,
-        })
-        .eq("id", id),
-    ),
+  ) => ok(api.post(`${C}/sponsored-slots/${encodeURIComponent(id)}/assign`, patch)),
   lockSlotRate: (id: string, price: number | null, per1k: number | null) =>
-    run(
-      db
-        .from("exp_sponsored_slots")
-        .update({ locked_price: price, locked_per_1k: per1k, locked_at: new Date().toISOString() })
-        .eq("id", id),
-    ),
-  releaseSlot: (id: string) =>
-    run(
-      db
-        .from("exp_sponsored_slots")
-        .update({
-          advertiser_name: null,
-          advertiser_org_id: null,
-          price: null,
-          status: "open",
-          locked_price: null,
-          locked_per_1k: null,
-          locked_at: null,
-        })
-        .eq("id", id),
-    ),
+    ok(api.post(`${C}/sponsored-slots/${encodeURIComponent(id)}/lock`, { price, per1k })),
+  releaseSlot: (id: string) => ok(api.post(`${C}/sponsored-slots/${encodeURIComponent(id)}/release`)),
   createSlot: (v: { gcid: string; geo_value: string; position: number }) =>
-    run(
-      db.from("exp_sponsored_slots").insert({
-        gcid: v.gcid,
-        geo_type: "zip",
-        geo_value: v.geo_value,
-        position: v.position,
-        status: "open",
-        is_demo: true,
-      }),
-    ),
+    ok(api.post(`${C}/sponsored-slots`, v)),
 
   /* Ads platform */
   createAd: (v: {
@@ -380,25 +292,10 @@ export const searchMutations = {
     budget: number | null;
     starts_on: string | null;
     ends_on: string | null;
-  }) =>
-    run(
-      db.from("exp_web_ads").insert({
-        name: v.name,
-        placement: v.placement,
-        context: v.context,
-        target_gcid: v.target_gcid,
-        target_geo: v.target_geo,
-        budget: v.budget,
-        starts_on: v.starts_on || null,
-        ends_on: v.ends_on || null,
-        creative: {} as Json,
-        status: "draft",
-        spend: 0,
-      }),
-    ),
+  }) => ok(api.post(`${C}/ads`, v)),
   updateAd: (id: string, patch: Partial<SearchAdRow>) =>
-    run(db.from("exp_web_ads").update(patch).eq("id", id)),
-  deleteAd: (id: string) => run(db.from("exp_web_ads").delete().eq("id", id)),
+    ok(api.patch(`${C}/ads/${encodeURIComponent(id)}`, patch)),
+  deleteAd: (id: string) => ok(api.delete(`${C}/ads/${encodeURIComponent(id)}`)),
 };
 
 /* ───────────── 3. Sponsored search ───────────── */
@@ -489,22 +386,15 @@ export function volumeCharge(views: number, pricePer1k: number | null | undefine
 }
 
 export async function loadSponsored() {
-  const [pricing, slots, rollup, labels] = await Promise.all([
-    supabase
-      .from("exp_sponsored_pricing")
-      .select("*")
-      .order("monthly_price", { ascending: false }),
-    supabase
-      .from("exp_sponsored_slots")
-      .select("*")
-      .order("geo_value", { ascending: true })
-      .order("position", { ascending: true }),
-    supabase.from("exp_page_views_rollup").select("*").limit(5000),
+  const [sp, labels] = await Promise.all([
+    api.get<{ pricing: SponsoredPricingRow[]; slots: SponsoredSlotRow[]; rollup: RollupRow[] }>(
+      `${C}/sponsored`,
+    ),
     loadCategoryLabels(),
   ]);
-  const pricingRows = rows<SponsoredPricingRow>(pricing);
-  const slotRows = rows<SponsoredSlotRow>(slots);
-  const rollupRows = rows<RollupRow>(rollup);
+  const pricingRows = sp.pricing;
+  const slotRows = sp.slots;
+  const rollupRows = sp.rollup;
   const groups = groupSlots(slotRows);
   return {
     pricing: pricingRows,
@@ -550,11 +440,10 @@ export function isClaimConversionUnit(ad: SearchAdRow) {
 }
 
 export async function loadSearchAds() {
-  const [ads, labels] = await Promise.all([
-    supabase.from("exp_web_ads").select("*").order("created_at", { ascending: false }),
+  const [list, labels] = await Promise.all([
+    api.get<SearchAdRow[]>(`${C}/ads`),
     loadCategoryLabels(),
   ]);
-  const list = rows<SearchAdRow>(ads);
   return {
     ads: list,
     labels,
@@ -574,13 +463,8 @@ export type CategoryOption = { gcid: string; label: string };
 
 /** Launched categories only — the ones the growth engine actually publishes. */
 export async function loadLaunchedCategories(): Promise<CategoryOption[]> {
-  const res = await supabase
-    .from("gbp_categories")
-    .select("gcid, display_name, slug")
-    .eq("is_launched", true)
-    .order("display_name", { ascending: true })
-    .limit(500);
-  return rows<CategoryLabel>(res).map((c) => ({
+  const list = await api.get<CategoryLabel[]>(`${C}/launched-categories`);
+  return list.map((c) => ({
     gcid: c.gcid,
     label: c.display_name ?? c.slug ?? c.gcid,
   }));

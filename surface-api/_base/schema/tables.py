@@ -274,6 +274,86 @@ t_exp_etl_field_floors = Table(
     schema='public'
 )
 
+t_exp_index_agent = Table(
+    'exp_index_agent', metadata,
+    Column('id', Uuid, primary_key=True, server_default=text('gen_random_uuid()')),
+    Column('gcid', Text),
+    Column('active', Boolean, server_default=text('false')),
+    Column('phase', Text, server_default=text("'idle'::text")),
+    Column('discovered', Integer, server_default=text('0')),
+    Column('built', Integer, server_default=text('0')),
+    Column('indexed', Integer, server_default=text('0')),
+    Column('held_shallow', Integer, server_default=text('0')),
+    Column('last_run_at', DateTime(True)),
+    Column('created_at', DateTime(True), server_default=text('now()')),
+    PrimaryKeyConstraint('id', name='exp_index_agent_pkey'),
+    UniqueConstraint('gcid', name='exp_index_agent_gcid_key'),
+    schema='public'
+)
+
+t_exp_index_config = Table(
+    'exp_index_config', metadata,
+    Column('key', Text, primary_key=True),
+    Column('value', Text),
+    Column('updated_at', DateTime(True), nullable=False, server_default=text('now()')),
+    PrimaryKeyConstraint('key', name='exp_index_config_pkey'),
+    schema='public'
+)
+
+t_exp_index_queue = Table(
+    'exp_index_queue', metadata,
+    Column('id', Uuid, primary_key=True, server_default=text('gen_random_uuid()')),
+    Column('entity_type', Text),
+    Column('entity_id', Uuid),
+    Column('url', Text),
+    Column('gcid', Text),
+    Column('score', Integer),
+    Column('thoroughness_pct', Integer),
+    Column('state', Text, server_default=text("'pending'::text")),
+    Column('method', Text),
+    Column('submitted_at', DateTime(True)),
+    Column('created_at', DateTime(True), server_default=text('now()')),
+    Column('lastmod', DateTime(True)),
+    Column('is_demo', Boolean, nullable=False, server_default=text('false')),
+    Column('completeness_floor', Integer),
+    Column('synced_at', DateTime(True)),
+    PrimaryKeyConstraint('id', name='exp_index_queue_pkey'),
+    Index('exp_index_queue_entity_idx', 'entity_type', 'entity_id'),
+    Index('exp_index_queue_state_idx', 'state'),
+    schema='public'
+)
+
+t_exp_index_submission_log = Table(
+    'exp_index_submission_log', metadata,
+    Column('id', Uuid, primary_key=True, server_default=text('gen_random_uuid()')),
+    Column('url', Text),
+    Column('gcid', Text),
+    Column('method', Text),
+    Column('event', Text),
+    Column('http_status', Integer),
+    Column('submitted_at', DateTime(True), server_default=text('now()')),
+    Column('is_demo', Boolean, server_default=text('true')),
+    PrimaryKeyConstraint('id', name='exp_index_submission_log_pkey'),
+    schema='public'
+)
+
+t_exp_page_views_rollup = Table(
+    'exp_page_views_rollup', metadata,
+    Column('id', Uuid, primary_key=True, server_default=text('gen_random_uuid()')),
+    Column('gcid', Text),
+    Column('geo_type', Text, server_default=text("'zip'::text")),
+    Column('geo_value', Text),
+    Column('day', Date),
+    Column('page_views', Integer, server_default=text('0')),
+    Column('unique_visitors', Integer, server_default=text('0')),
+    Column('claim_cta_views', Integer, server_default=text('0')),
+    Column('claims', Integer, server_default=text('0')),
+    Column('is_demo', Boolean, server_default=text('true')),
+    PrimaryKeyConstraint('id', name='exp_page_views_rollup_pkey'),
+    UniqueConstraint('gcid', 'geo_type', 'geo_value', 'day', name='exp_page_views_rollup_gcid_geo_type_geo_value_day_key'),
+    schema='public'
+)
+
 t_exp_ring = Table(
     'exp_ring', metadata,
     Column('ring_key', Text, primary_key=True),
@@ -309,6 +389,66 @@ t_exp_sales_reps = Table(
     Column('slack_channel', Text),
     Column('demo_batch', Text),
     PrimaryKeyConstraint('id', name='exp_sales_reps_pkey'),
+    schema='public'
+)
+
+t_exp_sitemap_partition = Table(
+    'exp_sitemap_partition', metadata,
+    Column('id', Uuid, primary_key=True, server_default=text('gen_random_uuid()')),
+    Column('partition_key', Text),
+    Column('min_score', Integer),
+    Column('max_score', Integer),
+    Column('changefreq', Text),
+    Column('priority', Numeric),
+    Column('url_count', Integer, server_default=text('0')),
+    Column('last_built_at', DateTime(True)),
+    Column('is_demo', Boolean, server_default=text('true')),
+    PrimaryKeyConstraint('id', name='exp_sitemap_partition_pkey'),
+    UniqueConstraint('partition_key', name='exp_sitemap_partition_partition_key_key'),
+    schema='public'
+)
+
+t_exp_sponsored_pricing = Table(
+    'exp_sponsored_pricing', metadata,
+    Column('id', Uuid, primary_key=True, server_default=text('gen_random_uuid()')),
+    Column('gcid', Text),
+    Column('geo_type', Text, server_default=text("'zip'::text")),
+    Column('tier', Text),
+    Column('spots', Integer, server_default=text('3')),
+    Column('basis', Text, server_default=text("'fixed'::text")),
+    Column('monthly_price', Numeric),
+    Column('floor_price', Numeric),
+    Column('notes', Text),
+    Column('is_demo', Boolean, server_default=text('true')),
+    Column('created_at', DateTime(True), server_default=text('now()')),
+    Column('pricing_mode', Text, server_default=text("'fixed'::text")),
+    Column('price_per_1k_views', Numeric),
+    Column('effective_on', Date, server_default=text('CURRENT_DATE')),
+    Column('version', Integer, server_default=text('1')),
+    PrimaryKeyConstraint('id', name='exp_sponsored_pricing_pkey'),
+    schema='public'
+)
+
+t_exp_sponsored_slots = Table(
+    'exp_sponsored_slots', metadata,
+    Column('id', Uuid, primary_key=True, server_default=text('gen_random_uuid()')),
+    Column('gcid', Text),
+    Column('geo_type', Text, server_default=text("'zip'::text")),
+    Column('geo_value', Text),
+    Column('position', Integer),
+    Column('advertiser_org_id', Uuid),
+    Column('status', Text, server_default=text("'open'::text")),
+    Column('price', Numeric),
+    Column('starts_on', Date),
+    Column('ends_on', Date),
+    Column('is_demo', Boolean, server_default=text('true')),
+    Column('created_at', DateTime(True), server_default=text('now()')),
+    Column('pricing_mode', Text, server_default=text("'fixed'::text")),
+    Column('locked_price', Numeric),
+    Column('locked_per_1k', Numeric),
+    Column('locked_at', DateTime(True)),
+    Column('advertiser_name', Text),
+    PrimaryKeyConstraint('id', name='exp_sponsored_slots_pkey'),
     schema='public'
 )
 
@@ -350,6 +490,25 @@ t_exp_taxonomy = Table(
     Index('idx_exp_taxonomy_concept', 'gcid', 'concept_slug', postgresql_where='(concept_slug IS NOT NULL)'),
     Index('idx_exp_taxonomy_gcid', 'gcid'),
     Index('uq_taxonomy_term', 'level', 'term_slug', unique=True),
+    schema='public'
+)
+
+t_exp_web_ads = Table(
+    'exp_web_ads', metadata,
+    Column('id', Uuid, primary_key=True, server_default=text('gen_random_uuid()')),
+    Column('name', Text),
+    Column('placement', Text),
+    Column('creative', JSONB, server_default=text("'{}'::jsonb")),
+    Column('status', Text, server_default=text("'draft'::text")),
+    Column('starts_on', Date),
+    Column('ends_on', Date),
+    Column('budget', Numeric),
+    Column('spend', Numeric, server_default=text('0')),
+    Column('created_at', DateTime(True), server_default=text('now()')),
+    Column('context', Text),
+    Column('target_gcid', Text),
+    Column('target_geo', Text),
+    PrimaryKeyConstraint('id', name='exp_web_ads_pkey'),
     schema='public'
 )
 
