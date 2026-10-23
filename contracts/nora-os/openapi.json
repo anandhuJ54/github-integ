@@ -1,0 +1,392 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "nora-os API",
+    "version": "1"
+  },
+  "paths": {
+    "/nora-os/etl-monitor": {
+      "get": {
+        "tags": [
+          "nora-os"
+        ],
+        "summary": "Etl Monitor",
+        "operationId": "etl_monitor_nora_os_etl_monitor_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EtlMonitor"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/nora-os/hello": {
+      "get": {
+        "tags": [
+          "nora-os"
+        ],
+        "summary": "Hello",
+        "description": "Public endpoint \u2014 no auth/DB. Proves the FE\u2194BE wiring end to end.",
+        "operationId": "hello_nora_os_hello_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "type": "object",
+                  "title": "Response Hello Nora Os Hello Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/nora-os/me": {
+      "get": {
+        "tags": [
+          "nora-os"
+        ],
+        "summary": "Whoami",
+        "description": "Trivial authed endpoint proving the JWT + routing path works.",
+        "operationId": "whoami_nora_os_me_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "type": "object",
+                  "title": "Response Whoami Nora Os Me Get"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Depth": {
+        "properties": {
+          "baseline": {
+            "type": "integer",
+            "title": "Baseline"
+          },
+          "avgFieldsNow": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Avgfieldsnow"
+          },
+          "deepRows": {
+            "type": "integer",
+            "title": "Deeprows"
+          }
+        },
+        "type": "object",
+        "required": [
+          "baseline",
+          "avgFieldsNow",
+          "deepRows"
+        ],
+        "title": "Depth"
+      },
+      "EtlMonitor": {
+        "properties": {
+          "progress": {
+            "$ref": "#/components/schemas/Progress"
+          },
+          "yield": {
+            "$ref": "#/components/schemas/Yield"
+          },
+          "gate": {
+            "$ref": "#/components/schemas/Gate"
+          },
+          "depth": {
+            "$ref": "#/components/schemas/Depth"
+          }
+        },
+        "type": "object",
+        "required": [
+          "progress",
+          "yield",
+          "gate",
+          "depth"
+        ],
+        "title": "EtlMonitor"
+      },
+      "FieldFloor": {
+        "properties": {
+          "gcid": {
+            "type": "string",
+            "title": "Gcid"
+          },
+          "min_fields": {
+            "type": "integer",
+            "title": "Min Fields"
+          },
+          "required_keys": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Required Keys"
+          },
+          "min_products": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Min Products"
+          },
+          "min_licenses": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Min Licenses"
+          },
+          "notes": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Notes"
+          },
+          "created_at": {
+            "type": "string",
+            "title": "Created At"
+          },
+          "updated_at": {
+            "type": "string",
+            "title": "Updated At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "gcid",
+          "min_fields",
+          "required_keys",
+          "min_products",
+          "min_licenses",
+          "notes",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "FieldFloor"
+      },
+      "FlaggedRow": {
+        "properties": {
+          "stage_id": {
+            "type": "string",
+            "title": "Stage Id"
+          },
+          "detail_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Detail Url"
+          },
+          "resolution_status": {
+            "type": "string",
+            "title": "Resolution Status"
+          },
+          "reasons": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Reasons"
+          },
+          "resolved_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Resolved At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "stage_id",
+          "detail_url",
+          "resolution_status",
+          "reasons",
+          "resolved_at"
+        ],
+        "title": "FlaggedRow"
+      },
+      "Gate": {
+        "properties": {
+          "floors": {
+            "items": {
+              "$ref": "#/components/schemas/FieldFloor"
+            },
+            "type": "array",
+            "title": "Floors"
+          },
+          "flagged": {
+            "type": "integer",
+            "title": "Flagged"
+          },
+          "shallowRate": {
+            "type": "number",
+            "title": "Shallowrate"
+          },
+          "recent": {
+            "items": {
+              "$ref": "#/components/schemas/FlaggedRow"
+            },
+            "type": "array",
+            "title": "Recent"
+          }
+        },
+        "type": "object",
+        "required": [
+          "floors",
+          "flagged",
+          "shallowRate",
+          "recent"
+        ],
+        "title": "Gate"
+      },
+      "NodeCounts": {
+        "properties": {
+          "product_service": {
+            "type": "integer",
+            "title": "Product Service"
+          },
+          "social_profile": {
+            "type": "integer",
+            "title": "Social Profile"
+          },
+          "credential": {
+            "type": "integer",
+            "title": "Credential"
+          }
+        },
+        "type": "object",
+        "required": [
+          "product_service",
+          "social_profile",
+          "credential"
+        ],
+        "title": "NodeCounts"
+      },
+      "Progress": {
+        "properties": {
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          },
+          "processed": {
+            "type": "integer",
+            "title": "Processed"
+          },
+          "remaining": {
+            "type": "integer",
+            "title": "Remaining"
+          },
+          "pctComplete": {
+            "type": "number",
+            "title": "Pctcomplete"
+          }
+        },
+        "type": "object",
+        "required": [
+          "total",
+          "processed",
+          "remaining",
+          "pctComplete"
+        ],
+        "title": "Progress"
+      },
+      "Yield": {
+        "properties": {
+          "profiles": {
+            "type": "integer",
+            "title": "Profiles"
+          },
+          "withBio": {
+            "type": "integer",
+            "title": "Withbio"
+          },
+          "withPhoto": {
+            "type": "integer",
+            "title": "Withphoto"
+          },
+          "withPlaceId": {
+            "type": "integer",
+            "title": "Withplaceid"
+          },
+          "nodes": {
+            "$ref": "#/components/schemas/NodeCounts"
+          }
+        },
+        "type": "object",
+        "required": [
+          "profiles",
+          "withBio",
+          "withPhoto",
+          "withPlaceId",
+          "nodes"
+        ],
+        "title": "Yield"
+      }
+    }
+  }
+}

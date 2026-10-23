@@ -12,33 +12,16 @@ PostgREST returned them, so comparisons and response bodies match the TS byte fo
 """
 from __future__ import annotations
 
-import datetime as _dt
-import decimal
-import uuid
 from typing import Any
 
 from psycopg.types.json import Jsonb
 
 from _base.core import db as _core_db
+from _base.core.sql import jsonish
 
 
 class DbError(RuntimeError):
     """A failed query, carrying the message the TS built (`${what}: ${error.message}`)."""
-
-
-def jsonish(v: Any) -> Any:
-    """PostgREST-shaped value: what supabase-js would have handed the TS."""
-    if isinstance(v, dict):
-        return {k: jsonish(x) for k, x in v.items()}
-    if isinstance(v, (list, tuple)):
-        return [jsonish(x) for x in v]
-    if isinstance(v, uuid.UUID):
-        return str(v)
-    if isinstance(v, (_dt.datetime, _dt.date, _dt.time)):
-        return v.isoformat()
-    if isinstance(v, decimal.Decimal):
-        return int(v) if v == v.to_integral_value() else float(v)
-    return v
 
 
 def _adapt(v: Any) -> Any:
