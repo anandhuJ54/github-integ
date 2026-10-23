@@ -16,3 +16,6 @@ dist/
 .env
 .env.*
 !.env.example
+
+# local scratch — never commit
+todo.md
