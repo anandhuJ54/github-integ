@@ -127,7 +127,7 @@ Counts are (reads/writes/rpc) as measured on 2026-10-23.
 - [x] 7. Parity PASS 14/14 (2026-10-23, signed out, end to end).
   - The legacy `loadProfessionalBundle`/`loadOrgBundle` (from git) were compared with the current ones: 5 professionals, 5 organizations and brands (including unknown slugs), sponsored slots, 2 ad-unit lookups and a category label.
   - Checked that the cases carry real data, e.g. Greg Aldridge: 20 services, 3 credentials, 8 proof rings.
-- [ ] 8. Click-through (signed out): `/p/…`, `/o/…`, `/c/…`, `/find`
+- [x] 8. Click-through (2026-10-23, signed out): each profile page makes one `/api/srp/profile/…` request; what is left on `rest/v1` comes from `_base`
 - [ ] 9. Lint ratchet
 - **Speed (shared `_base`).** Each GCP round trip is ~240 ms over the VPN.
   - `fetch_many` sends a batch through a psycopg pipeline with a manual savepoint, so the whole batch is 1 round trip.
