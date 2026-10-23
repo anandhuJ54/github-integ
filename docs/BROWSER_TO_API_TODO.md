@@ -13,6 +13,8 @@ and the new endpoint return the same JSON for the same signed-in user (`surface-
 
 Counts are (reads/writes/rpc) as measured on 2026-10-23.
 
+**The 1,000-row cap.** Self-hosted PostgREST returns at most 1,000 rows per REST response. Any legacy read that asks for more was silently truncated, and the API returns everything. Check every Surface for reads with a limit over 1,000 or no limit at all, and record any mismatch as an explained difference.
+
 ## Steps for every Surface
 
 1. List the calls and group them into endpoints.
@@ -50,10 +52,9 @@ Counts are (reads/writes/rpc) as measured on 2026-10-23.
 - [x] 4. pytest (`etl_monitor_test.py`); live smoke as service_role on GCP: the response validates (31,355 staged, 3 floors)
 - [x] 5. `contracts/nora-os/openapi.json`
 - [x] 6. `etl-monitor.ts` calls `api.get`; the query key `["etl-run-monitor"]` is unchanged. The Surface now has 0 direct Supabase calls.
-- [ ] 7. Parity PASS. The UI now points at self-hosted GCP (same DB as the API: 115,867 professionals both ways).
-  - On GCP the legacy read **fails**: its three `graph_nodes` counts exceed the 8s `statement_timeout` of the `authenticated` role. The parity case patches those three out (`legacyPatch`) and lists `$.yield.nodes` as not compared.
-  - Node counts checked against SQL as `authenticated`, and they match: 259,038 product_service, 105,517 social_profile, 211,423 credential. The API returns the whole monitor in about 4–6s.
-  - Still to do: a parity run of the remaining fields with a real login.
+- [x] 7. Parity PASS (2026-10-23, signed in, against self-hosted GCP)
+  - The three `graph_nodes` counts time out (8s) for the legacy `authenticated` read, so they are patched out and checked against SQL instead: 259,038 product_service, 105,517 social_profile, 211,423 credential.
+  - Explained: `deepRows` 997 vs 1195 and `avgFieldsNow` 23.3 vs 23.2. Self-hosted PostgREST caps every response at 1,000 rows, so the legacy read saw only 1,000 of 1,199 deep rows; the API reads all of them.
 - [x] 8. Click-through of the `/nora-os` console (2026-10-23): the panel renders from `/api/nora-os/etl-monitor`, and no `rest/v1/exp_*` or `rest/v1/graph_nodes` calls are made
 - [ ] 9. Lint ratchet
 
@@ -68,7 +69,7 @@ Counts are (reads/writes/rpc) as measured on 2026-10-23.
 - [x] 5. `contracts/conversion-agents/openapi.json`
 - [x] 6. All three pages call `api.*` with the query keys unchanged. No `.from()`/`.rpc()` left; only Supabase auth remains on the claim page.
   - Changed: a new rule's audit entry records the new id (the TS logged null). A refused audit row still keeps the change, as before.
-- [ ] 7. Parity: cases in `surface-ui/parity/cases/conversion-agents.ts` (stats, 5 tabs, entities, plg-rules, claim profile)
+- [x] 7. Parity PASS 9/9 (2026-10-23, signed in): stats, 5 tabs, entities, plg-rules, claim profile
 - [ ] 8. Click-through: `/claims`, `/emp/plg-rules`, `/claim/sf-a9ee009780abff5cc27f`. The Network tab should show `/api/conversion-agents/…` and no `rest/v1`.
 - [ ] 9. Lint ratchet
 
