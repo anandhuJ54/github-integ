@@ -89,7 +89,8 @@ Counts are (reads/writes/rpc) as measured on 2026-10-23.
   - **The indexing RPCs were not run** (gated).
 - [x] 5. `contracts/search/openapi.json`
 - [x] 6. The search pages make no direct Supabase calls.
-- [ ] 7. Parity: 6 loader cases in `surface-ui/parity/cases/search.ts` (Maps compared as entries)
+- [x] 7. Parity PASS 6/6 (2026-10-24, signed in): every loader, legacy from git vs current, end to end.
+  - Maps are compared as their entries. Positional slot arrays keep their order.
 - [ ] 8. Click-through: open pages only. Never press Rebuild sitemap, Submit tick, Sync queue or any save button.
 - [ ] 9. Lint ratchet
 
