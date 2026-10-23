@@ -18,14 +18,5 @@ export const cases: ParityCase[] = [
     api: { method: "GET", path: "/nora-os/etl-monitor" },
     legacyPatch: ["product_service", "social_profile", "credential"].map(timedOutNodeCount),
     ignore: ["$.yield.nodes"],
-    explained: [
-      {
-        path: "$.depth.deepRows",
-        why:
-          "self-hosted PostgREST caps responses at 1000 rows (Content-Range 0-999), so the legacy " +
-          "read saw 1000 of 1199 deep rows; the API reads all (SQL: 1199 deep, 1195 valid)",
-      },
-      { path: "$.depth.avgFieldsNow", why: "average over all valid deep rows, not the first 1000" },
-    ],
   },
 ];

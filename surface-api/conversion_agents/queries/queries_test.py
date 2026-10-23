@@ -201,7 +201,7 @@ def test_rules_page_reads_rules_and_capped_event_stats(dbfake):
     rules_sql = log[0][2]
     assert "ORDER BY public.plg_rules.priority ASC, public.plg_rules.rule_name ASC" in rules_sql
     stats_sql, stats_params = log[1][2], log[1][3]
-    assert "GROUP BY" in stats_sql and 50000 in stats_params.values()
+    assert "GROUP BY" in stats_sql and 1000 in stats_params.values()  # PostgREST max-rows
 
 
 def test_toggle_updates_then_audits_as_a_write(dbfake):

@@ -14,7 +14,7 @@ import psycopg
 from psycopg.types.json import Jsonb
 from sqlalchemy import delete, func, insert, literal, select, update
 
-from _base.core.sql import compile_sql, fetch_all
+from _base.core.sql import MAX_ROWS, compile_sql, fetch_all
 from _base.schema.tables import t_audit_log as audit_t
 from _base.schema.tables import t_plg_events as ev_t
 from _base.schema.tables import t_plg_rules as rules_t
@@ -42,10 +42,15 @@ def list_rules(conn: psycopg.Connection) -> list[dict[str, Any]]:
 
 
 def event_stats(conn: psycopg.Connection) -> list[dict[str, Any]]:
-    """Fires / dismissals / conversions per rule, over the same first 50,000 events the page
-    loaded and counted in the browser. Sorted by rule_id."""
+    """Fires / dismissals / conversions per rule, over the same events the page loaded and
+    counted in the browser: it asked for 50,000, and PostgREST returned at most MAX_ROWS.
+    Sorted by rule_id."""
     e = ev_t.c
-    sample = select(e.rule_id, e.fired_at, e.dismissed_at, e.converted_at).limit(50000).subquery()
+    sample = (
+        select(e.rule_id, e.fired_at, e.dismissed_at, e.converted_at)
+        .limit(min(50000, MAX_ROWS))
+        .subquery()
+    )
     stmt = (
         select(
             sample.c.rule_id,

@@ -4,6 +4,10 @@ Queries are built with the Core query builder against `_base.schema.tables` (no 
 mapped classes, no session). They compile to psycopg's `%(name)s` paramstyle and run on a
 leased `role_connection` / `read_connection`, so the RLS context and role set there apply.
 Rows come back JSON-shaped (`nora_os.db.jsonish` semantics), as PostgREST returned them.
+
+Like the self-hosted PostgREST (`max-rows` = 1000, Content-Range 0-999), a SELECT returns at
+most MAX_ROWS rows: a larger or missing LIMIT is lowered to it, so an endpoint answers with the
+same rows the browser's REST call got. Counts and aggregates are computed in SQL and unaffected.
 """
 from __future__ import annotations
 
@@ -14,9 +18,20 @@ from typing import Any
 
 import psycopg
 from sqlalchemy.dialects.postgresql import psycopg as _pg_psycopg
-from sqlalchemy.sql import ClauseElement
+from sqlalchemy.sql import ClauseElement, Select
 
 _DIALECT = _pg_psycopg.dialect()
+
+# Rows per response, matching the self-hosted PostgREST max-rows.
+MAX_ROWS = 1000
+
+
+def capped(stmt: ClauseElement, max_rows: int | None = MAX_ROWS) -> ClauseElement:
+    """`stmt` with its LIMIT lowered to `max_rows` (SELECTs only; None = no cap)."""
+    if max_rows is None or not isinstance(stmt, Select):
+        return stmt
+    current = stmt._limit  # None, or the int passed to .limit()
+    return stmt.limit(max_rows if current is None else min(current, max_rows))
 
 
 def compile_sql(stmt: ClauseElement) -> tuple[str, dict[str, Any]]:
@@ -54,8 +69,10 @@ def _pg_iso(v: _dt.datetime | _dt.time) -> str:
     return f"{head}.{digits.rstrip('0')}{tz}"
 
 
-def fetch_all(conn: psycopg.Connection, stmt: ClauseElement) -> list[dict[str, Any]]:
-    sql, params = compile_sql(stmt)
+def fetch_all(
+    conn: psycopg.Connection, stmt: ClauseElement, *, max_rows: int | None = MAX_ROWS
+) -> list[dict[str, Any]]:
+    sql, params = compile_sql(capped(stmt, max_rows))
     with conn.cursor() as cur:
         cur.execute(sql, params)
         return [jsonish(dict(r)) for r in cur.fetchall()]

@@ -6,8 +6,9 @@ import decimal
 import uuid
 
 import pytest
+from sqlalchemy import column, func, insert, select, table
 
-from _base.core.sql import jsonish
+from _base.core.sql import MAX_ROWS, capped, compile_sql, jsonish
 
 UTC = dt.UTC
 
@@ -26,3 +27,30 @@ UTC = dt.UTC
 ])
 def test_postgrest_shapes(value, expected):
     assert jsonish({"v": [value]}) == {"v": [expected]}
+
+
+# --- MAX_ROWS: the self-hosted PostgREST cap -------------------------------------------------
+
+T = table("t", column("a"))
+
+
+def _limit(stmt):
+    sql, params = compile_sql(stmt)
+    return params.get("param_1") if "LIMIT" in sql else None
+
+
+@pytest.mark.parametrize("stmt,expected", [
+    (select(T.c.a), MAX_ROWS),                  # no LIMIT → capped
+    (select(T.c.a).limit(5000), MAX_ROWS),      # larger LIMIT → lowered
+    (select(T.c.a).limit(200), 200),            # smaller LIMIT kept
+    (select(func.count()).select_from(T), MAX_ROWS),  # one-row aggregate: harmless
+])
+def test_selects_return_at_most_max_rows(stmt, expected):
+    assert MAX_ROWS == 1000
+    assert _limit(capped(stmt)) == expected
+
+
+def test_cap_can_be_lifted_and_leaves_writes_alone():
+    assert _limit(capped(select(T.c.a), None)) is None
+    stmt = insert(T).values(a=1)
+    assert capped(stmt) is stmt

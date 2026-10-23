@@ -13,7 +13,7 @@ and the new endpoint return the same JSON for the same signed-in user (`surface-
 
 Counts are (reads/writes/rpc) as measured on 2026-10-23.
 
-**The 1,000-row cap.** Self-hosted PostgREST returns at most 1,000 rows per REST response. Any legacy read that asks for more was silently truncated, and the API returns everything. Check every Surface for reads with a limit over 1,000 or no limit at all, and record any mismatch as an explained difference.
+**The 1,000-row cap (decided 2026-10-23: the API matches it).** Self-hosted PostgREST returns at most 1,000 rows per REST response, and the API does the same: `_base/core/sql.fetch_all` lowers any SELECT's LIMIT to `MAX_ROWS = 1000`. Counts and aggregates are computed in SQL, so the cap doesn't affect them. Where the browser aggregated rows itself (for example PLG event stats), the API aggregates over the same ≤1,000 rows. Pass `max_rows=None` only with an explicit decision.
 
 ## Steps for every Surface
 
@@ -54,7 +54,7 @@ Counts are (reads/writes/rpc) as measured on 2026-10-23.
 - [x] 6. `etl-monitor.ts` calls `api.get`; the query key `["etl-run-monitor"]` is unchanged. The Surface now has 0 direct Supabase calls.
 - [x] 7. Parity PASS (2026-10-23, signed in, against self-hosted GCP)
   - The three `graph_nodes` counts time out (8s) for the legacy `authenticated` read, so they are patched out and checked against SQL instead: 259,038 product_service, 105,517 social_profile, 211,423 credential.
-  - Explained: `deepRows` 997 vs 1195 and `avgFieldsNow` 23.3 vs 23.2. Self-hosted PostgREST caps every response at 1,000 rows, so the legacy read saw only 1,000 of 1,199 deep rows; the API reads all of them.
+  - The first run showed `deepRows` 997 vs 1195: the legacy read was cut to 1,000 rows by PostgREST. The API now applies the same cap, so this needs a re-run to confirm.
 - [x] 8. Click-through of the `/nora-os` console (2026-10-23): the panel renders from `/api/nora-os/etl-monitor`, and no `rest/v1/exp_*` or `rest/v1/graph_nodes` calls are made
 - [ ] 9. Lint ratchet
 
