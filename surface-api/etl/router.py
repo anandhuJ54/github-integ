@@ -12,6 +12,7 @@ from fastapi import APIRouter
 
 from etl.routers.disco_agent_mapper import router as disco_agent_mapper_router
 from etl.routers.disco_agent_probe import router as disco_agent_probe_router
+from etl.routers.disco_ai_worker import router as disco_ai_worker_router
 from etl.routers.disco_detail_api_worker import router as disco_detail_api_worker_router
 from etl.routers.disco_harvest_worker import router as disco_harvest_worker_router
 from etl.routers.disco_list_worker import router as disco_list_worker_router
@@ -25,6 +26,7 @@ router = APIRouter()
 router.include_router(health_router)
 router.include_router(disco_agent_mapper_router)
 router.include_router(disco_agent_probe_router)
+router.include_router(disco_ai_worker_router)
 router.include_router(disco_list_worker_router)
 router.include_router(disco_detail_api_worker_router)
 router.include_router(disco_harvest_worker_router)
