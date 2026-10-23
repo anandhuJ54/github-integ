@@ -99,6 +99,28 @@ t_disco_jobs = Table(
     schema='public'
 )
 
+t_disco_site_contract = Table(
+    'disco_site_contract', metadata,
+    Column('contract_id', BigInteger, Identity(always=True, start=1, increment=1, minvalue=1, maxvalue=9223372036854775807, cycle=False, cache=1), primary_key=True, autoincrement=True),
+    Column('domain', Text, nullable=False),
+    Column('category_slug', Text, nullable=False),
+    Column('roster_pattern', Text),
+    Column('detail_pattern', Text),
+    Column('extraction', JSONB, nullable=False, server_default=text("'{}'::jsonb")),
+    Column('field_floor', Integer, nullable=False, server_default=text('0')),
+    Column('method', Text, server_default=text("'unprobed'::text")),
+    Column('learned_by', Text, nullable=False, server_default=text("'disco_map_site'::text")),
+    Column('learned_at', DateTime(True), nullable=False, server_default=text('now()')),
+    Column('detail_entity_type', Text, comment="Fix (learned page role, 2026-09-24): what one detail page on this domain describes for this category -- professional (a person) or location (a business/office) -- learned by mapSite() from the detail page's JSON-LD or the entity-page LLM check. exp_etl_extract_collect uses it to file people and businesses found on a multi-category domain under the right category, replacing the hand-typed agent_page/office_page labels."),
+    Column('method_evidence', JSONB, comment='Fix (no_profiles_on_site, 2026-09-24): why the method was set -- for no_profiles_on_site: sitemaps read, pages tried with the reason each was rejected, the AI verdict and where the profiles actually live.'),
+    Column('profile_sitemaps', ARRAY(Text()), comment="Fix (profile sitemaps, 2026-09-24): the sitemap(s) the site mapper's accepted profile page came from (the parent index when the urlset is one numbered shard). exp_etl_run_source seeds the harvest from these first, so a site whose profiles live on a subdomain with its own sitemap (e.g. advisor.<firm>.com) is actually crawled, and a site with many sitemaps only walks the one holding profiles."),
+    CheckConstraint("detail_entity_type = ANY (ARRAY['professional'::text, 'location'::text])", name='disco_site_contract_detail_entity_type_check'),
+    CheckConstraint("method = ANY (ARRAY['server_crawl'::text, 'blocked_needs_proxy'::text, 'js_needs_api'::text, 'unreachable'::text, 'unprobed'::text, 'no_profiles_on_site'::text])", name='disco_site_contract_method_check'),
+    PrimaryKeyConstraint('contract_id', name='disco_site_contract_pkey'),
+    UniqueConstraint('domain', 'category_slug', name='disco_site_contract_domain_category_slug_key'),
+    schema='public'
+)
+
 t_entity_compliance = Table(
     'entity_compliance', metadata,
     Column('entity_type', Text, primary_key=True),
@@ -260,6 +282,46 @@ t_exp_entity = Table(
     schema='public'
 )
 
+t_exp_etl_cost_events = Table(
+    'exp_etl_cost_events', metadata,
+    Column('event_id', BigInteger, Identity(always=True, start=1, increment=1, minvalue=1, maxvalue=9223372036854775807, cycle=False, cache=1), primary_key=True, autoincrement=True),
+    Column('occurred_at', DateTime(True), nullable=False, server_default=text('now()')),
+    Column('activity', Text, nullable=False),
+    Column('model', Text, nullable=False),
+    Column('calls', Integer, nullable=False, server_default=text('1')),
+    Column('input_tokens', Integer, nullable=False, server_default=text('0')),
+    Column('cache_read_tokens', Integer, nullable=False, server_default=text('0')),
+    Column('cache_write_tokens', Integer, nullable=False, server_default=text('0')),
+    Column('output_tokens', Integer, nullable=False, server_default=text('0')),
+    Column('cost_usd', Numeric(12, 6), nullable=False, server_default=text('0')),
+    Column('gcid', Text),
+    Column('domain', Text),
+    Column('request_id', BigInteger),
+    Column('job_id', BigInteger),
+    Column('detail', JSONB, nullable=False, server_default=text("'{}'::jsonb")),
+    PrimaryKeyConstraint('event_id', name='exp_etl_cost_events_pkey'),
+    Index('exp_etl_cost_events_activity_time', 'activity', 'occurred_at'),
+    Index('exp_etl_cost_events_gcid_domain', 'gcid', 'domain'),
+    schema='public',
+    comment='ETL AI cost log (2026-10-22): one row per AI call or research step, written by the server only. activity: discovery | boundary | method_check | map_contract | map_research | extra_match.'
+)
+
+t_exp_etl_domains = Table(
+    'exp_etl_domains', metadata,
+    Column('domain', Text, primary_key=True),
+    Column('global_daily_budget', Integer, nullable=False, server_default=text('500')),
+    Column('robots_status', Text, nullable=False, server_default=text("'unfetched'::text")),
+    Column('robots_summary', JSONB, nullable=False, server_default=text("'{}'::jsonb")),
+    Column('sitemap_url', Text),
+    Column('last_recon_at', DateTime(True)),
+    Column('created_at', DateTime(True), server_default=text('now()')),
+    Column('crawl_phase', Text, nullable=False, server_default=text("'skeleton'::text")),
+    CheckConstraint("crawl_phase = ANY (ARRAY['skeleton'::text, 'hydration'::text, 'maintenance'::text])", name='exp_etl_domains_crawl_phase_check'),
+    CheckConstraint("robots_status = ANY (ARRAY['unfetched'::text, 'fetched'::text, 'allowed'::text, 'restricted'::text, 'prohibited'::text, 'error'::text])", name='exp_etl_domains_robots_status_check'),
+    PrimaryKeyConstraint('domain', name='exp_etl_domains_pkey'),
+    schema='public'
+)
+
 t_exp_etl_field_floors = Table(
     'exp_etl_field_floors', metadata,
     Column('gcid', Text, primary_key=True),
@@ -271,6 +333,26 @@ t_exp_etl_field_floors = Table(
     Column('created_at', DateTime(True), nullable=False, server_default=text('now()')),
     Column('updated_at', DateTime(True), nullable=False, server_default=text('now()')),
     PrimaryKeyConstraint('gcid', name='exp_etl_field_floors_pkey'),
+    schema='public'
+)
+
+t_exp_etl_hydrate_jobs = Table(
+    'exp_etl_hydrate_jobs', metadata,
+    Column('job_key', Text, primary_key=True),
+    Column('gcid', Text, nullable=False),
+    Column('status', Text, nullable=False, server_default=text("'idle'::text")),
+    Column('batch_size', Integer, nullable=False, server_default=text('500')),
+    Column('lease_until', DateTime(True)),
+    Column('processed', BigInteger, nullable=False, server_default=text('0')),
+    Column('promoted', BigInteger, nullable=False, server_default=text('0')),
+    Column('shallow', BigInteger, nullable=False, server_default=text('0')),
+    Column('failed', BigInteger, nullable=False, server_default=text('0')),
+    Column('last_error', Text),
+    Column('last_run_at', DateTime(True)),
+    Column('created_at', DateTime(True), nullable=False, server_default=text('now()')),
+    Column('updated_at', DateTime(True), nullable=False, server_default=text('now()')),
+    CheckConstraint("status = ANY (ARRAY['idle'::text, 'running'::text, 'paused'::text, 'done'::text])", name='exp_etl_hydrate_jobs_status_check'),
+    PrimaryKeyConstraint('job_key', name='exp_etl_hydrate_jobs_pkey'),
     schema='public'
 )
 
@@ -351,6 +433,19 @@ t_exp_page_views_rollup = Table(
     Column('is_demo', Boolean, server_default=text('true')),
     PrimaryKeyConstraint('id', name='exp_page_views_rollup_pkey'),
     UniqueConstraint('gcid', 'geo_type', 'geo_value', 'day', name='exp_page_views_rollup_gcid_geo_type_geo_value_day_key'),
+    schema='public'
+)
+
+t_exp_rel_types = Table(
+    'exp_rel_types', metadata,
+    Column('relationship_type', Text, primary_key=True),
+    Column('subject_types', ARRAY(Text()), nullable=False),
+    Column('object_kind', Text, nullable=False),
+    Column('object_types', ARRAY(Text())),
+    Column('allows_multiple_current', Boolean, nullable=False, server_default=text('true')),
+    Column('notes', Text),
+    CheckConstraint("object_kind = ANY (ARRAY['entity'::text, 'category'::text, 'geo'::text])", name='exp_rel_types_object_kind_check'),
+    PrimaryKeyConstraint('relationship_type', name='exp_rel_types_pkey'),
     schema='public'
 )
 
@@ -630,6 +725,39 @@ t_content_compliance_rules = Table(
     schema='public'
 )
 
+t_disco_llm_requests = Table(
+    'disco_llm_requests', metadata,
+    Column('request_id', BigInteger, Identity(always=True, start=1, increment=1, minvalue=1, maxvalue=9223372036854775807, cycle=False, cache=1), primary_key=True, autoincrement=True),
+    Column('job_id', BigInteger),
+    Column('tool', Text, nullable=False),
+    Column('prompt_input', JSONB, nullable=False),
+    Column('status', Text, nullable=False, server_default=text("'pending'::text")),
+    Column('response', JSONB),
+    Column('created_at', DateTime(True), nullable=False, server_default=text('now()')),
+    CheckConstraint("status = ANY (ARRAY['pending'::text, 'sent'::text, 'completed'::text, 'error'::text])", name='disco_llm_requests_status_check'),
+    CheckConstraint("tool = ANY (ARRAY['discover_companies'::text, 'map_site'::text, 'classify_method'::text])", name='disco_llm_requests_tool_check'),
+    ForeignKeyConstraint(['job_id'], ['public.disco_jobs.job_id'], name='disco_llm_requests_job_id_fkey'),
+    PrimaryKeyConstraint('request_id', name='disco_llm_requests_pkey'),
+    schema='public'
+)
+
+t_disco_proposals = Table(
+    'disco_proposals', metadata,
+    Column('proposal_id', BigInteger, Identity(always=True, start=1, increment=1, minvalue=1, maxvalue=9223372036854775807, cycle=False, cache=1), primary_key=True, autoincrement=True),
+    Column('job_id', BigInteger),
+    Column('category_slug', Text, nullable=False),
+    Column('kind', Text, nullable=False),
+    Column('payload', JSONB, nullable=False),
+    Column('state', Text, nullable=False, server_default=text("'pending'::text")),
+    Column('created_at', DateTime(True), nullable=False, server_default=text('now()')),
+    Column('decided_domains', ARRAY(Text()), nullable=False, server_default=text("'{}'::text[]")),
+    CheckConstraint("kind = ANY (ARRAY['company_list'::text, 'site_map'::text, 'method_class'::text])", name='disco_proposals_kind_check'),
+    CheckConstraint("state = ANY (ARRAY['pending'::text, 'approved'::text, 'rejected'::text, 'superseded'::text])", name='disco_proposals_state_check'),
+    ForeignKeyConstraint(['job_id'], ['public.disco_jobs.job_id'], name='disco_proposals_job_id_fkey'),
+    PrimaryKeyConstraint('proposal_id', name='disco_proposals_pkey'),
+    schema='public'
+)
+
 t_exp_category_compliance = Table(
     'exp_category_compliance', metadata,
     Column('gcid', Text, primary_key=True),
@@ -852,6 +980,50 @@ t_exp_dev_sprints = Table(
     schema='public'
 )
 
+t_exp_etl_frontier = Table(
+    'exp_etl_frontier', metadata,
+    Column('frontier_id', Uuid, primary_key=True, server_default=text('gen_random_uuid()')),
+    Column('domain', Text, nullable=False),
+    Column('url', Text, nullable=False),
+    Column('kind', Text, nullable=False),
+    Column('status', Text, nullable=False, server_default=text("'queued'::text")),
+    Column('priority', Integer, nullable=False, server_default=text('5')),
+    Column('created_at', DateTime(True), server_default=text('now()')),
+    Column('fetched_at', DateTime(True)),
+    CheckConstraint("kind = ANY (ARRAY['sitemap_index'::text, 'sitemap'::text, 'office_page'::text, 'agent_page'::text, 'index_page'::text, 'roster_page'::text, 'detail_page'::text, 'list_page'::text])", name='exp_etl_frontier_kind_check'),
+    CheckConstraint("status = ANY (ARRAY['queued'::text, 'fetching'::text, 'fetched'::text, 'parsed'::text, 'error'::text, 'skipped'::text, 'done'::text, 'empty'::text])", name='exp_etl_frontier_status_check'),
+    ForeignKeyConstraint(['domain'], ['public.exp_etl_domains.domain'], name='exp_etl_frontier_domain_fkey'),
+    PrimaryKeyConstraint('frontier_id', name='exp_etl_frontier_pkey'),
+    UniqueConstraint('url', name='exp_etl_frontier_url_key'),
+    Index('idx_frontier_domain_fetched', 'domain', 'fetched_at'),
+    Index('idx_frontier_q', 'domain', 'status', 'priority', postgresql_where="(status = 'queued'::text)"),
+    schema='public'
+)
+
+t_exp_etl_jobs = Table(
+    'exp_etl_jobs', metadata,
+    Column('job_id', Uuid, primary_key=True, server_default=text('gen_random_uuid()')),
+    Column('gcid', Text, nullable=False),
+    Column('phase', Text, nullable=False, server_default=text("'build'::text")),
+    Column('stage', Text, nullable=False, server_default=text("'identify_companies'::text")),
+    Column('model_role', Text, nullable=False, server_default=text("'builder'::text")),
+    Column('status', Text, nullable=False, server_default=text("'idle'::text")),
+    Column('target_company_count', Integer, server_default=text('1000')),
+    Column('schedule_cron', Text),
+    Column('active', Boolean, nullable=False, server_default=text('false')),
+    Column('last_run_at', DateTime(True)),
+    Column('next_run_at', DateTime(True)),
+    Column('report', JSONB, nullable=False, server_default=text("'{}'::jsonb")),
+    Column('created_at', DateTime(True), server_default=text('now()')),
+    CheckConstraint("model_role = ANY (ARRAY['builder'::text, 'maintainer'::text])", name='exp_etl_jobs_model_role_check'),
+    CheckConstraint("phase = ANY (ARRAY['build'::text, 'maintain'::text])", name='exp_etl_jobs_phase_check'),
+    CheckConstraint("stage = ANY (ARRAY['identify_companies'::text, 'identify_sources'::text, 'learn_parsers'::text, 'test_import'::text, 'full_pull'::text, 'insert_hierarchy'::text, 'report'::text, 'off'::text, 'reconcile_pull'::text, 'diff'::text, 'apply_changes'::text, 'maintain_report'::text, 'method_split'::text, 'harvest'::text])", name='exp_etl_jobs_stage_check'),
+    CheckConstraint("status = ANY (ARRAY['idle'::text, 'running'::text, 'awaiting_review'::text, 'paused'::text, 'complete'::text, 'error'::text])", name='exp_etl_jobs_status_check'),
+    ForeignKeyConstraint(['gcid'], ['public.gbp_categories.gcid'], name='exp_etl_jobs_gcid_fkey'),
+    PrimaryKeyConstraint('job_id', name='exp_etl_jobs_pkey'),
+    schema='public'
+)
+
 t_exp_etl_sources = Table(
     'exp_etl_sources', metadata,
     Column('source_id', Uuid, primary_key=True, server_default=text('gen_random_uuid()')),
@@ -891,6 +1063,38 @@ t_exp_etl_sources = Table(
     ForeignKeyConstraint(['gcid'], ['public.gbp_categories.gcid'], name='exp_etl_sources_gcid_fkey'),
     PrimaryKeyConstraint('source_id', name='exp_etl_sources_pkey'),
     UniqueConstraint('gcid', 'source_domain', name='exp_etl_sources_gcid_source_domain_key'),
+    schema='public'
+)
+
+t_exp_rel = Table(
+    'exp_rel', metadata,
+    Column('rel_id', Uuid, primary_key=True, server_default=text('gen_random_uuid()')),
+    Column('subject_entity_id', Uuid, nullable=False),
+    Column('relationship_type', Text, nullable=False),
+    Column('object_entity_id', Uuid),
+    Column('object_gcid', Text),
+    Column('object_geo', JSONB),
+    Column('valid_from', Date, nullable=False, server_default=text('CURRENT_DATE')),
+    Column('valid_to', Date),
+    Column('status', Text, nullable=False, server_default=text("'current'::text")),
+    Column('is_primary', Boolean, nullable=False, server_default=text('false')),
+    Column('confidence', Numeric, nullable=False, server_default=text('0.5')),
+    Column('source', Text),
+    Column('evidence', JSONB),
+    Column('contradicting_evidence', JSONB),
+    Column('last_observed_at', DateTime(True)),
+    Column('last_verified_at', DateTime(True)),
+    Column('created_at', DateTime(True), nullable=False, server_default=text('now()')),
+    CheckConstraint('num_nonnulls(object_entity_id, object_gcid, object_geo) = 1', name='exp_rel_check1'),
+    CheckConstraint("status = ANY (ARRAY['current'::text, 'historical'::text, 'pending_verification'::text, 'disputed'::text])", name='exp_rel_status_check'),
+    CheckConstraint('valid_to IS NULL OR valid_from <= valid_to', name='exp_rel_check'),
+    ForeignKeyConstraint(['object_entity_id'], ['public.exp_entity.entity_id'], name='exp_rel_object_entity_id_fkey'),
+    ForeignKeyConstraint(['object_gcid'], ['public.gbp_categories.gcid'], name='exp_rel_object_gcid_fkey'),
+    ForeignKeyConstraint(['relationship_type'], ['public.exp_rel_types.relationship_type'], name='exp_rel_relationship_type_fkey'),
+    ForeignKeyConstraint(['subject_entity_id'], ['public.exp_entity.entity_id'], name='exp_rel_subject_entity_id_fkey'),
+    PrimaryKeyConstraint('rel_id', name='exp_rel_pkey'),
+    Index('idx_rel_object', 'object_entity_id', postgresql_where="(status = 'current'::text)"),
+    Index('idx_rel_subject', 'subject_entity_id', 'relationship_type', postgresql_where="(status = 'current'::text)"),
     schema='public'
 )
 
@@ -1170,6 +1374,26 @@ t_exp_dev_weekly_updates = Table(
     ForeignKeyConstraint(['team_id'], ['public.exp_dev_teams.id'], ondelete='CASCADE', name='exp_dev_weekly_updates_team_id_fkey'),
     PrimaryKeyConstraint('id', name='exp_dev_weekly_updates_pkey'),
     UniqueConstraint('member_id', 'week_start', name='exp_dev_weekly_updates_member_id_week_start_key'),
+    schema='public'
+)
+
+t_exp_etl_runs = Table(
+    'exp_etl_runs', metadata,
+    Column('run_id', Uuid, primary_key=True, server_default=text('gen_random_uuid()')),
+    Column('source_id', Uuid),
+    Column('started_at', DateTime(True), server_default=text('now()')),
+    Column('finished_at', DateTime(True)),
+    Column('pulled', Integer, server_default=text('0')),
+    Column('staged', Integer, server_default=text('0')),
+    Column('matched', Integer, server_default=text('0')),
+    Column('created', Integer, server_default=text('0')),
+    Column('conflicted', Integer, server_default=text('0')),
+    Column('errors', Integer, server_default=text('0')),
+    Column('detail', JSONB, server_default=text("'{}'::jsonb")),
+    Column('pages_fetched', Integer, server_default=text('0')),
+    Column('entities_yielded', Integer, server_default=text('0')),
+    ForeignKeyConstraint(['source_id'], ['public.exp_etl_sources.source_id'], name='exp_etl_runs_source_id_fkey'),
+    PrimaryKeyConstraint('run_id', name='exp_etl_runs_pkey'),
     schema='public'
 )
 

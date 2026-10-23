@@ -10,6 +10,7 @@ from __future__ import annotations
 
 from fastapi import APIRouter
 
+from etl.routers.console_data import router as console_data_router
 from etl.routers.disco_agent_mapper import router as disco_agent_mapper_router
 from etl.routers.disco_agent_probe import router as disco_agent_probe_router
 from etl.routers.disco_ai_worker import router as disco_ai_worker_router
@@ -34,3 +35,4 @@ router.include_router(disco_staging_backfill_router)
 router.include_router(disco_webscraper_worker_router)
 router.include_router(etl_deep_hydrate_router)
 router.include_router(export_prompt_bundles_router)
+router.include_router(console_data_router)

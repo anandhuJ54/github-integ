@@ -9,21 +9,20 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { cn } from "@v3/ui/lib/utils";
 import { SearchSelect, type Opt } from "./search-select";
 import { EntityDetailPanel } from "./entity-detail-panel";
+import { api } from "@v3/ui/lib/server-fn";
 import {
-  ENTITY_COLS,
   PAGE_SIZE,
   TYPE_LABEL,
   TYPE_STYLES,
-  db,
   decodeEntities,
-  entityQuery,
   fmtDate,
   gcidLabels,
-  incomingCount,
   sourceLabel,
   type EntityRow,
   type HierFilters,
 } from "./hierarchy-data";
+
+const H = "/etl/console/hierarchy";
 
 /* ─────────── URL state ─────────── */
 const KEYS = {
@@ -84,42 +83,20 @@ function ErrorLine({ error }: { error: unknown }) {
 function useFilterOptions(gcid?: string, catTerm?: string) {
   const sources = useQuery({
     queryKey: ["hier_sources"],
-    queryFn: async () => {
-      const { data, error } = await db.from("exp_etl_sources").select("source_domain, gcid").limit(2000);
-      if (error) throw error;
-      const rows = (data ?? []) as { source_domain: string | null; gcid: string | null }[];
-      const labels = await gcidLabels(rows.map((r) => r.gcid ?? ""));
-      return { rows, labels };
-    },
+    queryFn: () =>
+      api.get<{ rows: { source_domain: string | null; gcid: string | null }[]; labels: Record<string, string> }>(
+        `${H}/sources`,
+      ),
   });
   const catSearch = useQuery({
     queryKey: ["hier_cat_search", catTerm],
     enabled: !!catTerm && catTerm.length >= 2,
-    queryFn: async () => {
-      const t = catTerm!.replace(/[%_,()*]/g, " ");
-      const { data, error } = await db
-        .from("gbp_categories")
-        .select("gcid, display_name")
-        .or(`display_name.ilike.*${t}*,gcid.ilike.*${t}*`)
-        .limit(20);
-      if (error) throw error;
-      return (data ?? []) as { gcid: string; display_name: string }[];
-    },
+    // the API strips %_,()* from the term, as this did
+    queryFn: () => api.get<{ gcid: string; display_name: string }[]>(`${H}/category-search`, { params: { term: catTerm! } }),
   });
   const brands = useQuery({
     queryKey: ["hier_brands"],
-    queryFn: async () => {
-      const { data, error } = await db
-        .from("exp_entity")
-        .select("entity_id, display_name")
-        .eq("entity_type", "brand")
-        .neq("status", "merged")
-        .eq("is_demo", false)
-        .order("display_name")
-        .limit(500);
-      if (error) throw error;
-      return (data ?? []) as { entity_id: string; display_name: string | null }[];
-    },
+    queryFn: () => api.get<{ entity_id: string; display_name: string | null }[]>(`${H}/brands`),
   });
   const selectedCatLabel = useQuery({
     queryKey: ["hier_cat_label", gcid],
@@ -177,55 +154,22 @@ function useTablePage(s: UrlState) {
   return useQuery({
     queryKey: ["hier_table", f.gcid, f.source, f.brand, f.office, f.type, f.claim, f.q, s.page, s.sort, s.dir],
     placeholderData: keepPreviousData,
-    queryFn: async () => {
-      const { data, count, error } = await entityQuery(f, { cols: ENTITY_COLS })
-        .order(SORT_COLS[s.sort], { ascending: s.dir === "asc", nullsFirst: false })
-        .order("entity_id")
-        .range(from, from + PAGE_SIZE - 1);
-      if (error) throw error;
-      const rows = (data ?? []) as EntityRow[];
-      const ids = rows.map((r) => r.entity_id);
-      let rels: PageRel[] = [];
-      if (ids.length) {
-        const r = await db
-          .from("exp_rel")
-          .select("subject_entity_id, relationship_type, object_entity_id, object_gcid, obj:exp_entity!exp_rel_object_entity_id_fkey(display_name)")
-          .in("subject_entity_id", ids)
-          .in("relationship_type", ["CLASSIFIED_AS", "WORKS_AT", "REPRESENTS", "OPERATES_UNDER"])
-          .eq("status", "current")
-          .limit(1000);
-        if (r.error) throw r.error;
-        rels = r.data ?? [];
-      }
-      const labels = await gcidLabels(rels.filter((r) => r.relationship_type === "CLASSIFIED_AS").map((r) => r.object_gcid ?? ""));
-      const counts: Record<string, number> = {};
-      await Promise.all(
-        rows
-          .filter((r) => r.entity_type === "location" || r.entity_type === "brand")
-          .map(async (r) => {
-            counts[r.entity_id] = await incomingCount(r.entity_id, r.entity_type === "location" ? "WORKS_AT" : "REPRESENTS");
-          }),
-      );
-      return { rows, total: count ?? 0, rels, labels, counts };
-    },
+    // the page of entities, their current relationships, category labels and hub sizes
+    queryFn: () =>
+      api.post<{
+        rows: EntityRow[];
+        total: number;
+        rels: PageRel[];
+        labels: Record<string, string>;
+        counts: Record<string, number>;
+      }>(`${H}/table`, { filters: f, page: s.page, sort: s.sort, dir: s.dir }),
   });
 }
 
 function useCounts(f: HierFilters) {
   return useQuery({
     queryKey: ["hier_counts", f.gcid, f.source, f.brand, f.office, f.claim, f.q, f.type],
-    queryFn: async () => {
-      const types = ["brand", "location", "professional"] as const;
-      const res = await Promise.all(
-        types.map(async (t) => {
-          if (f.type && f.type !== t) return 0;
-          const { count, error } = await entityQuery(f, { cols: "entity_id", head: true, typeOverride: t });
-          if (error) throw error;
-          return count ?? 0;
-        }),
-      );
-      return { brand: res[0], location: res[1], professional: res[2] };
-    },
+    queryFn: () => api.post<{ brand: number; location: number; professional: number }>(`${H}/counts`, f),
   });
 }
 
@@ -353,31 +297,16 @@ function EntityLine({ e, onOpen, extra }: { e: EntityRow; onOpen: (id: string) =
   );
 }
 
-const SUBJ = "exp_rel!exp_rel_subject_entity_id_fkey";
 
 function AdvisorList({ filter, onOpen }: { filter: { office?: string; unofficedBrand?: string }; onOpen: (id: string) => void }) {
   const [page, setPage] = useState(1);
   const q = useQuery({
     queryKey: ["hier_tree_adv", filter.office, filter.unofficedBrand, page],
     placeholderData: keepPreviousData,
-    queryFn: async () => {
-      const from = (page - 1) * PAGE_SIZE;
-      let query;
-      if (filter.office) {
-        query = db.from("exp_entity").select(`${ENTITY_COLS}, r:${SUBJ}!inner(object_entity_id)`, { count: "exact" })
-          .eq("r.relationship_type", "WORKS_AT").eq("r.status", "current").eq("r.object_entity_id", filter.office);
-      } else {
-        query = db.from("exp_entity")
-          .select(`${ENTITY_COLS}, r:${SUBJ}!inner(object_entity_id), w:${SUBJ}(object_entity_id)`, { count: "exact" })
-          .eq("r.relationship_type", "REPRESENTS").eq("r.status", "current").eq("r.object_entity_id", filter.unofficedBrand)
-          .eq("w.relationship_type", "WORKS_AT").eq("w.status", "current").is("w", null);
-      }
-      const { data, count, error } = await query
-        .eq("entity_type", "professional").neq("status", "merged").eq("is_demo", false)
-        .order("display_name").order("entity_id").range(from, from + PAGE_SIZE - 1);
-      if (error) throw error;
-      return { rows: (data ?? []) as EntityRow[], total: count ?? 0 };
-    },
+    queryFn: () =>
+      api.get<{ rows: EntityRow[]; total: number }>(`${H}/tree/advisors`, {
+        params: filter.office ? { office: filter.office, page } : { unofficed_brand: filter.unofficedBrand, page },
+      }),
   });
   if (q.error) return <ErrorLine error={q.error} />;
   if (q.isLoading) return <p className="py-1 text-xs text-slate-500">Loading advisors…</p>;
@@ -413,18 +342,10 @@ function TreeView({ brand, brandLabel, onOpen }: { brand?: string; brandLabel?: 
     queryKey: ["hier_tree_offices", brand, page],
     enabled: !!brand,
     placeholderData: keepPreviousData,
-    queryFn: async () => {
-      const from = (page - 1) * PAGE_SIZE;
-      const { data, count, error } = await db.from("exp_entity")
-        .select(`${ENTITY_COLS}, r:${SUBJ}!inner(object_entity_id)`, { count: "exact" })
-        .eq("r.relationship_type", "OPERATES_UNDER").eq("r.status", "current").eq("r.object_entity_id", brand)
-        .neq("status", "merged").eq("is_demo", false)
-        .order("display_name").order("entity_id").range(from, from + PAGE_SIZE - 1);
-      if (error) throw error;
-      const rows = (data ?? []) as EntityRow[];
-      const withCounts = await Promise.all(rows.map(async (r) => ({ ...r, advisors: await incomingCount(r.entity_id, "WORKS_AT") })));
-      return { rows: withCounts, total: count ?? 0 };
-    },
+    queryFn: () =>
+      api.get<{ rows: (EntityRow & { advisors: number })[]; total: number }>(`${H}/tree/offices`, {
+        params: { brand: brand!, page },
+      }),
   });
 
   if (!brand) return <div className="rounded-xl border border-slate-200 bg-white py-10 text-center text-sm text-slate-500">Pick a brand to see its tree.</div>;
@@ -472,7 +393,7 @@ export function HierarchyTab() {
     queryKey: ["hier_office_name", s.office],
     enabled: !!s.office,
     queryFn: async () => {
-      const { data } = await db.from("exp_entity").select("display_name").eq("entity_id", s.office).maybeSingle();
+      const data = await api.get<{ display_name: string | null } | null>(`${H}/office-name`, { params: { office: s.office! } });
       return decodeEntities(data?.display_name) || "office";
     },
   });

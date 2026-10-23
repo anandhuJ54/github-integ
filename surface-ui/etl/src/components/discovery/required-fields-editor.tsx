@@ -1,8 +1,7 @@
 import { useMemo, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useServerFn } from "@v3/ui/lib/server-fn";
+import { api, useServerFn } from "@v3/ui/lib/server-fn";
 import { toast } from "sonner";
-import { supabase } from "@v3/ui/integrations/supabase/client";
 import { Button } from "@v3/ui/components/ui/button";
 import { Input } from "@v3/ui/components/ui/input";
 import { Checkbox } from "@v3/ui/components/ui/checkbox";
@@ -67,8 +66,8 @@ export function RequiredFieldsEditor({ floors }: { floors: FieldFloor[] }) {
   const { data: sourceGcids } = useQuery({
     queryKey: ["etl-source-gcids"],
     queryFn: async () => {
-      const { data } = await supabase.from("exp_etl_sources").select("gcid");
-      return Array.from(new Set((data ?? []).map((r: { gcid: string }) => r.gcid))).sort();
+      const data = await api.get<{ gcid: string }[]>("/etl/console/source-gcids");
+      return Array.from(new Set(data.map((r) => r.gcid))).sort();
     },
   });
   const [draft, setDraft] = useState<Draft | null>(null);
@@ -134,14 +133,17 @@ export function RequiredFieldsEditor({ floors }: { floors: FieldFloor[] }) {
     if (draft.isNew && floors.some((f) => f.gcid === gcid)) return toast.error(`${gcid} already has a row; use Edit`);
     const num = (v: string) => Math.max(0, Number.parseInt(v || "0", 10) || 0);
     setSaving(true);
-    const { error } = await supabase.rpc("exp_etl_set_field_floor" as never, {
-      p_gcid: gcid,
-      p_required_keys: [...Array.from(draft.keys), ...draft.groups.map((g) => [...g].sort().join("|"))],
-      p_min_fields: num(draft.min_fields),
-      p_min_products: num(draft.min_products),
-      p_min_licenses: num(draft.min_licenses),
-      p_notes: draft.notes.trim() || null,
-    } as never);
+    // role-checked exp_etl_set_field_floor, through the API
+    const error = await api
+      .post("/etl/console/field-floor", {
+        gcid,
+        required_keys: [...Array.from(draft.keys), ...draft.groups.map((g) => [...g].sort().join("|"))],
+        min_fields: num(draft.min_fields),
+        min_products: num(draft.min_products),
+        min_licenses: num(draft.min_licenses),
+        notes: draft.notes.trim() || null,
+      })
+      .then(() => null, (e: Error) => e);
     setSaving(false);
     if (error) return toast.error(error.message);
     toast.success(`Required fields saved for ${gcid}`);

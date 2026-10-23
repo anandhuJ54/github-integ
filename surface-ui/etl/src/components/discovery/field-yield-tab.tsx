@@ -1,5 +1,5 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@v3/ui/integrations/supabase/client";
+import { api } from "@v3/ui/lib/server-fn";
 import { Badge } from "@v3/ui/components/ui/badge";
 import { Button } from "@v3/ui/components/ui/button";
 import { RequiredFieldsEditor, type FieldFloor } from "./required-fields-editor";
@@ -21,26 +21,17 @@ type Job = {
 
 type Yield = { gcid: string; total: number; deep: number; shallow: number; remaining: number };
 
-async function countStaging(gcid: string, apply: (q: any) => any) {
-  const { count } = await apply(
-    supabase.from("exp_etl_staging").select("stage_id", { count: "exact", head: true }).eq("gcid", gcid),
-  );
-  return count ?? 0;
-}
-
 async function loadGate() {
-  const [{ data: floors }, { data: jobs }] = await Promise.all([
-    supabase.from("exp_etl_field_floors").select("*").order("gcid"),
-    supabase.from("exp_etl_hydrate_jobs").select("*").order("job_key"),
-  ]);
-  const gcids = Array.from(
-    new Set([...(floors ?? []).map((f) => f.gcid), ...(jobs ?? []).map((j) => j.gcid)]),
-  );
+  // floors, hydrate jobs, and staging counts per gcid (total / deep / shallow) in one request
+  const { floors, jobs, gcids, counts } = await api.get<{
+    floors: Floor[];
+    jobs: Job[];
+    gcids: string[];
+    counts: Record<string, { total: number; deep: number; shallow: number }>;
+  }>("/etl/console/field-yield");
   const yields: Yield[] = [];
   for (const gcid of gcids) {
-    const total = await countStaging(gcid, (q) => q);
-    const deep = await countStaging(gcid, (q) => q.eq("payload->>field_tier", "deep"));
-    const shallow = await countStaging(gcid, (q) => q.eq("resolution_status", "shallow"));
+    const { total, deep, shallow } = counts[gcid] ?? { total: 0, deep: 0, shallow: 0 };
     yields.push({ gcid, total, deep, shallow, remaining: Math.max(total - deep - shallow, 0) });
   }
   return {

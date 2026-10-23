@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { RefreshCw } from "lucide-react";
-import { supabase } from "@v3/ui/integrations/supabase/client";
+import { api } from "@v3/ui/lib/server-fn";
 import { Badge } from "@v3/ui/components/ui/badge";
 import { Button } from "@v3/ui/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@v3/ui/components/ui/dialog";
@@ -162,12 +162,7 @@ export function SourceStatsTab() {
 
   const { data: sourceRows = [] } = useQuery({
     queryKey: ["source_stats_sources"],
-    queryFn: async () => {
-      const { data, error } = await (supabase as Any).from("exp_etl_sources")
-        .select("source_domain, gcid").eq("role_in_discovery", "hierarchy_source");
-      if (error) throw error;
-      return (data ?? []) as { source_domain: string; gcid: string | null }[];
-    },
+    queryFn: () => api.get<{ source_domain: string; gcid: string | null }[]>("/etl/console/stats-sources"),
   });
   const gcids = useMemo(() => [...new Set(sourceRows.map((s) => s.gcid).filter((g): g is string => !!g))].sort(), [sourceRows]);
   const sources = useMemo(
@@ -179,11 +174,7 @@ export function SourceStatsTab() {
     enabled: !!gcid,
     queryKey: ["source_stats", gcid, source],
     staleTime: Infinity,
-    queryFn: async () => {
-      const { data, error } = await (supabase as Any).rpc("exp_etl_source_stats", { p_gcid: gcid, p_source: source || null });
-      if (error) throw error;
-      return (data ?? []) as Row[];
-    },
+    queryFn: () => api.get<Row[]>("/etl/console/source-stats", { params: { gcid, source: source || undefined } }),
   });
   const rows = stats.data ?? [];
   const totals = useMemo(() => {

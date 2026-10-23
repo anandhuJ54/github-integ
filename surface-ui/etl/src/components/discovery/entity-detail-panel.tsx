@@ -3,8 +3,8 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@v3/ui/components/
 import { Badge } from "@v3/ui/components/ui/badge";
 import { PayloadFields } from "@v3/etl/components/discovery/pipeline-tab";
 import { cn } from "@v3/ui/lib/utils";
+import { api } from "@v3/ui/lib/server-fn";
 import {
-  db,
   REL_TYPES,
   TYPE_LABEL,
   TYPE_STYLES,
@@ -84,72 +84,23 @@ export function EntityDetailPanel({
 }) {
   const open = !!entityId;
 
-  const ent = useQuery({
-    queryKey: ["hier_detail_entity", entityId],
+  // One request (GET /etl/console/hierarchy/entities/{id}); the four views share its cache entry.
+  const detail = {
+    queryKey: ["hier_detail", entityId],
     enabled: open,
-    queryFn: async () => {
-      const { data, error } = await db
-        .from("exp_entity")
-        .select("entity_id, entity_type, display_name, status, claim_state, confidence, source, identity_keys, attributes, created_at")
-        .eq("entity_id", entityId)
-        .maybeSingle();
-      if (error) throw error;
-      return data as any;
-    },
-  });
-
-  const out = useQuery({
-    queryKey: ["hier_detail_out", entityId],
-    enabled: open,
-    queryFn: async () => {
-      const { data, error } = await db
-        .from("exp_rel")
-        .select("relationship_type, object_gcid, is_primary, obj:exp_entity!exp_rel_object_entity_id_fkey(entity_id, display_name, entity_type)")
-        .eq("subject_entity_id", entityId)
-        .eq("status", "current")
-        .limit(200);
-      if (error) throw error;
-      const rows = (data ?? []) as { relationship_type: string; object_gcid: string | null; obj: Other }[];
-      const labels = await gcidLabels(rows.map((r) => r.object_gcid ?? ""));
-      return { rows, labels };
-    },
-  });
-
-  const inc = useQuery({
-    queryKey: ["hier_detail_in", entityId],
-    enabled: open,
-    queryFn: async () => {
-      const res = await Promise.all(
-        REL_TYPES.filter((t) => t !== "CLASSIFIED_AS").map(async (t) => {
-          const { data, count, error } = await db
-            .from("exp_rel")
-            .select("subj:exp_entity!exp_rel_subject_entity_id_fkey(entity_id, display_name, entity_type)", { count: "exact" })
-            .eq("object_entity_id", entityId)
-            .eq("relationship_type", t)
-            .eq("status", "current")
-            .range(0, 19);
-          if (error) throw error;
-          return { type: t, count: count ?? 0, rows: ((data ?? []) as { subj: Other }[]).map((r) => r.subj) };
-        }),
-      );
-      return res.filter((r) => r.count > 0);
-    },
-  });
-
-  const staged = useQuery({
-    queryKey: ["hier_detail_staged", entityId],
-    enabled: open,
-    queryFn: async () => {
-      const { data, error } = await db
-        .from("exp_etl_staging")
-        .select("stage_id, payload, field_tier, observed_at, detail_url")
-        .eq("entity_id", entityId)
-        .order("observed_at", { ascending: false, nullsFirst: false })
-        .limit(5);
-      if (error) throw error;
-      return (data ?? []) as any[];
-    },
-  });
+    queryFn: () =>
+      api.get<{
+        entity: any;
+        out: { relationship_type: string; object_gcid: string | null; obj: Other }[];
+        outLabels: Record<string, string>;
+        incoming: { type: string; count: number; rows: Other[] }[];
+        staged: any[];
+      }>(`/etl/console/hierarchy/entities/${encodeURIComponent(entityId!)}`),
+  };
+  const ent = useQuery({ ...detail, select: (d) => d.entity as any });
+  const out = useQuery({ ...detail, select: (d) => ({ rows: d.out, labels: d.outLabels }) });
+  const inc = useQuery({ ...detail, select: (d) => d.incoming });
+  const staged = useQuery({ ...detail, select: (d) => d.staged });
 
   const e = ent.data;
   const category = out.data?.rows.find((r) => r.relationship_type === "CLASSIFIED_AS");

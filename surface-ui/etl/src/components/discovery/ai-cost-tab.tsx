@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { RefreshCw } from "lucide-react";
-import { supabase } from "@v3/ui/integrations/supabase/client";
+import { api } from "@v3/ui/lib/server-fn";
 import { Button } from "@v3/ui/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@v3/ui/components/ui/dialog";
 import { cn } from "@v3/ui/lib/utils";
@@ -88,13 +88,10 @@ export function AiCostTab() {
   const q = useQuery({
     queryKey: ["etl_ai_cost_events", period],
     staleTime: Infinity,
-    queryFn: async () => {
-      let req = (supabase as any).from("exp_etl_cost_events").select("*").order("occurred_at", { ascending: false }).limit(5000);
-      if (days != null) req = req.gte("occurred_at", new Date(Date.now() - days * 86_400_000).toISOString());
-      const { data, error } = await req;
-      if (error) throw error;
-      return (data ?? []) as Ev[];
-    },
+    queryFn: () =>
+      api.get<Ev[]>("/etl/console/ai-cost-events", {
+        params: { since: days != null ? new Date(Date.now() - days * 86_400_000).toISOString() : undefined },
+      }),
   });
   const all = q.data ?? [];
   const gcids = useMemo(() => [...new Set(all.map((e) => e.gcid).filter((g): g is string => !!g))].sort(), [all]);
