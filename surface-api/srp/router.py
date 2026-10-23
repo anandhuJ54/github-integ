@@ -1,10 +1,12 @@
 """Aggregate router for the srp Surface.
 
-The app mounts only this. Include this Surface's sub-routers here as it grows —
-new capabilities go in this file, not in app.py.
+The app mounts only this. Include new srp sub-routers here, not in app.py.
 """
 from __future__ import annotations
 
 from fastapi import APIRouter
 
+from srp.routers.health import router as health_router
+
 router = APIRouter()
+router.include_router(health_router)

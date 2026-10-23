@@ -1,10 +1,12 @@
 """Aggregate router for the skills Surface.
 
-The app mounts only this. Include this Surface's sub-routers here as it grows —
-new capabilities go in this file, not in app.py.
+The app mounts only this. Include new skills sub-routers here, not in app.py.
 """
 from __future__ import annotations
 
 from fastapi import APIRouter
 
+from skills.routers.health import router as health_router
+
 router = APIRouter()
+router.include_router(health_router)
