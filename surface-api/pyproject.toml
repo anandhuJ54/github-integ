@@ -13,6 +13,8 @@ dependencies = [
     # Connection pooling for the read/write split (primary + optional read replica).
     "psycopg-pool>=3.2",
     "pyjwt>=2.9",
+    "httpx>=0.27",
+    "beautifulsoup4>=4.12",
 ]
 
 [dependency-groups]

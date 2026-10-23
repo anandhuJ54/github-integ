@@ -147,3 +147,30 @@ def rls_connection(jwt_claims: dict) -> Iterator[psycopg.Connection]:
     """
     with _lease(_primary_url(), jwt_claims) as conn:
         yield conn
+
+
+# --- role-scoped connections (supabase-js parity) ---------------------------
+# The migrated server functions used three Supabase clients. Each maps to a Postgres role:
+#   publishable/anon client      -> role `anon`          (RLS as a signed-out visitor)
+#   user client (bearer JWT)     -> role `authenticated` (RLS as that user)
+#   supabaseAdmin (service key)  -> role `service_role`  (bypasses RLS; server writes only)
+# `set local role` and the claims are transaction-local, so they end with the lease.
+
+_ROLES = frozenset({"anon", "authenticated", "service_role"})
+
+
+@contextmanager
+def role_connection(
+    role: str, jwt_claims: dict | None = None, *, write: bool = False, fresh: bool = False
+) -> Iterator[psycopg.Connection]:
+    """A connection acting as a Supabase API role. Reads use the replica unless write/fresh."""
+    if role not in _ROLES:
+        raise ValueError(f"unknown role {role!r}")
+    if role == "authenticated" and jwt_claims is None:
+        raise ValueError("authenticated role needs the verified JWT claims")
+    url = _primary_url() if (write or fresh) else _replica_url()
+    claims = jwt_claims if jwt_claims is not None else {"role": role}
+    with _lease(url, claims) as conn:
+        with conn.cursor() as cur:
+            cur.execute(f"set local role {role}")  # role is from the fixed allowlist above
+        yield conn
