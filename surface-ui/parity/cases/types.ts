@@ -19,6 +19,11 @@ export type ParityCase = {
   /** Shared input both sides need (e.g. the ids on the current page), fetched the legacy way. */
   prepare?: (sb: typeof supabase) => Promise<unknown>;
   api: ApiCall | ((ctx: any) => ApiCall);
+  /**
+   * Applied to both results before comparing, e.g. to put rows that tie on the legacy sort key
+   * into one order (Postgres returns ties in any order). Say which tie it resolves.
+   */
+  normalize?: (result: any) => any;
   /** Both sides are expected to refuse (e.g. a super_admin-only read): a match if both do. */
   expectRefusal?: boolean;
   /** JSON paths whose values may differ (e.g. live counters that move between the two reads). */

@@ -98,6 +98,19 @@ const orgQuery = (f: OrgFilters) =>
 const ORG_DEFAULT: OrgFilters = { search: "", gcidFilter: "all", statusFilter: "all", scopeFilter: "real", page: 0 };
 const ORG_FILTERED: OrgFilters = { search: "state farm", gcidFilter: "all", statusFilter: "unclaimed", scopeFilter: "all", page: 1 };
 
+// Rows tied on the legacy sort key (same display_name / same score+name) come back in any
+// order, so both sides are compared in one order: the legacy sort, then id.
+const tieSort = (cmp: (a: any, b: any) => number) => (res: { rows: any[]; count: number }) => ({
+  ...res,
+  rows: [...res.rows].sort((a, b) => cmp(a, b) || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0)),
+});
+const text = (a: string | null, b: string | null) =>
+  a === b ? 0 : a === null ? 1 : b === null ? -1 : a < b ? -1 : 1; // nulls last
+const num = (a: number | null, b: number | null) =>
+  a === b ? 0 : a === null ? 1 : b === null ? -1 : b - a; // desc, nulls last
+const proTies = tieSort((a, b) => text(a.display_name, b.display_name));
+const orgTies = tieSort((a, b) => num(a.search_rank_score, b.search_rank_score) || text(a.name, b.name));
+
 export const cases: ParityCase[] = [
   {
     // professionals.tsx:126-142
@@ -133,16 +146,19 @@ export const cases: ParityCase[] = [
   },
   {
     name: "professionals: list, default filters, page 0",
+    normalize: proTies,
     legacy: (supabase) => legacyProPage(supabase, DEFAULT),
     api: { method: "GET", path: proQuery(DEFAULT) },
   },
   {
     name: "professionals: list, search+location+unclaimed+unscored",
+    normalize: proTies,
     legacy: (supabase) => legacyProPage(supabase, FILTERED),
     api: { method: "GET", path: proQuery(FILTERED) },
   },
   {
     name: "professionals: list, page 3",
+    normalize: proTies,
     legacy: (supabase) => legacyProPage(supabase, { ...DEFAULT, page: 3 }),
     api: { method: "GET", path: proQuery({ ...DEFAULT, page: 3 }) },
   },
@@ -220,11 +236,13 @@ export const cases: ParityCase[] = [
   },
   {
     name: "organizations: list, default (real), page 0",
+    normalize: orgTies,
     legacy: (supabase) => legacyOrgPage(supabase, ORG_DEFAULT),
     api: { method: "GET", path: orgQuery(ORG_DEFAULT) },
   },
   {
     name: "organizations: list, search+unclaimed+all, page 1",
+    normalize: orgTies,
     legacy: (supabase) => legacyOrgPage(supabase, ORG_FILTERED),
     api: { method: "GET", path: orgQuery(ORG_FILTERED) },
   },

@@ -91,7 +91,8 @@ def page(
 
     rows_stmt = (
         select(*(p[k] for k in LIST_COLUMNS))
-        .order_by(p.display_name.asc().nulls_last())
+        # id breaks ties between equal names, so a row can't move between pages (the TS had none)
+        .order_by(p.display_name.asc().nulls_last(), p.id)
         .offset(page_no * PAGE_SIZE)
         .limit(PAGE_SIZE)
     )

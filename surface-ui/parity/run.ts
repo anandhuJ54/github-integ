@@ -119,7 +119,11 @@ for (const c of cases) {
     console.log(`FAIL ${c.name}: API ${res.status} ${await res.text()}`);
     continue;
   }
-  const api = await res.json();
+  let api = await res.json();
+  if (c.normalize) {
+    legacy = c.normalize(legacy);
+    api = c.normalize(api);
+  }
   const diffs: string[] = [];
   diff(legacy, api, "$", diffs);
   const under = (d: string, p: string) => d.startsWith(`${p}:`) || d.startsWith(`${p}.`);

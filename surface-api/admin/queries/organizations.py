@@ -47,7 +47,8 @@ def page(conn: psycopg.Connection, *, search: str, gcid: str, status: str, scope
         where.append(o.is_demo.is_(True))
     rows_stmt = (
         select(*(o[k] for k in ORG_COLUMNS))
-        .order_by(o.search_rank_score.desc().nulls_last(), o.name.asc())
+        # id breaks ties, so a row can't move between pages (the TS had none)
+        .order_by(o.search_rank_score.desc().nulls_last(), o.name.asc(), o.id)
         .offset(page_no * PAGE_SIZE)
         .limit(PAGE_SIZE)
     )
