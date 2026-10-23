@@ -10,6 +10,7 @@ approval. No agent applies these. All checks were read-only catalog queries; no 
 | SF-2 | 2026-10-23 | `exp_web_ads` has an always-true policy for `authenticated` | Open: to fix later |
 | SF-3 | 2026-10-23 | `exp_sitemap_rebuild` and `exp_index_sync` (SECURITY DEFINER, no role check) are executable by `anon` | Open: to fix later |
 | SF-5 | 2026-10-23 | 17 ops tables (dev tracker, wiki, `exp_contracts`, `exp_activity_events`) have always-true policies: any signed-in user can read, change and delete all rows | Open: to fix later |
+| SF-6 | 2026-10-23 | `disco_activate` and `disco_request_remap_site` (SECURITY DEFINER, no role check) are executable by `anon`: anyone can start discovery rounds, which queue AI-backed jobs (cost), or request site remaps | Open: to fix later |
 | SF-4 | 2026-10-23 | The API's DB login (`panneer`) switches to `postgres` on connect; plain `connection()` sessions run with postgres rights | Open: needs a service account |
 
 ## SF-1: RLS off and anon write rights on 67 tables
@@ -64,3 +65,11 @@ Every policy on these tables is `USING (true)` / `WITH CHECK (true)` for `authen
 
 exp_dev_config and exp_dev_weekly_updates have RLS off and are already listed under SF-1. The `dev-docs` storage bucket is private.
 The ops port to FastAPI (2026-10-23) keeps today's access exactly (the calls run as the signed-in user); the fix belongs to the security release.
+
+## SF-6: anon-callable discovery functions without a role check
+Of the 16 SECURITY DEFINER functions the ETL page calls, 14 check the caller's control role. The two below don't, and `anon` holds EXECUTE on them:
+- `disco_activate(p_category text)` starts a discovery round for a category. It checks only that the category exists and that no discovery is running. The round queues jobs that call AI providers, so this is a cost exposure.
+- `disco_request_remap_site(p_source_id uuid)` queues a site remap for an approved, active or test_pull source.
+
+Also: all 16 functions are executable by `anon` (EXECUTE was never revoked). The role checks stop misuse of the other 14; the fix is to revoke EXECUTE from anon/PUBLIC on all of them and add the role check to these two. ETL tables themselves have RLS on, with read-only policies for `authenticated`.
+The ETL port to FastAPI keeps today's access (it calls the same functions as the signed-in user).
