@@ -1,0 +1,15 @@
+UPDATE exp_schema_type_ring_map SET ring_key='services' WHERE schema_property='amenityFeature' AND ring_key<>'services';
+UPDATE exp_schema_type_ring_map SET ring_key='services' WHERE schema_property='petsAllowed' AND ring_key<>'services';
+UPDATE exp_schema_type_ring_map SET ring_key='services' WHERE schema_property='smokingAllowed' AND ring_key<>'services';
+UPDATE exp_schema_type_ring_map SET ring_key='services' WHERE schema_property='publicAccess' AND ring_key<>'services';
+UPDATE exp_schema_type_ring_map SET ring_key='services' WHERE schema_property='availableLanguage' AND ring_key<>'services';
+UPDATE exp_schema_type_ring_map SET ring_key='services' WHERE schema_property='hasMenu' AND ring_key<>'services';
+UPDATE exp_schema_type_ring_map SET ring_key='services' WHERE schema_property='servesCuisine' AND ring_key<>'services';
+UPDATE exp_schema_type_ring_map SET ring_key='services' WHERE schema_property='menu' AND ring_key<>'services';
+UPDATE exp_schema_type_ring_map SET ring_key='services' WHERE schema_property='isAccessibleForFree' AND ring_key<>'services';
+UPDATE exp_schema_type_ring_map SET ring_key='identity' WHERE schema_property='starRating' AND ring_key<>'identity';
+UPDATE exp_schema_type_ring_map SET ring_key='identity' WHERE schema_property='checkinTime' AND ring_key<>'identity';
+UPDATE exp_schema_type_ring_map SET ring_key='identity' WHERE schema_property='checkoutTime' AND ring_key<>'identity';
+UPDATE exp_schema_type_ring_map SET ring_key='identity' WHERE schema_property='numberOfRooms' AND ring_key<>'identity';
+UPDATE exp_schema_type_ring_map SET ring_key='conversion' WHERE schema_property='tourBookingPage' AND ring_key<>'conversion';
+UPDATE exp_schema_type_ring_map SET ring_key='authority' WHERE schema_property='publishingPrinciples' AND ring_key<>'authority';

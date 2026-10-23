@@ -1,0 +1,1 @@
+GRANT UPDATE, DELETE ON public.exp_gbp_attributes TO sandbox_exec; GRANT UPDATE, DELETE ON public.exp_gbp_attributes_fetch_log TO sandbox_exec;

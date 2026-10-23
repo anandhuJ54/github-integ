@@ -1,0 +1,4696 @@
+{
+ "version": "judge-golden.v1",
+ "vocab": "judge-vocab.v1",
+ "description": "Golden labelled set for the relevance judge. provenance=observed rows are Scott's real observations (cannabis store, Mexican restaurant, real estate agent); provenance=synthetic rows are authored from general knowledge across other lanes and categories. local_pack is only set where it was supplied/inferred (see row note); volume and intent are NOT stored (not observed) - replay the pilot with the real export values. Category contexts are illustrative fixtures, not read from the database.",
+ "categories": {
+  "gcid:cannabis_store": {
+   "gcid": "gcid:cannabis_store",
+   "display_name": "Cannabis store",
+   "aliases": [
+    "dispensary",
+    "marijuana dispensary",
+    "weed store",
+    "cannabis dispensary"
+   ],
+   "entity_types": [
+    "location",
+    "brand"
+   ],
+   "entity_note": "storefront-first; the licensed store is the entity, the chain is the brand",
+   "schema_type": "Store",
+   "group": "Retail",
+   "siblings": [
+    {
+     "gcid": "gcid:cannabis_club",
+     "display_name": "Cannabis club",
+     "belongs": "membership/consumption clubs and lounges"
+    },
+    {
+     "gcid": "gcid:smoke_shop",
+     "display_name": "Smoke shop",
+     "belongs": "pipes, vapes, tobacco, glass accessories-only shops"
+    }
+   ],
+   "compliance": {
+    "flags": [
+     "age_gate_21",
+     "state_licensed",
+     "no_health_claims"
+    ],
+    "prohibited_phrases": [
+     "cures cancer",
+     "ships to all 50 states",
+     "safe for children",
+     "no id required"
+    ],
+    "notes": [
+     "Illustrative fixture for the golden set; real values come from exp_category_compliance."
+    ]
+   },
+   "family_domains": [
+    "cannabis_retail"
+   ],
+   "families": [
+    {
+     "slug": "dispensary_storefront",
+     "label": "Dispensary / storefront",
+     "source": "product_service"
+    },
+    {
+     "slug": "delivery",
+     "label": "Cannabis delivery",
+     "source": "product_service"
+    },
+    {
+     "slug": "flower",
+     "label": "Flower and strains",
+     "source": "product_service"
+    },
+    {
+     "slug": "edibles",
+     "label": "Edibles and gummies",
+     "source": "product_service"
+    },
+    {
+     "slug": "concentrates",
+     "label": "Concentrates (live resin, wax, shatter)",
+     "source": "product_service"
+    },
+    {
+     "slug": "vapes_cartridges",
+     "label": "Vapes and cartridges",
+     "source": "product_service"
+    },
+    {
+     "slug": "pre_rolls",
+     "label": "Pre-rolls",
+     "source": "product_service"
+    },
+    {
+     "slug": "medical_cannabis",
+     "label": "Medical cannabis / card evaluations",
+     "source": "product_service"
+    }
+   ]
+  },
+  "gcid:mexican_restaurant": {
+   "gcid": "gcid:mexican_restaurant",
+   "display_name": "Mexican restaurant",
+   "aliases": [
+    "taqueria",
+    "taco restaurant",
+    "cantina"
+   ],
+   "entity_types": [
+    "location",
+    "brand"
+   ],
+   "entity_note": "location-first; chains are brands, each outlet a location",
+   "schema_type": "Restaurant",
+   "group": "Food and drink",
+   "siblings": [
+    {
+     "gcid": "gcid:taco_restaurant",
+     "display_name": "Taco restaurant",
+     "belongs": "taco-only restaurants; taco terms compete for the same map pack as Mexican restaurant (one pool, do not exclude)",
+     "shares_pack": true
+    },
+    {
+     "gcid": "gcid:tex_mex_restaurant",
+     "display_name": "Tex-Mex restaurant",
+     "belongs": "Tex-Mex specific terms (fajitas, queso, chili con carne)",
+     "shares_pack": true
+    },
+    {
+     "gcid": "gcid:mexican_grocery_store",
+     "display_name": "Mexican grocery store",
+     "belongs": "groceries, produce, tortilleria, imported pantry goods"
+    },
+    {
+     "gcid": "gcid:bakery",
+     "display_name": "Bakery",
+     "belongs": "panaderia, pan dulce, conchas, cakes (retail bakeries)"
+    },
+    {
+     "gcid": "gcid:mexican_torta_restaurant",
+     "display_name": "Mexican torta restaurant",
+     "belongs": "torta-only restaurants"
+    }
+   ],
+   "compliance": {
+    "flags": [
+     "alcohol_license_if_serving",
+     "food_safety"
+    ],
+    "prohibited_phrases": [
+     "cures hangovers",
+     "100% authentic guaranteed"
+    ],
+    "notes": [
+     "Illustrative fixture."
+    ]
+   },
+   "family_domains": [
+    "mexican_food"
+   ],
+   "families": [
+    {
+     "slug": "restaurant_dining",
+     "label": "Mexican restaurant dining",
+     "source": "product_service"
+    },
+    {
+     "slug": "tacos",
+     "label": "Tacos",
+     "source": "product_service"
+    },
+    {
+     "slug": "burritos",
+     "label": "Burritos",
+     "source": "product_service"
+    },
+    {
+     "slug": "quesadillas",
+     "label": "Quesadillas",
+     "source": "product_service"
+    },
+    {
+     "slug": "birria",
+     "label": "Birria",
+     "source": "product_service"
+    },
+    {
+     "slug": "taqueria_taco_truck",
+     "label": "Taqueria and taco trucks",
+     "source": "product_service"
+    },
+    {
+     "slug": "delivery_takeout",
+     "label": "Delivery and takeout",
+     "source": "product_service"
+    },
+    {
+     "slug": "happy_hour",
+     "label": "Happy hour",
+     "source": "product_service"
+    },
+    {
+     "slug": "margaritas_drinks",
+     "label": "Margaritas and cocktails",
+     "source": "product_service"
+    },
+    {
+     "slug": "catering",
+     "label": "Catering",
+     "source": "product_service"
+    }
+   ]
+  },
+  "gcid:real_estate_agents": {
+   "gcid": "gcid:real_estate_agents",
+   "display_name": "Real estate agent",
+   "aliases": [
+    "realtor",
+    "real estate salesperson",
+    "real estate broker",
+    "buyer's agent",
+    "listing agent"
+   ],
+   "entity_types": [
+    "professional",
+    "location",
+    "brand"
+   ],
+   "entity_note": "professionals (licensed individuals) and offices co-mingle; Google labels some individuals 'Real estate agency' and some offices 'Real estate agent'",
+   "schema_type": "RealEstateAgent",
+   "group": "Real estate",
+   "siblings": [
+    {
+     "gcid": "gcid:real_estate_agency",
+     "display_name": "Real estate agency",
+     "belongs": "agency/brokerage/office terms; they compete for the SAME map pack as agents, so agent, agency, brokerage and broker terms are ONE pool (do not exclude them as 'sounds like a company')",
+     "shares_pack": true
+    },
+    {
+     "gcid": "gcid:commercial_real_estate_agency",
+     "display_name": "Commercial real estate agency",
+     "belongs": "commercial, industrial, office, retail leasing and sales"
+    },
+    {
+     "gcid": "gcid:real_estate_rental_agency",
+     "display_name": "Real estate rental agency",
+     "belongs": "rentals, leasing, apartment finding, property management"
+    },
+    {
+     "gcid": "gcid:real_estate_attorney",
+     "display_name": "Real estate attorney",
+     "belongs": "closing attorneys, title disputes, real estate lawyers"
+    },
+    {
+     "gcid": "gcid:real_estate_school",
+     "display_name": "Real estate school",
+     "belongs": "licence courses, exam prep, continuing education"
+    },
+    {
+     "gcid": "gcid:mortgage_lender",
+     "display_name": "Mortgage lender",
+     "belongs": "loans, rates, pre-approval, loan officers"
+    },
+    {
+     "gcid": "gcid:property_management_company",
+     "display_name": "Property management company",
+     "belongs": "managing rental properties for owners"
+    }
+   ],
+   "compliance": {
+    "flags": [
+     "fair_housing",
+     "state_licensed",
+     "brokerage_name_in_ads"
+    ],
+    "prohibited_phrases": [
+     "safe neighborhood",
+     "family-friendly neighborhood",
+     "exclusive neighborhood",
+     "no children",
+     "guaranteed sale",
+     "guaranteed price"
+    ],
+    "notes": [
+     "Fair Housing: no steering by protected class; brokerage name in ads; no sale/price guarantees.",
+     "Illustrative fixture."
+    ]
+   },
+   "family_domains": [
+    "real_estate"
+   ],
+   "families": [
+    {
+     "slug": "residential_agent",
+     "label": "General residential agent / realtor",
+     "source": "service"
+    },
+    {
+     "slug": "buyer_representation",
+     "label": "Buyer's agent",
+     "source": "service"
+    },
+    {
+     "slug": "seller_representation",
+     "label": "Listing / seller's agent",
+     "source": "service"
+    },
+    {
+     "slug": "brokerage",
+     "label": "Brokerage / broker / agency",
+     "source": "service"
+    },
+    {
+     "slug": "local_listings",
+     "label": "Homes for sale search in an area",
+     "source": "service"
+    },
+    {
+     "slug": "first_time_buyers",
+     "label": "First-time home buyers",
+     "source": "service"
+    },
+    {
+     "slug": "luxury_homes",
+     "label": "Luxury homes",
+     "source": "service"
+    },
+    {
+     "slug": "foreclosure_short_sale",
+     "label": "Foreclosures and short sales",
+     "source": "service"
+    },
+    {
+     "slug": "probate_estate_sales",
+     "label": "Probate and estate sales",
+     "source": "service"
+    },
+    {
+     "slug": "relocation",
+     "label": "Relocation / military relocation",
+     "source": "service"
+    },
+    {
+     "slug": "investment_property",
+     "label": "Investment property",
+     "source": "service"
+    }
+   ]
+  },
+  "gcid:mortgage_lender": {
+   "gcid": "gcid:mortgage_lender",
+   "display_name": "Mortgage lender",
+   "aliases": [
+    "home loan lender",
+    "mortgage company",
+    "loan officer"
+   ],
+   "entity_types": [
+    "professional",
+    "location",
+    "brand"
+   ],
+   "entity_note": "loan officers (NMLS individuals) and lender offices co-mingle",
+   "schema_type": "FinancialService",
+   "group": "Finance",
+   "siblings": [
+    {
+     "gcid": "gcid:mortgage_broker",
+     "display_name": "Mortgage broker",
+     "belongs": "brokers shopping loans across lenders",
+     "shares_pack": true
+    },
+    {
+     "gcid": "gcid:real_estate_agents",
+     "display_name": "Real estate agent",
+     "belongs": "buying/selling homes, listings"
+    },
+    {
+     "gcid": "gcid:insurance_agency",
+     "display_name": "Insurance agency",
+     "belongs": "homeowners insurance, title insurance"
+    },
+    {
+     "gcid": "gcid:veterans_affairs_department",
+     "display_name": "Veterans affairs department",
+     "belongs": "general VA benefits: disability, healthcare, education, burial"
+    }
+   ],
+   "compliance": {
+    "flags": [
+     "respa_tila",
+     "nmls_id_required",
+     "fair_housing_ecoa",
+     "reg_z_trigger_terms"
+    ],
+    "prohibited_phrases": [
+     "guaranteed approval",
+     "no credit check required",
+     "lowest rates guaranteed",
+     "pre-approved with no income verification",
+     "we guarantee the lowest closing costs",
+     "immediate loan approval",
+     "100% financing guaranteed",
+     "no documentation required",
+     "no closing costs ever",
+     "instant guaranteed approval"
+    ],
+    "notes": [
+     "Phrases copied from the mortgage_lender compliance fixture in tests/fixtures/category-brief.mortgage_lender.json."
+    ]
+   },
+   "family_domains": [
+    "mortgage"
+   ],
+   "families": [
+    {
+     "slug": "va_loan",
+     "label": "VA loans (purchase, IRRRL / streamline refinance)",
+     "source": "product_service"
+    },
+    {
+     "slug": "fha_loan",
+     "label": "FHA loans (incl. 203k)",
+     "source": "product_service"
+    },
+    {
+     "slug": "conventional_loan",
+     "label": "Conventional loans",
+     "source": "product_service"
+    },
+    {
+     "slug": "jumbo_loan",
+     "label": "Jumbo loans",
+     "source": "product_service"
+    },
+    {
+     "slug": "refinance",
+     "label": "Refinance (rate-and-term, cash-out)",
+     "source": "product_service"
+    },
+    {
+     "slug": "home_equity",
+     "label": "HELOC and home equity loans",
+     "source": "product_service"
+    },
+    {
+     "slug": "usda_loan",
+     "label": "USDA rural development loans",
+     "source": "product_service"
+    },
+    {
+     "slug": "preapproval",
+     "label": "Pre-approval",
+     "source": "product_service"
+    },
+    {
+     "slug": "lender_search",
+     "label": "Finding a mortgage lender (generic)",
+     "source": "product_service"
+    }
+   ]
+  },
+  "gcid:mortgage_broker": {
+   "gcid": "gcid:mortgage_broker",
+   "display_name": "Mortgage broker",
+   "aliases": [
+    "loan broker",
+    "mortgage loan originator"
+   ],
+   "entity_types": [
+    "professional",
+    "location",
+    "brand"
+   ],
+   "entity_note": "brokers (individuals with NMLS IDs) and brokerage offices co-mingle",
+   "schema_type": "FinancialService",
+   "group": "Finance",
+   "siblings": [
+    {
+     "gcid": "gcid:mortgage_lender",
+     "display_name": "Mortgage lender",
+     "belongs": "direct lenders funding loans in-house; shares the map pack with brokers",
+     "shares_pack": true
+    },
+    {
+     "gcid": "gcid:insurance_broker",
+     "display_name": "Insurance broker",
+     "belongs": "insurance brokerage"
+    },
+    {
+     "gcid": "gcid:stock_broker",
+     "display_name": "Stock broker",
+     "belongs": "securities trading and investing"
+    },
+    {
+     "gcid": "gcid:customs_broker",
+     "display_name": "Customs broker",
+     "belongs": "import/export clearance"
+    },
+    {
+     "gcid": "gcid:real_estate_agents",
+     "display_name": "Real estate agent",
+     "belongs": "buying/selling homes; 'real estate broker' belongs there"
+    }
+   ],
+   "compliance": {
+    "flags": [
+     "respa_tila",
+     "nmls_id_required"
+    ],
+    "prohibited_phrases": [
+     "guaranteed approval",
+     "no credit check required",
+     "lowest rates guaranteed"
+    ],
+    "notes": [
+     "Illustrative fixture."
+    ]
+   },
+   "family_domains": [
+    "mortgage"
+   ],
+   "families": [
+    {
+     "slug": "broker_services",
+     "label": "Mortgage broker services (shopping multiple lenders)",
+     "source": "service"
+    },
+    {
+     "slug": "va_loan",
+     "label": "VA loans",
+     "source": "service"
+    },
+    {
+     "slug": "fha_loan",
+     "label": "FHA loans",
+     "source": "service"
+    },
+    {
+     "slug": "refinance",
+     "label": "Refinance",
+     "source": "service"
+    },
+    {
+     "slug": "first_time_buyer_loan",
+     "label": "First-time buyer loans",
+     "source": "service"
+    }
+   ]
+  },
+  "gcid:plumber": {
+   "gcid": "gcid:plumber",
+   "display_name": "Plumber",
+   "aliases": [
+    "plumbing contractor",
+    "plumbing service"
+   ],
+   "entity_types": [
+    "location",
+    "professional",
+    "brand"
+   ],
+   "entity_note": "mostly companies (locations); licensed master plumbers also appear as professionals",
+   "schema_type": "Plumber",
+   "group": "Home services",
+   "siblings": [
+    {
+     "gcid": "gcid:plumbing_supply_store",
+     "display_name": "Plumbing supply store",
+     "belongs": "parts, fixtures, retail supply"
+    },
+    {
+     "gcid": "gcid:drainage_service",
+     "display_name": "Drainage service",
+     "belongs": "drain and drainage specialists",
+     "shares_pack": true
+    },
+    {
+     "gcid": "gcid:trade_school",
+     "display_name": "Trade school",
+     "belongs": "apprenticeships and training"
+    }
+   ],
+   "compliance": {
+    "flags": [
+     "state_licensed"
+    ],
+    "prohibited_phrases": [
+     "guaranteed lowest price",
+     "licensed and insured guaranteed"
+    ],
+    "notes": [
+     "Illustrative fixture."
+    ]
+   },
+   "family_domains": [
+    "plumbing"
+   ],
+   "families": [
+    {
+     "slug": "general_plumbing",
+     "label": "General plumbing",
+     "source": "service"
+    },
+    {
+     "slug": "emergency_repair",
+     "label": "Emergency plumbing repair",
+     "source": "service"
+    },
+    {
+     "slug": "drain_cleaning",
+     "label": "Drain cleaning and clogs",
+     "source": "service"
+    },
+    {
+     "slug": "water_heater",
+     "label": "Water heaters",
+     "source": "service"
+    },
+    {
+     "slug": "leak_repair",
+     "label": "Leak detection and repair",
+     "source": "service"
+    },
+    {
+     "slug": "sewer_line",
+     "label": "Sewer line",
+     "source": "service"
+    },
+    {
+     "slug": "fixture_installation",
+     "label": "Fixtures and faucets",
+     "source": "service"
+    }
+   ]
+  },
+  "gcid:dentist": {
+   "gcid": "gcid:dentist",
+   "display_name": "Dentist",
+   "aliases": [
+    "dental office",
+    "general dentist",
+    "dental clinic"
+   ],
+   "entity_types": [
+    "professional",
+    "location",
+    "brand"
+   ],
+   "entity_note": "individual dentists and practices co-mingle",
+   "schema_type": "Dentist",
+   "group": "Health",
+   "siblings": [
+    {
+     "gcid": "gcid:pediatric_dentist",
+     "display_name": "Pediatric dentist",
+     "belongs": "children's dentistry (a specialty GBP category)"
+    },
+    {
+     "gcid": "gcid:cosmetic_dentist",
+     "display_name": "Cosmetic dentist",
+     "belongs": "veneers, smile makeovers"
+    },
+    {
+     "gcid": "gcid:orthodontist",
+     "display_name": "Orthodontist",
+     "belongs": "braces and aligners"
+    },
+    {
+     "gcid": "gcid:dental_school",
+     "display_name": "Dental school",
+     "belongs": "education and student clinics"
+    }
+   ],
+   "compliance": {
+    "flags": [
+     "state_licensed",
+     "hipaa",
+     "no_outcome_guarantees"
+    ],
+    "prohibited_phrases": [
+     "painless guaranteed",
+     "guaranteed results",
+     "cure"
+    ],
+    "notes": [
+     "Illustrative fixture."
+    ]
+   },
+   "family_domains": [
+    "dentistry"
+   ],
+   "families": [
+    {
+     "slug": "general_dentistry",
+     "label": "General dentistry and checkups",
+     "source": "service"
+    },
+    {
+     "slug": "emergency_dental",
+     "label": "Emergency dental care",
+     "source": "service"
+    },
+    {
+     "slug": "teeth_whitening",
+     "label": "Teeth whitening",
+     "source": "service"
+    },
+    {
+     "slug": "implants",
+     "label": "Dental implants",
+     "source": "service"
+    },
+    {
+     "slug": "root_canal",
+     "label": "Root canals",
+     "source": "service"
+    },
+    {
+     "slug": "dentures",
+     "label": "Dentures",
+     "source": "service"
+    },
+    {
+     "slug": "cleanings",
+     "label": "Cleanings",
+     "source": "service"
+    }
+   ]
+  },
+  "gcid:personal_injury_lawyer": {
+   "gcid": "gcid:personal_injury_lawyer",
+   "display_name": "Personal injury lawyer",
+   "aliases": [
+    "injury attorney",
+    "accident lawyer"
+   ],
+   "entity_types": [
+    "professional",
+    "location",
+    "brand"
+   ],
+   "entity_note": "attorneys and law firms co-mingle",
+   "schema_type": "LegalService",
+   "group": "Legal",
+   "siblings": [
+    {
+     "gcid": "gcid:criminal_law_attorney",
+     "display_name": "Criminal law attorney",
+     "belongs": "criminal defence, DUI"
+    },
+    {
+     "gcid": "gcid:medical_lawyer",
+     "display_name": "Medical lawyer",
+     "belongs": "medical malpractice (shares some terms)",
+     "shares_pack": true
+    },
+    {
+     "gcid": "gcid:lawyer",
+     "display_name": "Lawyer",
+     "belongs": "generic legal terms",
+     "shares_pack": true
+    }
+   ],
+   "compliance": {
+    "flags": [
+     "attorney_advertising",
+     "state_bar_rules"
+    ],
+    "prohibited_phrases": [
+     "guaranteed settlement",
+     "we guarantee results",
+     "guaranteed win",
+     "best lawyer in"
+    ],
+    "notes": [
+     "Illustrative fixture."
+    ]
+   },
+   "family_domains": [
+    "personal_injury"
+   ],
+   "families": [
+    {
+     "slug": "general_injury_claims",
+     "label": "General personal injury claims",
+     "source": "specialization"
+    },
+    {
+     "slug": "car_accident",
+     "label": "Car accidents",
+     "source": "specialization"
+    },
+    {
+     "slug": "slip_and_fall",
+     "label": "Slip and fall",
+     "source": "specialization"
+    },
+    {
+     "slug": "truck_accident",
+     "label": "Truck accidents",
+     "source": "specialization"
+    },
+    {
+     "slug": "wrongful_death",
+     "label": "Wrongful death",
+     "source": "specialization"
+    }
+   ]
+  },
+  "gcid:coffee_shop": {
+   "gcid": "gcid:coffee_shop",
+   "display_name": "Coffee shop",
+   "aliases": [
+    "cafe",
+    "coffeehouse"
+   ],
+   "entity_types": [
+    "location",
+    "brand"
+   ],
+   "entity_note": "location-first",
+   "schema_type": "CafeOrCoffeeShop",
+   "group": "Food and drink",
+   "siblings": [
+    {
+     "gcid": "gcid:coffee_wholesaler",
+     "display_name": "Coffee wholesaler",
+     "belongs": "bulk beans, wholesale"
+    },
+    {
+     "gcid": "gcid:coffee_roasters",
+     "display_name": "Coffee roasters",
+     "belongs": "roasteries selling beans"
+    },
+    {
+     "gcid": "gcid:bakery",
+     "display_name": "Bakery",
+     "belongs": "bakery goods as the primary offer"
+    }
+   ],
+   "compliance": {
+    "flags": [
+     "food_safety"
+    ],
+    "prohibited_phrases": [],
+    "notes": [
+     "Illustrative fixture."
+    ]
+   },
+   "family_domains": [
+    "coffee"
+   ],
+   "families": [
+    {
+     "slug": "cafe_general",
+     "label": "Coffee shop / cafe",
+     "source": "product_service"
+    },
+    {
+     "slug": "espresso_drinks",
+     "label": "Espresso drinks (latte, cappuccino)",
+     "source": "product_service"
+    },
+    {
+     "slug": "iced_cold_drinks",
+     "label": "Iced coffee and cold brew",
+     "source": "product_service"
+    },
+    {
+     "slug": "breakfast_pastries",
+     "label": "Breakfast and pastries",
+     "source": "product_service"
+    }
+   ]
+  },
+  "gcid:hvac_contractor": {
+   "gcid": "gcid:hvac_contractor",
+   "display_name": "HVAC contractor",
+   "aliases": [
+    "heating and cooling",
+    "air conditioning contractor"
+   ],
+   "entity_types": [
+    "location",
+    "professional",
+    "brand"
+   ],
+   "entity_note": "companies are the usual entity",
+   "schema_type": "HVACBusiness",
+   "group": "Home services",
+   "siblings": [
+    {
+     "gcid": "gcid:heating_oil_supplier",
+     "display_name": "Heating oil supplier",
+     "belongs": "fuel oil delivery"
+    },
+    {
+     "gcid": "gcid:air_conditioning_repair_service",
+     "display_name": "Air conditioning repair service",
+     "belongs": "AC repair; shares the map pack with HVAC contractor",
+     "shares_pack": true
+    },
+    {
+     "gcid": "gcid:trade_school",
+     "display_name": "Trade school",
+     "belongs": "HVAC training programs"
+    }
+   ],
+   "compliance": {
+    "flags": [
+     "epa_608",
+     "state_licensed"
+    ],
+    "prohibited_phrases": [
+     "guaranteed lowest price"
+    ],
+    "notes": [
+     "Illustrative fixture."
+    ]
+   },
+   "family_domains": [
+    "hvac"
+   ],
+   "families": [
+    {
+     "slug": "general_hvac",
+     "label": "General HVAC",
+     "source": "service"
+    },
+    {
+     "slug": "ac_repair",
+     "label": "AC repair",
+     "source": "service"
+    },
+    {
+     "slug": "furnace_heating",
+     "label": "Furnace and heating repair",
+     "source": "service"
+    },
+    {
+     "slug": "installation",
+     "label": "System installation / replacement",
+     "source": "service"
+    },
+    {
+     "slug": "maintenance",
+     "label": "Maintenance and tune-ups",
+     "source": "service"
+    }
+   ]
+  }
+ },
+ "rows": [
+  {
+   "id": "g001",
+   "gcid": "gcid:cannabis_store",
+   "lane": "keyword",
+   "term": "dispensary",
+   "local_pack": null,
+   "expected": {
+    "decision": "keep",
+    "reason_code": "keep",
+    "to_lane": null
+   },
+   "family_hint": "cannabis_retail:dispensary_storefront",
+   "provenance": "observed",
+   "contested": false,
+   "note": ""
+  },
+  {
+   "id": "g002",
+   "gcid": "gcid:cannabis_store",
+   "lane": "keyword",
+   "term": "dispensary near me",
+   "local_pack": null,
+   "expected": {
+    "decision": "keep",
+    "reason_code": "keep",
+    "to_lane": null
+   },
+   "family_hint": "cannabis_retail:dispensary_storefront",
+   "provenance": "observed",
+   "contested": false,
+   "note": ""
+  },
+  {
+   "id": "g003",
+   "gcid": "gcid:cannabis_store",
+   "lane": "keyword",
+   "term": "weed delivery near me",
+   "local_pack": null,
+   "expected": {
+    "decision": "keep",
+    "reason_code": "keep",
+    "to_lane": null
+   },
+   "family_hint": "cannabis_retail:delivery",
+   "provenance": "observed",
+   "contested": false,
+   "note": ""
+  },
+  {
+   "id": "g004",
+   "gcid": "gcid:cannabis_store",
+   "lane": "keyword",
+   "term": "marijuana dispensary near me",
+   "local_pack": null,
+   "expected": {
+    "decision": "keep",
+    "reason_code": "keep",
+    "to_lane": null
+   },
+   "family_hint": "cannabis_retail:dispensary_storefront",
+   "provenance": "observed",
+   "contested": false,
+   "note": ""
+  },
+  {
+   "id": "g005",
+   "gcid": "gcid:cannabis_store",
+   "lane": "keyword",
+   "term": "rec dispensaries near me",
+   "local_pack": null,
+   "expected": {
+    "decision": "keep",
+    "reason_code": "keep",
+    "to_lane": null
+   },
+   "family_hint": "cannabis_retail:dispensary_storefront",
+   "provenance": "observed",
+   "contested": false,
+   "note": ""
+  },
+  {
+   "id": "g006",
+   "gcid": "gcid:cannabis_store",
+   "lane": "keyword",
+   "term": "thc gummy",
+   "local_pack": null,
+   "expected": {
+    "decision": "keep",
+    "reason_code": "keep",
+    "to_lane": null
+   },
+   "family_hint": "cannabis_retail:edibles",
+   "provenance": "observed",
+   "contested": false,
+   "note": ""
+  },
+  {
+   "id": "g007",
+   "gcid": "gcid:cannabis_store",
+   "lane": "keyword",
+   "term": "live resin",
+   "local_pack": null,
+   "expected": {
+    "decision": "keep",
+    "reason_code": "keep",
+    "to_lane": null
+   },
+   "family_hint": "cannabis_retail:concentrates",
+   "provenance": "observed",
+   "contested": false,
+   "note": ""
+  },
+  {
+   "id": "g008",
+   "gcid": "gcid:cannabis_store",
+   "lane": "keyword",
+   "term": "blue dream strain",
+   "local_pack": null,
+   "expected": {
+    "decision": "keep",
+    "reason_code": "keep",
+    "to_lane": null
+   },
+   "family_hint": "cannabis_retail:flower",
+   "provenance": "observed",
+   "contested": false,
+   "note": ""
+  },
+  {
+   "id": "g009",
+   "gcid": "gcid:cannabis_store",
+   "lane": "keyword",
+   "term": "wedding cake strain",
+   "local_pack": null,
+   "expected": {
+    "decision": "keep",
+    "reason_code": "keep",
+    "to_lane": null
+   },
+   "family_hint": "cannabis_retail:flower",
+   "provenance": "observed",
+   "contested": false,
+   "note": ""
+  },
+  {
+   "id": "g010",
+   "gcid": "gcid:cannabis_store",
+   "lane": "keyword",
+   "term": "dispensary open late",
+   "local_pack": null,
+   "expected": {
+    "decision": "keep",
+    "reason_code": "keep",
+    "to_lane": null
+   },
+   "family_hint": "cannabis_retail:dispensary_storefront",
+   "provenance": "observed",
+   "contested": false,
+   "note": ""
+  },
+  {
+   "id": "g011",
+   "gcid": "gcid:cannabis_store",
+   "lane": "keyword",
+   "term": "dispensary that takes card near me",
+   "local_pack": null,
+   "expected": {
+    "decision": "keep",
+    "reason_code": "keep",
+    "to_lane": null
+   },
+   "family_hint": "cannabis_retail:dispensary_storefront",
+   "provenance": "observed",
+   "contested": false,
+   "note": "Kept: paying by card is a real transactional local search. Contrast 'cannabis store with wifi' (amenity)."
+  },
+  {
+   "id": "g012",
+   "gcid": "gcid:cannabis_store",
+   "lane": "keyword",
+   "term": "mint dispensary az",
+   "local_pack": null,
+   "expected": {
+    "decision": "exclude",
+    "reason_code": "brand_or_business_name",
+    "to_lane": null
+   },
+   "family_hint": null,
+   "provenance": "observed",
+   "contested": false,
+   "note": "brand plus geo; the brand decides it (a {state} template would not rescue it)"
+  },
+  {
+   "id": "g013",
+   "gcid": "gcid:cannabis_store",
+   "lane": "keyword",
+   "term": "bloom dispensary",
+   "local_pack": null,
+   "expected": {
+    "decision": "exclude",
+    "reason_code": "brand_or_business_name",
+    "to_lane": null
+   },
+   "family_hint": null,
+   "provenance": "observed",
+   "contested": false,
+   "note": "a dispensary brand"
+  },
+  {
+   "id": "g014",
+   "gcid": "gcid:cannabis_store",
+   "lane": "keyword",
+   "term": "liberty dispensary",
+   "local_pack": null,
+   "expected": {
+    "decision": "exclude",
+    "reason_code": "brand_or_business_name",
+    "to_lane": null
+   },
+   "family_hint": null,
+   "provenance": "observed",
+   "contested": false,
+   "note": "a dispensary brand"
+  },
+  {
+   "id": "g015",
+   "gcid": "gcid:cannabis_store",
+   "lane": "keyword",
+   "term": "cannabinoids dispensary near me",
+   "local_pack": null,
+   "expected": {
+    "decision": "exclude",
+    "reason_code": "brand_or_business_name",
+    "to_lane": null
+   },
+   "family_hint": null,
+   "provenance": "observed",
+   "contested": false,
+   "note": "brand-like: 'Cannabinoids Dispensary' reads as a business name, not the word"
+  },
+  {
+   "id": "g016",
+   "gcid": "gcid:cannabis_store",
+   "lane": "keyword",
+   "term": "arrangement edibles",
+   "local_pack": null,
+   "expected": {
+    "decision": "exclude",
+    "reason_code": "ambiguous_meaning",
+    "to_lane": null
+   },
+   "family_hint": null,
+   "provenance": "observed",
+   "contested": false,
+   "note": "Edible Arrangements: fruit bouquets"
+  },
+  {
+   "id": "g017",
+   "gcid": "gcid:cannabis_store",
+   "lane": "keyword",
+   "term": "muscle strains",
+   "local_pack": null,
+   "expected": {
+    "decision": "exclude",
+    "reason_code": "ambiguous_meaning",
+    "to_lane": null
+   },
+   "family_hint": null,
+   "provenance": "observed",
+   "contested": false,
+   "note": "'strains' = muscle injury, not cannabis strains"
+  },
+  {
+   "id": "g018",
+   "gcid": "gcid:cannabis_store",
+   "lane": "keyword",
+   "term": "treatment for strains",
+   "local_pack": null,
+   "expected": {
+    "decision": "exclude",
+    "reason_code": "ambiguous_meaning",
+    "to_lane": null
+   },
+   "family_hint": null,
+   "provenance": "observed",
+   "contested": false,
+   "note": "'strains' = muscle injury"
+  },
+  {
+   "id": "g019",
+   "gcid": "gcid:cannabis_store",
+   "lane": "keyword",
+   "term": "ebola strains",
+   "local_pack": null,
+   "expected": {
+    "decision": "exclude",
+    "reason_code": "ambiguous_meaning",
+    "to_lane": null
+   },
+   "family_hint": null,
+   "provenance": "observed",
+   "contested": false,
+   "note": "'strains' = virus strains"
+  },
+  {
+   "id": "g020",
+   "gcid": "gcid:cannabis_store",
+   "lane": "keyword",
+   "term": "what is thc",
+   "local_pack": null,
+   "expected": {
+    "decision": "move",
+    "reason_code": "informational",
+    "to_lane": "question"
+   },
+   "family_hint": null,
+   "provenance": "observed",
+   "contested": false,
+   "note": "definition question"
+  },
+  {
+   "id": "g021",
+   "gcid": "gcid:cannabis_store",
+   "lane": "keyword",
+   "term": "cannabis laws by state",
+   "local_pack": null,
+   "expected": {
+    "decision": "move",
+    "reason_code": "informational",
+    "to_lane": "topic"
+   },
+   "family_hint": null,
+   "provenance": "observed",
+   "contested": false,
+   "note": "legal explainer content"
+  },
+  {
+   "id": "g022",
+   "gcid": "gcid:cannabis_store",
+   "lane": "keyword",
+   "term": "dispensary jobs near me",
+   "local_pack": null,
+   "expected": {
+    "decision": "exclude",
+    "reason_code": "different_audience",
+    "to_lane": null
+   },
+   "family_hint": null,
+   "provenance": "observed",
+   "contested": false,
+   "note": "job seekers"
+  },
+  {
+   "id": "g023",
+   "gcid": "gcid:cannabis_store",
+   "lane": "keyword",
+   "term": "cannabis store with wifi",
+   "local_pack": null,
+   "expected": {
+    "decision": "exclude",
+    "reason_code": "amenity_attribute",
+    "to_lane": null
+   },
+   "family_hint": null,
+   "provenance": "observed",
+   "contested": false,
+   "note": "tag: wifi (not a search)"
+  },
+  {
+   "id": "g024",
+   "gcid": "gcid:cannabis_store",
+   "lane": "keyword",
+   "term": "cannabis delivery driver",
+   "local_pack": null,
+   "expected": {
+    "decision": "exclude",
+    "reason_code": "different_audience",
+    "to_lane": null
+   },
+   "family_hint": null,
+   "provenance": "observed",
+   "contested": false,
+   "note": "job seekers (driver)"
+  },
+  {
+   "id": "g025",
+   "gcid": "gcid:cannabis_store",
+   "lane": "question",
+   "term": "what is thc",
+   "local_pack": null,
+   "expected": {
+    "decision": "keep",
+    "reason_code": "keep",
+    "to_lane": null
+   },
+   "family_hint": "cannabis_retail:flower",
+   "provenance": "synthetic",
+   "contested": false,
+   "note": "Same term as the keyword-lane row: in the question lane it is a keep."
+  },
+  {
+   "id": "g026",
+   "gcid": "gcid:cannabis_store",
+   "lane": "topic",
+   "term": "cannabis laws by state",
+   "local_pack": null,
+   "expected": {
+    "decision": "keep",
+    "reason_code": "keep",
+    "to_lane": null
+   },
+   "family_hint": "cannabis_retail:dispensary_storefront",
+   "provenance": "synthetic",
+   "contested": false,
+   "note": "Same term as the keyword-lane row: in the topic lane it is a keep."
+  },
+  {
+   "id": "g027",
+   "gcid": "gcid:cannabis_store",
+   "lane": "tag",
+   "term": "wifi",
+   "local_pack": null,
+   "expected": {
+    "decision": "keep",
+    "reason_code": "keep",
+    "to_lane": null
+   },
+   "family_hint": null,
+   "provenance": "synthetic",
+   "contested": false,
+   "note": "Same attribute as the keyword-lane amenity row: valid as a tag."
+  },
+  {
+   "id": "g028",
+   "gcid": "gcid:cannabis_store",
+   "lane": "tag",
+   "term": "wheelchair accessible",
+   "local_pack": null,
+   "expected": {
+    "decision": "keep",
+    "reason_code": "keep",
+    "to_lane": null
+   },
+   "family_hint": null,
+   "provenance": "synthetic",
+   "contested": false,
+   "note": ""
+  },
+  {
+   "id": "g029",
+   "gcid": "gcid:cannabis_store",
+   "lane": "keyword",
+   "term": "dispensaries near me",
+   "local_pack": null,
+   "expected": {
+    "decision": "exclude",
+    "reason_code": "duplicate_meaning",
+    "to_lane": null
+   },
+   "family_hint": null,
+   "provenance": "synthetic",
+   "contested": false,
+   "note": "duplicate of: dispensary near me (plural; Google shares volume across close variants)"
+  },
+  {
+   "id": "g030",
+   "gcid": "gcid:cannabis_store",
+   "lane": "keyword",
+   "term": "cannabis cures cancer",
+   "local_pack": null,
+   "expected": {
+    "decision": "exclude",
+    "reason_code": "compliance_conflict",
+    "to_lane": null
+   },
+   "family_hint": null,
+   "provenance": "synthetic",
+   "contested": false,
+   "note": "prohibited phrase: 'cures cancer'"
+  },
+  {
+   "id": "g031",
+   "gcid": "gcid:cannabis_store",
+   "lane": "keyword",
+   "term": "dispensary no id required",
+   "local_pack": null,
+   "expected": {
+    "decision": "exclude",
+    "reason_code": "compliance_conflict",
+    "to_lane": null
+   },
+   "family_hint": null,
+   "provenance": "synthetic",
+   "contested": false,
+   "note": "prohibited phrase: 'no id required'"
+  },
+  {
+   "id": "g032",
+   "gcid": "gcid:cannabis_store",
+   "lane": "keyword",
+   "term": "smoke shop near me",
+   "local_pack": null,
+   "expected": {
+    "decision": "exclude",
+    "reason_code": "other_category",
+    "to_lane": null
+   },
+   "family_hint": null,
+   "provenance": "synthetic",
+   "contested": false,
+   "note": "Smoke shop (gcid:smoke_shop)"
+  },
+  {
+   "id": "g033",
+   "gcid": "gcid:cannabis_store",
+   "lane": "audience",
+   "term": "cannabis growers",
+   "local_pack": null,
+   "expected": {
+    "decision": "exclude",
+    "reason_code": "different_audience",
+    "to_lane": null
+   },
+   "family_hint": null,
+   "provenance": "synthetic",
+   "contested": true,
+   "note": "cultivators are suppliers, not retail customers"
+  },
+  {
+   "id": "g034",
+   "gcid": "gcid:cannabis_store",
+   "lane": "audience",
+   "term": "medical cannabis patients",
+   "local_pack": null,
+   "expected": {
+    "decision": "keep",
+    "reason_code": "keep",
+    "to_lane": null
+   },
+   "family_hint": null,
+   "provenance": "synthetic",
+   "contested": false,
+   "note": ""
+  },
+  {
+   "id": "g035",
+   "gcid": "gcid:cannabis_store",
+   "lane": "product_service",
+   "term": "pre-rolls",
+   "local_pack": null,
+   "expected": {
+    "decision": "keep",
+    "reason_code": "keep",
+    "to_lane": null
+   },
+   "family_hint": "cannabis_retail:pre_rolls",
+   "provenance": "synthetic",
+   "contested": false,
+   "note": ""
+  },
+  {
+   "id": "g036",
+   "gcid": "gcid:cannabis_store",
+   "lane": "product_service",
+   "term": "cannabis delivery",
+   "local_pack": null,
+   "expected": {
+    "decision": "keep",
+    "reason_code": "keep",
+    "to_lane": null
+   },
+   "family_hint": "cannabis_retail:delivery",
+   "provenance": "synthetic",
+   "contested": false,
+   "note": ""
+  },
+  {
+   "id": "g037",
+   "gcid": "gcid:mexican_restaurant",
+   "lane": "keyword",
+   "term": "mexican restaurant near me",
+   "local_pack": null,
+   "expected": {
+    "decision": "keep",
+    "reason_code": "keep",
+    "to_lane": null
+   },
+   "family_hint": "mexican_food:restaurant_dining",
+   "provenance": "observed",
+   "contested": false,
+   "note": ""
+  },
+  {
+   "id": "g038",
+   "gcid": "gcid:mexican_restaurant",
+   "lane": "keyword",
+   "term": "mexican food near me",
+   "local_pack": null,
+   "expected": {
+    "decision": "keep",
+    "reason_code": "keep",
+    "to_lane": null
+   },
+   "family_hint": "mexican_food:restaurant_dining",
+   "provenance": "observed",
+   "contested": false,
+   "note": ""
+  },
+  {
+   "id": "g039",
+   "gcid": "gcid:mexican_restaurant",
+   "lane": "keyword",
+   "term": "tacos near me",
+   "local_pack": null,
+   "expected": {
+    "decision": "keep",
+    "reason_code": "keep",
+    "to_lane": null
+   },
+   "family_hint": "mexican_food:tacos",
+   "provenance": "observed",
+   "contested": false,
+   "note": "Kept although taco_restaurant is a sibling: taco terms share the map pack (one pool)."
+  },
+  {
+   "id": "g040",
+   "gcid": "gcid:mexican_restaurant",
+   "lane": "keyword",
+   "term": "taqueria near me",
+   "local_pack": null,
+   "expected": {
+    "decision": "keep",
+    "reason_code": "keep",
+    "to_lane": null
+   },
+   "family_hint": "mexican_food:taqueria_taco_truck",
+   "provenance": "observed",
+   "contested": false,
+   "note": "Kept although taco_restaurant is a sibling: taco terms share the map pack (one pool)."
+  },
+  {
+   "id": "g041",
+   "gcid": "gcid:mexican_restaurant",
+   "lane": "keyword",
+   "term": "burrito near me",
+   "local_pack": null,
+   "expected": {
+    "decision": "keep",
+    "reason_code": "keep",
+    "to_lane": null
+   },
+   "family_hint": "mexican_food:burritos",
+   "provenance": "observed",
+   "contested": false,
+   "note": ""
+  },
+  {
+   "id": "g042",
+   "gcid": "gcid:mexican_restaurant",
+   "lane": "keyword",
+   "term": "taco truck near me",
+   "local_pack": null,
+   "expected": {
+    "decision": "keep",
+    "reason_code": "keep",
+    "to_lane": null
+   },
+   "family_hint": "mexican_food:taqueria_taco_truck",
+   "provenance": "observed",
+   "contested": false,
+   "note": "Kept although taco_restaurant is a sibling: taco terms share the map pack (one pool)."
+  },
+  {
+   "id": "g043",
+   "gcid": "gcid:mexican_restaurant",
+   "lane": "keyword",
+   "term": "birria tacos near me",
+   "local_pack": null,
+   "expected": {
+    "decision": "keep",
+    "reason_code": "keep",
+    "to_lane": null
+   },
+   "family_hint": "mexican_food:birria",
+   "provenance": "observed",
+   "contested": false,
+   "note": ""
+  },
+  {
+   "id": "g044",
+   "gcid": "gcid:mexican_restaurant",
+   "lane": "keyword",
+   "term": "best mexican food near me",
+   "local_pack": null,
+   "expected": {
+    "decision": "keep",
+    "reason_code": "keep",
+    "to_lane": null
+   },
+   "family_hint": "mexican_food:restaurant_dining",
+   "provenance": "observed",
+   "contested": false,
+   "note": "Kept with 'best' as a qualifier; 'best' becomes a tag, never a family."
+  },
+  {
+   "id": "g045",
+   "gcid": "gcid:mexican_restaurant",
+   "lane": "keyword",
+   "term": "mexican food delivery near me",
+   "local_pack": null,
+   "expected": {
+    "decision": "keep",
+    "reason_code": "keep",
+    "to_lane": null
+   },
+   "family_hint": "mexican_food:delivery_takeout",
+   "provenance": "observed",
+   "contested": false,
+   "note": ""
+  },
+  {
+   "id": "g046",
+   "gcid": "gcid:mexican_restaurant",
+   "lane": "keyword",
+   "term": "mexican happy hour near me",
+   "local_pack": null,
+   "expected": {
+    "decision": "keep",
+    "reason_code": "keep",
+    "to_lane": null
+   },
+   "family_hint": "mexican_food:happy_hour",
+   "provenance": "observed",
+   "contested": false,
+   "note": ""
+  },
+  {
+   "id": "g047",
+   "gcid": "gcid:mexican_restaurant",
+   "lane": "keyword",
+   "term": "quesadilla near me",
+   "local_pack": null,
+   "expected": {
+    "decision": "keep",
+    "reason_code": "keep",
+    "to_lane": null
+   },
+   "family_hint": "mexican_food:quesadillas",
+   "provenance": "observed",
+   "contested": false,
+   "note": ""
+  },
+  {
+   "id": "g048",
+   "gcid": "gcid:mexican_restaurant",
+   "lane": "keyword",
+   "term": "margaritas near me",
+   "local_pack": null,
+   "expected": {
+    "decision": "keep",
+    "reason_code": "keep",
+    "to_lane": null
+   },
+   "family_hint": "mexican_food:margaritas_drinks",
+   "provenance": "observed",
+   "contested": false,
+   "note": ""
+  },
+  {
+   "id": "g049",
+   "gcid": "gcid:mexican_restaurant",
+   "lane": "keyword",
+   "term": "taco bell",
+   "local_pack": null,
+   "expected": {
+    "decision": "exclude",
+    "reason_code": "brand_or_business_name",
+    "to_lane": null
+   },
+   "family_hint": null,
+   "provenance": "observed",
+   "contested": false,
+   "note": "chain: Taco Bell"
+  },
+  {
+   "id": "g050",
+   "gcid": "gcid:mexican_restaurant",
+   "lane": "keyword",
+   "term": "chipotle mexican grill near me",
+   "local_pack": null,
+   "expected": {
+    "decision": "exclude",
+    "reason_code": "brand_or_business_name",
+    "to_lane": null
+   },
+   "family_hint": null,
+   "provenance": "observed",
+   "contested": false,
+   "note": "chain: Chipotle"
+  },
+  {
+   "id": "g051",
+   "gcid": "gcid:mexican_restaurant",
+   "lane": "keyword",
+   "term": "qdoba mexican eats",
+   "local_pack": null,
+   "expected": {
+    "decision": "exclude",
+    "reason_code": "brand_or_business_name",
+    "to_lane": null
+   },
+   "family_hint": null,
+   "provenance": "observed",
+   "contested": false,
+   "note": "chain: Qdoba"
+  },
+  {
+   "id": "g052",
+   "gcid": "gcid:mexican_restaurant",
+   "lane": "keyword",
+   "term": "del taco",
+   "local_pack": null,
+   "expected": {
+    "decision": "exclude",
+    "reason_code": "brand_or_business_name",
+    "to_lane": null
+   },
+   "family_hint": null,
+   "provenance": "observed",
+   "contested": false,
+   "note": "chain: Del Taco"
+  },
+  {
+   "id": "g053",
+   "gcid": "gcid:mexican_restaurant",
+   "lane": "keyword",
+   "term": "torchy's tacos",
+   "local_pack": null,
+   "expected": {
+    "decision": "exclude",
+    "reason_code": "brand_or_business_name",
+    "to_lane": null
+   },
+   "family_hint": null,
+   "provenance": "observed",
+   "contested": false,
+   "note": "chain: Torchy's Tacos"
+  },
+  {
+   "id": "g054",
+   "gcid": "gcid:mexican_restaurant",
+   "lane": "keyword",
+   "term": "king taco",
+   "local_pack": null,
+   "expected": {
+    "decision": "exclude",
+    "reason_code": "brand_or_business_name",
+    "to_lane": null
+   },
+   "family_hint": null,
+   "provenance": "observed",
+   "contested": false,
+   "note": "regional chain: King Taco"
+  },
+  {
+   "id": "g055",
+   "gcid": "gcid:mexican_restaurant",
+   "lane": "keyword",
+   "term": "on the border mexican restaurant",
+   "local_pack": null,
+   "expected": {
+    "decision": "exclude",
+    "reason_code": "brand_or_business_name",
+    "to_lane": null
+   },
+   "family_hint": null,
+   "provenance": "observed",
+   "contested": false,
+   "note": "chain: On The Border"
+  },
+  {
+   "id": "g056",
+   "gcid": "gcid:mexican_restaurant",
+   "lane": "keyword",
+   "term": "margarita recipies",
+   "local_pack": null,
+   "expected": {
+    "decision": "move",
+    "reason_code": "informational",
+    "to_lane": "topic"
+   },
+   "family_hint": null,
+   "provenance": "observed",
+   "contested": false,
+   "note": "recipe/DIY intent (typo preserved from source)"
+  },
+  {
+   "id": "g057",
+   "gcid": "gcid:mexican_restaurant",
+   "lane": "keyword",
+   "term": "tacos seasoning",
+   "local_pack": null,
+   "expected": {
+    "decision": "move",
+    "reason_code": "informational",
+    "to_lane": "topic"
+   },
+   "family_hint": null,
+   "provenance": "observed",
+   "contested": false,
+   "note": "recipe/DIY intent; at most a topic, never a keyword"
+  },
+  {
+   "id": "g058",
+   "gcid": "gcid:mexican_restaurant",
+   "lane": "keyword",
+   "term": "mexican seasoning for tacos",
+   "local_pack": null,
+   "expected": {
+    "decision": "move",
+    "reason_code": "informational",
+    "to_lane": "topic"
+   },
+   "family_hint": null,
+   "provenance": "observed",
+   "contested": false,
+   "note": "recipe/DIY intent"
+  },
+  {
+   "id": "g059",
+   "gcid": "gcid:mexican_restaurant",
+   "lane": "keyword",
+   "term": "catacombs in paris france",
+   "local_pack": null,
+   "expected": {
+    "decision": "exclude",
+    "reason_code": "ambiguous_meaning",
+    "to_lane": null
+   },
+   "family_hint": null,
+   "provenance": "observed",
+   "contested": false,
+   "note": "contains the letters 'tacos' (ca-TACO-mbs); a Paris tourist site"
+  },
+  {
+   "id": "g060",
+   "gcid": "gcid:mexican_restaurant",
+   "lane": "keyword",
+   "term": "margarita hargitay",
+   "local_pack": null,
+   "expected": {
+    "decision": "exclude",
+    "reason_code": "ambiguous_meaning",
+    "to_lane": null
+   },
+   "family_hint": null,
+   "provenance": "observed",
+   "contested": false,
+   "note": "a person's name, not the drink"
+  },
+  {
+   "id": "g061",
+   "gcid": "gcid:mexican_restaurant",
+   "lane": "keyword",
+   "term": "margaritaville",
+   "local_pack": null,
+   "expected": {
+    "decision": "exclude",
+    "reason_code": "ambiguous_meaning",
+    "to_lane": null
+   },
+   "family_hint": null,
+   "provenance": "observed",
+   "contested": false,
+   "note": "song / resort-and-restaurant brand; not the drink"
+  },
+  {
+   "id": "g062",
+   "gcid": "gcid:mexican_restaurant",
+   "lane": "keyword",
+   "term": "mexican grocery store near me",
+   "local_pack": null,
+   "expected": {
+    "decision": "exclude",
+    "reason_code": "other_category",
+    "to_lane": null
+   },
+   "family_hint": null,
+   "provenance": "observed",
+   "contested": false,
+   "note": "Mexican grocery store (gcid:mexican_grocery_store)"
+  },
+  {
+   "id": "g063",
+   "gcid": "gcid:mexican_restaurant",
+   "lane": "keyword",
+   "term": "mexican bakery near me",
+   "local_pack": null,
+   "expected": {
+    "decision": "exclude",
+    "reason_code": "other_category",
+    "to_lane": null
+   },
+   "family_hint": null,
+   "provenance": "observed",
+   "contested": false,
+   "note": "Bakery (gcid:bakery): panaderia"
+  },
+  {
+   "id": "g064",
+   "gcid": "gcid:mexican_restaurant",
+   "lane": "keyword",
+   "term": "chuck roast for birria",
+   "local_pack": null,
+   "expected": {
+    "decision": "move",
+    "reason_code": "informational",
+    "to_lane": "topic"
+   },
+   "family_hint": null,
+   "provenance": "observed",
+   "contested": false,
+   "note": "recipe/ingredient intent"
+  },
+  {
+   "id": "g065",
+   "gcid": "gcid:mexican_restaurant",
+   "lane": "keyword",
+   "term": "mexican resturant near me",
+   "local_pack": null,
+   "expected": {
+    "decision": "exclude",
+    "reason_code": "duplicate_meaning",
+    "to_lane": null
+   },
+   "family_hint": null,
+   "provenance": "synthetic",
+   "contested": false,
+   "note": "duplicate of: mexican restaurant near me (typo; shared volume)"
+  },
+  {
+   "id": "g066",
+   "gcid": "gcid:mexican_restaurant",
+   "lane": "keyword",
+   "term": "taco bell jobs",
+   "local_pack": null,
+   "expected": {
+    "decision": "exclude",
+    "reason_code": "brand_or_business_name",
+    "to_lane": null
+   },
+   "family_hint": null,
+   "provenance": "synthetic",
+   "contested": false,
+   "note": "brand decides it (also a job search)"
+  },
+  {
+   "id": "g067",
+   "gcid": "gcid:mexican_restaurant",
+   "lane": "keyword",
+   "term": "mexican restaurant jobs near me",
+   "local_pack": null,
+   "expected": {
+    "decision": "exclude",
+    "reason_code": "different_audience",
+    "to_lane": null
+   },
+   "family_hint": null,
+   "provenance": "synthetic",
+   "contested": false,
+   "note": "job seekers"
+  },
+  {
+   "id": "g068",
+   "gcid": "gcid:mexican_restaurant",
+   "lane": "keyword",
+   "term": "mexican restaurants in phoenix az",
+   "local_pack": null,
+   "expected": {
+    "decision": "exclude",
+    "reason_code": "geo_specific",
+    "to_lane": null
+   },
+   "family_hint": null,
+   "provenance": "synthetic",
+   "contested": false,
+   "note": "template: mexican restaurants in {city} {state}"
+  },
+  {
+   "id": "g069",
+   "gcid": "gcid:mexican_restaurant",
+   "lane": "tag",
+   "term": "dog friendly patio",
+   "local_pack": null,
+   "expected": {
+    "decision": "keep",
+    "reason_code": "keep",
+    "to_lane": null
+   },
+   "family_hint": null,
+   "provenance": "synthetic",
+   "contested": false,
+   "note": ""
+  },
+  {
+   "id": "g070",
+   "gcid": "gcid:mexican_restaurant",
+   "lane": "tag",
+   "term": "family owned",
+   "local_pack": null,
+   "expected": {
+    "decision": "keep",
+    "reason_code": "keep",
+    "to_lane": null
+   },
+   "family_hint": null,
+   "provenance": "synthetic",
+   "contested": false,
+   "note": ""
+  },
+  {
+   "id": "g071",
+   "gcid": "gcid:mexican_restaurant",
+   "lane": "specialization",
+   "term": "birria",
+   "local_pack": null,
+   "expected": {
+    "decision": "keep",
+    "reason_code": "keep",
+    "to_lane": null
+   },
+   "family_hint": "mexican_food:birria",
+   "provenance": "synthetic",
+   "contested": false,
+   "note": ""
+  },
+  {
+   "id": "g072",
+   "gcid": "gcid:mexican_restaurant",
+   "lane": "specialization",
+   "term": "tex-mex fajitas",
+   "local_pack": null,
+   "expected": {
+    "decision": "keep",
+    "reason_code": "keep",
+    "to_lane": null
+   },
+   "family_hint": "mexican_food:restaurant_dining",
+   "provenance": "synthetic",
+   "contested": true,
+   "note": "Tex-Mex shares the pack; kept."
+  },
+  {
+   "id": "g073",
+   "gcid": "gcid:mexican_restaurant",
+   "lane": "review_aspect",
+   "term": "salsa quality",
+   "local_pack": null,
+   "expected": {
+    "decision": "keep",
+    "reason_code": "keep",
+    "to_lane": null
+   },
+   "family_hint": null,
+   "provenance": "synthetic",
+   "contested": false,
+   "note": ""
+  },
+  {
+   "id": "g074",
+   "gcid": "gcid:mexican_restaurant",
+   "lane": "review_aspect",
+   "term": "wait time",
+   "local_pack": null,
+   "expected": {
+    "decision": "keep",
+    "reason_code": "keep",
+    "to_lane": null
+   },
+   "family_hint": null,
+   "provenance": "synthetic",
+   "contested": false,
+   "note": ""
+  },
+  {
+   "id": "g075",
+   "gcid": "gcid:mexican_restaurant",
+   "lane": "keyword",
+   "term": "mexican restaurant with a ceiling fan",
+   "local_pack": null,
+   "expected": {
+    "decision": "exclude",
+    "reason_code": "amenity_attribute",
+    "to_lane": null
+   },
+   "family_hint": null,
+   "provenance": "synthetic",
+   "contested": false,
+   "note": "tag: ceiling fan (not a search)"
+  },
+  {
+   "id": "g076",
+   "gcid": "gcid:mexican_restaurant",
+   "lane": "modifier",
+   "term": "near me",
+   "local_pack": null,
+   "expected": {
+    "decision": "keep",
+    "reason_code": "keep",
+    "to_lane": null
+   },
+   "family_hint": null,
+   "provenance": "synthetic",
+   "contested": false,
+   "note": "Modifiers are tags, never families."
+  },
+  {
+   "id": "g077",
+   "gcid": "gcid:mexican_restaurant",
+   "lane": "modifier",
+   "term": "open late",
+   "local_pack": null,
+   "expected": {
+    "decision": "keep",
+    "reason_code": "keep",
+    "to_lane": null
+   },
+   "family_hint": null,
+   "provenance": "synthetic",
+   "contested": false,
+   "note": ""
+  },
+  {
+   "id": "g078",
+   "gcid": "gcid:real_estate_agents",
+   "lane": "keyword",
+   "term": "real estate agent near me",
+   "local_pack": null,
+   "expected": {
+    "decision": "keep",
+    "reason_code": "keep",
+    "to_lane": null
+   },
+   "family_hint": "real_estate:residential_agent",
+   "provenance": "observed",
+   "contested": false,
+   "note": ""
+  },
+  {
+   "id": "g079",
+   "gcid": "gcid:real_estate_agents",
+   "lane": "keyword",
+   "term": "realtor near me",
+   "local_pack": null,
+   "expected": {
+    "decision": "keep",
+    "reason_code": "keep",
+    "to_lane": null
+   },
+   "family_hint": "real_estate:residential_agent",
+   "provenance": "observed",
+   "contested": false,
+   "note": ""
+  },
+  {
+   "id": "g080",
+   "gcid": "gcid:real_estate_agents",
+   "lane": "keyword",
+   "term": "best realtor near me",
+   "local_pack": null,
+   "expected": {
+    "decision": "keep",
+    "reason_code": "keep",
+    "to_lane": null
+   },
+   "family_hint": "real_estate:residential_agent",
+   "provenance": "observed",
+   "contested": false,
+   "note": ""
+  },
+  {
+   "id": "g081",
+   "gcid": "gcid:real_estate_agents",
+   "lane": "keyword",
+   "term": "top realtors near me",
+   "local_pack": null,
+   "expected": {
+    "decision": "keep",
+    "reason_code": "keep",
+    "to_lane": null
+   },
+   "family_hint": "real_estate:residential_agent",
+   "provenance": "observed",
+   "contested": false,
+   "note": ""
+  },
+  {
+   "id": "g082",
+   "gcid": "gcid:real_estate_agents",
+   "lane": "keyword",
+   "term": "buyers agent",
+   "local_pack": null,
+   "expected": {
+    "decision": "keep",
+    "reason_code": "keep",
+    "to_lane": null
+   },
+   "family_hint": "real_estate:buyer_representation",
+   "provenance": "observed",
+   "contested": false,
+   "note": ""
+  },
+  {
+   "id": "g083",
+   "gcid": "gcid:real_estate_agents",
+   "lane": "keyword",
+   "term": "listing agent",
+   "local_pack": null,
+   "expected": {
+    "decision": "keep",
+    "reason_code": "keep",
+    "to_lane": null
+   },
+   "family_hint": "real_estate:seller_representation",
+   "provenance": "observed",
+   "contested": false,
+   "note": ""
+  },
+  {
+   "id": "g084",
+   "gcid": "gcid:real_estate_agents",
+   "lane": "keyword",
+   "term": "find a realtor",
+   "local_pack": null,
+   "expected": {
+    "decision": "keep",
+    "reason_code": "keep",
+    "to_lane": null
+   },
+   "family_hint": "real_estate:residential_agent",
+   "provenance": "observed",
+   "contested": false,
+   "note": ""
+  },
+  {
+   "id": "g085",
+   "gcid": "gcid:real_estate_agents",
+   "lane": "keyword",
+   "term": "real estate near me",
+   "local_pack": true,
+   "expected": {
+    "decision": "keep",
+    "reason_code": "keep",
+    "to_lane": null
+   },
+   "family_hint": "real_estate:residential_agent",
+   "provenance": "observed",
+   "contested": false,
+   "note": ""
+  },
+  {
+   "id": "g086",
+   "gcid": "gcid:real_estate_agents",
+   "lane": "keyword",
+   "term": "real estate broker near me",
+   "local_pack": null,
+   "expected": {
+    "decision": "keep",
+    "reason_code": "keep",
+    "to_lane": null
+   },
+   "family_hint": "real_estate:brokerage",
+   "provenance": "observed",
+   "contested": false,
+   "note": ""
+  },
+  {
+   "id": "g087",
+   "gcid": "gcid:real_estate_agents",
+   "lane": "keyword",
+   "term": "houses for sale near me",
+   "local_pack": true,
+   "expected": {
+    "decision": "keep",
+    "reason_code": "keep",
+    "to_lane": null
+   },
+   "family_hint": "real_estate:local_listings",
+   "provenance": "observed",
+   "contested": false,
+   "note": "Kept: the head term 'homes for sale' is portal-owned, but this near-me form triggers a map pack of real estate businesses (local_pack=Y)."
+  },
+  {
+   "id": "g088",
+   "gcid": "gcid:real_estate_agents",
+   "lane": "keyword",
+   "term": "realtor",
+   "local_pack": null,
+   "expected": {
+    "decision": "keep",
+    "reason_code": "navigational_brand",
+    "to_lane": null
+   },
+   "family_hint": "real_estate:residential_agent",
+   "provenance": "observed",
+   "contested": false,
+   "note": "Keep, flag volume_inflated_by_navigation: mostly people looking for Realtor.com."
+  },
+  {
+   "id": "g089",
+   "gcid": "gcid:real_estate_agents",
+   "lane": "keyword",
+   "term": "real estate brokerage near me",
+   "local_pack": true,
+   "expected": {
+    "decision": "keep",
+    "reason_code": "keep",
+    "to_lane": null
+   },
+   "family_hint": "real_estate:brokerage",
+   "provenance": "observed",
+   "contested": false,
+   "note": "Boundary rule: agent, agency and broker terms compete for the same pack (one pool); do not exclude because it sounds like a company."
+  },
+  {
+   "id": "g090",
+   "gcid": "gcid:real_estate_agents",
+   "lane": "keyword",
+   "term": "realtor agencies near me",
+   "local_pack": true,
+   "expected": {
+    "decision": "keep",
+    "reason_code": "keep",
+    "to_lane": null
+   },
+   "family_hint": "real_estate:brokerage",
+   "provenance": "observed",
+   "contested": false,
+   "note": "Boundary rule: same pool as agents; keep."
+  },
+  {
+   "id": "g091",
+   "gcid": "gcid:real_estate_agents",
+   "lane": "keyword",
+   "term": "homes for sale",
+   "local_pack": false,
+   "expected": {
+    "decision": "exclude",
+    "reason_code": "portal_owned",
+    "to_lane": null
+   },
+   "family_hint": null,
+   "provenance": "observed",
+   "contested": false,
+   "note": "listing portals own it; no map pack (local_pack=N)"
+  },
+  {
+   "id": "g092",
+   "gcid": "gcid:real_estate_agents",
+   "lane": "keyword",
+   "term": "real estate search",
+   "local_pack": false,
+   "expected": {
+    "decision": "exclude",
+    "reason_code": "portal_owned",
+    "to_lane": null
+   },
+   "family_hint": null,
+   "provenance": "observed",
+   "contested": true,
+   "note": "listing portals own it; local_pack=N assumed (not supplied with the observation)"
+  },
+  {
+   "id": "g093",
+   "gcid": "gcid:real_estate_agents",
+   "lane": "keyword",
+   "term": "coldwell banker realtor",
+   "local_pack": null,
+   "expected": {
+    "decision": "exclude",
+    "reason_code": "brand_or_business_name",
+    "to_lane": null
+   },
+   "family_hint": null,
+   "provenance": "observed",
+   "contested": false,
+   "note": "franchise brand: Coldwell Banker"
+  },
+  {
+   "id": "g094",
+   "gcid": "gcid:real_estate_agents",
+   "lane": "keyword",
+   "term": "long and foster realtor",
+   "local_pack": null,
+   "expected": {
+    "decision": "exclude",
+    "reason_code": "brand_or_business_name",
+    "to_lane": null
+   },
+   "family_hint": null,
+   "provenance": "observed",
+   "contested": false,
+   "note": "regional brokerage: Long & Foster"
+  },
+  {
+   "id": "g095",
+   "gcid": "gcid:real_estate_agents",
+   "lane": "keyword",
+   "term": "rpr realtor property resource",
+   "local_pack": null,
+   "expected": {
+    "decision": "exclude",
+    "reason_code": "brand_or_business_name",
+    "to_lane": null
+   },
+   "family_hint": null,
+   "provenance": "observed",
+   "contested": false,
+   "note": "NAR product: RPR (Realtors Property Resource)"
+  },
+  {
+   "id": "g096",
+   "gcid": "gcid:real_estate_agents",
+   "lane": "keyword",
+   "term": "realtor estate lawyer",
+   "local_pack": null,
+   "expected": {
+    "decision": "exclude",
+    "reason_code": "other_category",
+    "to_lane": null
+   },
+   "family_hint": null,
+   "provenance": "observed",
+   "contested": false,
+   "note": "Real estate attorney (gcid:real_estate_attorney)"
+  },
+  {
+   "id": "g097",
+   "gcid": "gcid:real_estate_agents",
+   "lane": "keyword",
+   "term": "realtor lawyer near me",
+   "local_pack": null,
+   "expected": {
+    "decision": "exclude",
+    "reason_code": "other_category",
+    "to_lane": null
+   },
+   "family_hint": null,
+   "provenance": "observed",
+   "contested": false,
+   "note": "Real estate attorney (gcid:real_estate_attorney)"
+  },
+  {
+   "id": "g098",
+   "gcid": "gcid:real_estate_agents",
+   "lane": "keyword",
+   "term": "realtor course online",
+   "local_pack": null,
+   "expected": {
+    "decision": "exclude",
+    "reason_code": "different_audience",
+    "to_lane": null
+   },
+   "family_hint": null,
+   "provenance": "observed",
+   "contested": false,
+   "note": "people studying for a licence"
+  },
+  {
+   "id": "g099",
+   "gcid": "gcid:real_estate_agents",
+   "lane": "keyword",
+   "term": "real estate license requirements",
+   "local_pack": null,
+   "expected": {
+    "decision": "exclude",
+    "reason_code": "different_audience",
+    "to_lane": null
+   },
+   "family_hint": null,
+   "provenance": "observed",
+   "contested": false,
+   "note": "people seeking a licence"
+  },
+  {
+   "id": "g100",
+   "gcid": "gcid:real_estate_agents",
+   "lane": "keyword",
+   "term": "realtor classes",
+   "local_pack": null,
+   "expected": {
+    "decision": "exclude",
+    "reason_code": "different_audience",
+    "to_lane": null
+   },
+   "family_hint": null,
+   "provenance": "observed",
+   "contested": false,
+   "note": "people studying for a licence"
+  },
+  {
+   "id": "g101",
+   "gcid": "gcid:real_estate_agents",
+   "lane": "keyword",
+   "term": "rental estate agents",
+   "local_pack": null,
+   "expected": {
+    "decision": "exclude",
+    "reason_code": "other_category",
+    "to_lane": null
+   },
+   "family_hint": null,
+   "provenance": "observed",
+   "contested": false,
+   "note": "Real estate rental agency (gcid:real_estate_rental_agency)"
+  },
+  {
+   "id": "g102",
+   "gcid": "gcid:real_estate_agents",
+   "lane": "keyword",
+   "term": "estate agents",
+   "local_pack": null,
+   "expected": {
+    "decision": "exclude",
+    "reason_code": "off_intent",
+    "to_lane": null
+   },
+   "family_hint": null,
+   "provenance": "observed",
+   "contested": true,
+   "note": "UK usage of the word: a different market (no dedicated reason code; see README open question 2)"
+  },
+  {
+   "id": "g103",
+   "gcid": "gcid:real_estate_agents",
+   "lane": "keyword",
+   "term": "estate agents near me",
+   "local_pack": null,
+   "expected": {
+    "decision": "exclude",
+    "reason_code": "off_intent",
+    "to_lane": null
+   },
+   "family_hint": null,
+   "provenance": "observed",
+   "contested": true,
+   "note": "UK usage of the word: a different market"
+  },
+  {
+   "id": "g104",
+   "gcid": "gcid:real_estate_agents",
+   "lane": "keyword",
+   "term": "commercial real estate agent",
+   "local_pack": null,
+   "expected": {
+    "decision": "exclude",
+    "reason_code": "other_category",
+    "to_lane": null
+   },
+   "family_hint": null,
+   "provenance": "observed",
+   "contested": false,
+   "note": "Commercial real estate agency (gcid:commercial_real_estate_agency)"
+  },
+  {
+   "id": "g105",
+   "gcid": "gcid:real_estate_agents",
+   "lane": "keyword",
+   "term": "sell my house as is for cash",
+   "local_pack": null,
+   "expected": {
+    "decision": "exclude",
+    "reason_code": "other_category",
+    "to_lane": null
+   },
+   "family_hint": null,
+   "provenance": "observed",
+   "contested": true,
+   "note": "cash home buyers: no exact GBP category; nearest gcid:real_estate_agency does not serve it"
+  },
+  {
+   "id": "g106",
+   "gcid": "gcid:real_estate_agents",
+   "lane": "keyword",
+   "term": "cash home buyers",
+   "local_pack": null,
+   "expected": {
+    "decision": "exclude",
+    "reason_code": "other_category",
+    "to_lane": null
+   },
+   "family_hint": null,
+   "provenance": "observed",
+   "contested": true,
+   "note": "cash home buyers: no exact GBP category (investor-buyers, not agents)"
+  },
+  {
+   "id": "g107",
+   "gcid": "gcid:real_estate_agents",
+   "lane": "keyword",
+   "term": "realtors santa fe",
+   "local_pack": null,
+   "expected": {
+    "decision": "exclude",
+    "reason_code": "geo_specific",
+    "to_lane": null
+   },
+   "family_hint": null,
+   "provenance": "observed",
+   "contested": false,
+   "note": "template: realtors {city}"
+  },
+  {
+   "id": "g108",
+   "gcid": "gcid:real_estate_agents",
+   "lane": "keyword",
+   "term": "augusta realtors",
+   "local_pack": null,
+   "expected": {
+    "decision": "exclude",
+    "reason_code": "geo_specific",
+    "to_lane": null
+   },
+   "family_hint": null,
+   "provenance": "observed",
+   "contested": false,
+   "note": "template: realtors {city}"
+  },
+  {
+   "id": "g109",
+   "gcid": "gcid:real_estate_agents",
+   "lane": "keyword",
+   "term": "yuma realtors",
+   "local_pack": null,
+   "expected": {
+    "decision": "exclude",
+    "reason_code": "geo_specific",
+    "to_lane": null
+   },
+   "family_hint": null,
+   "provenance": "observed",
+   "contested": false,
+   "note": "template: realtors {city}"
+  },
+  {
+   "id": "g110",
+   "gcid": "gcid:real_estate_agents",
+   "lane": "keyword",
+   "term": "prayer to sell my house",
+   "local_pack": null,
+   "expected": {
+    "decision": "exclude",
+    "reason_code": "off_intent",
+    "to_lane": null
+   },
+   "family_hint": null,
+   "provenance": "observed",
+   "contested": false,
+   "note": "religious intent"
+  },
+  {
+   "id": "g111",
+   "gcid": "gcid:real_estate_agents",
+   "lane": "keyword",
+   "term": "realtor logo",
+   "local_pack": null,
+   "expected": {
+    "decision": "exclude",
+    "reason_code": "off_intent",
+    "to_lane": null
+   },
+   "family_hint": null,
+   "provenance": "observed",
+   "contested": false,
+   "note": "design/graphics intent"
+  },
+  {
+   "id": "g112",
+   "gcid": "gcid:real_estate_agents",
+   "lane": "keyword",
+   "term": "realtors near me",
+   "local_pack": null,
+   "expected": {
+    "decision": "exclude",
+    "reason_code": "duplicate_meaning",
+    "to_lane": null
+   },
+   "family_hint": null,
+   "provenance": "synthetic",
+   "contested": false,
+   "note": "duplicate of: realtor near me (plural; Google shares volume across close variants)"
+  },
+  {
+   "id": "g113",
+   "gcid": "gcid:real_estate_agents",
+   "lane": "keyword",
+   "term": "safe neighborhoods near me",
+   "local_pack": null,
+   "expected": {
+    "decision": "exclude",
+    "reason_code": "compliance_conflict",
+    "to_lane": null
+   },
+   "family_hint": null,
+   "provenance": "synthetic",
+   "contested": false,
+   "note": "Fair Housing steering; prohibited phrase: 'safe neighborhood'"
+  },
+  {
+   "id": "g114",
+   "gcid": "gcid:real_estate_agents",
+   "lane": "keyword",
+   "term": "guaranteed sale realtor",
+   "local_pack": null,
+   "expected": {
+    "decision": "exclude",
+    "reason_code": "compliance_conflict",
+    "to_lane": null
+   },
+   "family_hint": null,
+   "provenance": "synthetic",
+   "contested": false,
+   "note": "prohibited phrase: 'guaranteed sale'"
+  },
+  {
+   "id": "g115",
+   "gcid": "gcid:real_estate_agents",
+   "lane": "keyword",
+   "term": "zillow",
+   "local_pack": null,
+   "expected": {
+    "decision": "exclude",
+    "reason_code": "brand_or_business_name",
+    "to_lane": null
+   },
+   "family_hint": null,
+   "provenance": "synthetic",
+   "contested": false,
+   "note": "portal brand; navigational"
+  },
+  {
+   "id": "g116",
+   "gcid": "gcid:real_estate_agents",
+   "lane": "keyword",
+   "term": "real estate agent salary",
+   "local_pack": null,
+   "expected": {
+    "decision": "exclude",
+    "reason_code": "different_audience",
+    "to_lane": null
+   },
+   "family_hint": null,
+   "provenance": "synthetic",
+   "contested": false,
+   "note": "career researchers"
+  },
+  {
+   "id": "g117",
+   "gcid": "gcid:real_estate_agents",
+   "lane": "keyword",
+   "term": "property management companies near me",
+   "local_pack": null,
+   "expected": {
+    "decision": "exclude",
+    "reason_code": "other_category",
+    "to_lane": null
+   },
+   "family_hint": null,
+   "provenance": "synthetic",
+   "contested": false,
+   "note": "Property management company (gcid:property_management_company)"
+  },
+  {
+   "id": "g118",
+   "gcid": "gcid:real_estate_agents",
+   "lane": "keyword",
+   "term": "mortgage lenders near me",
+   "local_pack": null,
+   "expected": {
+    "decision": "exclude",
+    "reason_code": "other_category",
+    "to_lane": null
+   },
+   "family_hint": null,
+   "provenance": "synthetic",
+   "contested": false,
+   "note": "Mortgage lender (gcid:mortgage_lender)"
+  },
+  {
+   "id": "g119",
+   "gcid": "gcid:real_estate_agents",
+   "lane": "keyword",
+   "term": "how to become a realtor",
+   "local_pack": null,
+   "expected": {
+    "decision": "exclude",
+    "reason_code": "different_audience",
+    "to_lane": null
+   },
+   "family_hint": null,
+   "provenance": "synthetic",
+   "contested": false,
+   "note": "aspiring agents; precedence: different_audience before informational"
+  },
+  {
+   "id": "g120",
+   "gcid": "gcid:real_estate_agents",
+   "lane": "question",
+   "term": "what does a listing agent do",
+   "local_pack": null,
+   "expected": {
+    "decision": "keep",
+    "reason_code": "keep",
+    "to_lane": null
+   },
+   "family_hint": "real_estate:seller_representation",
+   "provenance": "synthetic",
+   "contested": false,
+   "note": ""
+  },
+  {
+   "id": "g121",
+   "gcid": "gcid:real_estate_agents",
+   "lane": "question",
+   "term": "how much commission does a realtor make",
+   "local_pack": null,
+   "expected": {
+    "decision": "keep",
+    "reason_code": "keep",
+    "to_lane": null
+   },
+   "family_hint": "real_estate:residential_agent",
+   "provenance": "synthetic",
+   "contested": false,
+   "note": ""
+  },
+  {
+   "id": "g122",
+   "gcid": "gcid:real_estate_agents",
+   "lane": "question",
+   "term": "how to become a realtor",
+   "local_pack": null,
+   "expected": {
+    "decision": "exclude",
+    "reason_code": "different_audience",
+    "to_lane": null
+   },
+   "family_hint": null,
+   "provenance": "synthetic",
+   "contested": false,
+   "note": "aspiring agents, not home buyers or sellers"
+  },
+  {
+   "id": "g123",
+   "gcid": "gcid:real_estate_agents",
+   "lane": "content_title",
+   "term": "How to Choose a Realtor in {city}",
+   "local_pack": null,
+   "expected": {
+    "decision": "keep",
+    "reason_code": "keep",
+    "to_lane": null
+   },
+   "family_hint": "real_estate:residential_agent",
+   "provenance": "synthetic",
+   "contested": false,
+   "note": ""
+  },
+  {
+   "id": "g124",
+   "gcid": "gcid:real_estate_agents",
+   "lane": "content_title",
+   "term": "10 Questions to Ask Before Hiring a Buyer's Agent",
+   "local_pack": null,
+   "expected": {
+    "decision": "keep",
+    "reason_code": "keep",
+    "to_lane": null
+   },
+   "family_hint": "real_estate:buyer_representation",
+   "provenance": "synthetic",
+   "contested": false,
+   "note": ""
+  },
+  {
+   "id": "g125",
+   "gcid": "gcid:real_estate_agents",
+   "lane": "industry_term",
+   "term": "MLS",
+   "local_pack": null,
+   "expected": {
+    "decision": "keep",
+    "reason_code": "keep",
+    "to_lane": null
+   },
+   "family_hint": "real_estate:residential_agent",
+   "provenance": "synthetic",
+   "contested": false,
+   "note": ""
+  },
+  {
+   "id": "g126",
+   "gcid": "gcid:real_estate_agents",
+   "lane": "industry_term",
+   "term": "earnest money",
+   "local_pack": null,
+   "expected": {
+    "decision": "keep",
+    "reason_code": "keep",
+    "to_lane": null
+   },
+   "family_hint": "real_estate:buyer_representation",
+   "provenance": "synthetic",
+   "contested": false,
+   "note": ""
+  },
+  {
+   "id": "g127",
+   "gcid": "gcid:real_estate_agents",
+   "lane": "industry_term",
+   "term": "FSBO",
+   "local_pack": null,
+   "expected": {
+    "decision": "keep",
+    "reason_code": "keep",
+    "to_lane": null
+   },
+   "family_hint": "real_estate:seller_representation",
+   "provenance": "synthetic",
+   "contested": false,
+   "note": ""
+  },
+  {
+   "id": "g128",
+   "gcid": "gcid:real_estate_agents",
+   "lane": "industry_term",
+   "term": "zillow",
+   "local_pack": null,
+   "expected": {
+    "decision": "exclude",
+    "reason_code": "brand_or_business_name",
+    "to_lane": null
+   },
+   "family_hint": null,
+   "provenance": "synthetic",
+   "contested": false,
+   "note": "portal brand, not trade vocabulary"
+  },
+  {
+   "id": "g129",
+   "gcid": "gcid:real_estate_agents",
+   "lane": "alias",
+   "term": "realtor",
+   "local_pack": null,
+   "expected": {
+    "decision": "keep",
+    "reason_code": "keep",
+    "to_lane": null
+   },
+   "family_hint": "real_estate:residential_agent",
+   "provenance": "synthetic",
+   "contested": false,
+   "note": "Alias kept (trademark term for NAR members; used generically by consumers)."
+  },
+  {
+   "id": "g130",
+   "gcid": "gcid:real_estate_agents",
+   "lane": "alias",
+   "term": "real estate salesperson",
+   "local_pack": null,
+   "expected": {
+    "decision": "keep",
+    "reason_code": "keep",
+    "to_lane": null
+   },
+   "family_hint": "real_estate:residential_agent",
+   "provenance": "synthetic",
+   "contested": false,
+   "note": ""
+  },
+  {
+   "id": "g131",
+   "gcid": "gcid:real_estate_agents",
+   "lane": "alias",
+   "term": "estate agent",
+   "local_pack": null,
+   "expected": {
+    "decision": "exclude",
+    "reason_code": "off_intent",
+    "to_lane": null
+   },
+   "family_hint": null,
+   "provenance": "synthetic",
+   "contested": true,
+   "note": "UK/Commonwealth usage: a different market"
+  },
+  {
+   "id": "g132",
+   "gcid": "gcid:real_estate_agents",
+   "lane": "profession_title",
+   "term": "buyer's agent",
+   "local_pack": null,
+   "expected": {
+    "decision": "keep",
+    "reason_code": "keep",
+    "to_lane": null
+   },
+   "family_hint": "real_estate:buyer_representation",
+   "provenance": "synthetic",
+   "contested": false,
+   "note": ""
+  },
+  {
+   "id": "g133",
+   "gcid": "gcid:real_estate_agents",
+   "lane": "profession_title",
+   "term": "listing agent",
+   "local_pack": null,
+   "expected": {
+    "decision": "keep",
+    "reason_code": "keep",
+    "to_lane": null
+   },
+   "family_hint": "real_estate:seller_representation",
+   "provenance": "synthetic",
+   "contested": false,
+   "note": ""
+  },
+  {
+   "id": "g134",
+   "gcid": "gcid:real_estate_agents",
+   "lane": "profession_title",
+   "term": "real estate broker",
+   "local_pack": null,
+   "expected": {
+    "decision": "keep",
+    "reason_code": "keep",
+    "to_lane": null
+   },
+   "family_hint": "real_estate:brokerage",
+   "provenance": "synthetic",
+   "contested": false,
+   "note": "Domain-qualified: 'broker' here is real_estate:brokerage, not a bare 'broker'."
+  },
+  {
+   "id": "g135",
+   "gcid": "gcid:real_estate_agents",
+   "lane": "profession_title",
+   "term": "property manager",
+   "local_pack": null,
+   "expected": {
+    "decision": "exclude",
+    "reason_code": "other_category",
+    "to_lane": null
+   },
+   "family_hint": null,
+   "provenance": "synthetic",
+   "contested": false,
+   "note": "Property management company (gcid:property_management_company)"
+  },
+  {
+   "id": "g136",
+   "gcid": "gcid:real_estate_agents",
+   "lane": "profession_title",
+   "term": "real estate attorney",
+   "local_pack": null,
+   "expected": {
+    "decision": "exclude",
+    "reason_code": "other_category",
+    "to_lane": null
+   },
+   "family_hint": null,
+   "provenance": "synthetic",
+   "contested": false,
+   "note": "Real estate attorney (gcid:real_estate_attorney)"
+  },
+  {
+   "id": "g137",
+   "gcid": "gcid:real_estate_agents",
+   "lane": "profession_title",
+   "term": "loan officer",
+   "local_pack": null,
+   "expected": {
+    "decision": "exclude",
+    "reason_code": "other_category",
+    "to_lane": null
+   },
+   "family_hint": null,
+   "provenance": "synthetic",
+   "contested": false,
+   "note": "Mortgage lender (gcid:mortgage_lender)"
+  },
+  {
+   "id": "g138",
+   "gcid": "gcid:real_estate_agents",
+   "lane": "specialization",
+   "term": "luxury homes",
+   "local_pack": null,
+   "expected": {
+    "decision": "keep",
+    "reason_code": "keep",
+    "to_lane": null
+   },
+   "family_hint": "real_estate:luxury_homes",
+   "provenance": "synthetic",
+   "contested": false,
+   "note": ""
+  },
+  {
+   "id": "g139",
+   "gcid": "gcid:real_estate_agents",
+   "lane": "specialization",
+   "term": "short sale",
+   "local_pack": null,
+   "expected": {
+    "decision": "keep",
+    "reason_code": "keep",
+    "to_lane": null
+   },
+   "family_hint": "real_estate:foreclosure_short_sale",
+   "provenance": "synthetic",
+   "contested": false,
+   "note": ""
+  },
+  {
+   "id": "g140",
+   "gcid": "gcid:real_estate_agents",
+   "lane": "specialization",
+   "term": "probate sales",
+   "local_pack": null,
+   "expected": {
+    "decision": "keep",
+    "reason_code": "keep",
+    "to_lane": null
+   },
+   "family_hint": "real_estate:probate_estate_sales",
+   "provenance": "synthetic",
+   "contested": false,
+   "note": ""
+  },
+  {
+   "id": "g141",
+   "gcid": "gcid:real_estate_agents",
+   "lane": "specialization",
+   "term": "commercial leasing",
+   "local_pack": null,
+   "expected": {
+    "decision": "exclude",
+    "reason_code": "other_category",
+    "to_lane": null
+   },
+   "family_hint": null,
+   "provenance": "synthetic",
+   "contested": false,
+   "note": "Commercial real estate agency (gcid:commercial_real_estate_agency)"
+  },
+  {
+   "id": "g142",
+   "gcid": "gcid:real_estate_agents",
+   "lane": "audience",
+   "term": "first-time home buyers",
+   "local_pack": null,
+   "expected": {
+    "decision": "keep",
+    "reason_code": "keep",
+    "to_lane": null
+   },
+   "family_hint": null,
+   "provenance": "synthetic",
+   "contested": false,
+   "note": ""
+  },
+  {
+   "id": "g143",
+   "gcid": "gcid:real_estate_agents",
+   "lane": "audience",
+   "term": "military relocation",
+   "local_pack": null,
+   "expected": {
+    "decision": "keep",
+    "reason_code": "keep",
+    "to_lane": null
+   },
+   "family_hint": null,
+   "provenance": "synthetic",
+   "contested": false,
+   "note": ""
+  },
+  {
+   "id": "g144",
+   "gcid": "gcid:real_estate_agents",
+   "lane": "audience",
+   "term": "newly licensed agents",
+   "local_pack": null,
+   "expected": {
+    "decision": "exclude",
+    "reason_code": "different_audience",
+    "to_lane": null
+   },
+   "family_hint": null,
+   "provenance": "synthetic",
+   "contested": false,
+   "note": "agents seeking a brokerage are not this category's customers"
+  },
+  {
+   "id": "g145",
+   "gcid": "gcid:real_estate_agents",
+   "lane": "modifier",
+   "term": "best",
+   "local_pack": null,
+   "expected": {
+    "decision": "keep",
+    "reason_code": "keep",
+    "to_lane": null
+   },
+   "family_hint": null,
+   "provenance": "synthetic",
+   "contested": false,
+   "note": "Modifier: a tag, never a family."
+  },
+  {
+   "id": "g146",
+   "gcid": "gcid:real_estate_agents",
+   "lane": "modifier",
+   "term": "top rated",
+   "local_pack": null,
+   "expected": {
+    "decision": "keep",
+    "reason_code": "keep",
+    "to_lane": null
+   },
+   "family_hint": null,
+   "provenance": "synthetic",
+   "contested": false,
+   "note": ""
+  },
+  {
+   "id": "g147",
+   "gcid": "gcid:real_estate_agents",
+   "lane": "tag",
+   "term": "veteran owned",
+   "local_pack": null,
+   "expected": {
+    "decision": "keep",
+    "reason_code": "keep",
+    "to_lane": null
+   },
+   "family_hint": null,
+   "provenance": "synthetic",
+   "contested": false,
+   "note": ""
+  },
+  {
+   "id": "g148",
+   "gcid": "gcid:real_estate_agents",
+   "lane": "topic",
+   "term": "Fair Housing rights for buyers",
+   "local_pack": null,
+   "expected": {
+    "decision": "keep",
+    "reason_code": "keep",
+    "to_lane": null
+   },
+   "family_hint": "real_estate:buyer_representation",
+   "provenance": "synthetic",
+   "contested": true,
+   "note": ""
+  },
+  {
+   "id": "g149",
+   "gcid": "gcid:mortgage_lender",
+   "lane": "product_service",
+   "term": "VA streamline refinance",
+   "local_pack": null,
+   "expected": {
+    "decision": "keep",
+    "reason_code": "keep",
+    "to_lane": null
+   },
+   "family_hint": "mortgage:va_loan",
+   "provenance": "synthetic",
+   "contested": false,
+   "note": "VA IRRRL (Interest Rate Reduction Refinance Loan): a real VA loan product."
+  },
+  {
+   "id": "g150",
+   "gcid": "gcid:mortgage_lender",
+   "lane": "product_service",
+   "term": "IRRRL",
+   "local_pack": null,
+   "expected": {
+    "decision": "keep",
+    "reason_code": "keep",
+    "to_lane": null
+   },
+   "family_hint": "mortgage:va_loan",
+   "provenance": "synthetic",
+   "contested": false,
+   "note": "Acronym of the VA streamline refinance; unambiguous in a mortgage category."
+  },
+  {
+   "id": "g151",
+   "gcid": "gcid:mortgage_lender",
+   "lane": "product_service",
+   "term": "jumbo loan",
+   "local_pack": null,
+   "expected": {
+    "decision": "keep",
+    "reason_code": "keep",
+    "to_lane": null
+   },
+   "family_hint": "mortgage:jumbo_loan",
+   "provenance": "synthetic",
+   "contested": false,
+   "note": ""
+  },
+  {
+   "id": "g152",
+   "gcid": "gcid:mortgage_lender",
+   "lane": "product_service",
+   "term": "FHA 203k rehab loan",
+   "local_pack": null,
+   "expected": {
+    "decision": "keep",
+    "reason_code": "keep",
+    "to_lane": null
+   },
+   "family_hint": "mortgage:fha_loan",
+   "provenance": "synthetic",
+   "contested": false,
+   "note": ""
+  },
+  {
+   "id": "g153",
+   "gcid": "gcid:mortgage_lender",
+   "lane": "product_service",
+   "term": "cash-out refinance",
+   "local_pack": null,
+   "expected": {
+    "decision": "keep",
+    "reason_code": "keep",
+    "to_lane": null
+   },
+   "family_hint": "mortgage:refinance",
+   "provenance": "synthetic",
+   "contested": false,
+   "note": ""
+  },
+  {
+   "id": "g154",
+   "gcid": "gcid:mortgage_lender",
+   "lane": "product_service",
+   "term": "HELOC",
+   "local_pack": null,
+   "expected": {
+    "decision": "keep",
+    "reason_code": "keep",
+    "to_lane": null
+   },
+   "family_hint": "mortgage:home_equity",
+   "provenance": "synthetic",
+   "contested": false,
+   "note": ""
+  },
+  {
+   "id": "g155",
+   "gcid": "gcid:mortgage_lender",
+   "lane": "product_service",
+   "term": "USDA rural development loan",
+   "local_pack": null,
+   "expected": {
+    "decision": "keep",
+    "reason_code": "keep",
+    "to_lane": null
+   },
+   "family_hint": "mortgage:usda_loan",
+   "provenance": "synthetic",
+   "contested": false,
+   "note": ""
+  },
+  {
+   "id": "g156",
+   "gcid": "gcid:mortgage_lender",
+   "lane": "keyword",
+   "term": "mortgage lenders near me",
+   "local_pack": true,
+   "expected": {
+    "decision": "keep",
+    "reason_code": "keep",
+    "to_lane": null
+   },
+   "family_hint": "mortgage:lender_search",
+   "provenance": "synthetic",
+   "contested": false,
+   "note": ""
+  },
+  {
+   "id": "g157",
+   "gcid": "gcid:mortgage_lender",
+   "lane": "keyword",
+   "term": "mortgage calculator",
+   "local_pack": false,
+   "expected": {
+    "decision": "exclude",
+    "reason_code": "portal_owned",
+    "to_lane": null
+   },
+   "family_hint": null,
+   "provenance": "synthetic",
+   "contested": true,
+   "note": "calculator/rate portals own it; local_pack=N assumed"
+  },
+  {
+   "id": "g158",
+   "gcid": "gcid:mortgage_lender",
+   "lane": "keyword",
+   "term": "mortgage rates today",
+   "local_pack": false,
+   "expected": {
+    "decision": "exclude",
+    "reason_code": "portal_owned",
+    "to_lane": null
+   },
+   "family_hint": null,
+   "provenance": "synthetic",
+   "contested": true,
+   "note": "rate portals and publishers own it; local_pack=N assumed"
+  },
+  {
+   "id": "g159",
+   "gcid": "gcid:mortgage_lender",
+   "lane": "keyword",
+   "term": "guaranteed mortgage approval",
+   "local_pack": null,
+   "expected": {
+    "decision": "exclude",
+    "reason_code": "compliance_conflict",
+    "to_lane": null
+   },
+   "family_hint": null,
+   "provenance": "synthetic",
+   "contested": false,
+   "note": "prohibited phrase: 'guaranteed approval'"
+  },
+  {
+   "id": "g160",
+   "gcid": "gcid:mortgage_lender",
+   "lane": "keyword",
+   "term": "no credit check mortgage",
+   "local_pack": null,
+   "expected": {
+    "decision": "exclude",
+    "reason_code": "compliance_conflict",
+    "to_lane": null
+   },
+   "family_hint": null,
+   "provenance": "synthetic",
+   "contested": false,
+   "note": "prohibited phrase: 'no credit check required'"
+  },
+  {
+   "id": "g161",
+   "gcid": "gcid:mortgage_lender",
+   "lane": "keyword",
+   "term": "rocket mortgage",
+   "local_pack": null,
+   "expected": {
+    "decision": "exclude",
+    "reason_code": "brand_or_business_name",
+    "to_lane": null
+   },
+   "family_hint": null,
+   "provenance": "synthetic",
+   "contested": false,
+   "note": "national lender brand"
+  },
+  {
+   "id": "g162",
+   "gcid": "gcid:mortgage_lender",
+   "lane": "keyword",
+   "term": "mortgage loan officer jobs",
+   "local_pack": null,
+   "expected": {
+    "decision": "exclude",
+    "reason_code": "different_audience",
+    "to_lane": null
+   },
+   "family_hint": null,
+   "provenance": "synthetic",
+   "contested": false,
+   "note": "job seekers"
+  },
+  {
+   "id": "g163",
+   "gcid": "gcid:mortgage_lender",
+   "lane": "keyword",
+   "term": "nmls license requirements",
+   "local_pack": null,
+   "expected": {
+    "decision": "exclude",
+    "reason_code": "different_audience",
+    "to_lane": null
+   },
+   "family_hint": null,
+   "provenance": "synthetic",
+   "contested": false,
+   "note": "aspiring loan originators"
+  },
+  {
+   "id": "g164",
+   "gcid": "gcid:mortgage_lender",
+   "lane": "keyword",
+   "term": "mortgage lenders in austin tx",
+   "local_pack": null,
+   "expected": {
+    "decision": "exclude",
+    "reason_code": "geo_specific",
+    "to_lane": null
+   },
+   "family_hint": null,
+   "provenance": "synthetic",
+   "contested": false,
+   "note": "template: mortgage lenders in {city} {state}"
+  },
+  {
+   "id": "g165",
+   "gcid": "gcid:mortgage_lender",
+   "lane": "keyword",
+   "term": "how does a heloc work",
+   "local_pack": null,
+   "expected": {
+    "decision": "move",
+    "reason_code": "informational",
+    "to_lane": "question"
+   },
+   "family_hint": null,
+   "provenance": "synthetic",
+   "contested": false,
+   "note": "explainer intent"
+  },
+  {
+   "id": "g166",
+   "gcid": "gcid:mortgage_lender",
+   "lane": "keyword",
+   "term": "mortgage broker vs lender",
+   "local_pack": null,
+   "expected": {
+    "decision": "move",
+    "reason_code": "informational",
+    "to_lane": "topic"
+   },
+   "family_hint": null,
+   "provenance": "synthetic",
+   "contested": false,
+   "note": "comparison explainer"
+  },
+  {
+   "id": "g167",
+   "gcid": "gcid:mortgage_lender",
+   "lane": "modifier",
+   "term": "lowest rates guaranteed",
+   "local_pack": null,
+   "expected": {
+    "decision": "exclude",
+    "reason_code": "compliance_conflict",
+    "to_lane": null
+   },
+   "family_hint": null,
+   "provenance": "synthetic",
+   "contested": false,
+   "note": "prohibited phrase: 'lowest rates guaranteed'"
+  },
+  {
+   "id": "g168",
+   "gcid": "gcid:mortgage_lender",
+   "lane": "topic",
+   "term": "VA loan eligibility requirements",
+   "local_pack": null,
+   "expected": {
+    "decision": "keep",
+    "reason_code": "keep",
+    "to_lane": null
+   },
+   "family_hint": "mortgage:va_loan",
+   "provenance": "synthetic",
+   "contested": false,
+   "note": ""
+  },
+  {
+   "id": "g169",
+   "gcid": "gcid:mortgage_lender",
+   "lane": "topic",
+   "term": "Veterans Benefits in Austin, TX",
+   "local_pack": null,
+   "expected": {
+    "decision": "exclude",
+    "reason_code": "ambiguous_meaning",
+    "to_lane": null
+   },
+   "family_hint": null,
+   "provenance": "synthetic",
+   "contested": true,
+   "note": "not the VA home loan concept: general VA benefits (disability, healthcare, GI Bill); overlap on veterans/VA is lexical",
+   "rationale": "A topic judged 'Veterans Benefits in Austin, TX' must NOT be matched to the VA home loan concept. 'Veterans benefits' is overwhelmingly disability compensation, healthcare, the GI Bill and burial benefits administered by the Department of Veterans Affairs (a different category: gcid:veterans_affairs_department); the VA home loan is one narrow slice. The overlap on the words 'veterans'/'VA' is lexical, not semantic. Templating the city ({city}, {state}) would not fix it: the meaning is wrong, not the place. Contrast 'VA home loan benefits in Austin, TX', which names the loan and is only geo_specific. Rule for the judge and for any concept matcher downstream: match on the category's own product concepts (VA loan, IRRRL, certificate of eligibility), never on a shared acronym or on a head word like 'veterans'."
+  },
+  {
+   "id": "g170",
+   "gcid": "gcid:mortgage_lender",
+   "lane": "topic",
+   "term": "VA home loan benefits in Austin, TX",
+   "local_pack": null,
+   "expected": {
+    "decision": "exclude",
+    "reason_code": "geo_specific",
+    "to_lane": null
+   },
+   "family_hint": null,
+   "provenance": "synthetic",
+   "contested": false,
+   "note": "template: VA home loan benefits in {city}, {state} (the loan concept is right; the place is the variable)"
+  },
+  {
+   "id": "g171",
+   "gcid": "gcid:mortgage_lender",
+   "lane": "topic",
+   "term": "veterans disability compensation rates",
+   "local_pack": null,
+   "expected": {
+    "decision": "exclude",
+    "reason_code": "other_category",
+    "to_lane": null
+   },
+   "family_hint": null,
+   "provenance": "synthetic",
+   "contested": false,
+   "note": "Veterans affairs department (gcid:veterans_affairs_department)"
+  },
+  {
+   "id": "g172",
+   "gcid": "gcid:mortgage_broker",
+   "lane": "keyword",
+   "term": "mortgage broker near me",
+   "local_pack": null,
+   "expected": {
+    "decision": "keep",
+    "reason_code": "keep",
+    "to_lane": null
+   },
+   "family_hint": "mortgage:broker_services",
+   "provenance": "synthetic",
+   "contested": false,
+   "note": "Family is mortgage:broker_services; a bare 'broker' family would collide with real estate, insurance and investing."
+  },
+  {
+   "id": "g173",
+   "gcid": "gcid:mortgage_broker",
+   "lane": "keyword",
+   "term": "mortgage broker",
+   "local_pack": null,
+   "expected": {
+    "decision": "keep",
+    "reason_code": "keep",
+    "to_lane": null
+   },
+   "family_hint": "mortgage:broker_services",
+   "provenance": "synthetic",
+   "contested": false,
+   "note": ""
+  },
+  {
+   "id": "g174",
+   "gcid": "gcid:mortgage_broker",
+   "lane": "keyword",
+   "term": "stock broker near me",
+   "local_pack": null,
+   "expected": {
+    "decision": "exclude",
+    "reason_code": "ambiguous_meaning",
+    "to_lane": null
+   },
+   "family_hint": null,
+   "provenance": "synthetic",
+   "contested": false,
+   "note": "'broker' = securities broker (Stock broker, gcid:stock_broker)"
+  },
+  {
+   "id": "g175",
+   "gcid": "gcid:mortgage_broker",
+   "lane": "keyword",
+   "term": "insurance broker near me",
+   "local_pack": null,
+   "expected": {
+    "decision": "exclude",
+    "reason_code": "other_category",
+    "to_lane": null
+   },
+   "family_hint": null,
+   "provenance": "synthetic",
+   "contested": false,
+   "note": "Insurance broker (gcid:insurance_broker)"
+  },
+  {
+   "id": "g176",
+   "gcid": "gcid:mortgage_broker",
+   "lane": "keyword",
+   "term": "customs broker near me",
+   "local_pack": null,
+   "expected": {
+    "decision": "exclude",
+    "reason_code": "ambiguous_meaning",
+    "to_lane": null
+   },
+   "family_hint": null,
+   "provenance": "synthetic",
+   "contested": false,
+   "note": "'broker' = customs clearance (gcid:customs_broker)"
+  },
+  {
+   "id": "g177",
+   "gcid": "gcid:mortgage_broker",
+   "lane": "profession_title",
+   "term": "mortgage loan originator",
+   "local_pack": null,
+   "expected": {
+    "decision": "keep",
+    "reason_code": "keep",
+    "to_lane": null
+   },
+   "family_hint": "mortgage:broker_services",
+   "provenance": "synthetic",
+   "contested": false,
+   "note": ""
+  },
+  {
+   "id": "g178",
+   "gcid": "gcid:mortgage_broker",
+   "lane": "profession_title",
+   "term": "real estate broker",
+   "local_pack": null,
+   "expected": {
+    "decision": "exclude",
+    "reason_code": "other_category",
+    "to_lane": null
+   },
+   "family_hint": null,
+   "provenance": "synthetic",
+   "contested": false,
+   "note": "Real estate agent (gcid:real_estate_agents)"
+  },
+  {
+   "id": "g179",
+   "gcid": "gcid:plumber",
+   "lane": "keyword",
+   "term": "plumber near me",
+   "local_pack": true,
+   "expected": {
+    "decision": "keep",
+    "reason_code": "keep",
+    "to_lane": null
+   },
+   "family_hint": "plumbing:general_plumbing",
+   "provenance": "synthetic",
+   "contested": false,
+   "note": ""
+  },
+  {
+   "id": "g180",
+   "gcid": "gcid:plumber",
+   "lane": "keyword",
+   "term": "emergency plumber near me",
+   "local_pack": null,
+   "expected": {
+    "decision": "keep",
+    "reason_code": "keep",
+    "to_lane": null
+   },
+   "family_hint": "plumbing:emergency_repair",
+   "provenance": "synthetic",
+   "contested": false,
+   "note": "'emergency' here is a service family (emergency_repair), not a bare modifier."
+  },
+  {
+   "id": "g181",
+   "gcid": "gcid:plumber",
+   "lane": "keyword",
+   "term": "clogged drain",
+   "local_pack": null,
+   "expected": {
+    "decision": "keep",
+    "reason_code": "keep",
+    "to_lane": null
+   },
+   "family_hint": "plumbing:drain_cleaning",
+   "provenance": "synthetic",
+   "contested": false,
+   "note": ""
+  },
+  {
+   "id": "g182",
+   "gcid": "gcid:plumber",
+   "lane": "keyword",
+   "term": "water heater installation",
+   "local_pack": null,
+   "expected": {
+    "decision": "keep",
+    "reason_code": "keep",
+    "to_lane": null
+   },
+   "family_hint": "plumbing:water_heater",
+   "provenance": "synthetic",
+   "contested": false,
+   "note": ""
+  },
+  {
+   "id": "g183",
+   "gcid": "gcid:plumber",
+   "lane": "keyword",
+   "term": "plumbers near me",
+   "local_pack": null,
+   "expected": {
+    "decision": "exclude",
+    "reason_code": "duplicate_meaning",
+    "to_lane": null
+   },
+   "family_hint": null,
+   "provenance": "synthetic",
+   "contested": false,
+   "note": "duplicate of: plumber near me (plural; shared volume)"
+  },
+  {
+   "id": "g184",
+   "gcid": "gcid:plumber",
+   "lane": "keyword",
+   "term": "roto-rooter near me",
+   "local_pack": null,
+   "expected": {
+    "decision": "exclude",
+    "reason_code": "brand_or_business_name",
+    "to_lane": null
+   },
+   "family_hint": null,
+   "provenance": "synthetic",
+   "contested": false,
+   "note": "national chain: Roto-Rooter"
+  },
+  {
+   "id": "g185",
+   "gcid": "gcid:plumber",
+   "lane": "keyword",
+   "term": "plumber salary",
+   "local_pack": null,
+   "expected": {
+    "decision": "exclude",
+    "reason_code": "different_audience",
+    "to_lane": null
+   },
+   "family_hint": null,
+   "provenance": "synthetic",
+   "contested": false,
+   "note": "career researchers"
+  },
+  {
+   "id": "g186",
+   "gcid": "gcid:plumber",
+   "lane": "keyword",
+   "term": "plumbing jobs near me",
+   "local_pack": null,
+   "expected": {
+    "decision": "exclude",
+    "reason_code": "different_audience",
+    "to_lane": null
+   },
+   "family_hint": null,
+   "provenance": "synthetic",
+   "contested": false,
+   "note": "job seekers"
+  },
+  {
+   "id": "g187",
+   "gcid": "gcid:plumber",
+   "lane": "keyword",
+   "term": "mario plumber",
+   "local_pack": null,
+   "expected": {
+    "decision": "exclude",
+    "reason_code": "ambiguous_meaning",
+    "to_lane": null
+   },
+   "family_hint": null,
+   "provenance": "synthetic",
+   "contested": false,
+   "note": "video-game character"
+  },
+  {
+   "id": "g188",
+   "gcid": "gcid:plumber",
+   "lane": "keyword",
+   "term": "plumbers in dallas tx",
+   "local_pack": null,
+   "expected": {
+    "decision": "exclude",
+    "reason_code": "geo_specific",
+    "to_lane": null
+   },
+   "family_hint": null,
+   "provenance": "synthetic",
+   "contested": false,
+   "note": "template: plumbers in {city} {state}"
+  },
+  {
+   "id": "g189",
+   "gcid": "gcid:plumber",
+   "lane": "keyword",
+   "term": "plumbing supply store near me",
+   "local_pack": null,
+   "expected": {
+    "decision": "exclude",
+    "reason_code": "other_category",
+    "to_lane": null
+   },
+   "family_hint": null,
+   "provenance": "synthetic",
+   "contested": false,
+   "note": "Plumbing supply store (gcid:plumbing_supply_store)"
+  },
+  {
+   "id": "g190",
+   "gcid": "gcid:plumber",
+   "lane": "keyword",
+   "term": "how to fix a leaky faucet",
+   "local_pack": null,
+   "expected": {
+    "decision": "move",
+    "reason_code": "informational",
+    "to_lane": "question"
+   },
+   "family_hint": null,
+   "provenance": "synthetic",
+   "contested": false,
+   "note": "DIY intent"
+  },
+  {
+   "id": "g191",
+   "gcid": "gcid:plumber",
+   "lane": "keyword",
+   "term": "plumber licensed and insured guaranteed",
+   "local_pack": null,
+   "expected": {
+    "decision": "exclude",
+    "reason_code": "compliance_conflict",
+    "to_lane": null
+   },
+   "family_hint": null,
+   "provenance": "synthetic",
+   "contested": false,
+   "note": "prohibited phrase: 'licensed and insured guaranteed'"
+  },
+  {
+   "id": "g192",
+   "gcid": "gcid:plumber",
+   "lane": "modifier",
+   "term": "24 hour",
+   "local_pack": null,
+   "expected": {
+    "decision": "keep",
+    "reason_code": "keep",
+    "to_lane": null
+   },
+   "family_hint": null,
+   "provenance": "synthetic",
+   "contested": false,
+   "note": ""
+  },
+  {
+   "id": "g193",
+   "gcid": "gcid:plumber",
+   "lane": "modifier",
+   "term": "same day",
+   "local_pack": null,
+   "expected": {
+    "decision": "keep",
+    "reason_code": "keep",
+    "to_lane": null
+   },
+   "family_hint": null,
+   "provenance": "synthetic",
+   "contested": false,
+   "note": ""
+  },
+  {
+   "id": "g194",
+   "gcid": "gcid:plumber",
+   "lane": "review_aspect",
+   "term": "showed up on time",
+   "local_pack": null,
+   "expected": {
+    "decision": "keep",
+    "reason_code": "keep",
+    "to_lane": null
+   },
+   "family_hint": null,
+   "provenance": "synthetic",
+   "contested": false,
+   "note": ""
+  },
+  {
+   "id": "g195",
+   "gcid": "gcid:plumber",
+   "lane": "review_aspect",
+   "term": "upfront pricing",
+   "local_pack": null,
+   "expected": {
+    "decision": "keep",
+    "reason_code": "keep",
+    "to_lane": null
+   },
+   "family_hint": null,
+   "provenance": "synthetic",
+   "contested": false,
+   "note": ""
+  },
+  {
+   "id": "g196",
+   "gcid": "gcid:dentist",
+   "lane": "keyword",
+   "term": "dentist near me",
+   "local_pack": true,
+   "expected": {
+    "decision": "keep",
+    "reason_code": "keep",
+    "to_lane": null
+   },
+   "family_hint": "dentistry:general_dentistry",
+   "provenance": "synthetic",
+   "contested": false,
+   "note": ""
+  },
+  {
+   "id": "g197",
+   "gcid": "gcid:dentist",
+   "lane": "keyword",
+   "term": "emergency dentist near me",
+   "local_pack": null,
+   "expected": {
+    "decision": "keep",
+    "reason_code": "keep",
+    "to_lane": null
+   },
+   "family_hint": "dentistry:emergency_dental",
+   "provenance": "synthetic",
+   "contested": false,
+   "note": ""
+  },
+  {
+   "id": "g198",
+   "gcid": "gcid:dentist",
+   "lane": "keyword",
+   "term": "teeth whitening near me",
+   "local_pack": null,
+   "expected": {
+    "decision": "keep",
+    "reason_code": "keep",
+    "to_lane": null
+   },
+   "family_hint": "dentistry:teeth_whitening",
+   "provenance": "synthetic",
+   "contested": false,
+   "note": ""
+  },
+  {
+   "id": "g199",
+   "gcid": "gcid:dentist",
+   "lane": "keyword",
+   "term": "dental implants",
+   "local_pack": null,
+   "expected": {
+    "decision": "keep",
+    "reason_code": "keep",
+    "to_lane": null
+   },
+   "family_hint": "dentistry:implants",
+   "provenance": "synthetic",
+   "contested": false,
+   "note": ""
+  },
+  {
+   "id": "g200",
+   "gcid": "gcid:dentist",
+   "lane": "keyword",
+   "term": "pediatric dentist near me",
+   "local_pack": null,
+   "expected": {
+    "decision": "exclude",
+    "reason_code": "other_category",
+    "to_lane": null
+   },
+   "family_hint": null,
+   "provenance": "synthetic",
+   "contested": true,
+   "note": "Pediatric dentist (gcid:pediatric_dentist); as a service a general dentist may list it in the specialization lane (README open question 5)"
+  },
+  {
+   "id": "g201",
+   "gcid": "gcid:dentist",
+   "lane": "keyword",
+   "term": "dentist salary",
+   "local_pack": null,
+   "expected": {
+    "decision": "exclude",
+    "reason_code": "different_audience",
+    "to_lane": null
+   },
+   "family_hint": null,
+   "provenance": "synthetic",
+   "contested": false,
+   "note": "career researchers"
+  },
+  {
+   "id": "g202",
+   "gcid": "gcid:dentist",
+   "lane": "keyword",
+   "term": "colgate",
+   "local_pack": null,
+   "expected": {
+    "decision": "exclude",
+    "reason_code": "brand_or_business_name",
+    "to_lane": null
+   },
+   "family_hint": null,
+   "provenance": "synthetic",
+   "contested": false,
+   "note": "consumer product brand"
+  },
+  {
+   "id": "g203",
+   "gcid": "gcid:dentist",
+   "lane": "keyword",
+   "term": "tooth fairy",
+   "local_pack": null,
+   "expected": {
+    "decision": "exclude",
+    "reason_code": "ambiguous_meaning",
+    "to_lane": null
+   },
+   "family_hint": null,
+   "provenance": "synthetic",
+   "contested": false,
+   "note": "folklore / children's character"
+  },
+  {
+   "id": "g204",
+   "gcid": "gcid:dentist",
+   "lane": "keyword",
+   "term": "dentist in houston",
+   "local_pack": null,
+   "expected": {
+    "decision": "exclude",
+    "reason_code": "geo_specific",
+    "to_lane": null
+   },
+   "family_hint": null,
+   "provenance": "synthetic",
+   "contested": false,
+   "note": "template: dentist in {city}"
+  },
+  {
+   "id": "g205",
+   "gcid": "gcid:dentist",
+   "lane": "keyword",
+   "term": "does insurance cover root canal",
+   "local_pack": null,
+   "expected": {
+    "decision": "move",
+    "reason_code": "informational",
+    "to_lane": "question"
+   },
+   "family_hint": null,
+   "provenance": "synthetic",
+   "contested": false,
+   "note": "coverage question"
+  },
+  {
+   "id": "g206",
+   "gcid": "gcid:dentist",
+   "lane": "keyword",
+   "term": "guaranteed painless dentist",
+   "local_pack": null,
+   "expected": {
+    "decision": "exclude",
+    "reason_code": "compliance_conflict",
+    "to_lane": null
+   },
+   "family_hint": null,
+   "provenance": "synthetic",
+   "contested": false,
+   "note": "prohibited phrase: 'painless guaranteed'"
+  },
+  {
+   "id": "g207",
+   "gcid": "gcid:dentist",
+   "lane": "review_aspect",
+   "term": "gentle",
+   "local_pack": null,
+   "expected": {
+    "decision": "keep",
+    "reason_code": "keep",
+    "to_lane": null
+   },
+   "family_hint": null,
+   "provenance": "synthetic",
+   "contested": false,
+   "note": ""
+  },
+  {
+   "id": "g208",
+   "gcid": "gcid:dentist",
+   "lane": "review_aspect",
+   "term": "wait time",
+   "local_pack": null,
+   "expected": {
+    "decision": "keep",
+    "reason_code": "keep",
+    "to_lane": null
+   },
+   "family_hint": null,
+   "provenance": "synthetic",
+   "contested": false,
+   "note": ""
+  },
+  {
+   "id": "g209",
+   "gcid": "gcid:dentist",
+   "lane": "specialization",
+   "term": "pediatric dentistry",
+   "local_pack": null,
+   "expected": {
+    "decision": "keep",
+    "reason_code": "keep",
+    "to_lane": null
+   },
+   "family_hint": "dentistry:general_dentistry",
+   "provenance": "synthetic",
+   "contested": true,
+   "note": "As a specialization a general practice may list it; contrast the keyword-lane row."
+  },
+  {
+   "id": "g210",
+   "gcid": "gcid:personal_injury_lawyer",
+   "lane": "keyword",
+   "term": "personal injury lawyer near me",
+   "local_pack": true,
+   "expected": {
+    "decision": "keep",
+    "reason_code": "keep",
+    "to_lane": null
+   },
+   "family_hint": "personal_injury:general_injury_claims",
+   "provenance": "synthetic",
+   "contested": false,
+   "note": ""
+  },
+  {
+   "id": "g211",
+   "gcid": "gcid:personal_injury_lawyer",
+   "lane": "keyword",
+   "term": "car accident lawyer near me",
+   "local_pack": null,
+   "expected": {
+    "decision": "keep",
+    "reason_code": "keep",
+    "to_lane": null
+   },
+   "family_hint": "personal_injury:car_accident",
+   "provenance": "synthetic",
+   "contested": false,
+   "note": ""
+  },
+  {
+   "id": "g212",
+   "gcid": "gcid:personal_injury_lawyer",
+   "lane": "keyword",
+   "term": "slip and fall attorney",
+   "local_pack": null,
+   "expected": {
+    "decision": "keep",
+    "reason_code": "keep",
+    "to_lane": null
+   },
+   "family_hint": "personal_injury:slip_and_fall",
+   "provenance": "synthetic",
+   "contested": false,
+   "note": ""
+  },
+  {
+   "id": "g213",
+   "gcid": "gcid:personal_injury_lawyer",
+   "lane": "keyword",
+   "term": "guaranteed settlement lawyer",
+   "local_pack": null,
+   "expected": {
+    "decision": "exclude",
+    "reason_code": "compliance_conflict",
+    "to_lane": null
+   },
+   "family_hint": null,
+   "provenance": "synthetic",
+   "contested": false,
+   "note": "prohibited phrase: 'guaranteed settlement'"
+  },
+  {
+   "id": "g214",
+   "gcid": "gcid:personal_injury_lawyer",
+   "lane": "keyword",
+   "term": "morgan and morgan",
+   "local_pack": null,
+   "expected": {
+    "decision": "exclude",
+    "reason_code": "brand_or_business_name",
+    "to_lane": null
+   },
+   "family_hint": null,
+   "provenance": "synthetic",
+   "contested": false,
+   "note": "national firm"
+  },
+  {
+   "id": "g215",
+   "gcid": "gcid:personal_injury_lawyer",
+   "lane": "keyword",
+   "term": "criminal defense lawyer near me",
+   "local_pack": null,
+   "expected": {
+    "decision": "exclude",
+    "reason_code": "other_category",
+    "to_lane": null
+   },
+   "family_hint": null,
+   "provenance": "synthetic",
+   "contested": false,
+   "note": "Criminal law attorney (gcid:criminal_law_attorney)"
+  },
+  {
+   "id": "g216",
+   "gcid": "gcid:personal_injury_lawyer",
+   "lane": "keyword",
+   "term": "personal injury lawyer jobs",
+   "local_pack": null,
+   "expected": {
+    "decision": "exclude",
+    "reason_code": "different_audience",
+    "to_lane": null
+   },
+   "family_hint": null,
+   "provenance": "synthetic",
+   "contested": false,
+   "note": "job seekers"
+  },
+  {
+   "id": "g217",
+   "gcid": "gcid:personal_injury_lawyer",
+   "lane": "keyword",
+   "term": "personal injury settlement calculator",
+   "local_pack": null,
+   "expected": {
+    "decision": "move",
+    "reason_code": "informational",
+    "to_lane": "topic"
+   },
+   "family_hint": null,
+   "provenance": "synthetic",
+   "contested": false,
+   "note": "calculator/explainer content"
+  },
+  {
+   "id": "g218",
+   "gcid": "gcid:personal_injury_lawyer",
+   "lane": "keyword",
+   "term": "statute of limitations for personal injury",
+   "local_pack": null,
+   "expected": {
+    "decision": "move",
+    "reason_code": "informational",
+    "to_lane": "question"
+   },
+   "family_hint": null,
+   "provenance": "synthetic",
+   "contested": false,
+   "note": "legal explainer"
+  },
+  {
+   "id": "g219",
+   "gcid": "gcid:personal_injury_lawyer",
+   "lane": "audience",
+   "term": "car accident victims",
+   "local_pack": null,
+   "expected": {
+    "decision": "keep",
+    "reason_code": "keep",
+    "to_lane": null
+   },
+   "family_hint": null,
+   "provenance": "synthetic",
+   "contested": false,
+   "note": ""
+  },
+  {
+   "id": "g220",
+   "gcid": "gcid:personal_injury_lawyer",
+   "lane": "audience",
+   "term": "insurance adjusters",
+   "local_pack": null,
+   "expected": {
+    "decision": "exclude",
+    "reason_code": "different_audience",
+    "to_lane": null
+   },
+   "family_hint": null,
+   "provenance": "synthetic",
+   "contested": false,
+   "note": "the adverse party, not a client"
+  },
+  {
+   "id": "g221",
+   "gcid": "gcid:coffee_shop",
+   "lane": "keyword",
+   "term": "coffee shop near me",
+   "local_pack": true,
+   "expected": {
+    "decision": "keep",
+    "reason_code": "keep",
+    "to_lane": null
+   },
+   "family_hint": "coffee:cafe_general",
+   "provenance": "synthetic",
+   "contested": false,
+   "note": ""
+  },
+  {
+   "id": "g222",
+   "gcid": "gcid:coffee_shop",
+   "lane": "keyword",
+   "term": "cold brew near me",
+   "local_pack": null,
+   "expected": {
+    "decision": "keep",
+    "reason_code": "keep",
+    "to_lane": null
+   },
+   "family_hint": "coffee:iced_cold_drinks",
+   "provenance": "synthetic",
+   "contested": false,
+   "note": ""
+  },
+  {
+   "id": "g223",
+   "gcid": "gcid:coffee_shop",
+   "lane": "keyword",
+   "term": "starbucks near me",
+   "local_pack": null,
+   "expected": {
+    "decision": "exclude",
+    "reason_code": "brand_or_business_name",
+    "to_lane": null
+   },
+   "family_hint": null,
+   "provenance": "synthetic",
+   "contested": false,
+   "note": "national chain"
+  },
+  {
+   "id": "g224",
+   "gcid": "gcid:coffee_shop",
+   "lane": "keyword",
+   "term": "coffee beans wholesale",
+   "local_pack": null,
+   "expected": {
+    "decision": "exclude",
+    "reason_code": "other_category",
+    "to_lane": null
+   },
+   "family_hint": null,
+   "provenance": "synthetic",
+   "contested": false,
+   "note": "Coffee wholesaler (gcid:coffee_wholesaler)"
+  },
+  {
+   "id": "g225",
+   "gcid": "gcid:coffee_shop",
+   "lane": "keyword",
+   "term": "how to make a latte at home",
+   "local_pack": null,
+   "expected": {
+    "decision": "move",
+    "reason_code": "informational",
+    "to_lane": "question"
+   },
+   "family_hint": null,
+   "provenance": "synthetic",
+   "contested": false,
+   "note": "DIY intent"
+  },
+  {
+   "id": "g226",
+   "gcid": "gcid:coffee_shop",
+   "lane": "keyword",
+   "term": "barista jobs near me",
+   "local_pack": null,
+   "expected": {
+    "decision": "exclude",
+    "reason_code": "different_audience",
+    "to_lane": null
+   },
+   "family_hint": null,
+   "provenance": "synthetic",
+   "contested": false,
+   "note": "job seekers"
+  },
+  {
+   "id": "g227",
+   "gcid": "gcid:coffee_shop",
+   "lane": "keyword",
+   "term": "java",
+   "local_pack": null,
+   "expected": {
+    "decision": "exclude",
+    "reason_code": "ambiguous_meaning",
+    "to_lane": null
+   },
+   "family_hint": null,
+   "provenance": "synthetic",
+   "contested": true,
+   "note": "programming language / island"
+  },
+  {
+   "id": "g228",
+   "gcid": "gcid:hvac_contractor",
+   "lane": "keyword",
+   "term": "ac repair near me",
+   "local_pack": null,
+   "expected": {
+    "decision": "keep",
+    "reason_code": "keep",
+    "to_lane": null
+   },
+   "family_hint": "hvac:ac_repair",
+   "provenance": "synthetic",
+   "contested": false,
+   "note": "Sibling air_conditioning_repair_service shares the pack; kept."
+  },
+  {
+   "id": "g229",
+   "gcid": "gcid:hvac_contractor",
+   "lane": "keyword",
+   "term": "furnace repair near me",
+   "local_pack": null,
+   "expected": {
+    "decision": "keep",
+    "reason_code": "keep",
+    "to_lane": null
+   },
+   "family_hint": "hvac:furnace_heating",
+   "provenance": "synthetic",
+   "contested": false,
+   "note": ""
+  },
+  {
+   "id": "g230",
+   "gcid": "gcid:hvac_contractor",
+   "lane": "keyword",
+   "term": "hvac near me",
+   "local_pack": true,
+   "expected": {
+    "decision": "keep",
+    "reason_code": "keep",
+    "to_lane": null
+   },
+   "family_hint": "hvac:general_hvac",
+   "provenance": "synthetic",
+   "contested": false,
+   "note": ""
+  },
+  {
+   "id": "g231",
+   "gcid": "gcid:hvac_contractor",
+   "lane": "keyword",
+   "term": "hvac school",
+   "local_pack": null,
+   "expected": {
+    "decision": "exclude",
+    "reason_code": "different_audience",
+    "to_lane": null
+   },
+   "family_hint": null,
+   "provenance": "synthetic",
+   "contested": false,
+   "note": "students"
+  },
+  {
+   "id": "g232",
+   "gcid": "gcid:hvac_contractor",
+   "lane": "keyword",
+   "term": "heating oil delivery near me",
+   "local_pack": null,
+   "expected": {
+    "decision": "exclude",
+    "reason_code": "other_category",
+    "to_lane": null
+   },
+   "family_hint": null,
+   "provenance": "synthetic",
+   "contested": false,
+   "note": "Heating oil supplier (gcid:heating_oil_supplier)"
+  },
+  {
+   "id": "g233",
+   "gcid": "gcid:hvac_contractor",
+   "lane": "modifier",
+   "term": "24 hour",
+   "local_pack": null,
+   "expected": {
+    "decision": "keep",
+    "reason_code": "keep",
+    "to_lane": null
+   },
+   "family_hint": null,
+   "provenance": "synthetic",
+   "contested": false,
+   "note": ""
+  },
+  {
+   "id": "g234",
+   "gcid": "gcid:dentist",
+   "lane": "keyword",
+   "term": "dentist with free parking",
+   "local_pack": null,
+   "expected": {
+    "decision": "exclude",
+    "reason_code": "amenity_attribute",
+    "to_lane": null
+   },
+   "family_hint": null,
+   "provenance": "synthetic",
+   "contested": false,
+   "note": "tag: free parking (not a search)"
+  }
+ ]
+}

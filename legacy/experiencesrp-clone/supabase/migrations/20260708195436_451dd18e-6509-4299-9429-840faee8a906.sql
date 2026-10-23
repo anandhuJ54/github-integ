@@ -1,0 +1,1 @@
+GRANT DELETE, UPDATE ON public.exp_vertical_node_registry TO sandbox_exec;

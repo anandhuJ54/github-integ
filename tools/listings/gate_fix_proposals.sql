@@ -1,0 +1,61 @@
+-- LISTINGS GATE-FIX PROPOSALS — NOT A MIGRATION. Every statement is commented out.
+-- Nothing here is in the drizzle journal; apply only after Scott rules.
+-- Facts measured read-only against the live DB on 2026-10-11:
+--   gbp_categories 4,041 · exp_category_directory_map covers 4,041 gcids (31 'universal' rows each)
+--   exp_listings_category_status covers 4,013 gcids × 12 families → 28 gcids missing = 9 untyped + 19 below.
+--
+-- ── A. The 9 excluded untyped gcids ──────────────────────────────────────────────
+-- Ruling #11 (docs/Listings_Scope_Decisions.md): "remain excluded until Google defines them".
+-- They have NO exp_category_ear row and NO exp_listings_category_status rows — but each DOES carry
+-- 31 ACTIVE exp_category_directory_map rows (source='universal'), i.e. 279 rows that contradict the
+-- exclusion. So the gate fix is not "add directory-map rows" (they exist) but to make the map honour
+-- the ruling:
+--
+-- A1 (consistent with ruling #11 — recommended): deactivate, reversible.
+-- UPDATE exp_category_directory_map SET is_active = false
+--  WHERE is_active AND gcid IN (
+--    'gcid:closed_circuit_television','gcid:environment_renewable_natural_resources',
+--    'gcid:mercantile_development','gcid:oxygen_cocktail_spot','gcid:staple_food_package',
+--    'gcid:statuary','gcid:steel_fabricator','gcid:superfund_site','gcid:travel_lounge');
+--   -- expect 279 rows
+--
+-- A2 (only if Scott reverses #11): keep the map rows active and run the normal
+--   type → gauntlet → generate → activate path; category_status rows then come from the sweep.
+--
+-- ── B. The 19 typed gcids missing from exp_listings_category_status ──────────────
+-- All 19 have EAR rows and most have overlays; they are the hand-built pilot categories and were
+-- simply absent from the 2026-07-09 full-population sweep (20260709010500). Effect today: the
+-- Listings tab shows the static default status for every variant row on these categories.
+--   accountant, auto_repair_shop, chiropractor, church, electrician, family_restaurant,
+--   financial_planner, hair_salon, hardware_store, hotel, insurance_agency, italian_restaurant,
+--   lawyer, mortgage_broker, pediatric_dentist, plumber, real_estate_agents, restaurant, veterinarian
+--
+-- The sweep's derivation is NOT reproducible from exp_vertical_node_registry: measured agreement of
+-- "family present ⇔ active node_slug exists" across the 4,013 swept gcids is
+--   anchor_host/host_or_anchor_business_relationship 98% · payment/payment_methods_accepted 96% ·
+--   alt_name/alternate_business_name 79% · hours/operating_hours 54% · brands/brands_carried 37% ·
+--   dba_name/business_legal_and_trade_name 29%; the other six families have no single-node proxy.
+-- So only the two ≥95% families are proposed here; the remaining 10 families need the sweep re-run
+-- for these 19 gcids (absence keeps the static default, which is the honest fallback).
+--
+-- INSERT INTO exp_listings_category_status (gcid, family, present)
+-- SELECT g.gcid, m.family,
+--        EXISTS (SELECT 1 FROM exp_vertical_node_registry r
+--                 WHERE r.gcid = g.gcid AND r.node_slug = m.node_slug AND r.is_active)
+--   FROM (VALUES ('gcid:accountant'),('gcid:auto_repair_shop'),('gcid:chiropractor'),('gcid:church'),
+--                ('gcid:electrician'),('gcid:family_restaurant'),('gcid:financial_planner'),
+--                ('gcid:hair_salon'),('gcid:hardware_store'),('gcid:hotel'),('gcid:insurance_agency'),
+--                ('gcid:italian_restaurant'),('gcid:lawyer'),('gcid:mortgage_broker'),
+--                ('gcid:pediatric_dentist'),('gcid:plumber'),('gcid:real_estate_agents'),
+--                ('gcid:restaurant'),('gcid:veterinarian')) g(gcid)
+--  CROSS JOIN (VALUES ('anchor_host','host_or_anchor_business_relationship'),
+--                     ('payment','payment_methods_accepted')) m(family, node_slug)
+-- ON CONFLICT (gcid, family) DO NOTHING;
+--   -- expect 38 rows
+--
+-- ── C. Related defect found while mapping (not fixed here) ───────────────────────
+-- 20260711050000_operational_layer_v2.sql flips family='brand', but the status table's family is
+-- 'brands' (2,394/4,013 present) — that UPDATE matched 0 rows. The catalog rows also tag
+-- family "brand", so the Brands rows never flip per category. One-line data fix, for a ruling:
+-- UPDATE exp_listings_field_map SET variant_family = 'brands'
+--  WHERE variant_family = 'brand' AND catalog_version = 'listings_tab_2026_07';

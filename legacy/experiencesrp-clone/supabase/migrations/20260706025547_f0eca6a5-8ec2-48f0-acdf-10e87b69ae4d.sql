@@ -1,0 +1,1 @@
+GRANT UPDATE ON public.exp_category_schema TO sandbox_exec;

@@ -1,0 +1,8 @@
+
+ALTER TABLE gbp_categories
+  ADD COLUMN IF NOT EXISTS entity_type TEXT,
+  ADD COLUMN IF NOT EXISTS priority_tier SMALLINT,
+  ADD COLUMN IF NOT EXISTS is_launched BOOLEAN DEFAULT FALSE;
+
+ALTER TABLE gbp_categories ALTER COLUMN fetched_at SET DEFAULT NOW();
+ALTER TABLE gbp_categories ALTER COLUMN refresh_by SET DEFAULT (NOW() + INTERVAL '30 days');

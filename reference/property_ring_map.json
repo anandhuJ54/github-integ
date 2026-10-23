@@ -1,0 +1,605 @@
+{
+ "generated": "2026-07-05",
+ "universe_size": 230,
+ "assigned": {
+  "acceptedPaymentMethod": {
+   "ring": "conversion",
+   "on_types": 167
+  },
+  "address": {
+   "ring": "location",
+   "on_types": 239
+  },
+  "agentInteractionStatistic": {
+   "ring": "engagement",
+   "on_types": 169
+  },
+  "aggregateRating": {
+   "ring": "reputation",
+   "on_types": 237
+  },
+  "alternateName": {
+   "ring": "identity",
+   "on_types": 239
+  },
+  "amenityFeature": {
+   "ring": "services",
+   "on_types": 208
+  },
+  "areaServed": {
+   "ring": "location",
+   "on_types": 167
+  },
+  "award": {
+   "ring": "authority",
+   "on_types": 169
+  },
+  "awards": {
+   "ring": "authority",
+   "on_types": 169
+  },
+  "branchCode": {
+   "ring": "identity",
+   "on_types": 208
+  },
+  "branchOf": {
+   "ring": "entity_graph",
+   "on_types": 131
+  },
+  "brand": {
+   "ring": "entity_graph",
+   "on_types": 169
+  },
+  "contactPoint": {
+   "ring": "identity",
+   "on_types": 169
+  },
+  "contactPoints": {
+   "ring": "identity",
+   "on_types": 169
+  },
+  "containedInPlace": {
+   "ring": "location",
+   "on_types": 208
+  },
+  "containsPlace": {
+   "ring": "location",
+   "on_types": 208
+  },
+  "currenciesAccepted": {
+   "ring": "identity",
+   "on_types": 131
+  },
+  "department": {
+   "ring": "entity_graph",
+   "on_types": 167
+  },
+  "description": {
+   "ring": "identity",
+   "on_types": 239
+  },
+  "disambiguatingDescription": {
+   "ring": "identity",
+   "on_types": 239
+  },
+  "dissolutionDate": {
+   "ring": "identity",
+   "on_types": 167
+  },
+  "duns": {
+   "ring": "identity",
+   "on_types": 169
+  },
+  "email": {
+   "ring": "identity",
+   "on_types": 169
+  },
+  "employee": {
+   "ring": "entity_graph",
+   "on_types": 167
+  },
+  "employees": {
+   "ring": "entity_graph",
+   "on_types": 167
+  },
+  "faxNumber": {
+   "ring": "identity",
+   "on_types": 239
+  },
+  "founder": {
+   "ring": "entity_graph",
+   "on_types": 167
+  },
+  "founders": {
+   "ring": "entity_graph",
+   "on_types": 167
+  },
+  "foundingDate": {
+   "ring": "identity",
+   "on_types": 167
+  },
+  "funder": {
+   "ring": "entity_graph",
+   "on_types": 169
+  },
+  "geo": {
+   "ring": "location",
+   "on_types": 208
+  },
+  "globalLocationNumber": {
+   "ring": "identity",
+   "on_types": 239
+  },
+  "hasCertification": {
+   "ring": "authority",
+   "on_types": 239
+  },
+  "hasCredential": {
+   "ring": "authority",
+   "on_types": 169
+  },
+  "hasMap": {
+   "ring": "location",
+   "on_types": 208
+  },
+  "hasOfferCatalog": {
+   "ring": "services",
+   "on_types": 169
+  },
+  "hasPOS": {
+   "ring": "conversion",
+   "on_types": 169
+  },
+  "identifier": {
+   "ring": "identity",
+   "on_types": 239
+  },
+  "image": {
+   "ring": "identity",
+   "on_types": 239
+  },
+  "interactionStatistic": {
+   "ring": "engagement",
+   "on_types": 169
+  },
+  "isAccessibleForFree": {
+   "ring": "services",
+   "on_types": 208
+  },
+  "iso6523Code": {
+   "ring": "identity",
+   "on_types": 167
+  },
+  "knowsAbout": {
+   "ring": "authority",
+   "on_types": 169
+  },
+  "knowsLanguage": {
+   "ring": "authority",
+   "on_types": 169
+  },
+  "latitude": {
+   "ring": "location",
+   "on_types": 208
+  },
+  "legalName": {
+   "ring": "identity",
+   "on_types": 167
+  },
+  "leiCode": {
+   "ring": "identity",
+   "on_types": 167
+  },
+  "location": {
+   "ring": "location",
+   "on_types": 167
+  },
+  "logo": {
+   "ring": "identity",
+   "on_types": 237
+  },
+  "longitude": {
+   "ring": "location",
+   "on_types": 208
+  },
+  "mainEntityOfPage": {
+   "ring": "presence",
+   "on_types": 239
+  },
+  "makesOffer": {
+   "ring": "services",
+   "on_types": 169
+  },
+  "member": {
+   "ring": "entity_graph",
+   "on_types": 167
+  },
+  "memberOf": {
+   "ring": "entity_graph",
+   "on_types": 169
+  },
+  "members": {
+   "ring": "entity_graph",
+   "on_types": 167
+  },
+  "naics": {
+   "ring": "identity",
+   "on_types": 169
+  },
+  "name": {
+   "ring": "identity",
+   "on_types": 239
+  },
+  "numberOfEmployees": {
+   "ring": "identity",
+   "on_types": 167
+  },
+  "openingHours": {
+   "ring": "identity",
+   "on_types": 174
+  },
+  "openingHoursSpecification": {
+   "ring": "identity",
+   "on_types": 208
+  },
+  "ownershipFundingInfo": {
+   "ring": "entity_graph",
+   "on_types": 167
+  },
+  "owns": {
+   "ring": "entity_graph",
+   "on_types": 169
+  },
+  "parentOrganization": {
+   "ring": "entity_graph",
+   "on_types": 167
+  },
+  "paymentAccepted": {
+   "ring": "identity",
+   "on_types": 131
+  },
+  "photo": {
+   "ring": "identity",
+   "on_types": 208
+  },
+  "potentialAction": {
+   "ring": "conversion",
+   "on_types": 239
+  },
+  "priceRange": {
+   "ring": "identity",
+   "on_types": 131
+  },
+  "publicAccess": {
+   "ring": "services",
+   "on_types": 208
+  },
+  "publishingPrinciples": {
+   "ring": "authority",
+   "on_types": 169
+  },
+  "review": {
+   "ring": "reputation",
+   "on_types": 237
+  },
+  "reviews": {
+   "ring": "reputation",
+   "on_types": 237
+  },
+  "sameAs": {
+   "ring": "presence",
+   "on_types": 239
+  },
+  "seeks": {
+   "ring": "conversion",
+   "on_types": 169
+  },
+  "serviceArea": {
+   "ring": "location",
+   "on_types": 167
+  },
+  "slogan": {
+   "ring": "identity",
+   "on_types": 237
+  },
+  "smokingAllowed": {
+   "ring": "services",
+   "on_types": 208
+  },
+  "specialOpeningHoursSpecification": {
+   "ring": "identity",
+   "on_types": 208
+  },
+  "sponsor": {
+   "ring": "entity_graph",
+   "on_types": 169
+  },
+  "subOrganization": {
+   "ring": "entity_graph",
+   "on_types": 167
+  },
+  "subjectOf": {
+   "ring": "content",
+   "on_types": 239
+  },
+  "taxID": {
+   "ring": "identity",
+   "on_types": 169
+  },
+  "telephone": {
+   "ring": "identity",
+   "on_types": 239
+  },
+  "tourBookingPage": {
+   "ring": "conversion",
+   "on_types": 208
+  },
+  "url": {
+   "ring": "identity",
+   "on_types": 239
+  },
+  "vatID": {
+   "ring": "identity",
+   "on_types": 169
+  },
+  "acceptsReservations": {
+   "ring": "conversion",
+   "on_types": 10
+  },
+  "hasMenu": {
+   "ring": "services",
+   "on_types": 10
+  },
+  "menu": {
+   "ring": "services",
+   "on_types": 10
+  },
+  "servesCuisine": {
+   "ring": "services",
+   "on_types": 10
+  },
+  "starRating": {
+   "ring": "identity",
+   "on_types": 19
+  },
+  "availableLanguage": {
+   "ring": "services",
+   "on_types": 10
+  },
+  "checkinTime": {
+   "ring": "identity",
+   "on_types": 9
+  },
+  "checkoutTime": {
+   "ring": "identity",
+   "on_types": 9
+  },
+  "numberOfRooms": {
+   "ring": "identity",
+   "on_types": 18
+  },
+  "petsAllowed": {
+   "ring": "services",
+   "on_types": 19
+  },
+  "availableService": {
+   "ring": "services",
+   "on_types": 6
+  },
+  "medicalSpecialty": {
+   "ring": "services",
+   "on_types": 11
+  },
+  "occupancy": {
+   "ring": "conversion",
+   "on_types": 9
+  },
+  "additionalName": {
+   "ring": "identity",
+   "on_types": 2
+  },
+  "affiliation": {
+   "ring": "entity_graph",
+   "on_types": 2
+  },
+  "alumniOf": {
+   "ring": "authority",
+   "on_types": 2
+  },
+  "birthDate": {
+   "ring": "identity",
+   "on_types": 2
+  },
+  "children": {
+   "ring": "entity_graph",
+   "on_types": 2
+  },
+  "colleague": {
+   "ring": "entity_graph",
+   "on_types": 2
+  },
+  "familyName": {
+   "ring": "identity",
+   "on_types": 2
+  },
+  "follows": {
+   "ring": "engagement",
+   "on_types": 2
+  },
+  "gender": {
+   "ring": "identity",
+   "on_types": 3
+  },
+  "givenName": {
+   "ring": "identity",
+   "on_types": 2
+  },
+  "hasOccupation": {
+   "ring": "authority",
+   "on_types": 2
+  },
+  "honorificPrefix": {
+   "ring": "identity",
+   "on_types": 2
+  },
+  "honorificSuffix": {
+   "ring": "identity",
+   "on_types": 2
+  },
+  "jobTitle": {
+   "ring": "identity",
+   "on_types": 2
+  },
+  "knows": {
+   "ring": "entity_graph",
+   "on_types": 2
+  },
+  "nationality": {
+   "ring": "identity",
+   "on_types": 2
+  },
+  "parent": {
+   "ring": "entity_graph",
+   "on_types": 2
+  },
+  "relatedTo": {
+   "ring": "entity_graph",
+   "on_types": 2
+  },
+  "spouse": {
+   "ring": "entity_graph",
+   "on_types": 2
+  },
+  "worksFor": {
+   "ring": "entity_graph",
+   "on_types": 2
+  },
+  "tickerSymbol": {
+   "ring": "identity",
+   "on_types": 1
+  },
+  "skills": {
+   "ring": "authority",
+   "on_types": 0
+  },
+  "occupationalCategory": {
+   "ring": "authority",
+   "on_types": 0
+  },
+  "audience": {
+   "ring": "services",
+   "on_types": 0
+  }
+ },
+ "default_none_pending_review": [
+  "accommodationCategory",
+  "accommodationFloorPlan",
+  "actionableFeedbackPolicy",
+  "additionalProperty",
+  "additionalType",
+  "album",
+  "albums",
+  "alumni",
+  "archiveHeld",
+  "athlete",
+  "audienceType",
+  "availableTest",
+  "bed",
+  "birthPlace",
+  "boardingPolicy",
+  "callSign",
+  "coach",
+  "colleagues",
+  "containedIn",
+  "correctionsPolicy",
+  "deathDate",
+  "deathPlace",
+  "diagnosis",
+  "diversityPolicy",
+  "diversityStaffingReport",
+  "drug",
+  "ethicsPolicy",
+  "event",
+  "events",
+  "feesAndCommissionsSpecification",
+  "floorLevel",
+  "floorSize",
+  "foundingLocation",
+  "funding",
+  "genre",
+  "geoContains",
+  "geoCoveredBy",
+  "geoCovers",
+  "geoCrosses",
+  "geoDisjoint",
+  "geoEquals",
+  "geoIntersects",
+  "geoOverlaps",
+  "geoTouches",
+  "geoWithin",
+  "geographicArea",
+  "hasDriveThroughService",
+  "hasGS1DigitalLink",
+  "hasMemberProgram",
+  "hasMerchantReturnPolicy",
+  "hasShippingService",
+  "hasStore",
+  "healthCondition",
+  "healthPlanNetworkId",
+  "healthcareReportingData",
+  "height",
+  "homeLocation",
+  "hospitalAffiliation",
+  "iataCode",
+  "icaoCode",
+  "includesAttraction",
+  "isAcceptingNewPatients",
+  "isStoreOn",
+  "isicV4",
+  "keywords",
+  "leaseLength",
+  "map",
+  "maps",
+  "masthead",
+  "maximumAttendeeCapacity",
+  "missionCoveragePrioritiesPolicy",
+  "musicGroupMember",
+  "netWorth",
+  "noBylinesPolicy",
+  "nonprofitStatus",
+  "numberOfAccommodationUnits",
+  "numberOfAvailableAccommodationUnits",
+  "numberOfBathroomsTotal",
+  "numberOfBedrooms",
+  "numberOfFullBathrooms",
+  "numberOfPartialBathrooms",
+  "parents",
+  "performerIn",
+  "permittedUsage",
+  "photos",
+  "practicesAt",
+  "pronouns",
+  "requiredGender",
+  "requiredMaxAge",
+  "requiredMinAge",
+  "screenCount",
+  "sibling",
+  "siblings",
+  "sport",
+  "suggestedAge",
+  "suggestedGender",
+  "suggestedMaxAge",
+  "suggestedMeasurement",
+  "suggestedMinAge",
+  "touristType",
+  "track",
+  "tracks",
+  "unnamedSourcesPolicy",
+  "usNPI",
+  "verificationFactCheckingPolicy",
+  "weight",
+  "workLocation",
+  "yearBuilt"
+ ],
+ "ring_model": "10-ring (2026-07-05)"
+}

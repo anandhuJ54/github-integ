@@ -1,0 +1,896 @@
+[
+ {
+  "section": 1,
+  "field": "Full Legal Name",
+  "prop": "name",
+  "source": "profile"
+ },
+ {
+  "section": 1,
+  "field": "Preferred Display Name",
+  "prop": "alternateName",
+  "source": "profile"
+ },
+ {
+  "section": 1,
+  "field": "Agent Headline / Tagline",
+  "prop": "description",
+  "source": "profile"
+ },
+ {
+  "section": 1,
+  "field": "Profile Photo",
+  "prop": "image",
+  "source": "profile"
+ },
+ {
+  "section": 1,
+  "field": "Job Title",
+  "prop": "jobTitle",
+  "source": "profile"
+ },
+ {
+  "section": 1,
+  "field": "Agent Role / Designation Label",
+  "prop": "hasOccupation",
+  "source": "profile"
+ },
+ {
+  "section": 1,
+  "field": "Primary Email Address",
+  "prop": "email",
+  "source": "profile"
+ },
+ {
+  "section": 1,
+  "field": "Primary Phone Number",
+  "prop": "telephone",
+  "source": "profile"
+ },
+ {
+  "section": 1,
+  "field": "Mobile Phone Number",
+  "prop": "contactPoint.telephone",
+  "source": "profile"
+ },
+ {
+  "section": 1,
+  "field": "Office Phone Number",
+  "prop": "contactPoint.contactType",
+  "source": "profile"
+ },
+ {
+  "section": 1,
+  "field": "Fax Number",
+  "prop": "faxNumber",
+  "source": "profile"
+ },
+ {
+  "section": 1,
+  "field": "Office / Brokerage Address",
+  "prop": "address",
+  "source": "profile"
+ },
+ {
+  "section": 1,
+  "field": "Geographic Coordinates",
+  "prop": "geo",
+  "source": "profile"
+ },
+ {
+  "section": 1,
+  "field": "Primary Service Area",
+  "prop": "areaServed",
+  "source": "profile"
+ },
+ {
+  "section": 1,
+  "field": "Languages Spoken",
+  "prop": "knowsLanguage",
+  "source": "profile"
+ },
+ {
+  "section": 1,
+  "field": "Gender",
+  "prop": "gender",
+  "source": "profile"
+ },
+ {
+  "section": 1,
+  "field": "Nationality",
+  "prop": "nationality",
+  "source": "profile"
+ },
+ {
+  "section": 1,
+  "field": "Birth Date",
+  "prop": "birthDate",
+  "source": "profile"
+ },
+ {
+  "section": 1,
+  "field": "Agent Vanity URL",
+  "prop": "url",
+  "source": "platform"
+ },
+ {
+  "section": 2,
+  "field": "Real Estate License Number",
+  "prop": "hasCredential.credentialId",
+  "source": "state_db"
+ },
+ {
+  "section": 2,
+  "field": "License State / Jurisdiction",
+  "prop": "hasCredential.recognizedBy",
+  "source": "state_db"
+ },
+ {
+  "section": 2,
+  "field": "License Type",
+  "prop": "hasCredential.credentialCategory",
+  "source": "state_db"
+ },
+ {
+  "section": 2,
+  "field": "License Status",
+  "prop": "hasCredential.validFrom",
+  "source": "state_db"
+ },
+ {
+  "section": 2,
+  "field": "License Expiration Date",
+  "prop": "hasCredential.validUntil",
+  "source": "state_db"
+ },
+ {
+  "section": 2,
+  "field": "NAR Membership Status",
+  "prop": "memberOf.name",
+  "source": "NAR"
+ },
+ {
+  "section": 2,
+  "field": "REALTOR Designation",
+  "prop": "hasCredential.name",
+  "source": "NAR"
+ },
+ {
+  "section": 2,
+  "field": "ABR Designation",
+  "prop": "hasCredential.name",
+  "source": "NAR"
+ },
+ {
+  "section": 2,
+  "field": "CRS Designation",
+  "prop": "hasCredential.name",
+  "source": "CRS"
+ },
+ {
+  "section": 2,
+  "field": "GRI Designation",
+  "prop": "hasCredential.name",
+  "source": "NAR"
+ },
+ {
+  "section": 2,
+  "field": "SRS Designation",
+  "prop": "hasCredential.name",
+  "source": "NAR"
+ },
+ {
+  "section": 2,
+  "field": "e-PRO Certification",
+  "prop": "hasCredential.name",
+  "source": "NAR"
+ },
+ {
+  "section": 2,
+  "field": "MRP Certification",
+  "prop": "hasCredential.name",
+  "source": "NAR"
+ },
+ {
+  "section": 2,
+  "field": "SRES Designation",
+  "prop": "hasCredential.name",
+  "source": "NAR"
+ },
+ {
+  "section": 2,
+  "field": "Fiduciary Duty Acknowledgement",
+  "prop": "hasCredential.description",
+  "source": "state_db"
+ },
+ {
+  "section": 2,
+  "field": "Dual Agency Disclosure",
+  "prop": "hasCredential.description",
+  "source": "brokerage"
+ },
+ {
+  "section": 2,
+  "field": "E&O Insurance Carrier",
+  "prop": "hasCredential.recognizedBy",
+  "source": "brokerage"
+ },
+ {
+  "section": 2,
+  "field": "Continuing Ed Hours",
+  "prop": "hasCredential.competencyRequired",
+  "source": "state_db"
+ },
+ {
+  "section": 3,
+  "field": "Years Licensed",
+  "prop": "hasOccupation.experienceRequirements",
+  "source": "profile"
+ },
+ {
+  "section": 3,
+  "field": "Year First Licensed",
+  "prop": "hasCredential.validFrom",
+  "source": "state_db"
+ },
+ {
+  "section": 3,
+  "field": "Total Career Transactions",
+  "prop": "performTime",
+  "source": "MLS"
+ },
+ {
+  "section": 3,
+  "field": "Total Career Sales Volume",
+  "prop": "priceRange",
+  "source": "MLS"
+ },
+ {
+  "section": 3,
+  "field": "T12 Units Sold",
+  "prop": "interactionStatistic.userInteractionCount",
+  "source": "MLS"
+ },
+ {
+  "section": 3,
+  "field": "T12 Sales Volume",
+  "prop": "offers.price",
+  "source": "MLS"
+ },
+ {
+  "section": 3,
+  "field": "Avg Days on Market",
+  "prop": "additionalProperty.value",
+  "source": "MLS"
+ },
+ {
+  "section": 3,
+  "field": "Avg List-to-Sale Ratio",
+  "prop": "additionalProperty.value",
+  "source": "MLS"
+ },
+ {
+  "section": 3,
+  "field": "Buyer-Side Transactions",
+  "prop": "additionalProperty.value",
+  "source": "MLS"
+ },
+ {
+  "section": 3,
+  "field": "Seller-Side Transactions",
+  "prop": "additionalProperty.value",
+  "source": "MLS"
+ },
+ {
+  "section": 3,
+  "field": "Avg Sale Price",
+  "prop": "additionalProperty.value",
+  "source": "MLS"
+ },
+ {
+  "section": 3,
+  "field": "Median Sale Price",
+  "prop": "additionalProperty.value",
+  "source": "MLS"
+ },
+ {
+  "section": 3,
+  "field": "Relocation Cases",
+  "prop": "additionalProperty.value",
+  "source": "profile"
+ },
+ {
+  "section": 3,
+  "field": "Investment Transactions",
+  "prop": "additionalProperty.value",
+  "source": "MLS"
+ },
+ {
+  "section": 3,
+  "field": "CMAs Delivered",
+  "prop": "additionalProperty.value",
+  "source": "profile"
+ },
+ {
+  "section": 3,
+  "field": "Open Houses Hosted",
+  "prop": "additionalProperty.value",
+  "source": "MLS"
+ },
+ {
+  "section": 3,
+  "field": "Earnest Money Negotiations",
+  "prop": "additionalProperty.value",
+  "source": "profile"
+ },
+ {
+  "section": 3,
+  "field": "Geographic Farm ZIPs",
+  "prop": "areaServed",
+  "source": "profile"
+ },
+ {
+  "section": 4,
+  "field": "Blog / Article Bylines",
+  "prop": "author",
+  "source": "cms"
+ },
+ {
+  "section": 4,
+  "field": "Market Report Publications",
+  "prop": "subjectOf",
+  "source": "cms"
+ },
+ {
+  "section": 4,
+  "field": "Neighborhood Guide Articles",
+  "prop": "subjectOf",
+  "source": "cms"
+ },
+ {
+  "section": 4,
+  "field": "CMA Reports Published",
+  "prop": "subjectOf",
+  "source": "cms"
+ },
+ {
+  "section": 4,
+  "field": "Listing Agreement Explainer",
+  "prop": "subjectOf",
+  "source": "cms"
+ },
+ {
+  "section": 4,
+  "field": "Buyers Guide Publications",
+  "prop": "subjectOf",
+  "source": "cms"
+ },
+ {
+  "section": 4,
+  "field": "Closing Disclosure Content",
+  "prop": "subjectOf",
+  "source": "cms"
+ },
+ {
+  "section": 4,
+  "field": "Commission Transparency Post",
+  "prop": "subjectOf",
+  "source": "cms"
+ },
+ {
+  "section": 4,
+  "field": "MLS Commentary Posts",
+  "prop": "subjectOf",
+  "source": "cms"
+ },
+ {
+  "section": 4,
+  "field": "Investment Whitepaper",
+  "prop": "subjectOf",
+  "source": "cms"
+ },
+ {
+  "section": 4,
+  "field": "Press Mentions",
+  "prop": "subjectOf",
+  "source": "press"
+ },
+ {
+  "section": 4,
+  "field": "Total Published Pieces",
+  "prop": "interactionStatistic.userInteractionCount",
+  "source": "cms"
+ },
+ {
+  "section": 5,
+  "field": "Podcast Guest Appearances",
+  "prop": "subjectOf",
+  "source": "media"
+ },
+ {
+  "section": 5,
+  "field": "Podcast Host Show",
+  "prop": "creator",
+  "source": "media"
+ },
+ {
+  "section": 5,
+  "field": "YouTube Channel URL",
+  "prop": "sameAs",
+  "source": "social"
+ },
+ {
+  "section": 5,
+  "field": "Video Library Count",
+  "prop": "interactionStatistic.userInteractionCount",
+  "source": "platform"
+ },
+ {
+  "section": 5,
+  "field": "Video Tour Productions",
+  "prop": "subjectOf",
+  "source": "MLS"
+ },
+ {
+  "section": 5,
+  "field": "TV Segment Appearances",
+  "prop": "subjectOf",
+  "source": "media"
+ },
+ {
+  "section": 5,
+  "field": "Radio Interviews",
+  "prop": "subjectOf",
+  "source": "media"
+ },
+ {
+  "section": 5,
+  "field": "Webinar Presentations",
+  "prop": "subjectOf",
+  "source": "platform"
+ },
+ {
+  "section": 5,
+  "field": "Speaking Topics",
+  "prop": "knowsAbout",
+  "source": "profile"
+ },
+ {
+  "section": 5,
+  "field": "Conference Engagements",
+  "prop": "performerIn",
+  "source": "profile"
+ },
+ {
+  "section": 5,
+  "field": "Headshot Library",
+  "prop": "image",
+  "source": "profile"
+ },
+ {
+  "section": 5,
+  "field": "Virtual Tour Credits",
+  "prop": "subjectOf",
+  "source": "MLS"
+ },
+ {
+  "section": 6,
+  "field": "LinkedIn URL",
+  "prop": "sameAs",
+  "source": "social"
+ },
+ {
+  "section": 6,
+  "field": "LinkedIn Followers",
+  "prop": "interactionStatistic.userInteractionCount",
+  "source": "social"
+ },
+ {
+  "section": 6,
+  "field": "Facebook URL",
+  "prop": "sameAs",
+  "source": "social"
+ },
+ {
+  "section": 6,
+  "field": "Facebook Followers",
+  "prop": "interactionStatistic.userInteractionCount",
+  "source": "social"
+ },
+ {
+  "section": 6,
+  "field": "Instagram URL",
+  "prop": "sameAs",
+  "source": "social"
+ },
+ {
+  "section": 6,
+  "field": "Instagram Followers",
+  "prop": "interactionStatistic.userInteractionCount",
+  "source": "social"
+ },
+ {
+  "section": 6,
+  "field": "Twitter URL",
+  "prop": "sameAs",
+  "source": "social"
+ },
+ {
+  "section": 6,
+  "field": "Twitter Followers",
+  "prop": "interactionStatistic.userInteractionCount",
+  "source": "social"
+ },
+ {
+  "section": 6,
+  "field": "TikTok URL",
+  "prop": "sameAs",
+  "source": "social"
+ },
+ {
+  "section": 6,
+  "field": "TikTok Followers",
+  "prop": "interactionStatistic.userInteractionCount",
+  "source": "social"
+ },
+ {
+  "section": 6,
+  "field": "Pinterest URL",
+  "prop": "sameAs",
+  "source": "social"
+ },
+ {
+  "section": 6,
+  "field": "Avg Engagement Rate",
+  "prop": "interactionStatistic.userInteractionCount",
+  "source": "social"
+ },
+ {
+  "section": 6,
+  "field": "Total Social Followers",
+  "prop": "interactionStatistic.userInteractionCount",
+  "source": "social"
+ },
+ {
+  "section": 7,
+  "field": "Aggregate Star Rating",
+  "prop": "aggregateRating.ratingValue",
+  "source": "platform"
+ },
+ {
+  "section": 7,
+  "field": "Total Review Count",
+  "prop": "aggregateRating.reviewCount",
+  "source": "platform"
+ },
+ {
+  "section": 7,
+  "field": "Rating Scale",
+  "prop": "aggregateRating.bestRating",
+  "source": "platform"
+ },
+ {
+  "section": 7,
+  "field": "Verified Transaction Reviews",
+  "prop": "aggregateRating.reviewCount",
+  "source": "platform"
+ },
+ {
+  "section": 7,
+  "field": "Review Text Buyer",
+  "prop": "review.reviewBody",
+  "source": "platform"
+ },
+ {
+  "section": 7,
+  "field": "Review Text Seller",
+  "prop": "review.reviewBody",
+  "source": "platform"
+ },
+ {
+  "section": 7,
+  "field": "Reviewer Name",
+  "prop": "review.author",
+  "source": "platform"
+ },
+ {
+  "section": 7,
+  "field": "Review Date",
+  "prop": "review.datePublished",
+  "source": "platform"
+ },
+ {
+  "section": 7,
+  "field": "Review Star Rating",
+  "prop": "review.reviewRating.ratingValue",
+  "source": "platform"
+ },
+ {
+  "section": 7,
+  "field": "Review Source Platform",
+  "prop": "review.publisher",
+  "source": "platform"
+ },
+ {
+  "section": 7,
+  "field": "Google Business Rating",
+  "prop": "aggregateRating.ratingValue",
+  "source": "Google"
+ },
+ {
+  "section": 7,
+  "field": "Zillow Rating",
+  "prop": "aggregateRating.ratingValue",
+  "source": "Zillow"
+ },
+ {
+  "section": 7,
+  "field": "Realtor.com Rating",
+  "prop": "aggregateRating.ratingValue",
+  "source": "Realtor.com"
+ },
+ {
+  "section": 7,
+  "field": "Peer Referral Count",
+  "prop": "additionalProperty.value",
+  "source": "platform"
+ },
+ {
+  "section": 7,
+  "field": "NPS",
+  "prop": "additionalProperty.value",
+  "source": "platform"
+ },
+ {
+  "section": 7,
+  "field": "Review Response Rate",
+  "prop": "additionalProperty.value",
+  "source": "platform"
+ },
+ {
+  "section": 7,
+  "field": "Awards in Reviews",
+  "prop": "award",
+  "source": "platform"
+ },
+ {
+  "section": 8,
+  "field": "Parent Brokerage",
+  "prop": "worksFor",
+  "source": "brokerage"
+ },
+ {
+  "section": 8,
+  "field": "Brokerage Brand",
+  "prop": "parentOrganization",
+  "source": "brokerage"
+ },
+ {
+  "section": 8,
+  "field": "Brokerage License Number",
+  "prop": "worksFor.hasCredential.credentialId",
+  "source": "state_db"
+ },
+ {
+  "section": 8,
+  "field": "MLS Membership",
+  "prop": "memberOf",
+  "source": "MLS"
+ },
+ {
+  "section": 8,
+  "field": "Local REALTOR Assoc",
+  "prop": "memberOf",
+  "source": "NAR"
+ },
+ {
+  "section": 8,
+  "field": "State REALTOR Assoc",
+  "prop": "memberOf",
+  "source": "NAR"
+ },
+ {
+  "section": 8,
+  "field": "NAR Membership",
+  "prop": "memberOf",
+  "source": "NAR"
+ },
+ {
+  "section": 8,
+  "field": "Team Name",
+  "prop": "memberOf",
+  "source": "brokerage"
+ },
+ {
+  "section": 8,
+  "field": "Team Leader",
+  "prop": "colleague",
+  "source": "brokerage"
+ },
+ {
+  "section": 8,
+  "field": "Referral Networks",
+  "prop": "memberOf",
+  "source": "profile"
+ },
+ {
+  "section": 8,
+  "field": "Relocation Network",
+  "prop": "memberOf",
+  "source": "profile"
+ },
+ {
+  "section": 8,
+  "field": "CCIM Affiliation",
+  "prop": "memberOf",
+  "source": "profile"
+ },
+ {
+  "section": 8,
+  "field": "Chamber of Commerce",
+  "prop": "memberOf",
+  "source": "profile"
+ },
+ {
+  "section": 8,
+  "field": "Civic Memberships",
+  "prop": "memberOf",
+  "source": "profile"
+ },
+ {
+  "section": 8,
+  "field": "Commission Split Structure",
+  "prop": "additionalProperty.value",
+  "source": "brokerage"
+ },
+ {
+  "section": 9,
+  "field": "Primary Website URL",
+  "prop": "url",
+  "source": "profile"
+ },
+ {
+  "section": 9,
+  "field": "Experience.com Profile",
+  "prop": "sameAs",
+  "source": "platform"
+ },
+ {
+  "section": 9,
+  "field": "Zillow Profile",
+  "prop": "sameAs",
+  "source": "Zillow"
+ },
+ {
+  "section": 9,
+  "field": "Realtor.com Profile",
+  "prop": "sameAs",
+  "source": "Realtor.com"
+ },
+ {
+  "section": 9,
+  "field": "GBP URL",
+  "prop": "sameAs",
+  "source": "Google"
+ },
+ {
+  "section": 9,
+  "field": "Homes.com Profile",
+  "prop": "sameAs",
+  "source": "Homes.com"
+ },
+ {
+  "section": 9,
+  "field": "Trulia Profile",
+  "prop": "sameAs",
+  "source": "Trulia"
+ },
+ {
+  "section": 9,
+  "field": "Wikidata Entity ID",
+  "prop": "sameAs",
+  "source": "Wikidata"
+ },
+ {
+  "section": 9,
+  "field": "Knowledge Panel Claimed",
+  "prop": "additionalProperty.value",
+  "source": "Google"
+ },
+ {
+  "section": 9,
+  "field": "SvcCat Listing/Selling",
+  "prop": "hasOfferCatalog",
+  "source": "profile"
+ },
+ {
+  "section": 9,
+  "field": "SvcCat Buyer Rep",
+  "prop": "hasOfferCatalog",
+  "source": "profile"
+ },
+ {
+  "section": 9,
+  "field": "SvcCat CMA",
+  "prop": "hasOfferCatalog",
+  "source": "profile"
+ },
+ {
+  "section": 9,
+  "field": "SvcCat Negotiation",
+  "prop": "hasOfferCatalog",
+  "source": "profile"
+ },
+ {
+  "section": 9,
+  "field": "SvcCat Open House",
+  "prop": "hasOfferCatalog",
+  "source": "profile"
+ },
+ {
+  "section": 9,
+  "field": "SvcCat Transaction Mgmt",
+  "prop": "hasOfferCatalog",
+  "source": "profile"
+ },
+ {
+  "section": 9,
+  "field": "SvcCat Relocation",
+  "prop": "hasOfferCatalog",
+  "source": "profile"
+ },
+ {
+  "section": 9,
+  "field": "SvcCat Investment",
+  "prop": "hasOfferCatalog",
+  "source": "profile"
+ },
+ {
+  "section": 9,
+  "field": "Office Hours",
+  "prop": "openingHoursSpecification",
+  "source": "profile"
+ },
+ {
+  "section": 9,
+  "field": "Active Listing URLs",
+  "prop": "makesOffer",
+  "source": "MLS"
+ },
+ {
+  "section": 9,
+  "field": "KnowsAbout MLS",
+  "prop": "knowsAbout",
+  "source": "profile"
+ },
+ {
+  "section": 9,
+  "field": "KnowsAbout Contracts",
+  "prop": "knowsAbout",
+  "source": "profile"
+ },
+ {
+  "section": 9,
+  "field": "KnowsAbout Escrow",
+  "prop": "knowsAbout",
+  "source": "profile"
+ },
+ {
+  "section": 9,
+  "field": "KnowsAbout RESPA",
+  "prop": "knowsAbout",
+  "source": "profile"
+ },
+ {
+  "section": 9,
+  "field": "KnowsAbout Investment",
+  "prop": "knowsAbout",
+  "source": "profile"
+ },
+ {
+  "section": 9,
+  "field": "Schema Published Flag",
+  "prop": "additionalProperty.value",
+  "source": "platform"
+ }
+]

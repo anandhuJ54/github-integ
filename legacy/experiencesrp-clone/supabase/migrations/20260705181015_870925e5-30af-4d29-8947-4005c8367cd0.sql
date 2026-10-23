@@ -1,0 +1,1 @@
+GRANT INSERT, DELETE, TRUNCATE ON public.exp_category_schema_type TO sandbox_exec;

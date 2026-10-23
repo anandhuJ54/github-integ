@@ -1,0 +1,66 @@
+INSERT INTO gbp_categories (gcid, display_name, slug, fetched_at, refresh_by) VALUES
+('gcid:real_estate_agents','Real Estate Agents','real-estate-agents',NOW(),NOW()+INTERVAL '90 days'),
+('gcid:lawyer','Lawyer','lawyer',NOW(),NOW()+INTERVAL '90 days'),
+('gcid:doctor','Doctor','doctor',NOW(),NOW()+INTERVAL '90 days'),
+('gcid:dentist','Dentist','dentist',NOW(),NOW()+INTERVAL '90 days'),
+('gcid:financial_planner','Financial Planner','financial-planner',NOW(),NOW()+INTERVAL '90 days'),
+('gcid:cannabis_store','Cannabis Store','cannabis-store',NOW(),NOW()+INTERVAL '90 days'),
+('gcid:insurance_agency','Insurance Agency','insurance-agency',NOW(),NOW()+INTERVAL '90 days'),
+('gcid:accounting','Accounting','accounting',NOW(),NOW()+INTERVAL '90 days')
+ON CONFLICT (gcid) DO NOTHING;
+
+INSERT INTO exp_category_compliance
+  (gcid, display_license_on_profile, display_license_on_content, display_license_on_ads,
+   license_display_format, license_label, required_disclaimers, content_restrictions,
+   prohibited_phrases, age_gate_required, hipaa_applies, glba_applies, regulated_by)
+VALUES
+('gcid:real_estate_agents', TRUE, TRUE, FALSE,'DRE #{license_number}','RE License',
+ ARRAY['Licensed Real Estate Agent | #{license_number}'],
+ ARRAY['no price guarantees','no investment advice'],
+ ARRAY['guaranteed sale','guaranteed price','risk-free investment'],
+ FALSE, FALSE, FALSE, ARRAY['NAR','State Real Estate Commission','DRE']),
+('gcid:lawyer', TRUE, TRUE, TRUE,'Bar #{license_number}','Bar Number',
+ ARRAY['Prior results do not guarantee similar outcomes','Attorney Advertising'],
+ ARRAY['no outcome guarantees','no settlement guarantees'],
+ ARRAY['guaranteed win','guaranteed settlement','we never lose'],
+ FALSE, FALSE, FALSE, ARRAY['State Bar Association','ABA']),
+('gcid:doctor', TRUE, FALSE, FALSE,'License #{license_number}','Medical License',
+ ARRAY['This content is for informational purposes only and does not constitute medical advice'],
+ ARRAY['no diagnosis claims','no treatment guarantees','no cure claims'],
+ ARRAY['cures','guaranteed results','FDA approved treatment'],
+ FALSE, TRUE, FALSE, ARRAY['State Medical Board','AMA','CMS']),
+('gcid:dentist', TRUE, FALSE, FALSE,'License #{license_number}','Dental License',
+ ARRAY['This content is for informational purposes only'],
+ ARRAY['no treatment guarantees','no pain-free guarantees'],
+ ARRAY['guaranteed results','permanent cure','painless guaranteed'],
+ FALSE, TRUE, FALSE, ARRAY['State Dental Board','ADA']),
+('gcid:financial_planner', TRUE, TRUE, TRUE,'CRD #{license_number}','CRD Number',
+ ARRAY['Investment advice involves risk. Past performance does not guarantee future results.'],
+ ARRAY['no return guarantees','no performance guarantees'],
+ ARRAY['guaranteed returns','risk-free investment','guaranteed income'],
+ FALSE, FALSE, TRUE, ARRAY['SEC','FINRA','State Securities Regulators']),
+('gcid:cannabis_store', TRUE, FALSE, FALSE,'License #{license_number}','Cannabis License',
+ ARRAY['For use only by adults 21 and older','Keep out of reach of children'],
+ ARRAY['no health claims','no medical claims','no cure claims'],
+ ARRAY['cures','treats','heals','FDA approved'],
+ TRUE, FALSE, FALSE, ARRAY['State Cannabis Control Board','Local Municipality']),
+('gcid:insurance_agency', TRUE, TRUE, FALSE,'License #{license_number}','Insurance License',
+ ARRAY['Licensed Insurance Agent | #{license_number}'],
+ ARRAY['no coverage guarantees','no claim approval guarantees'],
+ ARRAY['guaranteed coverage','all claims paid','never denied'],
+ FALSE, FALSE, FALSE, ARRAY['State Insurance Commission','NAIC']),
+('gcid:accounting', TRUE, FALSE, FALSE,'CPA #{license_number}','CPA License',
+ ARRAY['This content is for informational purposes and does not constitute tax or financial advice'],
+ ARRAY['no tax outcome guarantees'],
+ ARRAY['guaranteed refund','guaranteed audit protection'],
+ FALSE, FALSE, FALSE, ARRAY['AICPA','State Board of Accountancy','IRS'])
+ON CONFLICT (gcid) DO NOTHING;
+
+INSERT INTO content_compliance_rules (gcid, rule_name, rule_type, rule_value, applies_to, severity) VALUES
+('gcid:lawyer','legal_no_outcome_guarantee','prohibited_phrase','guaranteed win',ARRAY['article','sdr','social_post'],'block'),
+('gcid:lawyer','legal_attorney_advertising','required_disclosure','Attorney Advertising',ARRAY['article','social_post'],'require_disclosure'),
+('gcid:lawyer','legal_past_results','required_disclosure','Prior results do not guarantee similar outcomes',ARRAY['article'],'require_disclosure'),
+('gcid:doctor','medical_no_diagnosis','prohibited_phrase','diagnoses',ARRAY['article','qa','social_post'],'block'),
+('gcid:doctor','medical_not_advice','required_disclosure','This content is for informational purposes only and does not constitute medical advice',ARRAY['article','qa'],'require_disclosure'),
+('gcid:financial_planner','finance_no_guarantee','prohibited_phrase','guaranteed returns',ARRAY['article','sdr','social_post','email'],'block'),
+('gcid:financial_planner','finance_past_performance','required_disclosure','Past performance does not guarantee future results',ARRAY['article','email'],'require_disclosure');

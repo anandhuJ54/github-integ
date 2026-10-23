@@ -1,0 +1,159 @@
+{
+  "source_url": "https://www.lacasitaaustin.example/",
+  "fetched_at": "2026-10-11T12:00:00.000Z",
+  "jsonld": [
+    {
+      "@context": "https://schema.org",
+      "@type": "Restaurant",
+      "name": "La Casita Cocina Mexicana",
+      "telephone": "+1 512-555-0110",
+      "servesCuisine": "Mexican",
+      "priceRange": "$$",
+      "address": {
+        "@type": "PostalAddress",
+        "streetAddress": "2201 E Cesar Chavez St",
+        "addressLocality": "Austin",
+        "addressRegion": "TX",
+        "postalCode": "78702"
+      },
+      "sameAs": [
+        "https://www.instagram.com/lacasitaatx",
+        "https://www.yelp.com/biz/la-casita-austin"
+      ],
+      "hasMenu": {
+        "@type": "Menu",
+        "name": "Dinner",
+        "hasMenuSection": [
+          {
+            "@type": "MenuSection",
+            "name": "Tacos",
+            "hasMenuItem": [
+              {
+                "@type": "MenuItem",
+                "name": "Carne Asada Tacos",
+                "offers": {
+                  "@type": "Offer",
+                  "price": "14.00",
+                  "priceCurrency": "USD"
+                }
+              },
+              {
+                "@type": "MenuItem",
+                "name": "Al Pastor Tacos",
+                "offers": {
+                  "@type": "Offer",
+                  "price": "13.00",
+                  "priceCurrency": "USD"
+                }
+              },
+              {
+                "@type": "MenuItem",
+                "name": "Baja Fish Tacos",
+                "offers": {
+                  "@type": "Offer",
+                  "price": "15.00",
+                  "priceCurrency": "USD"
+                }
+              }
+            ]
+          },
+          {
+            "@type": "MenuSection",
+            "name": "Platos",
+            "hasMenuItem": [
+              {
+                "@type": "MenuItem",
+                "name": "Enchiladas Verdes",
+                "description": "Chicken, salsa verde, crema",
+                "offers": {
+                  "@type": "Offer",
+                  "price": "16.50",
+                  "priceCurrency": "USD"
+                }
+              },
+              {
+                "@type": "MenuItem",
+                "name": "Mole Poblano",
+                "offers": {
+                  "@type": "Offer",
+                  "price": "19.00",
+                  "priceCurrency": "USD"
+                }
+              }
+            ]
+          },
+          {
+            "@type": "MenuSection",
+            "name": "Bebidas",
+            "hasMenuItem": [
+              {
+                "@type": "MenuItem",
+                "name": "House Margarita",
+                "offers": {
+                  "@type": "Offer",
+                  "price": "10.00",
+                  "priceCurrency": "USD"
+                }
+              },
+              {
+                "@type": "MenuItem",
+                "name": "Horchata",
+                "offers": {
+                  "@type": "Offer",
+                  "price": "4.00",
+                  "priceCurrency": "USD"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ],
+  "nap": {
+    "name": "La Casita Cocina Mexicana",
+    "address": {
+      "text": "2201 E Cesar Chavez St, Austin, TX 78702"
+    },
+    "phone": "+15125550110",
+    "source": {
+      "name": "jsonld",
+      "address": "page_text",
+      "phone": "jsonld"
+    }
+  },
+  "sameAs": [
+    {
+      "url": "https://www.instagram.com/lacasitaatx",
+      "platform": "instagram",
+      "via": "jsonld_sameAs"
+    },
+    {
+      "url": "https://www.yelp.com/biz/la-casita-austin",
+      "platform": "yelp",
+      "via": "jsonld_sameAs"
+    }
+  ],
+  "credentials": [],
+  "resolved_url": null,
+  "place_id": null,
+  "links": {
+    "internal": [],
+    "ownedCandidates": []
+  },
+  "text": [
+    {
+      "kind": "title",
+      "text": "La Casita Cocina Mexicana | Austin"
+    },
+    {
+      "kind": "heading",
+      "text": "Visit us"
+    },
+    {
+      "kind": "paragraph",
+      "text": "Family-owned since 1998. Patio seating, full bar and Taco Tuesday specials every week."
+    }
+  ],
+  "blocked": false
+}

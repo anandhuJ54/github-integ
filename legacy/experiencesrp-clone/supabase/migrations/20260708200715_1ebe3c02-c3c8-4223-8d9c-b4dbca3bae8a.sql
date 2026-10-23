@@ -1,0 +1,1 @@
+REVOKE DELETE, UPDATE ON public.exp_vertical_node_registry FROM sandbox_exec;

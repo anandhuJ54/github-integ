@@ -1,0 +1,10 @@
+export * from "./types";
+export { cleanWording, hasPlaceholder, jaccard, normalizeKey, slugify, stripRadius, tokenSet, NEAR } from "./normalize";
+export { chooseCanonical, DEFAULT_CONFIG, resolveConfig, selectKeywordLane } from "./engine";
+export type { WordingVariant } from "./engine";
+export { DEFAULT_TAGS, detectTags, hasLocalIntent } from "./tags";
+export { judgeLookup, stubJudge } from "./judge";
+export { aggregateTemplates } from "./templates";
+export { buildChangeSet } from "./changeset";
+export type { ChangeSet } from "./changeset";
+export { scorecard } from "./scorecard";

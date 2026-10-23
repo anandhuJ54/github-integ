@@ -1,0 +1,1 @@
+UPDATE exp_schema_type_ring_map SET ring_key='content' WHERE schema_property='subjectOf';

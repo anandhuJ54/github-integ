@@ -1,0 +1,1 @@
+GRANT INSERT ON public.exp_vertical_node_registry, public.content_compliance_rules TO sandbox_exec;
