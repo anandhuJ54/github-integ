@@ -101,7 +101,7 @@ Counts are (reads/writes/rpc) as measured on 2026-10-23.
 - [x] 5. `contracts/admin/openapi.json`
 - [x] 6. All four pages call `api.*` with the query keys unchanged. `loadOrgStats` and `logAudit` are `_base` code and move with `_base`.
 - [x] 7. Parity PASS 15/15 (2026-10-23, signed in). Tied rows on the paged lists are compared in one order; the API adds `id` as the final sort key.
-- [ ] 8. Click-through
+- [x] 8. Click-through (2026-10-23): `/professionals` makes no direct calls of its own. What remains is from `_base`: exp_control_grants, bootstrap_control_super_admin, exp_territories.
 - [ ] 9. Lint ratchet
 - **Gaps that already exist, kept as-is because of the 1,000-row cap.** Each would need an explicit `max_rows` decision to change.
   - `/compliance` shows only 1,000 of the 4,041 categories.
