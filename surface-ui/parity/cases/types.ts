@@ -17,6 +17,11 @@ export type ParityCase = {
   /** JSON paths whose values may differ (e.g. live counters that move between the two reads). */
   ignore?: string[];
   /**
+   * Differences that are understood and accepted: still printed with both values, but not a
+   * failure. Each needs the reason and how the API value was checked.
+   */
+  explained?: { path: string; why: string }[];
+  /**
    * Exact text replacements applied to the legacy source before it runs, for a legacy query that
    * cannot complete (e.g. hits the browser's statement timeout). Each must say why, and the
    * values it stands in for must be listed in `ignore` and verified another way.

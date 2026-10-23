@@ -34,11 +34,24 @@ def jsonish(v: Any) -> Any:
         return [jsonish(x) for x in v]
     if isinstance(v, uuid.UUID):
         return str(v)
-    if isinstance(v, (_dt.datetime, _dt.date, _dt.time)):
+    if isinstance(v, (_dt.datetime, _dt.time)):
+        return _pg_iso(v)
+    if isinstance(v, _dt.date):
         return v.isoformat()
     if isinstance(v, decimal.Decimal):
         return int(v) if v == v.to_integral_value() else float(v)
     return v
+
+
+def _pg_iso(v: _dt.datetime | _dt.time) -> str:
+    """ISO text as Postgres' to_json renders it (what PostgREST sent): the fraction of a second
+    keeps only significant digits, `.2803` not `.280300`."""
+    text = v.isoformat()
+    if not v.microsecond:
+        return text
+    head, frac = text.split(".", 1)
+    digits, tz = frac[:6], frac[6:]
+    return f"{head}.{digits.rstrip('0')}{tz}"
 
 
 def fetch_all(conn: psycopg.Connection, stmt: ClauseElement) -> list[dict[str, Any]]:

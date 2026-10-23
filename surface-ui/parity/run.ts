@@ -109,8 +109,13 @@ for (const c of cases) {
   const api = await res.json();
   const diffs: string[] = [];
   diff(legacy, api, "$", diffs);
-  const real = diffs.filter((d) => !c.ignore?.some((p) => d.startsWith(`${p}:`) || d.startsWith(`${p}.`)));
+  const under = (d: string, p: string) => d.startsWith(`${p}:`) || d.startsWith(`${p}.`);
+  const unexplained = diffs.filter((d) => !c.ignore?.some((p) => under(d, p)));
+  const real = unexplained.filter((d) => !c.explained?.some((e) => under(d, e.path)));
   for (const p of c.ignore ?? []) console.log(`  not compared: ${p} (verify separately)`);
+  for (const e of c.explained ?? []) {
+    for (const d of unexplained.filter((x) => under(x, e.path))) console.log(`  explained: ${d}\n    why: ${e.why}`);
+  }
   if (real.length) {
     failed++;
     console.log(`FAIL ${c.name}: ${real.length} difference(s)`);
