@@ -151,6 +151,17 @@ t_entity_compliance = Table(
     schema='public'
 )
 
+t_exp_account_tier = Table(
+    'exp_account_tier', metadata,
+    Column('account_id', Text, primary_key=True),
+    Column('agent_count', Integer, server_default=text('0')),
+    Column('tier', Text, nullable=False),
+    Column('group_key', Text),
+    Column('updated_at', DateTime(True), server_default=text('now()')),
+    PrimaryKeyConstraint('account_id', name='exp_account_tier_pkey'),
+    schema='public'
+)
+
 t_exp_activity_events = Table(
     'exp_activity_events', metadata,
     Column('id', Uuid, primary_key=True, server_default=text('gen_random_uuid()')),
@@ -169,6 +180,22 @@ t_exp_activity_events = Table(
     Column('demo_batch', Text),
     PrimaryKeyConstraint('id', name='exp_activity_events_pkey'),
     Index('ix_activity_external', 'source', 'external_id'),
+    schema='public'
+)
+
+t_exp_brand_adoption = Table(
+    'exp_brand_adoption', metadata,
+    Column('id', Uuid, primary_key=True, server_default=text('gen_random_uuid()')),
+    Column('org_id', Uuid),
+    Column('group_key', Text),
+    Column('active_users', Integer),
+    Column('engaged_users', Integer),
+    Column('referral_marketing', Text),
+    Column('referral_regional', Text),
+    Column('referral_location', Text),
+    Column('is_demo', Boolean, server_default=text('true')),
+    Column('updated_at', DateTime(True), server_default=text('now()')),
+    PrimaryKeyConstraint('id', name='exp_brand_adoption_pkey'),
     schema='public'
 )
 
@@ -211,6 +238,17 @@ t_exp_capability_registry = Table(
     Column('updated_at', DateTime(True), nullable=False, server_default=text('now()')),
     PrimaryKeyConstraint('id', name='exp_capability_registry_pkey'),
     UniqueConstraint('key', name='exp_capability_registry_key_key'),
+    schema='public'
+)
+
+t_exp_category_group_members = Table(
+    'exp_category_group_members', metadata,
+    Column('id', Uuid, primary_key=True, server_default=text('gen_random_uuid()')),
+    Column('group_key', Text),
+    Column('gcid', Text),
+    Column('created_at', DateTime(True), server_default=text('now()')),
+    PrimaryKeyConstraint('id', name='exp_category_group_members_pkey'),
+    UniqueConstraint('gcid', name='exp_category_group_members_gcid_key'),
     schema='public'
 )
 
@@ -268,6 +306,50 @@ t_exp_category_schema_type = Table(
     Column('confidence', Text),
     Column('rule', Text),
     PrimaryKeyConstraint('gcid', name='exp_category_schema_type_pkey'),
+    schema='public'
+)
+
+t_exp_comp_plans = Table(
+    'exp_comp_plans', metadata,
+    Column('id', Uuid, primary_key=True, server_default=text('gen_random_uuid()')),
+    Column('name', Text, nullable=False),
+    Column('role', Text, nullable=False),
+    Column('rate_pct', Numeric, nullable=False, server_default=text('0')),
+    Column('basis', Text, nullable=False, server_default=text("'net'::text")),
+    Column('active', Boolean, nullable=False, server_default=text('true')),
+    Column('is_demo', Boolean, nullable=False, server_default=text('false')),
+    Column('notes', Text),
+    Column('created_at', DateTime(True), nullable=False, server_default=text('now()')),
+    PrimaryKeyConstraint('id', name='exp_comp_plans_pkey'),
+    schema='public'
+)
+
+t_exp_contract_activity = Table(
+    'exp_contract_activity', metadata,
+    Column('id', Uuid, primary_key=True, server_default=text('gen_random_uuid()')),
+    Column('contract_id', Uuid, nullable=False),
+    Column('event_type', Text, nullable=False),
+    Column('actor', Text),
+    Column('detail', JSONB),
+    Column('occurred_at', DateTime(True), server_default=text('now()')),
+    PrimaryKeyConstraint('id', name='exp_contract_activity_pkey'),
+    Index('idx_cact_contract', 'contract_id'),
+    schema='public'
+)
+
+t_exp_csm_assignments = Table(
+    'exp_csm_assignments', metadata,
+    Column('id', Uuid, primary_key=True, server_default=text('gen_random_uuid()')),
+    Column('subject_type', Text, nullable=False, server_default=text("'account'::text")),
+    Column('subject_id', Text, nullable=False),
+    Column('csm_user_ref', Text),
+    Column('csm_name', Text),
+    Column('csm_email', Text),
+    Column('assigned_by', Text),
+    Column('assigned_at', DateTime(True), nullable=False, server_default=text('now()')),
+    Column('active', Boolean, nullable=False, server_default=text('true')),
+    PrimaryKeyConstraint('id', name='exp_csm_assignments_pkey'),
+    Index('idx_csm_active_subject', 'subject_type', 'subject_id', postgresql_where='active', unique=True),
     schema='public'
 )
 
@@ -485,6 +567,57 @@ t_exp_index_submission_log = Table(
     schema='public'
 )
 
+t_exp_invoice = Table(
+    'exp_invoice', metadata,
+    Column('id', Uuid, primary_key=True, server_default=text('gen_random_uuid()')),
+    Column('contract_id', Uuid, nullable=False),
+    Column('number', Text),
+    Column('invoice_type', Text, nullable=False),
+    Column('status', Text, server_default=text("'draft'::text")),
+    Column('period_start', Date),
+    Column('period_end', Date),
+    Column('currency', Text, server_default=text("'USD'::text")),
+    Column('subtotal', Numeric, server_default=text('0')),
+    Column('total', Numeric, server_default=text('0')),
+    Column('billing_contact_email', Text),
+    Column('issued_at', DateTime(True)),
+    Column('due_at', Date),
+    Column('created_at', DateTime(True), server_default=text('now()')),
+    Column('is_demo', Boolean, server_default=text('false')),
+    Column('demo_batch', Text),
+    PrimaryKeyConstraint('id', name='exp_invoice_pkey'),
+    Index('idx_inv_contract', 'contract_id'),
+    schema='public'
+)
+
+t_exp_invoice_line = Table(
+    'exp_invoice_line', metadata,
+    Column('id', Uuid, primary_key=True, server_default=text('gen_random_uuid()')),
+    Column('invoice_id', Uuid, nullable=False),
+    Column('description', Text),
+    Column('product_code', Text),
+    Column('qty', Numeric),
+    Column('unit', Text),
+    Column('unit_price', Numeric),
+    Column('amount', Numeric),
+    PrimaryKeyConstraint('id', name='exp_invoice_line_pkey'),
+    Index('idx_invl_invoice', 'invoice_id'),
+    schema='public'
+)
+
+t_exp_lead_routing_state = Table(
+    'exp_lead_routing_state', metadata,
+    Column('id', Uuid, primary_key=True, server_default=text('gen_random_uuid()')),
+    Column('gcid', Text),
+    Column('tier', Text),
+    Column('last_seller_id', Uuid),
+    Column('last_assigned_at', DateTime(True)),
+    Column('group_key', Text),
+    PrimaryKeyConstraint('id', name='exp_lead_routing_state_pkey'),
+    UniqueConstraint('gcid', 'tier', name='exp_lead_routing_state_gcid_tier_key'),
+    schema='public'
+)
+
 t_exp_listings_category_status = Table(
     'exp_listings_category_status', metadata,
     Column('gcid', Text, primary_key=True),
@@ -562,6 +695,25 @@ t_exp_nora_weights = Table(
     schema='public'
 )
 
+t_exp_notifications = Table(
+    'exp_notifications', metadata,
+    Column('id', Uuid, primary_key=True, server_default=text('gen_random_uuid()')),
+    Column('user_ref', Text),
+    Column('kind', Text),
+    Column('title', Text),
+    Column('body', Text),
+    Column('link', Text),
+    Column('entity_type', Text),
+    Column('entity_id', Uuid),
+    Column('read_at', DateTime(True)),
+    Column('created_at', DateTime(True), server_default=text('now()')),
+    Column('is_demo', Boolean, server_default=text('false')),
+    Column('demo_batch', Text),
+    PrimaryKeyConstraint('id', name='exp_notifications_pkey'),
+    Index('idx_notif_user', 'user_ref'),
+    schema='public'
+)
+
 t_exp_opportunity_feedback = Table(
     'exp_opportunity_feedback', metadata,
     Column('id', Uuid, primary_key=True, server_default=text('gen_random_uuid()')),
@@ -579,6 +731,34 @@ t_exp_opportunity_feedback = Table(
     schema='public'
 )
 
+t_exp_order_sku = Table(
+    'exp_order_sku', metadata,
+    Column('code', Text, primary_key=True),
+    Column('name', Text, nullable=False),
+    Column('family', Text),
+    Column('edition', Text),
+    Column('line_type', Text, server_default=text("'recurring'::text")),
+    Column('default_billing_mode', Text, server_default=text("'annual'::text")),
+    Column('unit', Text),
+    Column('annual_unit_price', Numeric),
+    Column('monthly_unit_price', Numeric),
+    Column('is_base_package', Boolean, server_default=text('false')),
+    Column('included_credits', Integer),
+    Column('included_allocation', Numeric),
+    Column('overage_unit', Text),
+    Column('overage_rate_annual', Numeric),
+    Column('overage_rate_monthly', Numeric),
+    Column('overage_method', Text, server_default=text("'ratchet'::text")),
+    Column('min_charge_units', Numeric),
+    Column('exhibit_key', Text),
+    Column('nora_product_key', Text),
+    Column('active', Boolean, server_default=text('true')),
+    Column('notes', Text),
+    Column('created_at', DateTime(True), server_default=text('now()')),
+    PrimaryKeyConstraint('code', name='exp_order_sku_pkey'),
+    schema='public'
+)
+
 t_exp_page_views_rollup = Table(
     'exp_page_views_rollup', metadata,
     Column('id', Uuid, primary_key=True, server_default=text('gen_random_uuid()')),
@@ -593,6 +773,85 @@ t_exp_page_views_rollup = Table(
     Column('is_demo', Boolean, server_default=text('true')),
     PrimaryKeyConstraint('id', name='exp_page_views_rollup_pkey'),
     UniqueConstraint('gcid', 'geo_type', 'geo_value', 'day', name='exp_page_views_rollup_gcid_geo_type_geo_value_day_key'),
+    schema='public'
+)
+
+t_exp_pipeline_stages = Table(
+    'exp_pipeline_stages', metadata,
+    Column('key', Text, primary_key=True),
+    Column('label', Text),
+    Column('sort', Integer),
+    Column('is_open', Boolean, server_default=text('true')),
+    PrimaryKeyConstraint('key', name='exp_pipeline_stages_pkey'),
+    schema='public'
+)
+
+t_exp_price_tiers = Table(
+    'exp_price_tiers', metadata,
+    Column('id', Uuid, primary_key=True, server_default=text('gen_random_uuid()')),
+    Column('product_key', Text),
+    Column('entity_type', Text),
+    Column('min_qty', Integer),
+    Column('max_qty', Integer),
+    Column('unit_price', Numeric),
+    Column('effective_from', Date, server_default=text('CURRENT_DATE')),
+    Column('created_at', DateTime(True), server_default=text('now()')),
+    Column('is_demo', Boolean, server_default=text('false')),
+    Column('demo_batch', Text),
+    Column('tier_kind', Text),
+    Column('variant', Text),
+    Column('list_per_user', Numeric),
+    Column('discount_pct', Numeric),
+    Column('platform_fee_annual', Numeric),
+    Column('addl_user_monthly', Numeric),
+    Column('setup_fee', Numeric),
+    Column('included_campaigns', Integer),
+    Column('pooled_credits', BigInteger),
+    Column('overage_rate', Numeric),
+    Column('label', Text),
+    Column('sort', SmallInteger),
+    PrimaryKeyConstraint('id', name='exp_price_tiers_pkey'),
+    Index('ix_price_tiers_prod', 'product_key', 'entity_type'),
+    schema='public'
+)
+
+t_exp_pricing_config = Table(
+    'exp_pricing_config', metadata,
+    Column('key', Text, primary_key=True),
+    Column('value', Numeric),
+    Column('value_json', JSONB),
+    Column('label', Text),
+    Column('unit', Text),
+    Column('updated_at', DateTime(True), server_default=text('now()')),
+    PrimaryKeyConstraint('key', name='exp_pricing_config_pkey'),
+    schema='public'
+)
+
+t_exp_products = Table(
+    'exp_products', metadata,
+    Column('product_key', Text, primary_key=True),
+    Column('name', Text, nullable=False),
+    Column('description', Text),
+    Column('entity_scope', Text),
+    Column('billing_type', Text, nullable=False),
+    Column('price_monthly', Numeric),
+    Column('price_unit', Text),
+    Column('is_addon', Boolean, server_default=text('false')),
+    Column('sort', SmallInteger, server_default=text('100')),
+    Column('active', Boolean, server_default=text('true')),
+    Column('created_at', DateTime(True), server_default=text('now()')),
+    Column('price_monthly_location', Numeric),
+    Column('consumes_llm_credits', Boolean, server_default=text('false')),
+    Column('est_credits_per_professional', Numeric),
+    Column('est_credits_per_location', Numeric),
+    Column('lane', Text),
+    Column('creditable', Boolean, server_default=text('true')),
+    Column('discountable', Boolean, server_default=text('true')),
+    Column('passthrough', Boolean, server_default=text('false')),
+    Column('min_charge', Numeric),
+    Column('reconciled_at', DateTime(True)),
+    Column('package_includes', JSONB),
+    PrimaryKeyConstraint('product_key', name='exp_products_pkey'),
     schema='public'
 )
 
@@ -655,6 +914,55 @@ t_exp_rings = Table(
     CheckConstraint('"position" >= 1 AND "position" <= 10', name='exp_rings_position_check'),
     PrimaryKeyConstraint('position', name='exp_rings_pkey'),
     UniqueConstraint('ring_key', name='exp_rings_ring_key_key'),
+    schema='public'
+)
+
+t_exp_sales_category_stats = Table(
+    'exp_sales_category_stats', metadata,
+    Column('id', Uuid, primary_key=True, server_default=text('gen_random_uuid()')),
+    Column('group_key', Text),
+    Column('label', Text),
+    Column('momentum_pct', Numeric),
+    Column('avg_margin_pct', Numeric),
+    Column('win_rate', Numeric),
+    Column('avg_deal', Numeric),
+    Column('price_signal', Text),
+    Column('is_demo', Boolean, server_default=text('true')),
+    Column('created_at', DateTime(True), server_default=text('now()')),
+    PrimaryKeyConstraint('id', name='exp_sales_category_stats_pkey'),
+    schema='public'
+)
+
+t_exp_sales_notes = Table(
+    'exp_sales_notes', metadata,
+    Column('id', Uuid, primary_key=True, server_default=text('gen_random_uuid()')),
+    Column('seller_id', Uuid),
+    Column('subject_type', Text),
+    Column('subject_id', Text),
+    Column('subject_label', Text),
+    Column('body', Text),
+    Column('callback_priority', Boolean, server_default=text('false')),
+    Column('callback_at', DateTime(True)),
+    Column('created_by', Text),
+    Column('is_demo', Boolean, server_default=text('true')),
+    Column('created_at', DateTime(True), server_default=text('now()')),
+    Column('demo_batch', Text),
+    Column('pinned', Boolean, server_default=text('false')),
+    Column('mentions', ARRAY(Text())),
+    PrimaryKeyConstraint('id', name='exp_sales_notes_pkey'),
+    schema='public'
+)
+
+t_exp_sales_rep_verticals = Table(
+    'exp_sales_rep_verticals', metadata,
+    Column('id', Uuid, primary_key=True, server_default=text('gen_random_uuid()')),
+    Column('rep_id', Uuid),
+    Column('group_key', Text),
+    Column('created_at', DateTime(True), server_default=text('now()')),
+    Column('is_demo', Boolean, server_default=text('false')),
+    Column('demo_batch', Text),
+    PrimaryKeyConstraint('id', name='exp_sales_rep_verticals_pkey'),
+    UniqueConstraint('rep_id', 'group_key', name='exp_sales_rep_verticals_rep_id_group_key_key'),
     schema='public'
 )
 
@@ -932,6 +1240,19 @@ t_exp_territories = Table(
     schema='public'
 )
 
+t_exp_territory_rules = Table(
+    'exp_territory_rules', metadata,
+    Column('tier', Text, primary_key=True),
+    Column('min_users', Integer),
+    Column('max_users', Integer),
+    Column('logos_per_territory', Integer),
+    Column('agents_per_territory', Integer),
+    Column('owns_individuals', Boolean, server_default=text('false')),
+    Column('notes', Text),
+    PrimaryKeyConstraint('tier', name='exp_territory_rules_pkey'),
+    schema='public'
+)
+
 t_exp_us_cities = Table(
     'exp_us_cities', metadata,
     Column('id', BigInteger, primary_key=True, autoincrement=True),
@@ -944,6 +1265,27 @@ t_exp_us_cities = Table(
     Index('exp_us_cities_city_state_key', unique=True),
     Index('exp_us_cities_latlng_idx', 'lat', 'lng'),
     Index('exp_us_cities_state_idx'),
+    schema='public'
+)
+
+t_exp_usage_meter = Table(
+    'exp_usage_meter', metadata,
+    Column('id', Uuid, primary_key=True, server_default=text('gen_random_uuid()')),
+    Column('contract_id', Uuid, nullable=False),
+    Column('line_id', Uuid),
+    Column('product_code', Text),
+    Column('metric', Text),
+    Column('period_start', Date),
+    Column('period_end', Date),
+    Column('included_qty', Numeric),
+    Column('measured_qty', Numeric),
+    Column('high_water_qty', Numeric),
+    Column('source', Text, server_default=text("'manual'::text")),
+    Column('created_at', DateTime(True), server_default=text('now()')),
+    Column('is_demo', Boolean, server_default=text('false')),
+    Column('demo_batch', Text),
+    PrimaryKeyConstraint('id', name='exp_usage_meter_pkey'),
+    Index('idx_um_contract', 'contract_id'),
     schema='public'
 )
 
@@ -2003,6 +2345,25 @@ t_exp_dev_sprints = Table(
     schema='public'
 )
 
+t_exp_entitlements = Table(
+    'exp_entitlements', metadata,
+    Column('id', Uuid, primary_key=True, server_default=text('gen_random_uuid()')),
+    Column('subject_type', Text, nullable=False),
+    Column('subject_id', Text, nullable=False),
+    Column('product_key', Text, nullable=False),
+    Column('state', Text, nullable=False, server_default=text("'not_entitled'::text")),
+    Column('source', Text),
+    Column('tokens_included', Integer, server_default=text('0')),
+    Column('config', JSONB, server_default=text("'{}'::jsonb")),
+    Column('granted_by', Text),
+    Column('granted_at', DateTime(True), server_default=text('now()')),
+    Column('expires_at', DateTime(True)),
+    ForeignKeyConstraint(['product_key'], ['public.exp_products.product_key'], name='exp_entitlements_product_key_fkey'),
+    PrimaryKeyConstraint('id', name='exp_entitlements_pkey'),
+    UniqueConstraint('subject_type', 'subject_id', 'product_key', name='exp_entitlements_subject_type_subject_id_product_key_key'),
+    schema='public'
+)
+
 t_exp_etl_frontier = Table(
     'exp_etl_frontier', metadata,
     Column('frontier_id', Uuid, primary_key=True, server_default=text('gen_random_uuid()')),
@@ -2114,6 +2475,54 @@ t_exp_listings_field_map = Table(
     schema='public'
 )
 
+t_exp_price_book = Table(
+    'exp_price_book', metadata,
+    Column('id', Uuid, primary_key=True, server_default=text('gen_random_uuid()')),
+    Column('product_key', Text),
+    Column('scope', Text),
+    Column('unit', Text),
+    Column('list_price', Numeric),
+    Column('contract_price', Numeric),
+    Column('billing_type', Text),
+    Column('notes', Text),
+    Column('created_at', DateTime(True), server_default=text('now()')),
+    Column('description', Text),
+    Column('cost_type', Text),
+    Column('cost_value', Numeric),
+    Column('floor_margin_pct', Numeric),
+    Column('discount_tiers', JSONB),
+    Column('credit_cost_per_unit', Numeric),
+    ForeignKeyConstraint(['product_key'], ['public.exp_products.product_key'], name='exp_price_book_product_key_fkey'),
+    PrimaryKeyConstraint('id', name='exp_price_book_pkey'),
+    Index('exp_price_book_key_scope_uq', 'product_key', 'scope', unique=True),
+    schema='public'
+)
+
+t_exp_promo_codes = Table(
+    'exp_promo_codes', metadata,
+    Column('id', Uuid, primary_key=True, server_default=text('gen_random_uuid()')),
+    Column('code', Text),
+    Column('seller_id', Uuid),
+    Column('discount_pct', Numeric),
+    Column('active', Boolean, server_default=text('true')),
+    Column('created_at', DateTime(True), server_default=text('now()')),
+    Column('is_demo', Boolean, server_default=text('false')),
+    Column('demo_batch', Text),
+    Column('applies_to_products', ARRAY(Text())),
+    Column('discount_kind', Text),
+    Column('amount', Numeric),
+    Column('pricing_type', Text),
+    Column('duration_months', Integer),
+    Column('starts_at', Date),
+    Column('expires_at', Date),
+    Column('scope_type', Text),
+    Column('applies_to_scope', Text),
+    ForeignKeyConstraint(['seller_id'], ['public.exp_sales_reps.id'], name='exp_promo_codes_seller_id_fkey'),
+    PrimaryKeyConstraint('id', name='exp_promo_codes_pkey'),
+    UniqueConstraint('code', name='exp_promo_codes_code_key'),
+    schema='public'
+)
+
 t_exp_rel = Table(
     'exp_rel', metadata,
     Column('rel_id', Uuid, primary_key=True, server_default=text('gen_random_uuid()')),
@@ -2146,6 +2555,21 @@ t_exp_rel = Table(
     schema='public'
 )
 
+t_exp_sales_assignments = Table(
+    'exp_sales_assignments', metadata,
+    Column('id', Uuid, primary_key=True, server_default=text('gen_random_uuid()')),
+    Column('rep_id', Uuid),
+    Column('group_key', Text, nullable=False),
+    Column('assignment_type', Text, nullable=False),
+    Column('target_ref', Text),
+    Column('created_at', DateTime(True), server_default=text('now()')),
+    Column('is_demo', Boolean, server_default=text('false')),
+    Column('demo_batch', Text),
+    ForeignKeyConstraint(['rep_id'], ['public.exp_sales_reps.id'], name='exp_sales_assignments_rep_id_fkey'),
+    PrimaryKeyConstraint('id', name='exp_sales_assignments_pkey'),
+    schema='public'
+)
+
 t_exp_sales_quotas = Table(
     'exp_sales_quotas', metadata,
     Column('id', Uuid, primary_key=True, server_default=text('gen_random_uuid()')),
@@ -2160,6 +2584,124 @@ t_exp_sales_quotas = Table(
     Column('demo_batch', Text),
     ForeignKeyConstraint(['rep_id'], ['public.exp_sales_reps.id'], name='exp_sales_quotas_rep_id_fkey'),
     PrimaryKeyConstraint('id', name='exp_sales_quotas_pkey'),
+    schema='public'
+)
+
+t_exp_sales_rep_metrics = Table(
+    'exp_sales_rep_metrics', metadata,
+    Column('id', Uuid, primary_key=True, server_default=text('gen_random_uuid()')),
+    Column('rep_id', Uuid),
+    Column('period_start', Date, nullable=False),
+    Column('group_key', Text),
+    Column('profiles_assigned', Integer),
+    Column('logos_assigned', Integer),
+    Column('views', Integer),
+    Column('attempted_claims', Integer),
+    Column('claims', Integer),
+    Column('engaged_30d', Integer),
+    Column('logo_signals', Integer),
+    Column('demos_booked', Integer),
+    Column('demos_attended', Integer),
+    Column('closings', Integer),
+    Column('upgrades', Integer),
+    Column('revenue', Numeric),
+    Column('is_demo', Boolean, server_default=text('true')),
+    Column('created_at', DateTime(True), server_default=text('now()')),
+    Column('demo_batch', Text),
+    ForeignKeyConstraint(['rep_id'], ['public.exp_sales_reps.id'], ondelete='CASCADE', name='exp_sales_rep_metrics_rep_id_fkey'),
+    PrimaryKeyConstraint('id', name='exp_sales_rep_metrics_pkey'),
+    schema='public'
+)
+
+t_exp_stage_requirements = Table(
+    'exp_stage_requirements', metadata,
+    Column('id', Uuid, primary_key=True, server_default=text('gen_random_uuid()')),
+    Column('stage_key', Text),
+    Column('field_label', Text),
+    Column('field_type', Text),
+    Column('required', Boolean, server_default=text('true')),
+    Column('sort', Integer),
+    ForeignKeyConstraint(['stage_key'], ['public.exp_pipeline_stages.key'], name='exp_stage_requirements_stage_key_fkey'),
+    PrimaryKeyConstraint('id', name='exp_stage_requirements_pkey'),
+    schema='public'
+)
+
+t_exp_territory_proposals = Table(
+    'exp_territory_proposals', metadata,
+    Column('id', Uuid, primary_key=True, server_default=text('gen_random_uuid()')),
+    Column('group_key', Text),
+    Column('gcid', Text),
+    Column('lane', Text),
+    Column('proposed_label', Text),
+    Column('proposed_tier', Text),
+    Column('proposed_geo', Text),
+    Column('rationale', Text),
+    Column('payload', JSONB),
+    Column('state', Text, server_default=text("'pending'::text")),
+    Column('created_by', Text, server_default=text("'ai_definer'::text")),
+    Column('reviewed_by', Uuid),
+    Column('created_at', DateTime(True), server_default=text('now()')),
+    Column('reviewed_at', DateTime(True)),
+    Column('is_demo', Boolean, server_default=text('false')),
+    Column('demo_batch', Text),
+    ForeignKeyConstraint(['reviewed_by'], ['public.exp_sales_reps.id'], name='exp_territory_proposals_reviewed_by_fkey'),
+    PrimaryKeyConstraint('id', name='exp_territory_proposals_pkey'),
+    Index('ix_terr_prop_state', 'state'),
+    schema='public'
+)
+
+t_exp_territory_ramps = Table(
+    'exp_territory_ramps', metadata,
+    Column('id', Uuid, primary_key=True, server_default=text('gen_random_uuid()')),
+    Column('territory_id', Uuid),
+    Column('rep_id', Uuid),
+    Column('month_offset', Integer),
+    Column('ramp_pct', Numeric),
+    Column('created_at', DateTime(True), server_default=text('now()')),
+    Column('is_demo', Boolean, server_default=text('false')),
+    Column('demo_batch', Text),
+    ForeignKeyConstraint(['rep_id'], ['public.exp_sales_reps.id'], name='exp_territory_ramps_rep_id_fkey'),
+    ForeignKeyConstraint(['territory_id'], ['public.exp_territories.id'], ondelete='CASCADE', name='exp_territory_ramps_territory_id_fkey'),
+    PrimaryKeyConstraint('id', name='exp_territory_ramps_pkey'),
+    Index('ix_terr_ramps', 'territory_id'),
+    schema='public'
+)
+
+t_exp_territory_seats = Table(
+    'exp_territory_seats', metadata,
+    Column('id', Uuid, primary_key=True, server_default=text('gen_random_uuid()')),
+    Column('territory_id', Uuid, nullable=False),
+    Column('rep_id', Uuid, nullable=False),
+    Column('group_key', Text),
+    Column('lane_role', Text, nullable=False),
+    Column('is_nora_default', Boolean, nullable=False, server_default=text('false')),
+    Column('monthly_quota', Numeric),
+    Column('created_at', DateTime(True), nullable=False, server_default=text('now()')),
+    CheckConstraint("lane_role = ANY (ARRAY['SRE'::text, 'SMB'::text, 'MM'::text, 'ENT'::text])", name='exp_territory_seats_lane_role_check'),
+    ForeignKeyConstraint(['rep_id'], ['public.exp_sales_reps.id'], ondelete='CASCADE', name='exp_territory_seats_rep_id_fkey'),
+    ForeignKeyConstraint(['territory_id'], ['public.exp_territories.id'], ondelete='CASCADE', name='exp_territory_seats_territory_id_fkey'),
+    PrimaryKeyConstraint('id', name='exp_territory_seats_pkey'),
+    UniqueConstraint('territory_id', 'rep_id', 'lane_role', name='exp_territory_seats_territory_id_rep_id_lane_role_key'),
+    Index('exp_territory_seats_group_idx', 'group_key'),
+    Index('exp_territory_seats_rep_idx', 'rep_id'),
+    schema='public',
+    comment='Seller seats: many reps per territory, many territories per rep, one row per (territory, rep, lane role) with per-seat quota. NORA default seat flagged.'
+)
+
+t_exp_trial_extensions = Table(
+    'exp_trial_extensions', metadata,
+    Column('id', Uuid, primary_key=True, server_default=text('gen_random_uuid()')),
+    Column('entitlement_id', Uuid),
+    Column('subject_id', Text),
+    Column('days', Integer),
+    Column('granted_by', Uuid),
+    Column('reason', Text),
+    Column('created_at', DateTime(True), server_default=text('now()')),
+    Column('is_demo', Boolean, server_default=text('false')),
+    Column('demo_batch', Text),
+    CheckConstraint('days <= 7', name='exp_trial_extensions_days_check'),
+    ForeignKeyConstraint(['granted_by'], ['public.exp_sales_reps.id'], name='exp_trial_extensions_granted_by_fkey'),
+    PrimaryKeyConstraint('id', name='exp_trial_extensions_pkey'),
     schema='public'
 )
 
@@ -2497,6 +3039,138 @@ t_enterprise_settings = Table(
     schema='public'
 )
 
+t_exp_claim_events = Table(
+    'exp_claim_events', metadata,
+    Column('id', Uuid, primary_key=True, server_default=text('gen_random_uuid()')),
+    Column('entity_type', Text),
+    Column('entity_id', Text),
+    Column('entity_label', Text),
+    Column('group_key', Text),
+    Column('logo_org_id', Uuid),
+    Column('territory_id', Uuid),
+    Column('seller_id', Uuid),
+    Column('event_type', Text),
+    Column('nora_engagement', Integer),
+    Column('upgraded', Boolean, server_default=text('false')),
+    Column('contact_phone', Text),
+    Column('contact_email', Text),
+    Column('is_demo', Boolean, server_default=text('true')),
+    Column('occurred_at', DateTime(True), server_default=text('now()')),
+    Column('state', Text),
+    Column('demo_batch', Text),
+    Column('contact_updated_at', DateTime(True)),
+    Column('contact_updated_by', Uuid),
+    Column('claim_id', Uuid),
+    ForeignKeyConstraint(['claim_id'], ['public.exp_claim.claim_id'], name='exp_claim_events_claim_id_fkey'),
+    PrimaryKeyConstraint('id', name='exp_claim_events_pkey'),
+    Index('idx_exp_claim_events_claim', 'claim_id'),
+    schema='public'
+)
+
+t_exp_contacts = Table(
+    'exp_contacts', metadata,
+    Column('id', Uuid, primary_key=True, server_default=text('gen_random_uuid()')),
+    Column('account_id', Uuid),
+    Column('first_name', Text),
+    Column('last_name', Text),
+    Column('email', Text),
+    Column('phone', Text),
+    Column('job_title', Text),
+    Column('created_at', DateTime(True), server_default=text('now()')),
+    Column('is_demo', Boolean, server_default=text('false')),
+    Column('demo_batch', Text),
+    Column('source_origin', Text),
+    Column('professional_id', Text),
+    ForeignKeyConstraint(['account_id'], ['public.exp_accounts.id'], ondelete='CASCADE', name='exp_contacts_account_id_fkey'),
+    PrimaryKeyConstraint('id', name='exp_contacts_pkey'),
+    Index('ix_contacts_account', 'account_id'),
+    schema='public'
+)
+
+t_exp_contract_line_items = Table(
+    'exp_contract_line_items', metadata,
+    Column('id', Uuid, primary_key=True, server_default=text('gen_random_uuid()')),
+    Column('contract_id', Uuid),
+    Column('product_key', Text),
+    Column('qty', Numeric, server_default=text('1')),
+    Column('unit_price', Numeric),
+    Column('term', Text),
+    Column('notes', Text),
+    Column('discount_pct', Numeric, server_default=text('0')),
+    Column('cost', Numeric),
+    Column('net', Numeric),
+    Column('margin_pct', Numeric),
+    Column('scope', Text),
+    Column('name_snapshot', Text),
+    Column('description_snapshot', Text),
+    Column('line_type', Text, server_default=text("'recurring'::text")),
+    Column('product_code', Text),
+    Column('term_months', Integer),
+    Column('billing_mode', Text),
+    Column('allocation', Numeric),
+    Column('overage_unit', Text),
+    Column('overage_rate', Numeric),
+    Column('overage_method', Text),
+    Column('is_base', Boolean, server_default=text('false')),
+    Column('subtotal', Numeric),
+    ForeignKeyConstraint(['contract_id'], ['public.exp_contracts.id'], name='exp_contract_line_items_contract_id_fkey'),
+    PrimaryKeyConstraint('id', name='exp_contract_line_items_pkey'),
+    schema='public'
+)
+
+t_exp_contract_renewals = Table(
+    'exp_contract_renewals', metadata,
+    Column('id', Uuid, primary_key=True, server_default=text('gen_random_uuid()')),
+    Column('contract_id', Uuid),
+    Column('renewal_date', Date),
+    Column('reminder_state', Text, server_default=text("'scheduled'::text")),
+    Column('notes', Text),
+    Column('owner', Text),
+    Column('current_acv', Numeric),
+    Column('expansion_est', Numeric),
+    Column('utilization_pct', Numeric),
+    Column('status', Text, server_default=text("'upcoming'::text")),
+    Column('renewal_contract_id', Uuid),
+    Column('is_demo', Boolean, server_default=text('false')),
+    Column('demo_batch', Text),
+    Column('notice_deadline', Date),
+    Column('renewal_decision', Text, nullable=False, server_default=text("'pending'::text")),
+    Column('nonrenewal_notice_at', DateTime(True)),
+    ForeignKeyConstraint(['contract_id'], ['public.exp_contracts.id'], name='exp_contract_renewals_contract_id_fkey'),
+    PrimaryKeyConstraint('id', name='exp_contract_renewals_pkey'),
+    schema='public'
+)
+
+t_exp_contract_signatures = Table(
+    'exp_contract_signatures', metadata,
+    Column('id', Uuid, primary_key=True, server_default=text('gen_random_uuid()')),
+    Column('contract_id', Uuid),
+    Column('signer_name', Text),
+    Column('signer_email', Text),
+    Column('status', Text, server_default=text("'sent'::text")),
+    Column('signed_at', DateTime(True)),
+    Column('party', Text),
+    Column('role', Text),
+    Column('signing_order', Integer),
+    Column('token', Text),
+    Column('sent_at', DateTime(True)),
+    Column('consent_at', DateTime(True)),
+    Column('signed_ip', Text),
+    Column('user_agent', Text),
+    Column('identity_method', Text),
+    Column('signature_type', Text),
+    Column('signature_data', Text),
+    Column('version_no', Integer),
+    Column('version_hash', Text),
+    Column('declined_reason', Text),
+    Column('is_demo', Boolean, server_default=text('false')),
+    Column('demo_batch', Text),
+    ForeignKeyConstraint(['contract_id'], ['public.exp_contracts.id'], name='exp_contract_signatures_contract_id_fkey'),
+    PrimaryKeyConstraint('id', name='exp_contract_signatures_pkey'),
+    Index('idx_sig_token', 'token', postgresql_where='(token IS NOT NULL)', unique=True),
+    schema='public'
+)
+
 t_exp_dev_idea_votes = Table(
     'exp_dev_idea_votes', metadata,
     Column('id', Uuid, primary_key=True, server_default=text('gen_random_uuid()')),
@@ -2595,6 +3269,19 @@ t_exp_etl_staging = Table(
     Index('idx_staging_detail_url_gcid', 'detail_url', 'gcid', postgresql_where='(detail_url IS NOT NULL)'),
     Index('idx_staging_gcid_source_observed', 'gcid', 'source_id', 'observed_at'),
     Index('idx_staging_pending', 'resolution_status', postgresql_where="(resolution_status = 'pending'::text)"),
+    schema='public'
+)
+
+t_exp_promo_redemptions = Table(
+    'exp_promo_redemptions', metadata,
+    Column('id', Uuid, primary_key=True, server_default=text('gen_random_uuid()')),
+    Column('code', Text),
+    Column('subject_id', Text),
+    Column('redeemed_at', DateTime(True), server_default=text('now()')),
+    Column('is_demo', Boolean, server_default=text('false')),
+    Column('demo_batch', Text),
+    ForeignKeyConstraint(['code'], ['public.exp_promo_codes.code'], name='exp_promo_redemptions_code_fkey'),
+    PrimaryKeyConstraint('id', name='exp_promo_redemptions_pkey'),
     schema='public'
 )
 
@@ -2910,6 +3597,202 @@ t_credentials = Table(
     Index('idx_creds_id', 'identifier', 'issuing_org'),
     Index('idx_creds_pro', 'professional_id'),
     Index('idx_creds_type', 'credential_type'),
+    schema='public'
+)
+
+t_exp_opportunity_contacts = Table(
+    'exp_opportunity_contacts', metadata,
+    Column('id', Uuid, primary_key=True, server_default=text('gen_random_uuid()')),
+    Column('opportunity_id', Uuid),
+    Column('contact_id', Uuid),
+    Column('role', Text),
+    Column('is_champion', Boolean, server_default=text('false')),
+    Column('is_primary', Boolean, server_default=text('false')),
+    Column('created_at', DateTime(True), server_default=text('now()')),
+    Column('is_demo', Boolean, server_default=text('false')),
+    Column('demo_batch', Text),
+    Column('relationship_strength', SmallInteger),
+    Column('last_touch_at', DateTime(True)),
+    Column('source_origin', Text),
+    Column('champion_detail', JSONB),
+    CheckConstraint("source_origin = ANY (ARRAY['claim'::text, 'manual'::text])", name='exp_opportunity_contacts_source_origin_check'),
+    ForeignKeyConstraint(['contact_id'], ['public.exp_contacts.id'], ondelete='CASCADE', name='exp_opportunity_contacts_contact_id_fkey'),
+    ForeignKeyConstraint(['opportunity_id'], ['public.exp_sales_pipeline.id'], ondelete='CASCADE', name='exp_opportunity_contacts_opportunity_id_fkey'),
+    PrimaryKeyConstraint('id', name='exp_opportunity_contacts_pkey'),
+    UniqueConstraint('opportunity_id', 'contact_id', name='exp_opportunity_contacts_opportunity_id_contact_id_key'),
+    schema='public'
+)
+
+t_exp_opportunity_files = Table(
+    'exp_opportunity_files', metadata,
+    Column('id', Uuid, primary_key=True, server_default=text('gen_random_uuid()')),
+    Column('opportunity_id', Uuid),
+    Column('contract_id', Uuid),
+    Column('filename', Text),
+    Column('storage_url', Text),
+    Column('size_bytes', BigInteger),
+    Column('kind', Text),
+    Column('uploaded_by', Uuid),
+    Column('uploaded_at', DateTime(True), server_default=text('now()')),
+    Column('is_demo', Boolean, server_default=text('false')),
+    Column('demo_batch', Text),
+    ForeignKeyConstraint(['contract_id'], ['public.exp_contracts.id'], name='exp_opportunity_files_contract_id_fkey'),
+    ForeignKeyConstraint(['opportunity_id'], ['public.exp_sales_pipeline.id'], ondelete='CASCADE', name='exp_opportunity_files_opportunity_id_fkey'),
+    ForeignKeyConstraint(['uploaded_by'], ['public.exp_sales_reps.id'], name='exp_opportunity_files_uploaded_by_fkey'),
+    PrimaryKeyConstraint('id', name='exp_opportunity_files_pkey'),
+    schema='public'
+)
+
+t_exp_opportunity_owner_history = Table(
+    'exp_opportunity_owner_history', metadata,
+    Column('id', Uuid, primary_key=True, server_default=text('gen_random_uuid()')),
+    Column('opportunity_id', Uuid),
+    Column('from_owner', Text),
+    Column('to_owner', Text),
+    Column('changed_by', Text),
+    Column('changed_at', DateTime(True), nullable=False, server_default=text('now()')),
+    ForeignKeyConstraint(['opportunity_id'], ['public.exp_sales_pipeline.id'], ondelete='CASCADE', name='exp_opportunity_owner_history_opportunity_id_fkey'),
+    PrimaryKeyConstraint('id', name='exp_opportunity_owner_history_pkey'),
+    schema='public'
+)
+
+t_exp_opportunity_products = Table(
+    'exp_opportunity_products', metadata,
+    Column('id', Uuid, primary_key=True, server_default=text('gen_random_uuid()')),
+    Column('opportunity_id', Uuid),
+    Column('product', Text),
+    Column('qty', Integer),
+    Column('unit_price', Numeric),
+    Column('amount', Numeric),
+    Column('is_demo', Boolean, server_default=text('false')),
+    Column('demo_batch', Text),
+    ForeignKeyConstraint(['opportunity_id'], ['public.exp_sales_pipeline.id'], ondelete='CASCADE', name='exp_opportunity_products_opportunity_id_fkey'),
+    PrimaryKeyConstraint('id', name='exp_opportunity_products_pkey'),
+    schema='public'
+)
+
+t_exp_opportunity_stage_history = Table(
+    'exp_opportunity_stage_history', metadata,
+    Column('id', Uuid, primary_key=True, server_default=text('gen_random_uuid()')),
+    Column('opportunity_id', Uuid),
+    Column('from_stage', Text),
+    Column('to_stage', Text),
+    Column('captured', JSONB),
+    Column('moved_by', Uuid, comment='Sales-rep row of the actor when the actor is a rep (nullable). Acting user is moved_by_user.'),
+    Column('moved_at', DateTime(True), server_default=text('now()')),
+    Column('is_demo', Boolean, server_default=text('false')),
+    Column('demo_batch', Text),
+    Column('moved_by_user', Uuid, comment='auth user who moved the stage'),
+    Column('moved_by_role', Text, comment='admin | manager | seller at time of move'),
+    ForeignKeyConstraint(['moved_by'], ['public.exp_sales_reps.id'], name='exp_opportunity_stage_history_moved_by_fkey'),
+    ForeignKeyConstraint(['opportunity_id'], ['public.exp_sales_pipeline.id'], ondelete='CASCADE', name='exp_opportunity_stage_history_opportunity_id_fkey'),
+    PrimaryKeyConstraint('id', name='exp_opportunity_stage_history_pkey'),
+    schema='public'
+)
+
+t_exp_quotes = Table(
+    'exp_quotes', metadata,
+    Column('id', Uuid, primary_key=True, server_default=text('gen_random_uuid()')),
+    Column('opportunity_id', Uuid),
+    Column('account_id', Uuid),
+    Column('name', Text),
+    Column('state', JSONB),
+    Column('summary', JSONB),
+    Column('status', Text, server_default=text("'draft'::text")),
+    Column('created_by', Uuid),
+    Column('created_at', DateTime(True), server_default=text('now()')),
+    Column('updated_at', DateTime(True), server_default=text('now()')),
+    Column('is_demo', Boolean, server_default=text('false')),
+    Column('demo_batch', Text),
+    ForeignKeyConstraint(['opportunity_id'], ['public.exp_sales_pipeline.id'], ondelete='SET NULL', name='exp_quotes_opportunity_id_fkey'),
+    PrimaryKeyConstraint('id', name='exp_quotes_pkey'),
+    Index('ix_quotes_opp', 'opportunity_id'),
+    schema='public'
+)
+
+t_exp_sales_alerts = Table(
+    'exp_sales_alerts', metadata,
+    Column('id', Uuid, primary_key=True, server_default=text('gen_random_uuid()')),
+    Column('opportunity_id', Uuid),
+    Column('account_id', Uuid),
+    Column('logo', Text),
+    Column('alert_type', Text),
+    Column('body', Text),
+    Column('severity', Text),
+    Column('is_nora_suggested', Boolean, nullable=False, server_default=text('false')),
+    Column('owner_id', Uuid),
+    Column('acknowledged', Boolean, nullable=False, server_default=text('false')),
+    Column('created_at', DateTime(True), nullable=False, server_default=text('now()')),
+    Column('rule', Text),
+    Column('dedupe_key', Text),
+    Column('suggested_task', JSONB),
+    Column('accepted_task_id', Uuid),
+    Column('accepted_by', Uuid),
+    Column('accepted_at', DateTime(True)),
+    Column('dismissed_at', DateTime(True)),
+    Column('is_demo', Boolean, nullable=False, server_default=text('false')),
+    Column('demo_batch', Text),
+    ForeignKeyConstraint(['opportunity_id'], ['public.exp_sales_pipeline.id'], ondelete='SET NULL', name='exp_sales_alerts_opportunity_id_fkey'),
+    PrimaryKeyConstraint('id', name='exp_sales_alerts_pkey'),
+    Index('exp_sales_alerts_dedupe_key_uidx', 'dedupe_key', postgresql_where='(dedupe_key IS NOT NULL)', unique=True),
+    schema='public'
+)
+
+t_exp_sales_demos = Table(
+    'exp_sales_demos', metadata,
+    Column('id', Uuid, primary_key=True, server_default=text('gen_random_uuid()')),
+    Column('seller_id', Uuid),
+    Column('prospect_label', Text),
+    Column('prospect_id', Text),
+    Column('contact_phone', Text),
+    Column('contact_email', Text),
+    Column('booked_at', DateTime(True)),
+    Column('attended', Boolean),
+    Column('outcome', Text),
+    Column('deal_value', Numeric),
+    Column('is_demo', Boolean, server_default=text('true')),
+    Column('created_at', DateTime(True), server_default=text('now()')),
+    Column('demo_batch', Text),
+    Column('opportunity_id', Uuid),
+    Column('objective', Text),
+    Column('agenda', Text),
+    Column('attendees', JSONB),
+    Column('recording_url', Text),
+    Column('follow_up', Text),
+    Column('disposition', Text),
+    Column('meeting_kind', Text, server_default=text("'demo'::text")),
+    Column('calendar_status', Text, server_default=text("'not_requested'::text")),
+    Column('calendar_event_id', Text),
+    Column('calendar_error', Text),
+    Column('duration_minutes', Integer, server_default=text('30')),
+    ForeignKeyConstraint(['opportunity_id'], ['public.exp_sales_pipeline.id'], ondelete='SET NULL', name='exp_sales_demos_opportunity_id_fkey'),
+    PrimaryKeyConstraint('id', name='exp_sales_demos_pkey'),
+    schema='public'
+)
+
+t_exp_sales_tasks = Table(
+    'exp_sales_tasks', metadata,
+    Column('id', Uuid, primary_key=True, server_default=text('gen_random_uuid()')),
+    Column('owner_id', Uuid),
+    Column('opportunity_id', Uuid),
+    Column('account_id', Uuid),
+    Column('title', Text),
+    Column('task_type', Text),
+    Column('due_at', DateTime(True)),
+    Column('done', Boolean, server_default=text('false')),
+    Column('priority', Text),
+    Column('created_at', DateTime(True), server_default=text('now()')),
+    Column('is_demo', Boolean, server_default=text('false')),
+    Column('demo_batch', Text),
+    Column('reminded_at', DateTime(True)),
+    Column('source_alert_id', Uuid),
+    Column('created_by', Uuid),
+    ForeignKeyConstraint(['account_id'], ['public.exp_accounts.id'], name='exp_sales_tasks_account_id_fkey'),
+    ForeignKeyConstraint(['opportunity_id'], ['public.exp_sales_pipeline.id'], name='exp_sales_tasks_opportunity_id_fkey'),
+    ForeignKeyConstraint(['owner_id'], ['public.exp_sales_reps.id'], name='exp_sales_tasks_owner_id_fkey'),
+    PrimaryKeyConstraint('id', name='exp_sales_tasks_pkey'),
+    Index('exp_sales_tasks_due_unreminded_idx', 'due_at', postgresql_where='((reminded_at IS NULL) AND (NOT COALESCE(done, false)))'),
+    Index('ix_tasks_owner', 'owner_id', 'done', 'due_at'),
     schema='public'
 )
 
