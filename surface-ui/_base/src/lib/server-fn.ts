@@ -20,19 +20,27 @@ export class ServerFnError extends Error {
   }
 }
 
+/**
+ * FastAPI's base URL. Set VITE_API_BASE_URL (e.g. https://api.example.com) when the API is on
+ * its own origin, and list the UI's origin in the API's CORS_ALLOW_ORIGINS. Unset, calls go to
+ * the same-origin /api path: the dev server proxies it (app/vite.config.ts), and in production
+ * a reverse proxy has to route it.
+ */
+const API_BASE = (import.meta.env.VITE_API_BASE_URL?.trim() || "/api").replace(/\/+$/, "");
+
 async function authHeaders(): Promise<Record<string, string>> {
   const { data: session } = await supabase.auth.getSession();
   const token = session.session?.access_token;
   return token ? { authorization: `Bearer ${token}` } : {};
 }
 
-/** One request to FastAPI through the /api proxy, with the user's JWT; throws ServerFnError. */
+/** One request to FastAPI (at API_BASE), with the user's JWT; throws ServerFnError. */
 async function request<Out>(
   method: "GET" | "POST" | "PUT" | "PATCH" | "DELETE",
   path: string,
   opts: { body?: unknown; signal?: AbortSignal } = {},
 ): Promise<Out> {
-  const res = await fetch(`/api${path}`, {
+  const res = await fetch(`${API_BASE}${path}`, {
     method,
     headers: {
       ...(opts.body !== undefined ? { "content-type": "application/json" } : {}),
