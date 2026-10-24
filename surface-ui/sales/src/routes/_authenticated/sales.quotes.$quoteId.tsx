@@ -197,7 +197,7 @@ function QuoteContractButton({ quoteId }: { quoteId: string }) {
     setBusy(true);
     try {
       const { data: u } = await supabase.auth.getUser();
-      const who = (u.user?.user_metadata?.full_name as string | undefined) ?? u.user?.email ?? "Scott Harris";
+      const who = u.user?.email ?? null; // the signed-in user, as the contracts page sends
       const id = await createContractFromQuote(quoteId, who);
       toast.success("Contract created from quote");
       go(id);

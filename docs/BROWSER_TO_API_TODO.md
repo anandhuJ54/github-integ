@@ -297,7 +297,7 @@ Pages:
     - `saveQuote` runs as one transaction. The contract commit keeps its separate steps in the original order.
   - [x] 5. `contracts/sales/openapi.json` (new); etl regenerated
   - [x] 6. No direct calls left in catalog-admin, cpq-catalog, cpq-depth, comp, sales-cpq or console-surfaces
-  - [x] 7. Parity: `run.ts sales` **PASS 24/24** (2026-10-24) · [ ] 8. Click-through: `/sales/price-book`, `/sales/pricing`, `/sales/comp`, `/sales/quotes`, `/sales/promos`, `/billing`, `/reports`
+  - [x] 7. Parity: `run.ts sales` **PASS 24/24** (2026-10-24) · [x] 8. Click-through confirmed 2026-10-24 (only our API is called): `/sales/price-book`, `/sales/pricing`, `/sales/comp`, `/sales/quotes`, `/sales/promos`, `/billing`, `/reports`
 - **S2 contracts, accounts & e-sign** (started 2026-10-24; security covered by SF-10; cap: only the 1j reads in accounts.ts / sales.ts, the contract tables are tiny: 12 contracts, 38 activity rows):
   - [x] 1. `/sales/contracts/*` (contracts, the 17 signed-in m4_* functions allow-listed in `CONTRACT_RPCS`, notifications, skus, invoices, usage) · `/sales/csm/*` · `/sales/sign/*` (public, always anon, token in the body, only `m4_signer_fetch` / `m4_record_signature`) · `/sales/core/*` (sales.ts) · `/sales/accounts/*`. `exp_contract_provision` reuses the S1 `/sales/cpq/rpc/` route.
   - [x] 3/4. `sales/queries/{contracts,csm,sign,core,accounts}.py`; 160 new tests, 1,140 in total. Read-only live smoke. **No write, m4_* call or provision call was run.**
@@ -307,12 +307,12 @@ Pages:
     - Cap (1j, kept 1:1): `/sales/core/account-tiers/inputs`, `/sales/accounts/list-rows`, `/tree-rows`.
     - Generated schema: +4 tables (`exp_contract_{versions,recipients,approvals,documents}`).
   - [x] 5. `contracts/sales/openapi.json` regenerated · [x] 6. No direct calls left in contracts, csm, sales, accounts, the quote route or the sign route
-  - [x] 7. Parity: covered by the S1–S3 run, **PASS 82/82** (2026-10-24) · [ ] 8. Click-through: `/sales/contracts`, a contract detail, `/sales/accounts`, an account, `/sales/price-book`, `/sales` (dashboard), a quote, `/sign/<any>` (opens only; press nothing)
+  - [x] 7. Parity: covered by the S1–S3 run, **PASS 82/82** (2026-10-24) · [x] 8. Click-through confirmed 2026-10-24 (only our API is called): `/sales/contracts`, a contract detail, `/sales/accounts`, an account, `/sales/price-book`, `/sales` (dashboard), a quote, `/sign/<any>` (opens only; press nothing)
   - Bugs found, kept as they are (legacy behaviour):
     - The quote page passes the quote *name* (e.g. `Q-18788`) to uuid columns, so "create contract from quote" and its existing-contract read fail with "invalid input syntax for type uuid".
     - The sign page treats `m4_record_signature`'s `{error:"invalid"}` as success (it only checks `ok === false`).
     - The sign page reads `contract_number`, `renewal_term_months`, `start_date`, `end_date`, `document_hash`, but `m4_signer_fetch` returns `number`, `term_months`, `start`, `end`, `hash`, so those show "—".
-    - The quote page's `created_by` fallback is a hard-coded person's name (no-names rule). Needs a decision on what to send instead.
+    - The quote page's `created_by` fallback was a hard-coded person's name (no-names rule). **Fixed 2026-10-24** (ruling: use the login email): it now sends the signed-in user's email.
     - Contract money fields (mrr, cost, net, margin_pct) are computed in the browser as floats and stored as sent; the server doesn't recompute them.
 - **S3 pipeline & alerts** (2026-10-24; security: SF-10; cap: only the one-org claim-events read, kept 1:1):
   - [x] 1. `/sales/opportunities/*` (stages, list, the file loader as one raw read, audit trail, contacts, notes, tasks, demos, files, activity, audit; allow-listed `exp_opp_advance_stage`, `exp_opp_close_won`, `exp_opp_close_lost`) · `/sales/worklist/rpc/*` (`exp_opp_create`, `exp_claim_queue_verification`, `exp_claim_set_contact`) · `/sales/sre/*` (rep, promo code, the three queues, call outcomes, redemptions, trial extensions) · `/sales/alerts/*` (search, dismiss, allow-listed `exp_alert_accept`, `exp_alerts_generate`, `exp_task_reminders_tick`, ported as the browser calls them; the ticks refuse `p_now`)
@@ -322,7 +322,7 @@ Pages:
     - Cap (1j): the opportunity file's claim events for one org (`limit 10000`) stay cut at 1,000; one logo org has 1,850.
     - `opportunity-automation.tsx` keeps its realtime channel on `exp_sales_alerts` (realtime is out of scope).
   - [x] 5. `contracts/sales/openapi.json` regenerated · [x] 6. No direct calls left in opportunity-file, worklist-actions, sre-console, `_base` sales-alerts, opportunity-automation
-  - [x] 7. Parity: `run.ts sales` **PASS 82/82** (S1–S3, 2026-10-24) · [ ] 8. Click-through: `/sales/opportunities`, one opportunity, `/sales/worklist`, `/admin/integrations` (open only; don't press "run now")
+  - [x] 7. Parity: `run.ts sales` **PASS 82/82** (S1–S3, 2026-10-24) · [x] 8. Click-through confirmed 2026-10-24 (only our API is called): `/sales/opportunities`, one opportunity, `/sales/worklist`, `/admin/integrations` (open only; don't press "run now")
 - **S4 territories, teams & boards** (2026-10-24; security: SF-10; cap: see 1j):
   - [x] 1. `/sales/territories/*` (`_base` territories.ts, territory-admin: slots, brand links, lanes, ramps, rules, routing, proposals, seats, quotas; read-only profile functions as fixed GETs; allow-listed `exp_generate_territories`, `exp_generate_group_territories`) · `/sales/category-groups/*` · `/sales/teams/*` (teams.ts, incl. the territory move, ported as it is) · `/sales/seller-setup/*` · `/sales/boards/*` (seller-desk, seller-board, sales-board, sales-story) · `/sales/nav/*` · `/sales/spine/*`
   - [x] 3/4. `sales/queries/{territories,category_groups,teams,seller_setup,boards,nav,spine}.py`; 228 new tests, 1,472 in total. **No write and no generate function was run.**
@@ -331,7 +331,7 @@ Pages:
     - Cap (1j, kept 1:1): the territory move's office read, board/spine claim events, spine graph_nodes chunks, plus the new ones listed in 1j.
     - Storage stays in the browser: seller photo upload (`seller-photos`).
   - [x] 5. `contracts/sales/openapi.json` regenerated · [x] 6. No direct table/RPC calls left anywhere in `surface-ui` (Storage, Auth and one realtime channel excepted)
-  - [x] 7. Parity: `run.ts sales` **PASS 230/230** (S1–S4, 2026-10-24) · [ ] 8. Click-through: `/sales/territories`, one category group, `/sales/teams` (or the team page), seller setup, the seller desk, `/sales` board, nav browse pages (open only; press nothing, especially not generate or move)
+  - [x] 7. Parity: `run.ts sales` **PASS 230/230** (S1–S4, 2026-10-24) · [x] 8. Click-through confirmed 2026-10-24 (only our API is called): `/sales/territories`, one category group, `/sales/teams` (or the team page), seller setup, the seller desk, `/sales` board, nav browse pages (open only; press nothing, especially not generate or move)
 
 marketing and app make no direct calls.
 
