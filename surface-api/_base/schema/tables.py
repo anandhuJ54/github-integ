@@ -3,7 +3,7 @@
 Regenerate with `uv run --env-file .env python -m _base.schema.generate` (see generate.py).
 """
 # ruff: noqa
-from sqlalchemy import BigInteger, Boolean, CheckConstraint, Column, Computed, Date, DateTime, ForeignKeyConstraint, Identity, Index, Integer, MetaData, Numeric, PrimaryKeyConstraint, SmallInteger, String, Table, Text, UniqueConstraint, Uuid, text
+from sqlalchemy import BigInteger, Boolean, CheckConstraint, Column, Computed, Date, DateTime, Double, ForeignKeyConstraint, Identity, Index, Integer, MetaData, Numeric, PrimaryKeyConstraint, SmallInteger, String, Table, Text, UniqueConstraint, Uuid, text
 from sqlalchemy.dialects.postgresql import ARRAY, INET, JSONB, TSVECTOR
 
 metadata = MetaData()
@@ -169,6 +169,48 @@ t_exp_activity_events = Table(
     Column('demo_batch', Text),
     PrimaryKeyConstraint('id', name='exp_activity_events_pkey'),
     Index('ix_activity_external', 'source', 'external_id'),
+    schema='public'
+)
+
+t_exp_build_map = Table(
+    'exp_build_map', metadata,
+    Column('id', Uuid, primary_key=True, server_default=text('gen_random_uuid()')),
+    Column('track', Text, nullable=False, server_default=text("'customer'::text")),
+    Column('step_no', Integer, nullable=False),
+    Column('title', Text, nullable=False),
+    Column('description', Text),
+    Column('state', Text, nullable=False, server_default=text("'not_built'::text")),
+    Column('emits_event', Text),
+    Column('consumes_event', Text),
+    Column('notes', Text),
+    Column('sort_order', Integer, nullable=False, server_default=text('0')),
+    Column('created_at', DateTime(True), nullable=False, server_default=text('now()')),
+    PrimaryKeyConstraint('id', name='exp_build_map_pkey'),
+    schema='public'
+)
+
+t_exp_capability_registry = Table(
+    'exp_capability_registry', metadata,
+    Column('id', Uuid, primary_key=True, server_default=text('gen_random_uuid()')),
+    Column('key', Text, nullable=False),
+    Column('title', Text, nullable=False),
+    Column('owning_surface', Text, nullable=False),
+    Column('description', Text),
+    Column('inputs', JSONB, nullable=False, server_default=text("'{}'::jsonb")),
+    Column('outputs', JSONB, nullable=False, server_default=text("'{}'::jsonb")),
+    Column('reads_state', ARRAY(Text()), nullable=False, server_default=text("'{}'::text[]")),
+    Column('entitlement_required', Text),
+    Column('side_effects', ARRAY(Text()), nullable=False, server_default=text("'{}'::text[]")),
+    Column('idempotent_key', Text),
+    Column('dry_run', Boolean, nullable=False, server_default=text('true')),
+    Column('events_emitted', ARRAY(Text()), nullable=False, server_default=text("'{}'::text[]")),
+    Column('transport', Text, nullable=False, server_default=text("'direct'::text")),
+    Column('status', Text, nullable=False, server_default=text("'draft'::text")),
+    Column('version', Text, nullable=False, server_default=text("'0.1.0'::text")),
+    Column('created_at', DateTime(True), nullable=False, server_default=text('now()')),
+    Column('updated_at', DateTime(True), nullable=False, server_default=text('now()')),
+    PrimaryKeyConstraint('id', name='exp_capability_registry_pkey'),
+    UniqueConstraint('key', name='exp_capability_registry_key_key'),
     schema='public'
 )
 
@@ -496,6 +538,47 @@ t_exp_listings_publishers = Table(
     schema='public'
 )
 
+t_exp_nora_state = Table(
+    'exp_nora_state', metadata,
+    Column('entity_ref', Text, primary_key=True),
+    Column('entity_type', Text, nullable=False, server_default=text("'professional'::text")),
+    Column('name', Text),
+    Column('title', Text),
+    Column('market', Text),
+    Column('category', Text),
+    Column('state', JSONB, nullable=False, server_default=text("'{}'::jsonb")),
+    Column('is_demo', Boolean, nullable=False, server_default=text('true')),
+    Column('updated_at', DateTime(True), nullable=False, server_default=text('now()')),
+    PrimaryKeyConstraint('entity_ref', name='exp_nora_state_pkey'),
+    schema='public'
+)
+
+t_exp_nora_weights = Table(
+    'exp_nora_weights', metadata,
+    Column('key', Text, primary_key=True),
+    Column('weight', Numeric, nullable=False),
+    Column('note', Text),
+    PrimaryKeyConstraint('key', name='exp_nora_weights_pkey'),
+    schema='public'
+)
+
+t_exp_opportunity_feedback = Table(
+    'exp_opportunity_feedback', metadata,
+    Column('id', Uuid, primary_key=True, server_default=text('gen_random_uuid()')),
+    Column('entity_id', Text, nullable=False),
+    Column('entity_type', Text),
+    Column('opportunity_key', Text, nullable=False),
+    Column('signal', Text, nullable=False),
+    Column('weight', Numeric, nullable=False, server_default=text("'-1'::integer")),
+    Column('snooze_until', DateTime(True)),
+    Column('note', Text),
+    Column('actor', Text),
+    Column('created_at', DateTime(True), nullable=False, server_default=text('now()')),
+    PrimaryKeyConstraint('id', name='exp_opportunity_feedback_pkey'),
+    Index('idx_oppfb_entity', 'entity_id', 'opportunity_key'),
+    schema='public'
+)
+
 t_exp_page_views_rollup = Table(
     'exp_page_views_rollup', metadata,
     Column('id', Uuid, primary_key=True, server_default=text('gen_random_uuid()')),
@@ -627,6 +710,119 @@ t_exp_sitemap_partition = Table(
     schema='public'
 )
 
+t_exp_skill_eval = Table(
+    'exp_skill_eval', metadata,
+    Column('id', Uuid, primary_key=True, server_default=text('gen_random_uuid()')),
+    Column('skill_key', Text, nullable=False),
+    Column('name', Text, nullable=False),
+    Column('fixture', JSONB, nullable=False, server_default=text("'{}'::jsonb")),
+    Column('expected', JSONB, nullable=False, server_default=text("'{}'::jsonb")),
+    Column('status', Text, nullable=False, server_default=text("'untested'::text")),
+    Column('last_run_at', DateTime(True)),
+    Column('last_result', JSONB),
+    Column('created_at', DateTime(True), nullable=False, server_default=text('now()')),
+    PrimaryKeyConstraint('id', name='exp_skill_eval_pkey'),
+    Index('idx_skilleval', 'skill_key'),
+    schema='public'
+)
+
+t_exp_skill_registry = Table(
+    'exp_skill_registry', metadata,
+    Column('id', Uuid, primary_key=True, server_default=text('gen_random_uuid()')),
+    Column('key', Text, nullable=False),
+    Column('title', Text, nullable=False),
+    Column('summary', Text),
+    Column('value_loop', Text),
+    Column('owning_surface', Text),
+    Column('gap_closed', Text),
+    Column('triggers', ARRAY(Text()), nullable=False, server_default=text("'{}'::text[]")),
+    Column('reads_state', ARRAY(Text()), nullable=False, server_default=text("'{}'::text[]")),
+    Column('tools_used', ARRAY(Text()), nullable=False, server_default=text("'{}'::text[]")),
+    Column('autonomy', Text, nullable=False, server_default=text("'approve'::text")),
+    Column('model_tier', Text, nullable=False, server_default=text("'haiku'::text")),
+    Column('explanation_template', Text),
+    Column('guardrails', ARRAY(Text()), nullable=False, server_default=text("'{}'::text[]")),
+    Column('status', Text, nullable=False, server_default=text("'draft'::text")),
+    Column('version', Text, nullable=False, server_default=text("'0.1.0'::text")),
+    Column('is_active', Boolean, nullable=False, server_default=text('true')),
+    Column('created_at', DateTime(True), nullable=False, server_default=text('now()')),
+    Column('updated_at', DateTime(True), nullable=False, server_default=text('now()')),
+    Column('entity_types', ARRAY(Text()), nullable=False, server_default=text("'{}'::text[]")),
+    Column('requires_entitlement', Text),
+    Column('value_prop', Text),
+    Column('graph_writes', ARRAY(Text()), nullable=False, server_default=text("'{}'::text[]")),
+    Column('affects_lanes', ARRAY(Text()), nullable=False, server_default=text("'{}'::text[]")),
+    Column('expected_srs_lift', Integer),
+    Column('offer_expected_points', Integer),
+    Column('offer_ranking_effect', Text),
+    Column('price_ref', Text),
+    Column('trial_eligible', Boolean, nullable=False, server_default=text('false')),
+    Column('decline_mute_days', Integer, nullable=False, server_default=text('14')),
+    Column('permanently_dismissible', Boolean, nullable=False, server_default=text('false')),
+    Column('requires_user_approval', Boolean, nullable=False, server_default=text('false')),
+    Column('charges_money', Boolean, nullable=False, server_default=text('false')),
+    Column('captures_consent', Boolean, nullable=False, server_default=text('false')),
+    Column('is_async', Boolean, nullable=False, server_default=text('false')),
+    Column('estimated_duration', Text),
+    Column('produces_report', Boolean, nullable=False, server_default=text('false')),
+    Column('tracks_results', Boolean, nullable=False, server_default=text('false')),
+    Column('result_metrics', ARRAY(Text()), nullable=False, server_default=text("'{}'::text[]")),
+    Column('report_to_weekly_digest', Boolean, nullable=False, server_default=text('false')),
+    Column('success_event', Text),
+    PrimaryKeyConstraint('id', name='exp_skill_registry_pkey'),
+    UniqueConstraint('key', name='exp_skill_registry_key_key'),
+    schema='public'
+)
+
+t_exp_skill_run = Table(
+    'exp_skill_run', metadata,
+    Column('id', Uuid, primary_key=True, server_default=text('gen_random_uuid()')),
+    Column('skill_key', Text, nullable=False),
+    Column('skill_version', Text),
+    Column('capability_keys', ARRAY(Text()), nullable=False, server_default=text("'{}'::text[]")),
+    Column('entity_ref', Text),
+    Column('entity_type', Text),
+    Column('mode', Text, nullable=False, server_default=text("'dry_run'::text")),
+    Column('status', Text, nullable=False, server_default=text("'planned'::text")),
+    Column('trigger', Text),
+    Column('verdict', Text),
+    Column('trace', JSONB, nullable=False, server_default=text("'[]'::jsonb")),
+    Column('inputs', JSONB, nullable=False, server_default=text("'{}'::jsonb")),
+    Column('outputs', JSONB, nullable=False, server_default=text("'{}'::jsonb")),
+    Column('telemetry', JSONB, nullable=False, server_default=text("'{}'::jsonb")),
+    Column('graph_writes', JSONB, nullable=False, server_default=text("'[]'::jsonb")),
+    Column('expected_srs_lift', Integer),
+    Column('actual_srs_delta', Numeric),
+    Column('error', Text),
+    Column('actor', Text),
+    Column('started_at', DateTime(True)),
+    Column('finished_at', DateTime(True)),
+    Column('created_at', DateTime(True), nullable=False, server_default=text('now()')),
+    CheckConstraint("mode = ANY (ARRAY['dry_run'::text, 'live'::text])", name='exp_skill_run_mode_check'),
+    CheckConstraint("status = ANY (ARRAY['planned'::text, 'running'::text, 'blocked'::text, 'succeeded'::text, 'failed'::text, 'cancelled'::text])", name='exp_skill_run_status_check'),
+    PrimaryKeyConstraint('id', name='exp_skill_run_pkey'),
+    Index('exp_skill_run_created_idx', 'created_at'),
+    Index('exp_skill_run_entity_idx', 'entity_ref'),
+    Index('exp_skill_run_skill_idx', 'skill_key'),
+    Index('exp_skill_run_status_idx', 'status'),
+    schema='public'
+)
+
+t_exp_skill_version = Table(
+    'exp_skill_version', metadata,
+    Column('id', Uuid, primary_key=True, server_default=text('gen_random_uuid()')),
+    Column('skill_key', Text, nullable=False),
+    Column('version', Text, nullable=False),
+    Column('manifest', JSONB, nullable=False),
+    Column('status', Text, nullable=False),
+    Column('published_by', Text),
+    Column('note', Text),
+    Column('published_at', DateTime(True), nullable=False, server_default=text('now()')),
+    PrimaryKeyConstraint('id', name='exp_skill_version_pkey'),
+    Index('idx_skillver', 'skill_key', 'published_at'),
+    schema='public'
+)
+
 t_exp_sponsored_pricing = Table(
     'exp_sponsored_pricing', metadata,
     Column('id', Uuid, primary_key=True, server_default=text('gen_random_uuid()')),
@@ -733,6 +929,45 @@ t_exp_territories = Table(
     UniqueConstraint('gcid', 'tier', 'seq', name='exp_territories_gcid_tier_seq_key'),
     UniqueConstraint('label', name='exp_territories_label_key'),
     Index('exp_territories_group_tier_seq', 'group_key', 'tier', 'seq', postgresql_where='(group_key IS NOT NULL)', unique=True),
+    schema='public'
+)
+
+t_exp_us_cities = Table(
+    'exp_us_cities', metadata,
+    Column('id', BigInteger, primary_key=True, autoincrement=True),
+    Column('city', Text, nullable=False),
+    Column('state_abbr', Text, nullable=False),
+    Column('lat', Double(53), nullable=False),
+    Column('lng', Double(53), nullable=False),
+    Column('population', Integer, nullable=False, server_default=text('0')),
+    PrimaryKeyConstraint('id', name='exp_us_cities_pkey'),
+    Index('exp_us_cities_city_state_key', unique=True),
+    Index('exp_us_cities_latlng_idx', 'lat', 'lng'),
+    Index('exp_us_cities_state_idx'),
+    schema='public'
+)
+
+t_exp_voce_article = Table(
+    'exp_voce_article', metadata,
+    Column('id', Uuid, primary_key=True, server_default=text('gen_random_uuid()')),
+    Column('title', Text),
+    Column('slug', Text),
+    Column('body_excerpt', Text),
+    Column('author_entity_type', Text),
+    Column('author_entity_id', Uuid),
+    Column('author_name', Text),
+    Column('gcid', Text),
+    Column('topic', Text),
+    Column('knows_about', JSONB, server_default=text("'[]'::jsonb")),
+    Column('published_on', Date),
+    Column('boosted', Boolean, server_default=text('false')),
+    Column('boost_placements', JSONB, server_default=text("'[]'::jsonb")),
+    Column('boost_starts_on', Date),
+    Column('boost_ends_on', Date),
+    Column('boost_spend', Numeric),
+    Column('is_demo', Boolean, server_default=text('true')),
+    Column('created_at', DateTime(True), server_default=text('now()')),
+    PrimaryKeyConstraint('id', name='exp_voce_article_pkey'),
     schema='public'
 )
 
@@ -855,6 +1090,26 @@ t_exp_web_media = Table(
     schema='public'
 )
 
+t_exp_web_nav_menus = Table(
+    'exp_web_nav_menus', metadata,
+    Column('id', Uuid, primary_key=True, server_default=text('gen_random_uuid()')),
+    Column('name', Text, nullable=False),
+    Column('menu_type', Text, nullable=False),
+    Column('items', JSONB, nullable=False, server_default=text("'{}'::jsonb")),
+    Column('assigned_site', Text),
+    Column('design_tag', Text, nullable=False, server_default=text("'new'::text")),
+    Column('notes', Text),
+    Column('created_by', Uuid),
+    Column('created_at', DateTime(True), nullable=False, server_default=text('now()')),
+    Column('updated_at', DateTime(True), nullable=False, server_default=text('now()')),
+    Column('deleted_at', DateTime(True)),
+    Column('deleted_by', Uuid),
+    CheckConstraint("menu_type = ANY (ARRAY['header'::text, 'footer'::text])", name='exp_web_nav_menus_menu_type_check'),
+    PrimaryKeyConstraint('id', name='exp_web_nav_menus_pkey'),
+    Index('exp_web_nav_menus_assignment_uniq', 'assigned_site', 'menu_type', postgresql_where='((assigned_site IS NOT NULL) AND (deleted_at IS NULL))', unique=True),
+    schema='public'
+)
+
 t_exp_web_page_templates = Table(
     'exp_web_page_templates', metadata,
     Column('id', Uuid, primary_key=True, server_default=text('gen_random_uuid()')),
@@ -972,6 +1227,37 @@ t_gbp_categories = Table(
     schema='public'
 )
 
+t_oauth_connections = Table(
+    'oauth_connections', metadata,
+    Column('id', Uuid, primary_key=True, server_default=text('gen_random_uuid()')),
+    Column('entity_type', Text, nullable=False),
+    Column('entity_id', Uuid, nullable=False),
+    Column('provider', Text, nullable=False),
+    Column('provider_account_id', Text, nullable=False),
+    Column('provider_email', Text),
+    Column('provider_name', Text),
+    Column('access_token', Text),
+    Column('refresh_token', Text),
+    Column('token_expires_at', DateTime(True)),
+    Column('scopes', ARRAY(Text())),
+    Column('enables', ARRAY(Text())),
+    Column('last_sync_at', DateTime(True)),
+    Column('sync_status', Text, server_default=text("'pending'::text")),
+    Column('sync_error', Text),
+    Column('sync_count', Integer, server_default=text('0')),
+    Column('is_active', Boolean, server_default=text('true')),
+    Column('connected_at', DateTime(True), server_default=text('now()')),
+    Column('created_at', DateTime(True), server_default=text('now()')),
+    CheckConstraint("entity_type = ANY (ARRAY['professional'::text, 'organization'::text, 'user'::text])", name='oauth_connections_entity_type_check'),
+    CheckConstraint("sync_status = ANY (ARRAY['pending'::text, 'active'::text, 'error'::text, 'expired'::text, 'revoked'::text])", name='oauth_connections_sync_status_check'),
+    PrimaryKeyConstraint('id', name='oauth_connections_pkey'),
+    UniqueConstraint('entity_type', 'entity_id', 'provider', name='unique_entity_provider'),
+    Index('idx_oauth_entity', 'entity_type', 'entity_id'),
+    Index('idx_oauth_expires', 'token_expires_at'),
+    Index('idx_oauth_provider', 'provider'),
+    schema='public'
+)
+
 t_review_campaigns = Table(
     'review_campaigns', metadata,
     Column('id', Uuid, primary_key=True, server_default=text('gen_random_uuid()')),
@@ -1027,6 +1313,30 @@ t_subscriptions = Table(
     Index('idx_subs_entity', 'entity_type', 'entity_id'),
     Index('idx_subs_status', 'status'),
     Index('idx_subs_stripe', 'stripe_subscription_id'),
+    schema='public'
+)
+
+t_sync_jobs = Table(
+    'sync_jobs', metadata,
+    Column('id', Uuid, primary_key=True, server_default=text('gen_random_uuid()')),
+    Column('job_type', Text, nullable=False),
+    Column('entity_type', Text),
+    Column('entity_id', Uuid),
+    Column('integration_id', Uuid),
+    Column('status', Text, server_default=text("'pending'::text")),
+    Column('records_processed', Integer, server_default=text('0')),
+    Column('records_failed', Integer, server_default=text('0')),
+    Column('error_log', JSONB),
+    Column('started_at', DateTime(True)),
+    Column('completed_at', DateTime(True)),
+    Column('duration_ms', Integer),
+    Column('triggered_by', Text),
+    Column('created_at', DateTime(True), server_default=text('now()')),
+    CheckConstraint("status = ANY (ARRAY['pending'::text, 'running'::text, 'complete'::text, 'failed'::text, 'partial'::text])", name='sync_jobs_status_check'),
+    PrimaryKeyConstraint('id', name='sync_jobs_pkey'),
+    Index('idx_sync_created', 'created_at'),
+    Index('idx_sync_entity', 'entity_type', 'entity_id'),
+    Index('idx_sync_status', 'status', 'job_type'),
     schema='public'
 )
 
@@ -1232,6 +1542,21 @@ t_exp_accounts = Table(
     PrimaryKeyConstraint('id', name='exp_accounts_pkey'),
     Index('ix_accounts_org', 'org_id'),
     Index('ix_accounts_owner', 'owner_id'),
+    schema='public'
+)
+
+t_exp_admin_audit = Table(
+    'exp_admin_audit', metadata,
+    Column('id', Uuid, primary_key=True, server_default=text('gen_random_uuid()')),
+    Column('user_id', Uuid, nullable=False),
+    Column('acting_role', Text),
+    Column('action', Text, nullable=False),
+    Column('target', Text),
+    Column('details', JSONB, nullable=False, server_default=text("'{}'::jsonb")),
+    Column('created_at', DateTime(True), nullable=False, server_default=text('now()')),
+    ForeignKeyConstraint(['user_id'], ['auth.users.id'], ondelete='CASCADE', name='exp_admin_audit_user_id_fkey'),
+    PrimaryKeyConstraint('id', name='exp_admin_audit_pkey'),
+    Index('exp_admin_audit_created_at_idx', 'created_at'),
     schema='public'
 )
 
@@ -2120,6 +2445,58 @@ t_claim_queue = Table(
     schema='public'
 )
 
+t_crm_integrations = Table(
+    'crm_integrations', metadata,
+    Column('id', Uuid, primary_key=True, server_default=text('gen_random_uuid()')),
+    Column('org_id', Uuid, nullable=False),
+    Column('crm_type', Text, nullable=False),
+    Column('display_name', Text, nullable=False),
+    Column('config', JSONB, nullable=False, server_default=text("'{}'::jsonb")),
+    Column('field_map', JSONB, server_default=text("'{}'::jsonb")),
+    Column('sync_direction', Text, server_default=text("'inbound'::text")),
+    Column('sync_frequency', Text, server_default=text("'realtime'::text")),
+    Column('last_sync_at', DateTime(True)),
+    Column('sync_status', Text, server_default=text("'pending'::text")),
+    Column('records_synced', Integer, server_default=text('0')),
+    Column('is_active', Boolean, server_default=text('true')),
+    Column('created_at', DateTime(True), server_default=text('now()')),
+    CheckConstraint("sync_direction = ANY (ARRAY['inbound'::text, 'outbound'::text, 'both'::text])", name='crm_integrations_sync_direction_check'),
+    ForeignKeyConstraint(['org_id'], ['public.organizations.id'], name='crm_integrations_org_id_fkey'),
+    PrimaryKeyConstraint('id', name='crm_integrations_pkey'),
+    Index('idx_crm_org', 'org_id'),
+    schema='public'
+)
+
+t_enterprise_settings = Table(
+    'enterprise_settings', metadata,
+    Column('id', Uuid, primary_key=True, server_default=text('gen_random_uuid()')),
+    Column('org_id', Uuid, nullable=False),
+    Column('feature_listings', Boolean, server_default=text('true')),
+    Column('feature_reviews', Boolean, server_default=text('true')),
+    Column('feature_campaigns', Boolean, server_default=text('true')),
+    Column('feature_voce', Boolean, server_default=text('false')),
+    Column('feature_ai_agents', Boolean, server_default=text('false')),
+    Column('feature_crm_sync', Boolean, server_default=text('false')),
+    Column('feature_api_access', Boolean, server_default=text('false')),
+    Column('feature_websites', Boolean, server_default=text('false')),
+    Column('feature_analytics', Boolean, server_default=text('false')),
+    Column('brand_voice', Text),
+    Column('compliance_rules_override', ARRAY(Text())),
+    Column('pii_restrictions', ARRAY(Text())),
+    Column('review_pii_filter', Boolean, server_default=text('false')),
+    Column('allow_org_posts', Boolean, server_default=text('false')),
+    Column('require_post_approval', Boolean, server_default=text('true')),
+    Column('pricing_tier', Text, server_default=text("'professional'::text")),
+    Column('contract_start', Date),
+    Column('contract_end', Date),
+    Column('created_at', DateTime(True), server_default=text('now()')),
+    Column('updated_at', DateTime(True), server_default=text('now()')),
+    ForeignKeyConstraint(['org_id'], ['public.organizations.id'], name='enterprise_settings_org_id_fkey'),
+    PrimaryKeyConstraint('id', name='enterprise_settings_pkey'),
+    UniqueConstraint('org_id', name='enterprise_settings_org_id_key'),
+    schema='public'
+)
+
 t_exp_dev_idea_votes = Table(
     'exp_dev_idea_votes', metadata,
     Column('id', Uuid, primary_key=True, server_default=text('gen_random_uuid()')),
@@ -2431,6 +2808,24 @@ t_professionals = Table(
     Index('idx_pros_user', 'user_id'),
     Index('professionals_detail_url_key', 'detail_url', unique=True),
     Index('professionals_is_demo_idx', 'is_demo'),
+    schema='public'
+)
+
+t_sso_config = Table(
+    'sso_config', metadata,
+    Column('id', Uuid, primary_key=True, server_default=text('gen_random_uuid()')),
+    Column('org_id', Uuid, nullable=False),
+    Column('provider', Text, nullable=False),
+    Column('issuer_url', Text),
+    Column('client_id', Text),
+    Column('client_secret', Text),
+    Column('metadata_url', Text),
+    Column('attribute_map', JSONB, server_default=text("'{}'::jsonb")),
+    Column('is_active', Boolean, server_default=text('true')),
+    Column('created_at', DateTime(True), server_default=text('now()')),
+    ForeignKeyConstraint(['org_id'], ['public.organizations.id'], name='sso_config_org_id_fkey'),
+    PrimaryKeyConstraint('id', name='sso_config_pkey'),
+    UniqueConstraint('org_id', name='sso_config_org_id_key'),
     schema='public'
 )
 
