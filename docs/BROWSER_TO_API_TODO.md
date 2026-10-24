@@ -275,7 +275,7 @@ Pages:
   - One bad `scope_id` now loses only its own grant's name.
 - [x] 5. Contracts regenerated: admin, search, srp, xmp, nora-os
 - [x] 6. The only direct calls left in `@v3/ui` libs are the money libs (`console-surfaces.ts`, `sales-alerts.ts`, `territories.ts`), which move with **sales**. Auth calls and the Storage upload stay.
-- [ ] 7. Parity: `cd surface-ui/parity && bun --env-file=../app/.env run.ts base` (46 cases; the 15 admin/search/srp cases already pass signed out)
+- [x] 7. Parity PASS 46/46 (2026-10-24, signed in): roles, search, voce, geo, nav menus, enterprise ops, NORA registry and sandbox.
 - [ ] 8. Click-through · [ ] 9. Lint ratchet
 
 ### 11. sales (144/87/16) — money: needs a second approval, split into 3–4 PRs
