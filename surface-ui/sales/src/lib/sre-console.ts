@@ -1,4 +1,4 @@
-import { supabase } from "@v3/ui/integrations/supabase/client";
+import { api } from "@v3/ui/lib/server-fn";
 
 /**
  * SRE Call Console data layer.
@@ -6,7 +6,9 @@ import { supabase } from "@v3/ui/integrations/supabase/client";
  * Reads the claim lifecycle from exp_claim_events and writes only to
  * exp_activity_events / exp_promo_redemptions / exp_trial_extensions.
  * It never touches graph_nodes, graph_edges, graph_rings or exp_entity.
+ * FastAPI: surface-api/sales/routers/sre_data.py (runs as the signed-in user).
  */
+const S = "/sales/sre";
 
 /** The SRE (srx) rep whose queues this console works. Later: the logged-in SRE. */
 export const SRE_REP_ID = "c1000000-0000-4000-8000-000000000001";
@@ -39,57 +41,27 @@ export type ClaimRow = {
   is_demo: boolean | null;
 };
 
-const SELECT =
-  "id, entity_type, entity_id, entity_label, group_key, event_type, nora_engagement, upgraded, contact_phone, contact_email, occurred_at, state, is_demo";
-
 export type SreRep = { id: string; name: string | null; role: string | null };
 export type PromoCode = { code: string; discount_pct: number | null };
 
 export type Queues = Record<QueueKey, ClaimRow[]>;
 
 export async function loadSreRep(): Promise<SreRep | null> {
-  const { data, error } = await supabase
-    .from("exp_sales_reps")
-    .select("id, name, role")
-    .eq("id", SRE_REP_ID)
-    .maybeSingle();
-  if (error) throw error;
+  const data = await api.get<SreRep | null>(`${S}/reps/${encodeURIComponent(SRE_REP_ID)}`);
   return data ?? null;
 }
 
 export async function loadPromoCode(): Promise<PromoCode | null> {
-  const { data, error } = await supabase
-    .from("exp_promo_codes")
-    .select("code, discount_pct, active, seller_id")
-    .eq("seller_id", SRE_REP_ID)
-    .eq("active", true)
-    .limit(1)
-    .maybeSingle();
-  if (error) throw error;
+  const data = await api.get<{ code: string | null; discount_pct: number | null; active: boolean | null; seller_id: string | null } | null>(
+    `${S}/promo-code`,
+    { params: { seller_id: SRE_REP_ID } },
+  );
   return data?.code ? { code: data.code, discount_pct: data.discount_pct } : null;
 }
 
-async function loadQueue(eventType: QueueKey): Promise<ClaimRow[]> {
-  let q = supabase
-    .from("exp_claim_events")
-    .select(SELECT)
-    .eq("seller_id", SRE_REP_ID)
-    .eq("event_type", eventType)
-    .order("occurred_at", { ascending: true })
-    .limit(250);
-  if (eventType === "engaged") q = q.gt("nora_engagement", 0);
-  const { data, error } = await q;
-  if (error) throw error;
-  return (data ?? []) as ClaimRow[];
-}
-
+/** The three queues (each at most 250 claim events, oldest first; "engaged" only with NORA engagement > 0), one request. */
 export async function loadQueues(): Promise<Queues> {
-  const [attempted, engaged, lapsed] = await Promise.all([
-    loadQueue("attempted"),
-    loadQueue("engaged"),
-    loadQueue("lapsed_no_upgrade"),
-  ]);
-  return { attempted, engaged, lapsed_no_upgrade: lapsed };
+  return api.get<Queues>(`${S}/queues`, { params: { seller_id: SRE_REP_ID } });
 }
 
 /* ─────────── Writes ─────────── */
@@ -103,36 +75,30 @@ export const CALL_OUTCOMES: { value: string; label: string }[] = [
 ];
 
 export async function logCallOutcome(row: ClaimRow, outcome: string, actor: string) {
-  const { error } = await supabase.from("exp_activity_events").insert({
+  // occurred_at: the server's clock
+  await api.post(`${S}/call-outcomes`, {
     event_type: outcome,
     subject_type: "claim",
     subject_id: row.entity_id ?? row.id,
     actor,
-    occurred_at: new Date().toISOString(),
     source: "manual",
     value: { entity_label: row.entity_label, queue: row.event_type },
   });
-  if (error) throw error;
 }
 
 export async function sendPromoCode(row: ClaimRow, code: string) {
-  const { error } = await supabase.from("exp_promo_redemptions").insert({
-    code,
-    subject_id: row.entity_id ?? row.id,
-    redeemed_at: new Date().toISOString(),
-  });
-  if (error) throw error;
+  // redeemed_at: the server's clock
+  await api.post(`${S}/promo-redemptions`, { code, subject_id: row.entity_id ?? row.id });
 }
 
 export async function extendTrial(row: ClaimRow, days: number, reason: string) {
   const capped = Math.max(1, Math.min(7, Math.round(days)));
-  const { error } = await supabase.from("exp_trial_extensions").insert({
+  await api.post(`${S}/trial-extensions`, {
     subject_id: row.entity_id ?? row.id,
     days: capped,
     granted_by: SRE_REP_ID,
     reason: reason || "SRE call console",
   });
-  if (error) throw error;
 }
 
 /* ─────────── Helpers ─────────── */

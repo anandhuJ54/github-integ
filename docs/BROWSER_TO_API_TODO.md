@@ -314,6 +314,15 @@ Pages:
     - The sign page reads `contract_number`, `renewal_term_months`, `start_date`, `end_date`, `document_hash`, but `m4_signer_fetch` returns `number`, `term_months`, `start`, `end`, `hash`, so those show "—".
     - The quote page's `created_by` fallback is a hard-coded person's name (no-names rule). Needs a decision on what to send instead.
     - Contract money fields (mrr, cost, net, margin_pct) are computed in the browser as floats and stored as sent; the server doesn't recompute them.
+- **S3 pipeline & alerts** (2026-10-24; security: SF-10; cap: only the one-org claim-events read, kept 1:1):
+  - [x] 1. `/sales/opportunities/*` (stages, list, the file loader as one raw read, audit trail, contacts, notes, tasks, demos, files, activity, audit; allow-listed `exp_opp_advance_stage`, `exp_opp_close_won`, `exp_opp_close_lost`) · `/sales/worklist/rpc/*` (`exp_opp_create`, `exp_claim_queue_verification`, `exp_claim_set_contact`) · `/sales/sre/*` (rep, promo code, the three queues, call outcomes, redemptions, trial extensions) · `/sales/alerts/*` (search, dismiss, allow-listed `exp_alert_accept`, `exp_alerts_generate`, `exp_task_reminders_tick`, ported as the browser calls them; the ticks refuse `p_now`)
+  - [x] 3/4. `sales/queries/{opportunity,worklist,sre,alerts}.py`; 104 new tests, 1,244 in total. **No write and no RPC (ticks, accept, opp_*) was run.**
+    - Server clock: activity `occurred_at`, alert `dismissed_at`, `redeemed_at`. The dismiss audit row's `user_id` comes from the token (drops a `getUser`).
+    - Kept as request fields (callers don't send the signed-in user): opp `seller_id` / `created_by` / `owner_id` (the opportunity owner's rep), activity `actor`, `exp_opp_create.p_owner`, SRE `granted_by` / seller id (the page's `SRE_REP_ID` constant).
+    - Cap (1j): the opportunity file's claim events for one org (`limit 10000`) stay cut at 1,000; one logo org has 1,850.
+    - `opportunity-automation.tsx` keeps its realtime channel on `exp_sales_alerts` (realtime is out of scope).
+  - [x] 5. `contracts/sales/openapi.json` regenerated · [x] 6. No direct calls left in opportunity-file, worklist-actions, sre-console, `_base` sales-alerts, opportunity-automation
+  - [ ] 7. Parity: `run.ts sales` (S1 24 + S2 35 + S3 25 = 84 cases) · [ ] 8. Click-through: `/sales/pipeline` (or the worklist), an opportunity's file, `/sales/sre`, `/admin/integrations` (open only; don't press "run now")
 
 marketing and app make no direct calls.
 

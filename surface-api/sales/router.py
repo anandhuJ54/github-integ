@@ -7,13 +7,17 @@ from __future__ import annotations
 from fastapi import APIRouter
 
 from sales.routers.accounts_data import router as accounts_data_router
+from sales.routers.alerts_data import router as alerts_data_router
 from sales.routers.catalog_data import router as catalog_data_router
 from sales.routers.contracts_data import router as contracts_data_router
 from sales.routers.core_data import router as core_data_router
 from sales.routers.cpq_data import router as cpq_data_router
 from sales.routers.csm_data import router as csm_data_router
 from sales.routers.health import router as health_router
+from sales.routers.opportunity_data import router as opportunity_data_router
 from sales.routers.sign_public import router as sign_public_router
+from sales.routers.sre_data import router as sre_data_router
+from sales.routers.worklist_data import router as worklist_data_router
 
 router = APIRouter()
 router.include_router(health_router)
@@ -24,3 +28,7 @@ router.include_router(accounts_data_router)
 router.include_router(contracts_data_router)
 router.include_router(csm_data_router)
 router.include_router(sign_public_router)
+router.include_router(worklist_data_router)
+router.include_router(sre_data_router)
+router.include_router(alerts_data_router)
+router.include_router(opportunity_data_router)

@@ -12,7 +12,7 @@ import { Textarea } from "@v3/ui/components/ui/textarea";
 import { EmptyState, Panel } from "@v3/ui/components/console/primitives";
 import { acceptAlert, dismissAlert, loadAlerts, type SalesAlert } from "@v3/ui/lib/sales-alerts";
 import { getGoogleDeliveryStatus, sendOpportunityEmail } from "@v3/ui/lib/google-workspace.functions";
-import type { OpportunityFile } from "@v3/sales/lib/opportunity-file";
+import { loadOpportunityAuditTrail, type OpportunityFile } from "@v3/sales/lib/opportunity-file";
 
 const dt = (v: string | null | undefined) => (v ? new Date(v).toLocaleString("en-US", { dateStyle: "medium", timeStyle: "short" }) : "—");
 const emails = (v: string) => v.split(",").map((s) => s.trim()).filter(Boolean);
@@ -54,14 +54,7 @@ export function AlertsFeed({ opportunityId, opportunityIds, ownerId, onChanged, 
 export function AuditPanel({ data }: { data: OpportunityFile }) {
   const q = useQuery({
     queryKey: ["opp-audit", data.opp.id, data.quoteId],
-    queryFn: async () => {
-      const db = supabase as unknown as { from: (t: string) => any };
-      const [owners, promos] = await Promise.all([
-        db.from("exp_opportunity_owner_history").select("id,from_owner,to_owner,changed_by,changed_at").eq("opportunity_id", data.opp.id).order("changed_at", { ascending: false }),
-        data.quoteId ? db.from("exp_promo_redemptions").select("id,code,redeemed_at").eq("subject_id", data.quoteId) : Promise.resolve({ data: [] }),
-      ]);
-      return { owners: (owners.data ?? []) as { id: string; from_owner: string | null; to_owner: string | null; changed_by: string | null; changed_at: string }[], promos: (promos.data ?? []) as { id: string; code: string; redeemed_at: string | null }[] };
-    },
+    queryFn: () => loadOpportunityAuditTrail(data.opp.id, data.quoteId),
   });
   const opp = data.opp as typeof data.opp & { created_by?: string | null };
   const rows: [string, string][] = [["Created", dt(opp.created_at)], ["Created by", opp.created_by ?? "—"], ["Source", opp.source_channel ?? "—"], ["Source owner", opp.source_owner ?? "—"], ["Promo", q.data?.promos.length ? q.data.promos.map((p) => p.code).join(", ") : "—"]];

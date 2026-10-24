@@ -294,7 +294,8 @@ class UnknownRpc(ValueError):
 
 def _arg(name: str, param: str, kind: str, value: Any) -> Any:
     """`value` as psycopg binds it for a `::kind` parameter. Text-ish types take strings, numeric
-    takes the JSON number's digits as a Decimal, integer whole numbers only, jsonb any JSON."""
+    takes the JSON number's digits as a Decimal, integer whole numbers only, boolean true/false
+    only, a text-ish array (`uuid[]`) a list of strings, jsonb any JSON."""
     if value is None:
         return None
     if kind == "jsonb":
@@ -312,6 +313,14 @@ def _arg(name: str, param: str, kind: str, value: Any) -> Any:
     if kind == "integer":
         if isinstance(value, bool) or not isinstance(value, int):
             raise UnknownRpc(f"{name}: {param} must be a whole number")
+        return value
+    if kind == "boolean":
+        if not isinstance(value, bool):
+            raise UnknownRpc(f"{name}: {param} must be true or false")
+        return value
+    if kind.endswith("[]"):  # an array of a text-ish type (uuid[], text[]): a list of strings
+        if not isinstance(value, list) or not all(isinstance(v, str) for v in value):
+            raise UnknownRpc(f"{name}: {param} must be a list of strings")
         return value
     if not isinstance(value, str):
         raise UnknownRpc(f"{name}: {param} must be a string")

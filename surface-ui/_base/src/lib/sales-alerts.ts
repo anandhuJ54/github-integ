@@ -1,6 +1,9 @@
-import { supabase } from "@v3/ui/integrations/supabase/client";
+import { api } from "@v3/ui/lib/server-fn";
 
-const db = supabase as unknown as { from: (t: string) => any; rpc: (f: string, a?: Record<string, unknown>) => any };
+// Shared lib (sales pages, admin integrations); its tables are sales tables, so it calls the sales API.
+// FastAPI: surface-api/sales/routers/alerts_data.py (runs as the signed-in user).
+const A = "/sales/alerts";
+const rpc = <T>(fn: string, args: Record<string, unknown> = {}): Promise<T> => api.post<T>(`${A}/rpc/${fn}`, { args });
 
 export type SalesAlert = {
   id: string;
@@ -34,34 +37,28 @@ export const ALERT_RULES: { rule: string; label: string; live: boolean; tier: Al
 export const ALERT_TIER_LABEL: Record<AlertTier, string> = { instant: "instant", every_5_min: "every 5 min", daily: "daily" };
 
 export async function loadAlerts(filter: { opportunityId?: string; ownerId?: string | null; opportunityIds?: string[] }): Promise<SalesAlert[]> {
-  let q = db.from("exp_sales_alerts").select("id,opportunity_id,logo,alert_type,rule,body,severity,owner_id,is_nora_suggested,suggested_task,accepted_task_id,created_at")
-    .is("dismissed_at", null).is("accepted_task_id", null).order("created_at", { ascending: false }).limit(100);
-  if (filter.opportunityId) q = q.eq("opportunity_id", filter.opportunityId);
-  if (filter.ownerId) q = q.eq("owner_id", filter.ownerId);
-  if (filter.opportunityIds) q = filter.opportunityIds.length ? q.in("opportunity_id", filter.opportunityIds) : q.eq("opportunity_id", "00000000-0000-0000-0000-000000000000");
-  const { data, error } = await q;
-  if (error) throw error;
-  return (data ?? []) as SalesAlert[];
+  // The 100 newest open alerts; each filter applies only when given (an empty opportunityIds list matches nothing).
+  const data = await api.post<SalesAlert[]>(`${A}/search`, {
+    opportunity_id: filter.opportunityId || null,
+    owner_id: filter.ownerId || null,
+    opportunity_ids: filter.opportunityIds ?? null,
+  });
+  return data ?? [];
 }
 
 /** A human accepts a NORA suggestion; the database creates the real task. */
 export async function acceptAlert(alertId: string): Promise<string> {
-  const { data, error } = await db.rpc("exp_alert_accept", { p_alert: alertId });
-  if (error) throw error;
-  return data as string;
+  return rpc<string>("exp_alert_accept", { p_alert: alertId });
 }
 
 export async function dismissAlert(alert: SalesAlert) {
-  const { data: auth } = await supabase.auth.getUser();
-  const { error } = await db.from("exp_sales_alerts").update({ dismissed_at: new Date().toISOString(), acknowledged: true }).eq("id", alert.id);
-  if (error) throw error;
-  await db.from("audit_log").insert({ user_id: auth.user?.id ?? null, action: "sales_alert_dismissed", entity_type: "opportunity", entity_id: alert.opportunity_id, field_changes: { alert_id: alert.id, rule: alert.rule } });
+  // dismissed_at: the server's clock; the audit row's user_id: the signed-in user (from the token). A failed audit insert is ignored, as before.
+  await api.post(`${A}/${encodeURIComponent(alert.id)}/dismiss`, { opportunity_id: alert.opportunity_id, rule: alert.rule });
 }
 
+/** Runs the two tick functions now, in order (alert sweep, then task reminders; the reminders tick queues emails). SF-10. */
 export async function runAlertEngineNow(): Promise<{ alerts: number; reminders: number }> {
-  const a = await db.rpc("exp_alerts_generate", {});
-  if (a.error) throw a.error;
-  const r = await db.rpc("exp_task_reminders_tick", {});
-  if (r.error) throw r.error;
-  return { alerts: Number(a.data ?? 0), reminders: Number(r.data ?? 0) };
+  const a = await rpc<number | null>("exp_alerts_generate");
+  const r = await rpc<number | null>("exp_task_reminders_tick");
+  return { alerts: Number(a ?? 0), reminders: Number(r ?? 0) };
 }
