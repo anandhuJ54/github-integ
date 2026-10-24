@@ -114,6 +114,7 @@ export const CONSOLE_PATH_PREFIXES = [
   "products",
   "professionals",
   "reports",
+  "run-health",
   "sales",
   "search",
   "seat",

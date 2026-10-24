@@ -11,7 +11,8 @@ import { EtlRunMonitor } from "@v3/etl/components/discovery/etl-run-monitor";
 import { loadPipelineHealth, num, type DiscoJob } from "@v3/ui/lib/console-surfaces";
 import { cn } from "@v3/ui/lib/utils";
 
-/* Discovery pipeline health (moved from the old /nora-os Runs tab, surface audit 2026-10-24):
+/* Run health (the old /nora-os Runs tab, surface audit 2026-10-24), shown at /run-health under
+   the NORA OS menu:
    disco jobs and engine counts (GET /etl/platform/pipeline-health) and the ETL run monitor
    (GET /etl/run-monitor). Read-only. */
 

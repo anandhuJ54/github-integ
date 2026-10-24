@@ -21,14 +21,14 @@ live in the skills Surface.** NORA OS keeps the engine (runner, capabilities, cl
 |---|---|---|---|
 | 1–7 | Skills, versions, capabilities, evals, build map, skill runs, sandbox | `/nora-os` tabs; API `/nora-os/registry/*`, `/nora-os/sandbox/*` | **skills**: page `/skills` (same six tabs; Runs shows skill runs only); API `/skills/registry/*`, `/skills/sandbox/*` (`surface-api/skills/{routers/registry.py,queries/}`) |
 | 8 | Skill runner | `/nora_os/fn/runSkill` | Stays in **nora-os** (the engine); the skills sandbox and the xmp interview call it |
-| 9 | ETL run monitor (read-only) | `/nora-os` Runs tab; `/nora-os/etl-monitor` | **etl**: `/discovery` → Pipeline Health tab; API `/etl/run-monitor` |
-| 10 | Discovery jobs + engine counts (read-only) | `/nora-os` Runs tab; `/etl/platform/nora-os` | **etl**: same tab; API `/etl/platform/pipeline-health` |
+| 9 | ETL run monitor (read-only) | `/nora-os` Runs tab; `/nora-os/etl-monitor` | Page `/run-health` under the **NORA OS** menu (route in `surface-ui/etl`, the data owner); API `/etl/run-monitor` |
+| 10 | Discovery jobs + engine counts (read-only) | `/nora-os` Runs tab; `/etl/platform/nora-os` | Same `/run-health` page; API `/etl/platform/pipeline-health` |
 | 11 | Claim gate | `/nora_os/fn/submitClaim`, `verifyClaimCode`, `releaseClaim` | Stays in **nora-os** (claims run as NORA `claim_*` skills) |
 | 12 | Category brief | `nora_os/category_brief.py` | Stays in **nora-os** as a runner capability. graph's diverged copy: settle when auditing graph |
 | 13 | Organize / extract | `nora_os/nora/{organize,extract}` | Stays in **nora-os** as runner capabilities |
 
 How the UI was kept simple and unbroken:
-- `/nora-os` redirects to `/skills`; the console nav shows "Skills". The last-used tab is remembered under the same key.
+- The side menu has a **NORA OS** group, as before, with **Skills** (`/skills`) and **Run health** (`/run-health`). `/nora-os` redirects to `/skills`. The last-used tab is remembered under the same key. `/discovery` is unchanged.
 - The shared components (`_base` `components/nora/registry-tabs.tsx`, `skill-runs.tsx`, `lib/nora-registry.ts`, `nora-sandbox.ts`, `nora-runner*`) stay in `_base` because the xmp interview page uses them too; only their API paths changed. The page and the sandbox tab moved into `surface-ui/skills`.
 - Checks: 1,474 API tests pass; all 14 UI apps typecheck; the production build passes; contracts for etl, nora-os and skills regenerated.
 

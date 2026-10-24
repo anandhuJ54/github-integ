@@ -59,6 +59,7 @@ import { Route as AuthenticatedOrganizationsRouteImport } from './../../admin/sr
 import { Route as AuthenticatedProductsRouteImport } from './../../admin/src/routes/_authenticated/products'
 import { Route as AuthenticatedProfessionalsRouteImport } from './../../admin/src/routes/_authenticated/professionals'
 import { Route as AuthenticatedReportsRouteImport } from './../../ops/src/routes/_authenticated/reports'
+import { Route as AuthenticatedRunHealthRouteImport } from './../../etl/src/routes/_authenticated/run-health'
 import { Route as AuthenticatedSalesRouteImport } from './../../sales/src/routes/_authenticated/sales'
 import { Route as AuthenticatedSearchRouteImport } from './../../search/src/routes/_authenticated/search'
 import { Route as AuthenticatedSkillsRouteImport } from './../../skills/src/routes/_authenticated/skills'
@@ -422,6 +423,11 @@ const AuthenticatedProfessionalsRoute =
 const AuthenticatedReportsRoute = AuthenticatedReportsRouteImport.update({
   id: '/reports',
   path: '/reports',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedRunHealthRoute = AuthenticatedRunHealthRouteImport.update({
+  id: '/run-health',
+  path: '/run-health',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedSalesRoute = AuthenticatedSalesRouteImport.update({
@@ -1123,6 +1129,7 @@ export interface FileRoutesByFullPath {
   '/products': typeof AuthenticatedProductsRoute
   '/professionals': typeof AuthenticatedProfessionalsRoute
   '/reports': typeof AuthenticatedReportsRoute
+  '/run-health': typeof AuthenticatedRunHealthRoute
   '/sales': typeof AuthenticatedSalesRouteWithChildren
   '/search': typeof AuthenticatedSearchRouteWithChildren
   '/skills': typeof AuthenticatedSkillsRoute
@@ -1280,6 +1287,7 @@ export interface FileRoutesByTo {
   '/products': typeof AuthenticatedProductsRoute
   '/professionals': typeof AuthenticatedProfessionalsRoute
   '/reports': typeof AuthenticatedReportsRoute
+  '/run-health': typeof AuthenticatedRunHealthRoute
   '/skills': typeof AuthenticatedSkillsRoute
   '/support': typeof AuthenticatedSupportRoute
   '/c/$slug': typeof CDotslugRoute
@@ -1438,6 +1446,7 @@ export interface FileRoutesById {
   '/_authenticated/products': typeof AuthenticatedProductsRoute
   '/_authenticated/professionals': typeof AuthenticatedProfessionalsRoute
   '/_authenticated/reports': typeof AuthenticatedReportsRoute
+  '/_authenticated/run-health': typeof AuthenticatedRunHealthRoute
   '/_authenticated/sales': typeof AuthenticatedSalesRouteWithChildren
   '/_authenticated/search': typeof AuthenticatedSearchRouteWithChildren
   '/_authenticated/skills': typeof AuthenticatedSkillsRoute
@@ -1602,6 +1611,7 @@ export interface FileRouteTypes {
     | '/products'
     | '/professionals'
     | '/reports'
+    | '/run-health'
     | '/sales'
     | '/search'
     | '/skills'
@@ -1759,6 +1769,7 @@ export interface FileRouteTypes {
     | '/products'
     | '/professionals'
     | '/reports'
+    | '/run-health'
     | '/skills'
     | '/support'
     | '/c/$slug'
@@ -1916,6 +1927,7 @@ export interface FileRouteTypes {
     | '/_authenticated/products'
     | '/_authenticated/professionals'
     | '/_authenticated/reports'
+    | '/_authenticated/run-health'
     | '/_authenticated/sales'
     | '/_authenticated/search'
     | '/_authenticated/skills'
@@ -2428,6 +2440,13 @@ declare module '@tanstack/react-router' {
       path: '/reports'
       fullPath: '/reports'
       preLoaderRoute: typeof AuthenticatedReportsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/run-health': {
+      id: '/_authenticated/run-health'
+      path: '/run-health'
+      fullPath: '/run-health'
+      preLoaderRoute: typeof AuthenticatedRunHealthRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/sales': {
@@ -3563,6 +3582,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedProductsRoute: typeof AuthenticatedProductsRoute
   AuthenticatedProfessionalsRoute: typeof AuthenticatedProfessionalsRoute
   AuthenticatedReportsRoute: typeof AuthenticatedReportsRoute
+  AuthenticatedRunHealthRoute: typeof AuthenticatedRunHealthRoute
   AuthenticatedSalesRoute: typeof AuthenticatedSalesRouteWithChildren
   AuthenticatedSearchRoute: typeof AuthenticatedSearchRouteWithChildren
   AuthenticatedSkillsRoute: typeof AuthenticatedSkillsRoute
@@ -3596,6 +3616,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedProductsRoute: AuthenticatedProductsRoute,
   AuthenticatedProfessionalsRoute: AuthenticatedProfessionalsRoute,
   AuthenticatedReportsRoute: AuthenticatedReportsRoute,
+  AuthenticatedRunHealthRoute: AuthenticatedRunHealthRoute,
   AuthenticatedSalesRoute: AuthenticatedSalesRouteWithChildren,
   AuthenticatedSearchRoute: AuthenticatedSearchRouteWithChildren,
   AuthenticatedSkillsRoute: AuthenticatedSkillsRoute,

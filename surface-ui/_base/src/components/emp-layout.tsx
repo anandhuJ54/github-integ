@@ -1,6 +1,7 @@
 import { BrandIcon } from "@v3/ui/components/brand/logo";
 import { Link, useRouterState } from "@tanstack/react-router";
 import {
+  Activity,
   BarChart3,
   Bell,
   Bot,
@@ -49,7 +50,13 @@ const NAV: NavGroup[] = [
     items: [
       { to: "/categories", label: "Categories", icon: Grid3x3 },
       { to: "/professionals", label: "Profiles & Graph", icon: Network },
+    ],
+  },
+  {
+    label: "NORA OS",
+    items: [
       { to: "/skills", label: "Skills", icon: Bot },
+      { to: "/run-health", label: "Run health", icon: Activity },
     ],
   },
   {

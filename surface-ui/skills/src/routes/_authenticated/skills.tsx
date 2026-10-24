@@ -54,7 +54,7 @@ function SkillsPage() {
     <EmpLayout>
       <PageBody>
         <PageHeader
-          eyebrow="Platform"
+          eyebrow="NORA OS"
           title="Skills"
           description="The skill registry — skills, the capabilities they call, the build map, the sandbox, skill runs and evals. NORA OS runs them."
         />
