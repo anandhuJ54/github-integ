@@ -119,6 +119,9 @@ GRAPH_RPCS: dict[str, list[tuple[str, str]]] = {
     "exp_ctrl_update_node": [("p_id", "uuid"), ("p_name", "text"), ("p_node_type", "text"),
                              ("p_parent", "uuid"), ("p_move", "boolean"), ("p_billing", "boolean"),
                              ("p_linked_entity", "uuid"), ("p_status", "text")],
+    # the scoring math view's expected-volume edit (super_admin / architect only)
+    "exp_set_expected_volume": [("p_gcid", "text"), ("p_lane", "text"), ("p_scope", "text"),
+                                ("p_value", "numeric"), ("p_rationale", "text")],
 }
 
 

@@ -115,6 +115,15 @@ def test_rpc_adjudicate_and_create():
     assert "p_billing => %(p_billing)s::boolean" in s and "p_parent" not in s
 
 
+def test_rpc_set_expected_volume():
+    s, p = q.rpc_sql("exp_set_expected_volume", {"p_gcid": "gcid:bakery", "p_lane": "reviews",
+                                                  "p_scope": "location", "p_value": 12.5})
+    assert s == ("select public.exp_set_expected_volume(p_gcid => %(p_gcid)s::text, "
+                 "p_lane => %(p_lane)s::text, p_scope => %(p_scope)s::text, "
+                 "p_value => %(p_value)s::numeric) as v")
+    assert p["p_gcid"] == "gcid:bakery"
+
+
 @pytest.mark.parametrize("name,args", [
     ("exp_graph_upsert_nodes", {}),
     ("exp_ctrl_create_node", {"p_name": "x", "p_evil": 1}),

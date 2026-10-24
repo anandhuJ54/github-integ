@@ -215,6 +215,8 @@ Pages:
 
   No table has a write policy, so on GCP these are already no-ops (updates and deletes match 0 rows; inserts fail). The control-tree and claims RPCs check the role and can be ported as they are.
 
+- 2026-10-24 correction: `components/scoring/expected-volume-keys.tsx` still called `exp_set_expected_volume` directly (a type cast hid it from the scan). Now `POST /graph/control/rpc/exp_set_expected_volume`, added to `GRAPH_RPCS`; the function checks super_admin / architect itself.
+
 ### 9. xmp (actually ~75 reads, ~50 writes, 7 RPCs across 12 files) · branch `migrate/api-xmp`
 Pages:
 - `/dashboard` (+ content, listings, reviews)
