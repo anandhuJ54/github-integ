@@ -215,8 +215,24 @@ Pages:
 
   No table has a write policy, so on GCP these are already no-ops (updates and deletes match 0 rows; inserts fail). The control-tree and claims RPCs check the role and can be ported as they are.
 
-### 9. xmp (58/29/6)
-- [ ] 1 · [ ] 2 · [ ] 3 · [ ] 4 · [ ] 5 · [ ] 6 · [ ] 7 parity · [ ] 8 · [ ] 9
+### 9. xmp (actually ~75 reads, ~50 writes, 7 RPCs across 12 files) · branch `migrate/api-xmp`
+Pages:
+- `/dashboard` (+ content, listings, reviews)
+- `/enterprise/:orgSlug` (+ users, campaigns, and the pages built on `lib/enterprise-xmp.ts`)
+- `/seat/:kind/:id` (+ tabs, `lib/seat.ts`, `lib/insurance-team.ts`, `lib/nora/interview-data.ts`, `lib/office-mode.ts`)
+- `/website/*` CMS (`lib/website.ts`, most of the writes)
+
+- [ ] 1. Endpoints
+- [x] 2. Tables and security (2026-10-24, read-only). 38 tables; the 7 RPCs are SECURITY INVOKER. **SF-8**:
+  - The website CMS and exp_web_leads are always-true for `authenticated`.
+  - The sales reps/quotas/territories tables are always-true.
+  - exp_revenue_components has RLS off.
+  - 7 tables have no policy, so they always read empty: invitations, user_roles, user_accounts, review_campaigns, listings, plg_rules, content_compliance_rules.
+  - Cap: no read is cut today. **1i**: hierarchy reads are latent (only 2 orgs have `hierarchy_path`), and the largest office roster is 990 of the 1,000 cap.
+- [ ] 3 · [ ] 4 · [ ] 5 · [ ] 6 · [ ] 7 parity · [ ] 8 · [ ] 9
+- Writes are ported as they are (same statements, as the signed-in user). Unlike graph, the website CMS writes **do** work on GCP (always-true policies).
+- Writes to the no-policy tables (invitations, review_campaigns, professionals update) fail or match 0 rows, as before.
+- The `section-editor.tsx` image upload uses Supabase Storage. It stays as it is (storage is out of scope).
 
 ### 10. `_base` (56/43/10) — each call goes to the Surface that owns its table
 - [ ] 1 · [ ] 2 · [ ] 3 · [ ] 4 · [ ] 5 · [ ] 6 · [ ] 7 parity · [ ] 8 · [ ] 9

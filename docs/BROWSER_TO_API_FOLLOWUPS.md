@@ -67,6 +67,11 @@ them also get faster), and nothing depends on the truncated behaviour.
 - **Decided 2026-10-24: get everything.** The expertise-graph node read has no cap (`max_rows=None`); the edges and external nodes read for it are uncapped as well. Parity records this as an explained difference for entities with more than 1,000 nodes.
 - Later: the payload can be large (2,644 nodes), so it may need paging.
 
+### 1i. xmp: org hierarchy reads (latent)
+- `/enterprise/:orgSlug/users` and `/campaigns` find an org's descendants with `organizations.hierarchy_path like '%<root id>%'`. Only 2 of 38,115 orgs have `hierarchy_path` set today, so these reads return just the root, and nothing is cut by the cap.
+- If `hierarchy_path` gets backfilled, State Farm alone has 19,882 child offices. The read would then be cut to 1,000, and the users page's `professionals in (orgIds) limit 2000` would be cut too.
+- Also close to the cap: the office roster in `lib/enterprise-xmp.ts` reads every professional of an office with no limit. The largest office (`compass-new-york-ny-2`) has 990.
+
 ### 1f. Check every remaining Surface for the same pattern
 Look for any legacy read with a limit over 1,000, or with no limit on a large table. Record each
 one here before porting.

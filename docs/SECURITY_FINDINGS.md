@@ -82,3 +82,12 @@ All 38 tables the graph pages read have RLS on, with read-only policies (most of
 - **Every table grants `anon` INSERT/UPDATE/DELETE** (SF-1 pattern). RLS blocks these writes today, but one permissive policy would expose the table.
 - **No policy at all** on `content_compliance_rules`, `exp_category_ui_config` and `transaction_signals`. RLS returns nothing to the browser, so the compliance tab's rule list and the ui_config section are always empty. This is a functional bug, not a leak.
 The graph port keeps today's access: calls run as the signed-in user, or as `anon` for the public `/p|o|c/:slug/graph` pages.
+
+## SF-8: xmp Surface (checked 2026-10-24, read-only)
+The xmp pages touch 38 tables and 7 RPCs. The RPCs (`exp_office_mode`, `exp_xmp_*`) are SECURITY INVOKER with a pinned `search_path`, so RLS applies to them. Findings:
+- **Website CMS: always-true `ALL` for `authenticated`** on exp_web_pages, exp_web_forms, exp_web_media, exp_web_campaigns, exp_web_alerts, exp_web_trust_items, exp_web_consent_config and exp_web_ads (SF-2). Any signed-in account can change or delete any site's pages, forms and ads. **exp_web_leads** (customer contact data) is also readable and editable by any signed-in account, and anon can insert.
+- **Sales tables, always-true for `authenticated`:** exp_sales_reps and exp_sales_quotas (`ALL`), exp_territories (no delete), exp_territory_brand (`ALL`) and exp_category_groups (`ALL`). Any signed-in account can rewrite reps, quotas and territories. This is money data.
+- **exp_revenue_components: RLS off** (SF-1), with anon read/write. Revenue amounts per seller.
+- **No policy at all** on invitations, listings, plg_rules, review_campaigns, user_accounts, user_roles and content_compliance_rules. They always read empty, and writes to them fail. The enterprise users page and the campaigns page therefore show no roles, invitations or campaigns. This is a functional bug, not a leak.
+- **The audit_log always-true insert** (SF-7) applies here too.
+The xmp port keeps today's access: calls run as the signed-in user, writes included.
