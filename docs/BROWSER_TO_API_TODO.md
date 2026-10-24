@@ -246,8 +246,22 @@ Pages:
 - Writes to the no-policy tables (invitations, review_campaigns, professionals update) fail or match 0 rows, as before.
 - The `section-editor.tsx` image upload uses Supabase Storage. It stays as it is (storage is out of scope).
 
-### 10. `_base` (56/43/10) — each call goes to the Surface that owns its table
-- [ ] 1 · [ ] 2 · [ ] 3 · [ ] 4 · [ ] 5 · [ ] 6 · [ ] 7 parity · [ ] 8 · [ ] 9
+### 10. `_base` (56/43/10) — each call goes to the Surface that owns its table · branch `migrate/api-base`
+- [x] 2. Tables and security (2026-10-24, read-only): **SF-9**. Cap: nothing is cut.
+- Proposed owner per lib (the `@v3/ui` lib keeps its exports; only its data source changes):
+
+  | lib | tables / RPCs | used by | owner API |
+  |---|---|---|---|
+  | `roles.tsx` | exp_control_grants, exp_control_nodes, exp_entity names, exp_admin_audit insert, rpc bootstrap_control_super_admin | every console | admin (`/admin/me/...`) |
+  | `nav-menus.ts` | exp_web_nav_menus (reads + 7 writes) | xmp website | xmp (`/xmp/website/nav-menus`) |
+  | `enterprise-ops.ts` | crm_integrations, oauth, sync_jobs, enterprise_settings, sso_config, user_roles, invitations | xmp, etl | xmp |
+  | `nora-registry.ts`, `nora-sandbox.ts` | exp_skill_*, exp_capability_registry, exp_build_map, exp_nora_*, exp_opportunity_feedback, search_rank_scores | nora-os | nora-os |
+  | `search.ts` | rpc search_docs, _count, _facets, _suggest (public) | srp, marketing | search (anon allowed) |
+  | `voce.ts` | exp_voce_article (reads + 1 update) | srp, search | search |
+  | `geo-coords.ts` | exp_us_cities | `_base` map component | srp |
+  | `console-surfaces.ts` | exp_products, exp_price_book, exp_contracts, exp_entitlements (money); disco_jobs and counts (etl) | admin, search, ops, nora-os | **sales** (money) + etl |
+  | `sales-alerts.ts`, `territories.ts` | exp_sales_*, exp_territor*, alerts RPCs (money, about 60 calls) | sales | **sales**: moved to Surface 11 (second approval) |
+- [ ] 1 · [ ] 3 · [ ] 4 · [ ] 5 · [ ] 6 · [ ] 7 parity · [ ] 8 · [ ] 9
 
 ### 11. sales (144/87/16) — money: needs a second approval, split into 3–4 PRs
 - [ ] 1 · [ ] 2 · [ ] 3 · [ ] 4 · [ ] 5 · [ ] 6 · [ ] 7 parity · [ ] 8 · [ ] 9

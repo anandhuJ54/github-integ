@@ -91,3 +91,10 @@ The xmp pages touch 38 tables and 7 RPCs. The RPCs (`exp_office_mode`, `exp_xmp_
 - **No policy at all** on invitations, listings, plg_rules, review_campaigns, user_accounts, user_roles and content_compliance_rules. They always read empty, and writes to them fail. The enterprise users page and the campaigns page therefore show no roles, invitations or campaigns. This is a functional bug, not a leak.
 - **The audit_log always-true insert** (SF-7) applies here too.
 The xmp port keeps today's access: calls run as the signed-in user, writes included.
+
+## SF-9: `_base` shared libs (checked 2026-10-24, read-only)
+- **Money tables, always-true for `authenticated`:** exp_products (no delete), exp_price_book, exp_contracts (SF-5) and exp_entitlements (no delete). Any signed-in account can change prices, contracts and entitlements.
+- **NORA / skills tables, always-true `ALL` for `authenticated`:** exp_skill_registry, exp_capability_registry, exp_build_map, exp_skill_eval, exp_skill_version, exp_skill_run, exp_nora_state, exp_nora_weights and exp_opportunity_feedback.
+- **No policy at all:** disco_jobs, plus the enterprise-ops tables crm_integrations, oauth_connections, sync_jobs, enterprise_settings, sso_config, user_roles and invitations. They always read empty for users. The disco jobs list in the console surfaces is therefore always empty.
+- **`bootstrap_control_super_admin()`** is SECURITY DEFINER and executable by anon. It returns `unauthenticated` when there's no user, and does nothing once any grant exists (21 do), so it's safe today. If `exp_control_grants` were ever emptied, the first signed-in caller would become super_admin.
+- The `search_docs*` RPCs are SECURITY INVOKER and public by design (the search page).
