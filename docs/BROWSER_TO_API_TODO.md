@@ -203,7 +203,7 @@ Pages:
   - Expertise: if one of the three uncapped reads fails, the page now shows an error instead of an empty graph.
 - [x] 5. `contracts/graph/openapi.json`
 - [x] 6. No `supabase.from` or `.rpc` calls remain in `surface-ui/graph` (only `auth.getSession`).
-- [ ] 7. Parity: `bun parity/run.ts graph`, about 67 cases (categories plus entities)
+- [ ] 7. Parity: `cd surface-ui/parity && bun --env-file=../app/.env run.ts graph`, about 67 cases (categories plus entities)
 - [ ] 8. Click-through · [ ] 9. Lint ratchet
 - **Writes ported as they are (ruling 2026-10-24: "modify as it is"), same statements as the signed-in user, with routing through proposals still open (FOLLOWUPS §3). Expertise graph: no cap (1h).** Context (§3, category data only through `exp_category_proposals`, never DELETE).** The browser does direct writes to:
   - `exp_taxonomy`, `exp_vertical_node_registry` and `content_compliance_rules`: insert, update and **delete**
