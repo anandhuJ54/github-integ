@@ -6,15 +6,21 @@ error shape, liveness/readiness) once so every service is consistent.
 """
 from __future__ import annotations
 
+import logging
 from collections.abc import AsyncIterator, Iterable
 from contextlib import asynccontextmanager
 
 import anyio.to_thread
-from fastapi import APIRouter, FastAPI, HTTPException, status
+import psycopg
+from fastapi import APIRouter, FastAPI, HTTPException, Request, status
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
+from psycopg_pool import PoolTimeout
 
 from _base.core.config import get_settings
 from _base.core.db import close_pools
+
+_log = logging.getLogger(__name__)
 
 
 @asynccontextmanager
@@ -41,6 +47,20 @@ def create_app(title: str, routers: Iterable[APIRouter]) -> FastAPI:
         allow_methods=["*"],
         allow_headers=["*"],
     )
+
+    @app.exception_handler(PoolTimeout)
+    async def _pool_timeout(request: Request, exc: PoolTimeout) -> JSONResponse:
+        # No connection within DB_POOL_TIMEOUT: the database (or the login's connection cap)
+        # is saturated. Say so, instead of a bare 500 that reads like a code bug.
+        _log.warning("pool timeout on %s %s: %s", request.method, request.url.path, exc)
+        return JSONResponse({"detail": f"database busy: {exc}"}, status_code=503)
+
+    @app.exception_handler(psycopg.OperationalError)
+    async def _db_unavailable(request: Request, exc: psycopg.OperationalError) -> JSONResponse:
+        # Connection lost / refused (e.g. the pooler closed it, VPN dropped). Not the caller's fault.
+        _log.warning("database unavailable on %s %s: %s", request.method, request.url.path, exc)
+        msg = exc.diag.message_primary if exc.diag and exc.diag.message_primary else str(exc)
+        return JSONResponse({"detail": f"database unavailable: {msg}"}, status_code=503)
 
     for router in routers:
         app.include_router(router)
