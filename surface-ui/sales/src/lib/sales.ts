@@ -1,4 +1,4 @@
-import { supabase } from "@v3/ui/integrations/supabase/client";
+import { api } from "@v3/ui/lib/server-fn";
 import {
   computeLineMargin,
   rollupDeal,
@@ -6,6 +6,12 @@ import {
   type DiscountTier,
   type LineMargin,
 } from "@v3/sales/lib/margin";
+
+// FastAPI: surface-api/sales/routers/core_data.py (runs as the signed-in user).
+const CORE = "/sales/core";
+// exp_contract_provision is the CPQ router's allow-listed RPC (surface-api/sales/routers/cpq_data.py).
+const PROVISION = "/sales/cpq/rpc/exp_contract_provision";
+const enc = encodeURIComponent;
 
 /* ─────────── Config ─────────── */
 
@@ -163,22 +169,11 @@ export type Renewal = {
 /* ─────────── Reps + territory ─────────── */
 
 export async function loadReps(): Promise<Rep[]> {
-  const { data, error } = await supabase
-    .from("exp_sales_reps")
-    .select("id,name,email,role,group_key,photo_url,is_demo")
-    .order("group_key")
-    .order("role");
-
-  if (error) throw error;
-  return (data ?? []) as Rep[];
+  return api.get<Rep[]>(`${CORE}/reps`);
 }
 
 export async function loadAssignments(): Promise<Assignment[]> {
-  const { data, error } = await supabase
-    .from("exp_sales_assignments")
-    .select("id,rep_id,group_key,assignment_type,target_ref");
-  if (error) throw error;
-  return (data ?? []) as Assignment[];
+  return api.get<Assignment[]>(`${CORE}/assignments`);
 }
 
 export type Territory = {
@@ -212,14 +207,8 @@ export function inTerritory(e: ActivityEvent, t: Territory | null) {
 
 export async function loadActivity(days = 30): Promise<ActivityEvent[]> {
   const since = new Date(Date.now() - days * 86_400_000).toISOString();
-  const { data, error } = await supabase
-    .from("exp_activity_events")
-    .select("id,event_type,subject_type,subject_id,account_id,logo,location,actor,value,occurred_at")
-    .gte("occurred_at", since)
-    .order("occurred_at", { ascending: false })
-    .limit(5000);
-  if (error) throw error;
-  return (data ?? []) as ActivityEvent[];
+  // newest first, at most 1000 rows (PostgREST always cut the old limit(5000) to 1000)
+  return api.get<ActivityEvent[]>(`${CORE}/activity`, { params: { since } });
 }
 
 export type SubjectRollup = {
@@ -349,31 +338,22 @@ export function buildAdoptionTree(rollups: SubjectRollup[]): AdoptionNode[] {
 /* ─────────── Account tiers + staffing ─────────── */
 
 export async function loadAccountTiers(): Promise<AccountTier[]> {
-  const { data, error } = await supabase
-    .from("exp_account_tier")
-    .select("account_id,agent_count,tier,group_key")
-    .order("agent_count", { ascending: false });
-  if (error) throw error;
-  return (data ?? []) as AccountTier[];
+  return api.get<AccountTier[]>(`${CORE}/account-tiers`);
 }
 
 export async function loadAccountNames(ids: string[]): Promise<Record<string, string>> {
   if (!ids.length) return {};
-  const { data, error } = await supabase.from("organizations").select("id,name").in("id", ids);
-  if (error) throw error;
-  return Object.fromEntries((data ?? []).map((o) => [o.id, o.name]));
+  const data = await api.post<{ id: string; name: string }[]>(`${CORE}/organizations/names`, { ids });
+  return Object.fromEntries(data.map((o) => [o.id, o.name]));
 }
 
 /** Recompute tiers from live agent counts per root account. */
 export async function recomputeAccountTiers(groupKey = "insurance") {
-  const [orgsRes, prosRes] = await Promise.all([
-    supabase.from("organizations").select("id,name,parent_org_id").limit(20000),
-    supabase.from("professionals").select("id,primary_org_id").limit(20000),
-  ]);
-  if (orgsRes.error) throw orgsRes.error;
-  if (prosRes.error) throw prosRes.error;
-  const orgs = orgsRes.data ?? [];
-  const pros = prosRes.data ?? [];
+  // Each read is cut to 1000 rows, as PostgREST cut the old limit(20000) (follow-up 1j).
+  const { orgs, pros } = await api.get<{
+    orgs: { id: string; name: string; parent_org_id: string | null }[];
+    pros: { id: string; primary_org_id: string | null }[];
+  }>(`${CORE}/account-tiers/inputs`);
   const childrenOf = new Map<string, string[]>();
   orgs.forEach((o) => {
     if (!o.parent_org_id) return;
@@ -397,11 +377,10 @@ export async function recomputeAccountTiers(groupKey = "insurance") {
       agent_count: agents,
       tier: tierForAgentCount(agents),
       group_key: groupKey,
-      updated_at: new Date().toISOString(),
     };
   });
-  const { error } = await supabase.from("exp_account_tier").upsert(rows, { onConflict: "account_id" });
-  if (error) throw error;
+  // upsert on account_id; the server stamps updated_at
+  await api.put(`${CORE}/account-tiers`, { rows });
   return rows.length;
 }
 
@@ -423,19 +402,13 @@ export function staffingModel(tiers: AccountTier[]) {
 /* ─────────── Price book ─────────── */
 
 export async function loadPriceBook() {
-  const [pbRes, prodRes] = await Promise.all([
-    supabase
-      .from("exp_price_book")
-      .select(
-        "id,product_key,scope,unit,list_price,contract_price,billing_type,notes,cost_type,cost_value,floor_margin_pct,discount_tiers,credit_cost_per_unit",
-      ),
-    supabase.from("exp_products").select("product_key,name,sort").order("sort"),
-  ]);
-  if (pbRes.error) throw pbRes.error;
-  if (prodRes.error) throw prodRes.error;
-  const names = Object.fromEntries((prodRes.data ?? []).map((p) => [p.product_key, p.name]));
-  const order = Object.fromEntries((prodRes.data ?? []).map((p) => [p.product_key, p.sort ?? 100]));
-  return ((pbRes.data ?? []) as PriceBookRow[])
+  const { book, products } = await api.get<{
+    book: PriceBookRow[];
+    products: { product_key: string; name: string; sort: number | null }[];
+  }>(`${CORE}/price-book`);
+  const names = Object.fromEntries(products.map((p) => [p.product_key, p.name]));
+  const order = Object.fromEntries(products.map((p) => [p.product_key, p.sort ?? 100]));
+  return book
     .map((r) => ({ ...r, productName: names[r.product_key ?? ""] ?? r.product_key ?? "—" }))
     .sort(
       (a, b) =>
@@ -444,29 +417,24 @@ export async function loadPriceBook() {
     );
 }
 
-export async function savePrice(id: string, patch: Partial<PriceBookRow>) {
-  const { error } = await supabase.from("exp_price_book").update(patch).eq("id", id);
-  if (error) throw error;
+export async function savePrice(
+  id: string,
+  patch: Partial<Pick<PriceBookRow, "list_price" | "contract_price" | "credit_cost_per_unit">>,
+) {
+  await api.patch(`${CORE}/price-book/${enc(id)}`, patch);
 }
 
 /* ─────────── Contracts / CPQ ─────────── */
 
 export async function loadContracts() {
-  const [cRes, liRes, sigRes, renRes] = await Promise.all([
-    supabase
-      .from("exp_contracts")
-      .select(
-        "id,org_id,account_id,name,status,start_date,end_date,token_package,mrr,created_by,sold_by,net,cost,margin_pct,approval_state,approval_note,is_demo",
-      )
-      .order("name"),
-    supabase
-      .from("exp_contract_line_items")
-      .select("id,contract_id,product_key,qty,unit_price,term,notes,discount_pct,cost,net,margin_pct"),
-    supabase.from("exp_contract_signatures").select("id,contract_id,signer_name,signer_email,status,signed_at"),
-    supabase.from("exp_contract_renewals").select("id,contract_id,renewal_date,reminder_state,notes"),
-  ]);
-  if (cRes.error) throw cRes.error;
-  const contracts = (cRes.data ?? []) as Contract[];
+  // contracts throw on error; line items, signatures and renewals come back [] on error, as before
+  const bundle = await api.get<{
+    contracts: Contract[];
+    lineItems: LineItem[];
+    signatures: Signature[];
+    renewals: Renewal[];
+  }>(`${CORE}/contracts`);
+  const contracts = bundle.contracts;
   const accountIds = [...new Set(contracts.map((c) => c.account_id ?? c.org_id).filter(Boolean))] as string[];
   const names = await loadAccountNames(accountIds);
   return {
@@ -474,9 +442,9 @@ export async function loadContracts() {
       ...c,
       accountName: names[(c.account_id ?? c.org_id) ?? ""] ?? "—",
     })),
-    lineItems: (liRes.data ?? []) as LineItem[],
-    signatures: (sigRes.data ?? []) as Signature[],
-    renewals: (renRes.data ?? []) as Renewal[],
+    lineItems: bundle.lineItems,
+    signatures: bundle.signatures,
+    renewals: bundle.renewals,
   };
 }
 
@@ -487,11 +455,7 @@ export function contractMrr(items: LineItem[]) {
 }
 
 export async function syncContractMrr(contractId: string, items: LineItem[]) {
-  const { error } = await supabase
-    .from("exp_contracts")
-    .update({ mrr: contractMrr(items) })
-    .eq("id", contractId);
-  if (error) throw error;
+  await api.patch(`${CORE}/contracts/${enc(contractId)}`, { mrr: contractMrr(items) });
 }
 
 export async function createContract(input: {
@@ -502,23 +466,19 @@ export async function createContract(input: {
   tokenPackage?: number;
   createdBy?: string | null;
 }) {
-  const { data, error } = await supabase
-    .from("exp_contracts")
-    .insert({
-      name: input.name,
-      account_id: input.accountId,
-      org_id: input.accountId,
-      status: "draft",
-      start_date: input.startDate ?? null,
-      end_date: input.endDate ?? null,
-      token_package: input.tokenPackage ?? 0,
-      mrr: 0,
-      created_by: input.createdBy ?? null,
-    })
-    .select("id")
-    .single();
-  if (error) throw error;
-  return data.id as string;
+  // created_by stays the caller's value: duplicateContract passes the original's creator
+  const data = await api.post<{ id: string }>(`${CORE}/contracts`, {
+    name: input.name,
+    account_id: input.accountId,
+    org_id: input.accountId,
+    status: "draft",
+    start_date: input.startDate ?? null,
+    end_date: input.endDate ?? null,
+    token_package: input.tokenPackage ?? 0,
+    mrr: 0,
+    created_by: input.createdBy ?? null,
+  });
+  return data.id;
 }
 
 export async function addLineItem(input: {
@@ -530,46 +490,40 @@ export async function addLineItem(input: {
   discountPct?: number;
   notes?: string | null;
 }) {
-  const { error } = await supabase.from("exp_contract_line_items").insert({
-    contract_id: input.contractId,
-    product_key: input.productKey,
-    qty: input.qty,
-    unit_price: input.unitPrice,
-    term: input.term,
-    discount_pct: input.discountPct ?? 0,
-    notes: input.notes ?? null,
+  await api.post(`${CORE}/line-items`, {
+    rows: [
+      {
+        contract_id: input.contractId,
+        product_key: input.productKey,
+        qty: input.qty,
+        unit_price: input.unitPrice,
+        term: input.term,
+        discount_pct: input.discountPct ?? 0,
+        notes: input.notes ?? null,
+      },
+    ],
   });
-  if (error) throw error;
 }
 
 export async function setLineDiscount(id: string, discountPct: number) {
-  const { error } = await supabase
-    .from("exp_contract_line_items")
-    .update({ discount_pct: discountPct })
-    .eq("id", id);
-  if (error) throw error;
+  await api.patch(`${CORE}/line-items/${enc(id)}`, { discount_pct: discountPct });
 }
 
 export async function removeLineItem(id: string) {
-  const { error } = await supabase.from("exp_contract_line_items").delete().eq("id", id);
-  if (error) throw error;
+  await api.delete(`${CORE}/line-items/${enc(id)}`);
 }
 
 export async function setContractStatus(id: string, status: string) {
-  const { error } = await supabase.from("exp_contracts").update({ status }).eq("id", id);
-  if (error) throw error;
+  await api.patch(`${CORE}/contracts/${enc(id)}`, { status });
   if (status === "active") {
     // DB trigger provisions on status change; call explicitly so late line-item
     // edits are always reflected in entitlements.
-    const { error: rpcError } = await supabase.rpc("exp_contract_provision", { p_contract: id });
-    if (rpcError) throw rpcError;
+    await api.post(PROVISION, { args: { p_contract: id } });
   }
 }
 
 export async function provisionContract(id: string) {
-  const { data, error } = await supabase.rpc("exp_contract_provision", { p_contract: id });
-  if (error) throw error;
-  return data as number;
+  return api.post<number>(PROVISION, { args: { p_contract: id } });
 }
 
 export async function duplicateContract(contract: Contract, items: LineItem[]) {
@@ -582,8 +536,8 @@ export async function duplicateContract(contract: Contract, items: LineItem[]) {
     createdBy: contract.created_by,
   });
   if (items.length) {
-    const { error } = await supabase.from("exp_contract_line_items").insert(
-      items.map((li) => ({
+    await api.post(`${CORE}/line-items`, {
+      rows: items.map((li) => ({
         contract_id: newId,
         product_key: li.product_key,
         qty: li.qty,
@@ -591,8 +545,7 @@ export async function duplicateContract(contract: Contract, items: LineItem[]) {
         term: li.term,
         notes: li.notes,
       })),
-    );
-    if (error) throw error;
+    });
   }
   await syncContractMrr(newId, items);
   return newId;
@@ -603,21 +556,17 @@ export async function sendSignature(input: {
   signerName: string;
   signerEmail: string;
 }) {
-  const { error } = await supabase.from("exp_contract_signatures").insert({
+  await api.post(`${CORE}/signatures`, {
     contract_id: input.contractId,
     signer_name: input.signerName,
     signer_email: input.signerEmail,
     status: "sent",
   });
-  if (error) throw error;
 }
 
 export async function markSigned(signatureId: string) {
-  const { error } = await supabase
-    .from("exp_contract_signatures")
-    .update({ status: "signed", signed_at: new Date().toISOString() })
-    .eq("id", signatureId);
-  if (error) throw error;
+  // status "signed"; the server stamps signed_at
+  await api.post(`${CORE}/signatures/${enc(signatureId)}/signed`);
 }
 
 export async function upsertRenewal(input: {
@@ -626,18 +575,16 @@ export async function upsertRenewal(input: {
   reminderState?: string;
   notes?: string | null;
 }) {
-  const { error } = await supabase.from("exp_contract_renewals").insert({
+  await api.post(`${CORE}/renewals`, {
     contract_id: input.contractId,
     renewal_date: input.renewalDate,
     reminder_state: input.reminderState ?? "scheduled",
     notes: input.notes ?? null,
   });
-  if (error) throw error;
 }
 
 export async function setRenewalState(id: string, reminder_state: string) {
-  const { error } = await supabase.from("exp_contract_renewals").update({ reminder_state }).eq("id", id);
-  if (error) throw error;
+  await api.patch(`${CORE}/renewals/${enc(id)}`, { reminder_state });
 }
 
 /* ─────────── Revenue rollup (Home + Sales dashboards) ─────────── */
@@ -653,27 +600,19 @@ export type RevenueRollup = {
 export async function loadRevenue(): Promise<RevenueRollup> {
   const in90 = new Date(Date.now() + 90 * 86_400_000).toISOString().slice(0, 10);
   const today = new Date().toISOString().slice(0, 10);
-  const [active, expiring, sigs] = await Promise.all([
-    supabase.from("exp_contracts").select("mrr").eq("status", "active"),
-    supabase
-      .from("exp_contracts")
-      .select("id", { count: "exact", head: true })
-      .eq("status", "active")
-      .gte("end_date", today)
-      .lte("end_date", in90),
-    supabase
-      .from("exp_contract_signatures")
-      .select("id", { count: "exact", head: true })
-      .eq("status", "sent"),
-  ]);
-  if (active.error) throw active.error;
-  const mrr = (active.data ?? []).reduce((s, c) => s + Number(c.mrr ?? 0), 0);
+  // the active rows throw on error; a failed count comes back null, as before
+  const r = await api.get<{
+    active: { mrr: number | null }[];
+    expiring: number | null;
+    pendingSignatures: number | null;
+  }>(`${CORE}/revenue`, { params: { today, in90 } });
+  const mrr = r.active.reduce((s, c) => s + Number(c.mrr ?? 0), 0);
   return {
-    activeContracts: (active.data ?? []).length,
+    activeContracts: r.active.length,
     mrr,
     arr: mrr * 12,
-    expiring90: expiring.count ?? 0,
-    pendingSignatures: sigs.count ?? 0,
+    expiring90: r.expiring ?? 0,
+    pendingSignatures: r.pendingSignatures ?? 0,
   };
 }
 
@@ -727,27 +666,19 @@ export function quoteDeal(quoted: QuotedLine[]) {
 export async function persistQuoteMargins(contractId: string, quoted: QuotedLine[]) {
   for (const q of quoted) {
     if (q.line.id === "tmp") continue;
-    const { error } = await supabase
-      .from("exp_contract_line_items")
-      .update({
-        cost: round2(q.margin.cost),
-        net: round2(q.margin.net),
-        margin_pct: q.margin.marginPct == null ? null : Number(q.margin.marginPct.toFixed(4)),
-      })
-      .eq("id", q.line.id);
-    if (error) throw error;
+    await api.patch(`${CORE}/line-items/${enc(q.line.id)}`, {
+      cost: round2(q.margin.cost),
+      net: round2(q.margin.net),
+      margin_pct: q.margin.marginPct == null ? null : Number(q.margin.marginPct.toFixed(4)),
+    });
   }
   const deal = quoteDeal(quoted);
-  const { error } = await supabase
-    .from("exp_contracts")
-    .update({
-      cost: round2(deal.cost),
-      net: round2(deal.net),
-      margin_pct: deal.marginPct == null ? null : Number(deal.marginPct.toFixed(4)),
-      approval_state: deal.requiresApproval ? "required" : "not_required",
-    })
-    .eq("id", contractId);
-  if (error) throw error;
+  await api.patch(`${CORE}/contracts/${enc(contractId)}`, {
+    cost: round2(deal.cost),
+    net: round2(deal.net),
+    margin_pct: deal.marginPct == null ? null : Number(deal.marginPct.toFixed(4)),
+    approval_state: deal.requiresApproval ? "required" : "not_required",
+  });
   return deal;
 }
 
@@ -756,11 +687,7 @@ function round2(n: number) {
 }
 
 export async function requestMarginApproval(contractId: string, note: string) {
-  const { error } = await supabase
-    .from("exp_contracts")
-    .update({ approval_state: "pending", approval_note: note })
-    .eq("id", contractId);
-  if (error) throw error;
+  await api.patch(`${CORE}/contracts/${enc(contractId)}`, { approval_state: "pending", approval_note: note });
 }
 
 export async function setMarginApproval(
@@ -768,16 +695,14 @@ export async function setMarginApproval(
   state: "approved" | "rejected" | "required",
   note?: string | null,
 ) {
-  const { error } = await supabase
-    .from("exp_contracts")
-    .update({ approval_state: state, ...(note != null ? { approval_note: note } : {}) })
-    .eq("id", contractId);
-  if (error) throw error;
+  await api.patch(`${CORE}/contracts/${enc(contractId)}`, {
+    approval_state: state,
+    ...(note != null ? { approval_note: note } : {}),
+  });
 }
 
 export async function setContractSeller(contractId: string, repId: string | null) {
-  const { error } = await supabase.from("exp_contracts").update({ sold_by: repId }).eq("id", contractId);
-  if (error) throw error;
+  await api.patch(`${CORE}/contracts/${enc(contractId)}`, { sold_by: repId });
 }
 
 /* ─────────── Per-product credit consumption config (exp_products) ─────────── */
@@ -785,6 +710,5 @@ export async function saveCreditConfig(
   productKey: string,
   patch: { consumes_llm_credits: boolean; est_credits_per_professional: number | null; est_credits_per_location: number | null },
 ) {
-  const { error } = await supabase.from("exp_products").update(patch).eq("product_key", productKey);
-  if (error) throw error;
+  await api.patch(`${CORE}/products/${enc(productKey)}/credit-config`, patch);
 }

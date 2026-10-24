@@ -337,6 +337,85 @@ t_exp_contract_activity = Table(
     schema='public'
 )
 
+t_exp_contract_approvals = Table(
+    'exp_contract_approvals', metadata,
+    Column('id', Uuid, primary_key=True, server_default=text('gen_random_uuid()')),
+    Column('contract_id', Uuid, nullable=False),
+    Column('approver_role', Text),
+    Column('approver_name', Text),
+    Column('email', Text),
+    Column('status', Text, server_default=text("'pending'::text")),
+    Column('reason', Text),
+    Column('requested_at', DateTime(True), server_default=text('now()')),
+    Column('decided_at', DateTime(True)),
+    Column('is_demo', Boolean, server_default=text('false')),
+    Column('demo_batch', Text),
+    PrimaryKeyConstraint('id', name='exp_contract_approvals_pkey'),
+    Index('idx_ca_contract', 'contract_id'),
+    schema='public'
+)
+
+t_exp_contract_documents = Table(
+    'exp_contract_documents', metadata,
+    Column('id', Uuid, primary_key=True, server_default=text('gen_random_uuid()')),
+    Column('contract_id', Uuid, nullable=False),
+    Column('doc_type', Text, nullable=False),
+    Column('title', Text),
+    Column('auto_generated', Boolean, server_default=text('false')),
+    Column('conditional_on', Text),
+    Column('file_url', Text),
+    Column('content', JSONB),
+    Column('created_at', DateTime(True), server_default=text('now()')),
+    Column('is_demo', Boolean, server_default=text('false')),
+    Column('demo_batch', Text),
+    Column('template_key', Text),
+    Column('version', Text),
+    Column('rendered', Boolean, server_default=text('false')),
+    Column('sort_order', Integer, server_default=text('0')),
+    PrimaryKeyConstraint('id', name='exp_contract_documents_pkey'),
+    Index('idx_cd_contract', 'contract_id'),
+    schema='public'
+)
+
+t_exp_contract_recipients = Table(
+    'exp_contract_recipients', metadata,
+    Column('id', Uuid, primary_key=True, server_default=text('gen_random_uuid()')),
+    Column('contract_id', Uuid, nullable=False),
+    Column('party', Text, nullable=False),
+    Column('person_name', Text),
+    Column('email', Text),
+    Column('role', Text, nullable=False),
+    Column('signing_order', Integer),
+    Column('permissions', JSONB),
+    Column('created_at', DateTime(True), server_default=text('now()')),
+    Column('is_demo', Boolean, server_default=text('false')),
+    Column('demo_batch', Text),
+    PrimaryKeyConstraint('id', name='exp_contract_recipients_pkey'),
+    Index('idx_cr_contract', 'contract_id'),
+    schema='public'
+)
+
+t_exp_contract_versions = Table(
+    'exp_contract_versions', metadata,
+    Column('id', Uuid, primary_key=True, server_default=text('gen_random_uuid()')),
+    Column('contract_id', Uuid, nullable=False),
+    Column('version_no', Integer, nullable=False),
+    Column('label', Text),
+    Column('kind', Text, server_default=text("'generated'::text")),
+    Column('source', Text, server_default=text("'system'::text")),
+    Column('uploaded_by', Text),
+    Column('file_url', Text),
+    Column('change_summary', JSONB),
+    Column('approval_state', Text, server_default=text("'draft'::text")),
+    Column('is_signing_copy', Boolean, server_default=text('false')),
+    Column('created_at', DateTime(True), server_default=text('now()')),
+    Column('is_demo', Boolean, server_default=text('false')),
+    Column('demo_batch', Text),
+    PrimaryKeyConstraint('id', name='exp_contract_versions_pkey'),
+    Index('idx_cv_contract', 'contract_id'),
+    schema='public'
+)
+
 t_exp_csm_assignments = Table(
     'exp_csm_assignments', metadata,
     Column('id', Uuid, primary_key=True, server_default=text('gen_random_uuid()')),

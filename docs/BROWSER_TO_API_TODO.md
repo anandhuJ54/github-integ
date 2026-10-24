@@ -298,6 +298,22 @@ Pages:
   - [x] 5. `contracts/sales/openapi.json` (new); etl regenerated
   - [x] 6. No direct calls left in catalog-admin, cpq-catalog, cpq-depth, comp, sales-cpq or console-surfaces
   - [x] 7. Parity: `run.ts sales` **PASS 24/24** (2026-10-24) · [ ] 8. Click-through: `/sales/price-book`, `/sales/pricing`, `/sales/comp`, `/sales/quotes`, `/sales/promos`, `/billing`, `/reports`
+- **S2 contracts, accounts & e-sign** (started 2026-10-24; security covered by SF-10; cap: only the 1j reads in accounts.ts / sales.ts, the contract tables are tiny: 12 contracts, 38 activity rows):
+  - [x] 1. `/sales/contracts/*` (contracts, the 17 signed-in m4_* functions allow-listed in `CONTRACT_RPCS`, notifications, skus, invoices, usage) · `/sales/csm/*` · `/sales/sign/*` (public, always anon, token in the body, only `m4_signer_fetch` / `m4_record_signature`) · `/sales/core/*` (sales.ts) · `/sales/accounts/*`. `exp_contract_provision` reuses the S1 `/sales/cpq/rpc/` route.
+  - [x] 3/4. `sales/queries/{contracts,csm,sign,core,accounts}.py`; 160 new tests, 1,140 in total. Read-only live smoke. **No write, m4_* call or provision call was run.**
+    - `p_actor` / `p_uploaded_by` (m4_*), CSM `assigned_by` and the login-as `actor_email` come from the token. `created_by` on `m4_create_contract_from_quote` and `exp_contracts` stays a request field (callers send different values).
+    - `read_at`, `signed_at`, `exp_account_tier.updated_at` use the server clock.
+    - The price-book patch accepts only `list_price`, `contract_price`, `credit_cost_per_unit` (what the page sends).
+    - Cap (1j, kept 1:1): `/sales/core/account-tiers/inputs`, `/sales/accounts/list-rows`, `/tree-rows`.
+    - Generated schema: +4 tables (`exp_contract_{versions,recipients,approvals,documents}`).
+  - [x] 5. `contracts/sales/openapi.json` regenerated · [x] 6. No direct calls left in contracts, csm, sales, accounts, the quote route or the sign route
+  - [ ] 7. Parity: `run.ts sales` (24 S1 + 17 contracts + 18 core = 59 cases) · [ ] 8. Click-through: `/sales/contracts`, a contract detail, `/sales/accounts`, an account, `/sales/price-book`, `/sales` (dashboard), a quote, `/sign/<any>` (opens only; press nothing)
+  - Bugs found, kept as they are (legacy behaviour):
+    - The quote page passes the quote *name* (e.g. `Q-18788`) to uuid columns, so "create contract from quote" and its existing-contract read fail with "invalid input syntax for type uuid".
+    - The sign page treats `m4_record_signature`'s `{error:"invalid"}` as success (it only checks `ok === false`).
+    - The sign page reads `contract_number`, `renewal_term_months`, `start_date`, `end_date`, `document_hash`, but `m4_signer_fetch` returns `number`, `term_months`, `start`, `end`, `hash`, so those show "—".
+    - The quote page's `created_by` fallback is a hard-coded person's name (no-names rule). Needs a decision on what to send instead.
+    - Contract money fields (mrr, cost, net, margin_pct) are computed in the browser as floats and stored as sent; the server doesn't recompute them.
 
 marketing and app make no direct calls.
 

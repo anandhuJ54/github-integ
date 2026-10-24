@@ -1,4 +1,25 @@
-import { supabase } from "@v3/ui/integrations/supabase/client";
+import type { Tables } from "@v3/ui/integrations/supabase/types";
+import { api } from "@v3/ui/lib/server-fn";
+
+// FastAPI: surface-api/sales/routers/accounts_data.py (runs as the signed-in user).
+const ACCOUNTS = "/sales/accounts";
+const enc = encodeURIComponent;
+
+// The rows the old selects returned (same columns, same generated types).
+type ListContract = Pick<Tables<"exp_contracts">, "account_id" | "org_id" | "status" | "mrr">;
+type TreeContract = Pick<
+  Tables<"exp_contracts">,
+  "id" | "name" | "account_id" | "org_id" | "status" | "mrr" | "token_package" | "start_date"
+>;
+type EntitlementRow = Pick<
+  Tables<"exp_entitlements">,
+  "id" | "product_key" | "state" | "tokens_included" | "source" | "granted_at"
+>;
+
+/** The exp_entity display_name ilike %name% exact count per name, in order (null when it failed). */
+async function discoveredCounts(names: string[]): Promise<(number | null)[]> {
+  return api.post<(number | null)[]>(`${ACCOUNTS}/discovered-counts`, { names });
+}
 
 export type OrgNode = {
   id: string;
@@ -26,10 +47,7 @@ export type ProNode = {
   job_title: string | null;
 };
 
-const ORG_COLS =
-  "id,name,slug,entity_type,parent_org_id,hierarchy_depth,is_active,claimed,search_rank_score,address_city,address_state";
-const PRO_COLS =
-  "id,display_name,first_name,last_name,slug,primary_org_id,claimed,search_rank_score,job_title";
+// The organization / professional select lists live in surface-api/sales/queries/accounts.py.
 
 export type AccountSummary = {
   account: OrgNode;
@@ -46,17 +64,13 @@ export type AccountSummary = {
 
 /** All root organizations are accounts; everything under them is hierarchy. */
 export async function loadAccounts(): Promise<AccountSummary[]> {
-  const [orgsRes, prosRes, contractsRes] = await Promise.all([
-    supabase.from("organizations").select(ORG_COLS).limit(5000),
-    supabase.from("professionals").select(PRO_COLS).limit(5000),
-    supabase.from("exp_contracts").select("account_id,org_id,status,mrr"),
-  ]);
-  if (orgsRes.error) throw orgsRes.error;
-  if (prosRes.error) throw prosRes.error;
-
-  const orgs = (orgsRes.data ?? []) as OrgNode[];
-  const pros = (prosRes.data ?? []) as ProNode[];
-  const contracts = contractsRes.data ?? [];
+  // orgs and pros are cut to 1000 rows each, as PostgREST cut the old limit(5000) (follow-up 1j);
+  // the contracts come back [] on error, as before
+  const { orgs, pros, contracts } = await api.get<{
+    orgs: OrgNode[];
+    pros: ProNode[];
+    contracts: ListContract[];
+  }>(`${ACCOUNTS}/list-rows`);
 
   const childrenOf = new Map<string, OrgNode[]>();
   orgs.forEach((o) => {
@@ -75,15 +89,7 @@ export async function loadAccounts(): Promise<AccountSummary[]> {
 
   const roots = orgs.filter((o) => !o.parent_org_id);
 
-  const discovered = await Promise.all(
-    roots.map(async (r) => {
-      const { count } = await supabase
-        .from("exp_entity")
-        .select("*", { count: "exact", head: true })
-        .ilike("display_name", `%${r.name}%`);
-      return count ?? null;
-    }),
-  );
+  const discovered = roots.length ? await discoveredCounts(roots.map((r) => r.name)) : [];
 
   return roots.map((root, i) => {
     const descendants: OrgNode[] = [];
@@ -124,16 +130,12 @@ export type AccountTreeNode = {
 };
 
 export async function loadAccount(accountId: string) {
-  const [orgsRes, prosRes, contractsRes] = await Promise.all([
-    supabase.from("organizations").select(ORG_COLS).limit(5000),
-    supabase.from("professionals").select(PRO_COLS).limit(5000),
-    supabase.from("exp_contracts").select("id,name,account_id,org_id,status,mrr,token_package,start_date"),
-  ]);
-  if (orgsRes.error) throw orgsRes.error;
-  if (prosRes.error) throw prosRes.error;
-
-  const orgs = (orgsRes.data ?? []) as OrgNode[];
-  const pros = (prosRes.data ?? []) as ProNode[];
+  // as in loadAccounts: orgs and pros cut to 1000 rows each (follow-up 1j)
+  const { orgs, pros, contracts: allContracts } = await api.get<{
+    orgs: OrgNode[];
+    pros: ProNode[];
+    contracts: TreeContract[];
+  }>(`${ACCOUNTS}/tree-rows`);
   const account = orgs.find((o) => o.id === accountId);
   if (!account) return null;
 
@@ -154,12 +156,9 @@ export async function loadAccount(accountId: string) {
   ];
   const all = flatten(tree);
 
-  const { count: discovered } = await supabase
-    .from("exp_entity")
-    .select("*", { count: "exact", head: true })
-    .ilike("display_name", `%${account.name}%`);
+  const [discovered] = await discoveredCounts([account.name]);
 
-  const contracts = (contractsRes.data ?? []).filter(
+  const contracts = allContracts.filter(
     (c) => c.account_id === accountId || c.org_id === accountId,
   );
 
@@ -176,18 +175,12 @@ export async function loadAccount(accountId: string) {
 export type EntitlementState = "not_entitled" | "entitled_unconfigured" | "active";
 
 export async function loadEntitlements(accountId: string) {
-  const [productsRes, entRes] = await Promise.all([
-    supabase.from("exp_products").select("*").eq("active", true).order("sort"),
-    supabase
-      .from("exp_entitlements")
-      .select("id,product_key,state,tokens_included,source,granted_at")
-      .eq("subject_type", "organization")
-      .eq("subject_id", accountId),
-  ]);
-  if (productsRes.error) throw productsRes.error;
-  if (entRes.error) throw entRes.error;
-  const byKey = new Map((entRes.data ?? []).map((e) => [e.product_key, e]));
-  return (productsRes.data ?? []).map((p) => ({
+  const { products, entitlements } = await api.get<{
+    products: Tables<"exp_products">[];
+    entitlements: EntitlementRow[];
+  }>(`${ACCOUNTS}/${enc(accountId)}/entitlements`);
+  const byKey = new Map(entitlements.map((e) => [e.product_key, e]));
+  return products.map((p) => ({
     product: p,
     entitlement: byKey.get(p.product_key) ?? null,
     state: (byKey.get(p.product_key)?.state ?? "not_entitled") as EntitlementState,
@@ -200,21 +193,18 @@ export async function setEntitlement(
   state: EntitlementState,
   tokens?: number,
 ) {
-  const { error } = await supabase.from("exp_entitlements").upsert(
-    {
-      subject_type: "organization",
-      subject_id: accountId,
-      product_key: productKey,
-      state,
-      source: "console",
-      ...(tokens != null ? { tokens_included: tokens } : {}),
-    },
-    { onConflict: "subject_type,subject_id,product_key" },
-  );
-  if (error) throw error;
+  // upsert on (subject_type "organization", subject_id, product_key), source "console"
+  await api.put(`${ACCOUNTS}/${enc(accountId)}/entitlements/${enc(productKey)}`, {
+    state,
+    ...(tokens != null ? { tokens_included: tokens } : {}),
+  });
 }
 
-/** Records who logged in as which node. Session switch itself is not wired yet. */
+/**
+ * Records who logged in as which node. Session switch itself is not wired yet.
+ * The server takes actor_email from the signed-in user's token; `actorEmail` (every caller passed
+ * the signed-in user's email) is kept in the signature and not sent.
+ */
 export async function recordLoginAs(args: {
   actorEmail: string | null;
   nodeType: "organization" | "professional";
@@ -222,15 +212,10 @@ export async function recordLoginAs(args: {
   nodeName: string;
   accountId: string;
 }) {
-  const { error } = await supabase.from("audit_log").insert({
-    action: "login_as",
-    entity_type: args.nodeType,
-    entity_id: args.nodeId,
-    field_changes: {
-      actor_email: args.actorEmail,
-      target_name: args.nodeName,
-      account_id: args.accountId,
-    },
+  await api.post(`${ACCOUNTS}/login-as`, {
+    node_type: args.nodeType,
+    node_id: args.nodeId,
+    node_name: args.nodeName,
+    account_id: args.accountId,
   });
-  if (error) throw error;
 }

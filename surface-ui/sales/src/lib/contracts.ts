@@ -1,8 +1,10 @@
-import { supabase } from "@v3/ui/integrations/supabase/client";
+import { api } from "@v3/ui/lib/server-fn";
 
-/* Module 4 — Contracts. Reads exp_contract_* tables; every lifecycle write goes through m4_* RPCs. */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const db = supabase as unknown as { from: (table: string) => any; rpc: (fn: string, args?: Record<string, unknown>) => any };
+/* Module 4 — Contracts. Reads exp_contract_* tables; every lifecycle write goes through m4_* RPCs.
+   FastAPI: surface-api/sales/routers/contracts_data.py (runs as the signed-in user). A function
+   that made several reads gets them back in one response, raw; the joins below are unchanged. */
+const C = "/sales/contracts";
+const id_ = (id: string) => encodeURIComponent(id);
 
 export type Contract = {
   id: string;
@@ -69,29 +71,17 @@ export type ContractRow = Contract & {
   renewal: Renewal | null;
 };
 
-async function rows<T>(q: Promise<{ data: T[] | null; error: any }>): Promise<T[]> {
-  const { data, error } = await q;
-  if (error) throw new Error(error.message);
-  return data ?? [];
-}
-
-async function orgsById(ids: string[]): Promise<Map<string, Org>> {
-  const uniq = [...new Set(ids.filter(Boolean))];
-  if (!uniq.length) return new Map();
-  const list = await rows<Org>(db.from("organizations").select("id,name,logo_url").in("id", uniq));
-  return new Map(list.map((o) => [o.id, o]));
-}
+const orgMap = (list: Org[]) => new Map(list.map((o) => [o.id, o]));
 
 export async function listContracts(): Promise<ContractRow[]> {
-  const contracts = await rows<Contract>(db.from("exp_contracts").select("*").order("created_at", { ascending: false }));
-  const ids = contracts.map((c) => c.id);
-  const [orgs, acts, rens] = await Promise.all([
-    orgsById(contracts.map((c) => c.org_id ?? c.account_id ?? "")),
-    ids.length
-      ? rows<Activity>(db.from("exp_contract_activity").select("*").in("contract_id", ids).order("occurred_at", { ascending: false }).limit(2000))
-      : Promise.resolve([] as Activity[]),
-    ids.length ? rows<Renewal>(db.from("exp_contract_renewals").select("*").in("contract_id", ids)) : Promise.resolve([] as Renewal[]),
-  ]);
+  // contracts (newest first), then their orgs (org_id ?? account_id), activity (newest first) and renewals
+  const { contracts, orgs: orgList, activity: acts, renewals: rens } = await api.get<{
+    contracts: Contract[];
+    orgs: Org[];
+    activity: Activity[];
+    renewals: Renewal[];
+  }>(C);
+  const orgs = orgMap(orgList);
   const latest = new Map<string, Activity>();
   for (const a of acts) if (!latest.has(a.contract_id)) latest.set(a.contract_id, a);
   return contracts.map((c) => {
@@ -119,26 +109,14 @@ export type ContractDetail = {
   renewal: Renewal | null;
 };
 
+type ContractBundle = Omit<ContractDetail, "org" | "renewal"> & { orgs: Org[]; renewals: Renewal[] };
+
 export async function getContract(id: string): Promise<ContractDetail> {
-  const { data: contract, error } = await db.from("exp_contracts").select("*").eq("id", id).maybeSingle();
-  if (error) throw new Error(error.message);
-  if (!contract) throw new Error("Contract not found");
-  const by = (t: string, order?: string, asc = false) => {
-    let q = db.from(t).select("*").eq("contract_id", id);
-    if (order) q = q.order(order, { ascending: asc });
-    return rows<any>(q);
-  };
-  const [orgs, lineItems, versions, recipients, approvals, signatures, activity, documents, renewals] = await Promise.all([
-    orgsById([contract.org_id ?? contract.account_id ?? ""]),
-    by("exp_contract_line_items"),
-    by("exp_contract_versions", "version_no"),
-    by("exp_contract_recipients", "signing_order", true),
-    by("exp_contract_approvals", "requested_at"),
-    by("exp_contract_signatures", "signing_order", true),
-    by("exp_contract_activity", "occurred_at"),
-    by("exp_contract_documents"),
-    by("exp_contract_renewals"),
-  ]);
+  // the contract, then its org and child rows (same orders as before); null when there is none
+  const bundle = await api.get<ContractBundle | null>(`${C}/${id_(id)}`);
+  if (!bundle) throw new Error("Contract not found");
+  const { contract, lineItems, versions, recipients, approvals, signatures, activity, documents, renewals } = bundle;
+  const orgs = orgMap(bundle.orgs);
   return {
     contract,
     org: orgs.get(contract.org_id ?? "") ?? orgs.get(contract.account_id ?? "") ?? null,
@@ -156,49 +134,45 @@ export async function getContract(id: string): Promise<ContractDetail> {
 export type RenewalRow = Renewal & { contract: Pick<Contract, "id" | "name" | "acv" | "end_date"> | null };
 
 export async function loadRenewals(): Promise<RenewalRow[]> {
-  const rens = await rows<Renewal>(
-    db.from("exp_contract_renewals").select("*").in("status", ["upcoming", "in_progress"]).order("renewal_date", { ascending: true }),
-  );
-  const ids = [...new Set(rens.map((r) => r.contract_id))];
-  const cs = ids.length ? await rows<Contract>(db.from("exp_contracts").select("*").in("id", ids)) : [];
+  // open renewals (upcoming / in_progress, by renewal_date), then their contracts
+  const { renewals: rens, contracts: cs } = await api.get<{ renewals: Renewal[]; contracts: Contract[] }>(`${C}/renewals`);
   return rens.map((r) => {
     const c = cs.find((x) => x.id === r.contract_id);
     return { ...r, contract: c ? { id: c.id, name: c.name, acv: c.acv, end_date: c.end_date ?? null } : null };
   });
 }
 
-async function rpc<T>(fn: string, args: Record<string, unknown>): Promise<T> {
-  const { data, error } = await db.rpc(fn, args);
-  if (error) throw new Error(error.message);
-  return data as T;
-}
+/** An allow-listed m4_* function. The actor it records (p_actor / p_uploaded_by) is the signed-in
+ *  user's email, filled by the server from the token: the request never carries it. */
+const rpc = <T>(fn: string, args: Record<string, unknown>): Promise<T> => api.post<T>(`${C}/rpc/${fn}`, { args });
 
+// p_created_by stays a request field: callers send different things (an email, or a display name).
 export const createContractFromQuote = (quoteId: string, createdBy: string | null) =>
   rpc<string>("m4_create_contract_from_quote", { p_quote_id: quoteId, p_created_by: createdBy });
-export const addVersion = (contractId: string, kind: string, label: string, uploadedBy: string | null, changes: unknown, source: string) =>
-  rpc<number>("m4_add_version", { p_contract: contractId, p_kind: kind, p_label: label, p_uploaded_by: uploadedBy, p_changes: changes, p_source: source });
-export const requestApproval = (contractId: string, role: string, name: string | null, email: string | null, actor: string | null) =>
-  rpc<string>("m4_request_approval", { p_contract: contractId, p_role: role, p_name: name, p_email: email, p_actor: actor });
-export const decideApproval = (approvalId: string, status: string, reason: string | null, actor: string | null) =>
-  rpc<void>("m4_decide_approval", { p_approval: approvalId, p_status: status, p_reason: reason, p_actor: actor });
-export const finalizeContract = (contractId: string, actor: string | null) =>
-  rpc<{ ok: boolean; checklist: unknown }>("m4_finalize", { p_contract: contractId, p_actor: actor });
-export const sendForSignature = (contractId: string, actor: string | null) =>
-  rpc<number>("m4_send_for_signature", { p_contract: contractId, p_actor: actor });
-export const startRenewal = (contractId: string, actor: string | null) =>
-  rpc<string>("m4_start_renewal", { p_contract: contractId, p_actor: actor });
+// `_uploadedBy` / `_actor`: kept so callers are unchanged; the server records the signed-in user's
+// email (every caller passed exactly that).
+export const addVersion = (contractId: string, kind: string, label: string, _uploadedBy: string | null, changes: unknown, source: string) =>
+  rpc<number>("m4_add_version", { p_contract: contractId, p_kind: kind, p_label: label, p_changes: changes, p_source: source });
+export const requestApproval = (contractId: string, role: string, name: string | null, email: string | null, _actor: string | null) =>
+  rpc<string>("m4_request_approval", { p_contract: contractId, p_role: role, p_name: name, p_email: email });
+export const decideApproval = (approvalId: string, status: string, reason: string | null, _actor: string | null) =>
+  rpc<void>("m4_decide_approval", { p_approval: approvalId, p_status: status, p_reason: reason });
+export const finalizeContract = (contractId: string, _actor: string | null) =>
+  rpc<{ ok: boolean; checklist: unknown }>("m4_finalize", { p_contract: contractId });
+export const sendForSignature = (contractId: string, _actor: string | null) =>
+  rpc<number>("m4_send_for_signature", { p_contract: contractId });
+export const startRenewal = (contractId: string, _actor: string | null) =>
+  rpc<string>("m4_start_renewal", { p_contract: contractId });
 
 export async function updateSpecialTerms(contractId: string, text: string) {
-  const { error } = await db.from("exp_contracts").update({ special_terms: text || null }).eq("id", contractId);
-  if (error) throw new Error(error.message);
+  await api.patch(`${C}/${id_(contractId)}`, { special_terms: text || null });
 }
 
 export type Notification = { id: string; user_ref: string | null; kind: string; title: string; body: string | null; link: string | null; entity_id: string | null; read_at: string | null; created_at: string };
-export const loadNotifications = (limit = 20) =>
-  rows<Notification>(db.from("exp_notifications").select("*").order("created_at", { ascending: false }).limit(limit));
+export const loadNotifications = (limit = 20) => api.get<Notification[]>(`${C}/notifications`, { params: { limit } });
+/** read_at is stamped with the server's clock. */
 export async function markNotificationRead(id: string) {
-  const { error } = await db.from("exp_notifications").update({ read_at: new Date().toISOString() }).eq("id", id);
-  if (error) throw new Error(error.message);
+  await api.post(`${C}/notifications/${id_(id)}/read`);
 }
 
 /* ── shared derivations ── */
@@ -248,17 +222,15 @@ export type Sku = {
   overage_rate_annual: number | null; overage_rate_monthly: number | null; overage_method: string | null;
   exhibit_key: string | null; nora_product_key: string | null; active: boolean | null;
 };
-export const loadSkus = () =>
-  rows<Sku>(db.from("exp_order_sku").select("*").eq("active", true).order("family", { ascending: true }).order("name", { ascending: true }));
+export const loadSkus = () => api.get<Sku[]>(`${C}/skus`);
 
-const currentEmail = async () => (await supabase.auth.getUser()).data.user?.email ?? null;
-
+// p_actor: the server fills it with the signed-in user's email (was auth.getUser() here).
 export const addLine = async (contractId: string, code: string, qty: number, unitPrice: number | null, discountPct: number, termMonths: number | null, billingMode: string | null) =>
-  rpc<string>("m4_add_line", { p_contract: contractId, p_code: code, p_qty: qty, p_unit_price: unitPrice, p_discount_pct: discountPct, p_term_months: termMonths, p_billing_mode: billingMode, p_actor: await currentEmail() });
-export const removeLine = async (lineId: string) => rpc<void>("m4_remove_line", { p_line: lineId, p_actor: await currentEmail() });
+  rpc<string>("m4_add_line", { p_contract: contractId, p_code: code, p_qty: qty, p_unit_price: unitPrice, p_discount_pct: discountPct, p_term_months: termMonths, p_billing_mode: billingMode });
+export const removeLine = async (lineId: string) => rpc<void>("m4_remove_line", { p_line: lineId });
 export const addRecipient = async (contractId: string, party: string, name: string, email: string, role: string, order: number | null) =>
-  rpc<string>("m4_add_recipient", { p_contract: contractId, p_party: party, p_name: name, p_email: email, p_role: role, p_order: order, p_actor: await currentEmail() });
-export const removeRecipient = async (id: string) => rpc<void>("m4_remove_recipient", { p_recipient: id, p_actor: await currentEmail() });
+  rpc<string>("m4_add_recipient", { p_contract: contractId, p_party: party, p_name: name, p_email: email, p_role: role, p_order: order });
+export const removeRecipient = async (id: string) => rpc<void>("m4_remove_recipient", { p_recipient: id });
 
 /* ── Phases B/D/E/F: documents, invoices, usage, addenda, renewal notices ── */
 export type InvoiceLine = { id?: string; invoice_id: string; description: string | null; product_code: string | null; qty: number | null; unit: string | null; unit_price: number | null; amount: number | null };
@@ -266,19 +238,17 @@ export type Invoice = { id: string; contract_id: string; number: string | null; 
 export type UsageMeter = { id?: string; contract_id: string; product_code: string; metric: string; period_start: string | null; period_end: string | null; included_qty: number | null; measured_qty: number | null; high_water_qty: number | null };
 
 export async function loadInvoices(contractId: string): Promise<Invoice[]> {
-  const invs = await rows<Omit<Invoice, "lines">>(db.from("exp_invoice").select("*").eq("contract_id", contractId).order("issued_at", { ascending: false, nullsFirst: true }));
-  const ids = invs.map((i) => i.id);
-  const lines = ids.length ? await rows<InvoiceLine>(db.from("exp_invoice_line").select("*").in("invoice_id", ids)) : [];
+  // the invoices (issued_at desc, nulls first), then their lines
+  const { invoices: invs, lines } = await api.get<{ invoices: Omit<Invoice, "lines">[]; lines: InvoiceLine[] }>(`${C}/${id_(contractId)}/invoices`);
   return invs.map((i) => ({ ...i, lines: lines.filter((l) => l.invoice_id === i.id) }));
 }
-export const loadUsage = (contractId: string) =>
-  rows<UsageMeter>(db.from("exp_usage_meter").select("*").eq("contract_id", contractId).order("period_start", { ascending: false }));
+export const loadUsage = (contractId: string) => api.get<UsageMeter[]>(`${C}/${id_(contractId)}/usage`);
 
-export const assembleDocument = async (id: string) => rpc<unknown>("m4_assemble_document", { p_contract: id, p_actor: await currentEmail() });
+export const assembleDocument = async (id: string) => rpc<unknown>("m4_assemble_document", { p_contract: id });
 export const generateInvoice = async (id: string, type: string, ps: string | null, pe: string | null) =>
-  rpc<string>("m4_generate_invoice", { p_contract: id, p_type: type, p_ps: ps, p_pe: pe, p_actor: await currentEmail() });
+  rpc<string>("m4_generate_invoice", { p_contract: id, p_type: type, p_ps: ps, p_pe: pe });
 export const recordUsage = async (id: string, code: string, metric: string, ps: string, pe: string, measured: number, highWater: number | null) =>
-  rpc<string>("m4_record_usage", { p_contract: id, p_code: code, p_metric: metric, p_period_start: ps, p_period_end: pe, p_measured: measured, p_high_water: highWater, p_actor: await currentEmail() });
+  rpc<string>("m4_record_usage", { p_contract: id, p_code: code, p_metric: metric, p_period_start: ps, p_period_end: pe, p_measured: measured, p_high_water: highWater });
 export const createAddendum = async (parentId: string, kind: string, title: string | null) =>
-  rpc<string>("m4_create_addendum", { p_parent: parentId, p_kind: kind, p_title: title, p_actor: await currentEmail() });
-export const generateRenewalNotice = async (id: string) => rpc<string>("m4_generate_renewal_notice", { p_contract: id, p_actor: await currentEmail() });
+  rpc<string>("m4_create_addendum", { p_parent: parentId, p_kind: kind, p_title: title });
+export const generateRenewalNotice = async (id: string) => rpc<string>("m4_generate_renewal_notice", { p_contract: id });

@@ -1,12 +1,10 @@
-import { supabase } from "@v3/ui/integrations/supabase/client";
+import { api } from "@v3/ui/lib/server-fn";
 
 /* CSM assignments — one active row per (subject_type, subject_id). subject_id = org id as text,
-   the same identifier exp_contracts.org_id uses, so renewal routing aligns. */
-
-// exp_csm_assignments may not be in generated types yet.
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const db = supabase as any;
-const SUBJECT = "organization";
+   the same identifier exp_contracts.org_id uses, so renewal routing aligns.
+   FastAPI: surface-api/sales/routers/csm_data.py (runs as the signed-in user; subject_type is
+   "organization" there). */
+const CSM = "/sales/csm";
 
 export type CsmAssignment = {
   id: string;
@@ -28,9 +26,8 @@ export function isMine(a: Pick<CsmAssignment, "csm_user_ref" | "csm_email">, use
 }
 
 export async function listActiveCsms(): Promise<Map<string, CsmAssignment>> {
-  const { data, error } = await db.from("exp_csm_assignments").select("*").eq("subject_type", SUBJECT).eq("active", true);
-  if (error) throw new Error(error.message);
-  return new Map(((data ?? []) as CsmAssignment[]).map((a) => [a.subject_id, a]));
+  const data = await api.get<CsmAssignment[]>(`${CSM}/assignments`);
+  return new Map(data.map((a) => [a.subject_id, a]));
 }
 
 /** Org ids (as text) actively assigned to this user. */
@@ -40,46 +37,28 @@ export async function listMyAccounts(userId: string | null, email: string | null
 }
 
 export async function getAccountCsm(orgId: string): Promise<CsmAssignment | null> {
-  const { data, error } = await db
-    .from("exp_csm_assignments")
-    .select("*")
-    .eq("subject_type", SUBJECT)
-    .eq("subject_id", String(orgId))
-    .eq("active", true)
-    .maybeSingle();
-  if (error) throw new Error(error.message);
-  return data as CsmAssignment | null;
+  return api.get<CsmAssignment | null>(`${CSM}/assignments/${encodeURIComponent(String(orgId))}`);
 }
 
 export async function clearCsm(orgId: string) {
-  const { error } = await db
-    .from("exp_csm_assignments")
-    .update({ active: false })
-    .eq("subject_type", SUBJECT)
-    .eq("subject_id", String(orgId))
-    .eq("active", true);
-  if (error) throw new Error(error.message);
+  await api.delete(`${CSM}/assignments/${encodeURIComponent(String(orgId))}`);
 }
 
-export async function assignCsm(orgId: string, csm: CsmUser, assignedBy: string | null) {
-  await clearCsm(orgId);
-  const { error } = await db.from("exp_csm_assignments").insert({
-    subject_type: SUBJECT,
-    subject_id: String(orgId),
-    csm_user_ref: csm.user_ref,
-    csm_name: csm.name,
-    csm_email: csm.email,
-    assigned_by: assignedBy,
-    active: true,
+/** Clears the org's active CSM, then assigns this one (one transaction). `_assignedBy` is kept so
+ *  callers are unchanged: the server records the signed-in user's email (else id), which is what
+ *  every caller passed. */
+export async function assignCsm(orgId: string, csm: CsmUser, _assignedBy: string | null) {
+  await api.put(`${CSM}/assignments/${encodeURIComponent(String(orgId))}`, {
+    user_ref: csm.user_ref,
+    name: csm.name,
+    email: csm.email,
   });
-  if (error) throw new Error(error.message);
 }
 
 /** Console users available as CSMs (super-admin only RPC). */
 export async function listCsmCandidates(): Promise<CsmUser[]> {
-  const { data, error } = await supabase.rpc("list_control_users");
-  if (error) throw new Error(error.message);
-  return ((data ?? []) as { user_id: string; email: string | null }[]).map((u) => ({
+  const data = await api.get<{ user_id: string; email: string | null }[]>(`${CSM}/candidates`);
+  return data.map((u) => ({
     user_ref: u.user_id,
     email: u.email,
     name: u.email?.split("@")[0] ?? null,

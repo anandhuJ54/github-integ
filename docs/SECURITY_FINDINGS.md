@@ -112,3 +112,9 @@ The sales pages and the three `_base` money libs touch 64 tables and 17 RPCs. Al
 - **Role-checked:** the opportunity functions (`exp_opp_create`, `advance_stage`, `close_won`, `close_lost`), `exp_claim_queue_verification`, `exp_claim_set_contact` and `list_control_users`.
 - `exp_generate_territories` and `exp_generate_group_territories` are SECURITY INVOKER, so RLS applies.
 The sales port keeps today's access: calls run as the signed-in user, or anon for `/sign/:token`. **Porting must never run the tick, provision, generate or signature functions.**
+- **Added during the S2 port (2026-10-24, read-only):**
+  - All 19 `m4_*` contract functions are SECURITY DEFINER with EXECUTE for `anon` and `authenticated`, and none pins `search_path`. Through PostgREST, anyone with the anon key can finalize, send for signature, generate invoices, record usage or start renewals. The API allow-list doesn't close that direct path.
+  - The `p_actor` / `p_uploaded_by` audit fields are whatever the caller sends through PostgREST. The API now fills them from the token's email; PostgREST still accepts any value.
+  - The S2 contract tables have RLS on without FORCE, anon SELECT/INSERT/UPDATE grants and `authenticated USING (true)` policies; `exp_order_sku` also has an anon `USING (true)` read. The CSM super-admin check exists only in the UI.
+  - `m4_record_signature` has no token expiry, no current-version check and no rate limit, and takes `p_ip` from the client. `m4_signer_fetch` returns the contract's full `terms` to whoever holds the token.
+  - `exp_contracts_bak_m4` (a backup table) has RLS off with anon/authenticated grants.
