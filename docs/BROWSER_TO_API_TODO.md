@@ -297,7 +297,7 @@ Pages:
     - `saveQuote` runs as one transaction. The contract commit keeps its separate steps in the original order.
   - [x] 5. `contracts/sales/openapi.json` (new); etl regenerated
   - [x] 6. No direct calls left in catalog-admin, cpq-catalog, cpq-depth, comp, sales-cpq or console-surfaces
-  - [ ] 7. Parity: `run.ts sales` (26 cases) · [ ] 8. Click-through: `/sales/price-book`, `/sales/pricing`, `/sales/comp`, `/sales/quotes`, `/sales/promos`, `/billing`, `/reports`
+  - [x] 7. Parity: `run.ts sales` **PASS 24/24** (2026-10-24) · [ ] 8. Click-through: `/sales/price-book`, `/sales/pricing`, `/sales/comp`, `/sales/quotes`, `/sales/promos`, `/billing`, `/reports`
 
 marketing and app make no direct calls.
 
