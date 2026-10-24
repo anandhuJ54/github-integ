@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import type { ParityCase } from "./types";
+import { api } from "@v3/ui/lib/server-fn";
 import { loadExpertiseGraph, type GraphKind } from "@v3/graph/lib/expertise-graph";
 
 // graph entity pages: /control-graph (signed in, super_admin for the users list), the
@@ -108,7 +109,8 @@ export const cases: ParityCase[] = [
       if (error) return [];
       return data ?? [];
     },
-    api: { method: "GET", path: "/graph/control/users" },
+    // claims-tab.tsx: the page turns a refusal (non-super_admin) into [], as the legacy code did
+    current: () => api.get("/graph/control/users").catch(() => []),
   },
   {
     // control-tree-tab.tsx
@@ -143,6 +145,18 @@ export const cases: ParityCase[] = [
       return data ?? [];
     },
     api: { method: "GET", path: "/graph/control/entities" },
+    // Bulk loads give many entities one created_at, so the order inside a tie (and which tied rows
+    // make the 1000th-row cut) is arbitrary on both sides. Compare what the sort determines: the
+    // count, the created_at sequence, and the rows strictly newer than the last (cut) timestamp.
+    normalize: (rows: any[]) => {
+      const last = rows.at(-1)?.created_at;
+      return {
+        count: rows.length,
+        createdAt: rows.map((r) => r.created_at),
+        newer: rows.filter((r) => r.created_at !== last)
+          .sort((a, b) => (a.created_at < b.created_at ? 1 : a.created_at > b.created_at ? -1 : a.entity_id.localeCompare(b.entity_id))),
+      };
+    },
   },
   {
     // entities-tab.tsx RelationshipRows, for a subject that has relationships
