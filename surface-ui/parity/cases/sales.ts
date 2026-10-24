@@ -5,6 +5,9 @@ import { cases as contractsCases } from "./sales-s2-contracts";
 import { cases as coreCases } from "./sales-s2-core";
 import { cases as opportunityCases } from "./sales-s3-opportunity";
 import { cases as worklistCases } from "./sales-s3-worklist";
+import { cases as territoriesCases } from "./sales-s4-territories";
+import { cases as teamsCases } from "./sales-s4-teams";
+import { cases as boardsCases } from "./sales-s4-boards";
 import type { ParityCase } from "./types";
 
 export const cases: ParityCase[] = [
@@ -14,4 +17,7 @@ export const cases: ParityCase[] = [
   ...coreCases,
   ...opportunityCases,
   ...worklistCases,
+  ...territoriesCases,
+  ...teamsCases,
+  ...boardsCases,
 ];

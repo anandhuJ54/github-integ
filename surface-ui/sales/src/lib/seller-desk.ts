@@ -1,4 +1,4 @@
-import { supabase } from "@v3/ui/integrations/supabase/client";
+import { api } from "@v3/ui/lib/server-fn";
 
 /* ─────────────────────────────────────────────────────────────
    Seller desk — the lowest level of Growth Hub.
@@ -65,80 +65,41 @@ export type DeskData = {
   quarters: QuotaRow[];
 };
 
+/** FastAPI: surface-api/sales/routers/boards_data.py (runs as the signed-in user). */
+const B = "/sales/boards";
+
+/** The rep, its territories (by label), then one round of reads; null when there is no rep. */
 export async function loadSellerDesk(repId: string): Promise<DeskData | null> {
-  const repRes = await supabase
-    .from("exp_sales_reps")
-    .select(
-      "id,name,role,group_key,title,team_name,email,phone,photo_url,sdrcloud_url,attribution_target,is_demo",
-    )
-    .eq("id", repId)
-    .maybeSingle();
-  if (!repRes.data) return null;
-  const rep = repRes.data as DeskRep;
-
-  const terrRes = await supabase
-    .from("exp_territories")
-    .select("id,label,tier,brand_count,office_count,agent_count")
-    .eq("seller_id", repId)
-    .order("label");
-  const territories = (terrRes.data ?? []) as DeskTerritory[];
-  const territoryIds = territories.map((t) => t.id);
-
-  const [bookRes, claimedRes, evRes, demoRes, revRes, quotaRes] = await Promise.all([
-    territoryIds.length
-      ? supabase
-          .from("professionals")
-          .select("id", { count: "exact", head: true })
-          .in("territory_id", territoryIds)
-      : Promise.resolve({ count: 0 }),
-    territoryIds.length
-      ? supabase
-          .from("professionals")
-          .select("id", { count: "exact", head: true })
-          .in("territory_id", territoryIds)
-          .eq("claimed", true)
-      : Promise.resolve({ count: 0 }),
-    supabase
-      .from("exp_claim_events")
-      .select("event_type,occurred_at,upgraded")
-      .eq("seller_id", repId),
-    supabase
-      .from("exp_sales_demos")
-      .select("booked_at,attended,outcome,deal_value")
-      .eq("seller_id", repId),
-    supabase
-      .from("exp_revenue_components")
-      .select("source,amount,period_start,seller_id,attributed_seller_id")
-      .or(`seller_id.eq.${repId},attributed_seller_id.eq.${repId}`),
-    supabase
-      .from("exp_sales_quotas")
-      .select("period_start,target,actual")
-      .eq("rep_id", repId)
-      .eq("period_type", "quarter")
-      .order("period_start"),
-  ]);
-
+  const d = await api.get<{
+    rep: DeskRep;
+    territories: DeskTerritory[];
+    bookTotal: number | null;
+    bookClaimed: number | null;
+    events: EventRow[];
+    demos: DemoRow[];
+    revenue: RevRow[];
+    quarters: QuotaRow[];
+  } | null>(`${B}/desk/${encodeURIComponent(repId)}`);
+  if (!d?.rep) return null;
   return {
-    rep,
-    territories,
-    bookTotal: bookRes.count ?? 0,
-    bookClaimed: claimedRes.count ?? 0,
-    events: (evRes.data ?? []) as EventRow[],
-    demos: (demoRes.data ?? []) as DemoRow[],
-    revenue: (revRes.data ?? []) as RevRow[],
-    quarters: (quotaRes.data ?? []) as QuotaRow[],
+    rep: d.rep,
+    territories: d.territories ?? [],
+    bookTotal: d.bookTotal ?? 0,
+    bookClaimed: d.bookClaimed ?? 0,
+    events: d.events ?? [],
+    demos: d.demos ?? [],
+    revenue: d.revenue ?? [],
+    quarters: d.quarters ?? [],
   };
 }
 
-/** New profiles added to the book inside the window (live count query). */
+/** New profiles added to the book inside the window (live count query; window from the server's clock). */
 export async function countNewProfiles(territoryIds: string[], days: DeskWindow) {
   if (!territoryIds.length) return 0;
-  const since = new Date(Date.now() - days * 86400000).toISOString();
-  const res = await supabase
-    .from("professionals")
-    .select("id", { count: "exact", head: true })
-    .in("territory_id", territoryIds)
-    .gte("created_at", since);
+  const res = await api.post<{ count: number | null }>(`${B}/desk/new-profiles`, {
+    territory_ids: territoryIds,
+    days,
+  });
   return res.count ?? 0;
 }
 

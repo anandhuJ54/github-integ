@@ -323,6 +323,15 @@ Pages:
     - `opportunity-automation.tsx` keeps its realtime channel on `exp_sales_alerts` (realtime is out of scope).
   - [x] 5. `contracts/sales/openapi.json` regenerated · [x] 6. No direct calls left in opportunity-file, worklist-actions, sre-console, `_base` sales-alerts, opportunity-automation
   - [x] 7. Parity: `run.ts sales` **PASS 82/82** (S1–S3, 2026-10-24) · [ ] 8. Click-through: `/sales/opportunities`, one opportunity, `/sales/worklist`, `/admin/integrations` (open only; don't press "run now")
+- **S4 territories, teams & boards** (2026-10-24; security: SF-10; cap: see 1j):
+  - [x] 1. `/sales/territories/*` (`_base` territories.ts, territory-admin: slots, brand links, lanes, ramps, rules, routing, proposals, seats, quotas; read-only profile functions as fixed GETs; allow-listed `exp_generate_territories`, `exp_generate_group_territories`) · `/sales/category-groups/*` · `/sales/teams/*` (teams.ts, incl. the territory move, ported as it is) · `/sales/seller-setup/*` · `/sales/boards/*` (seller-desk, seller-board, sales-board, sales-story) · `/sales/nav/*` · `/sales/spine/*`
+  - [x] 3/4. `sales/queries/{territories,category_groups,teams,seller_setup,boards,nav,spine}.py`; 228 new tests, 1,472 in total. **No write and no generate function was run.**
+    - Proposals' `created_by` comes from the token (drops a `getUser`). Server clock: `reviewed_at`, quota `period_start` on insert, the desk's "new profiles since", the referral `callback_at`.
+    - Kept as request fields: rep/seller ids the pages send (not the signed-in user), note `created_by`.
+    - Cap (1j, kept 1:1): the territory move's office read, board/spine claim events, spine graph_nodes chunks, plus the new ones listed in 1j.
+    - Storage stays in the browser: seller photo upload (`seller-photos`).
+  - [x] 5. `contracts/sales/openapi.json` regenerated · [x] 6. No direct table/RPC calls left anywhere in `surface-ui` (Storage, Auth and one realtime channel excepted)
+  - [ ] 7. Parity: `run.ts sales` (S1–S4, 230 cases) · [ ] 8. Click-through: `/sales/territories`, one category group, `/sales/teams` (or the team page), seller setup, the seller desk, `/sales` board, nav browse pages (open only; press nothing, especially not generate or move)
 
 marketing and app make no direct calls.
 

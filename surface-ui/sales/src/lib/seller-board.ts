@@ -1,4 +1,4 @@
-import { supabase } from "@v3/ui/integrations/supabase/client";
+import { api } from "@v3/ui/lib/server-fn";
 import { SELLER_ROLES, type SellerRole } from "@v3/sales/lib/sales";
 
 /* ─────────── Types ─────────── */
@@ -105,19 +105,23 @@ export async function loadSellerBoard(now = new Date()): Promise<{
 }> {
   const period = currentMonthInfo(now);
 
-  const [repsRes, quotaRes, pipeRes] = await Promise.all([
-    supabase.from("exp_sales_reps").select("id,name,role,group_key,is_demo").order("name"),
-    supabase
-      .from("exp_sales_quotas")
-      .select("rep_id,period_type,period_start,target,actual,is_demo")
-      .eq("period_type", "month")
-      .order("period_start", { ascending: false }),
-    supabase.from("exp_sales_pipeline").select("owner,stage,value,is_demo"),
-  ]);
+  // FastAPI: GET /sales/boards/seller-board (surface-api/sales/routers/boards_data.py)
+  const res = await api.get<{
+    reps: { id: string; name: string; role: string; group_key: string; is_demo: boolean | null }[];
+    quotas: {
+      rep_id: string;
+      period_type: string;
+      period_start: string;
+      target: number | null;
+      actual: number | null;
+      is_demo: boolean | null;
+    }[];
+    pipeline: { owner: string | null; stage: string; value: number | null; is_demo: boolean | null }[];
+  }>("/sales/boards/seller-board");
 
-  const reps = repsRes.data ?? [];
-  const quotas = quotaRes.data ?? [];
-  const pipeline = pipeRes.data ?? [];
+  const reps = res.reps ?? [];
+  const quotas = res.quotas ?? [];
+  const pipeline = res.pipeline ?? [];
 
   const cards: SellerCard[] = reps.map((rep) => {
     const mine = quotas

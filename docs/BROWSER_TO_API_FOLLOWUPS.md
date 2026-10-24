@@ -79,6 +79,13 @@ All of these are cut to 1,000 rows today by PostgREST, and the API keeps that 1:
 - `lib/sales-board.ts:170` (no limit) and `lib/sales-spine.ts:82,242` (limit over 1,000): `exp_claim_events` has 3,474 rows. Board and spine claim counts are partial.
 - `lib/sales-spine.ts:350`: `graph_nodes` `in(chunk) limit(10000)`. Each chunk is cut to 1,000.
 - **`lib/teams.ts:364` (a write path):** the territory move reads the org's child offices with `limit(50000)`, cut to 1,000 (State Farm has 19,882), and then moves only those offices' professionals. A move therefore silently leaves most professionals in the old territory. Ported as it is.
+- Correction from the S4 port: `sales-board.ts:170` is `.limit(20000)` (not unlimited), cut to the newest 1,000 of 3,474.
+- Found in S4 (kept 1:1; not cut today, but will be):
+  - `sales-nav.ts:90` overview activity events, `limit(5000)`, no ORDER BY (138 rows today).
+  - `sales-nav.ts:392` brand-rollup claim events, `limit(10000)`, no ORDER BY (950 for the largest brand today, close to the cap).
+  - `seller-desk.ts` claim events per seller, no limit (926 for the busiest seller).
+  - `sales-board.ts` revenue components (540 rows) and `sales-nav.ts` `exp_contracts` (overview, seller book), no limit.
+  - `exp_territory_logo_profiles()`, one row per root org, no ORDER BY (13 roots here; would be cut on a full dataset).
 - Fix: SQL aggregates and set-based updates (`update … where primary_org_id in (select id from organizations where parent_org_id = …)`). Needs a decision, because the numbers will change.
 
 ### 1f. Check every remaining Surface for the same pattern

@@ -1,13 +1,17 @@
-import { supabase } from "@v3/ui/integrations/supabase/client";
-import { currentPeriodStart, TIER_LABEL, type TerritorySlot } from "@v3/ui/lib/territories";
+import { api } from "@v3/ui/lib/server-fn";
+import { TIER_LABEL, type TerritorySlot } from "@v3/ui/lib/territories";
 import { loadCategoryGroups, loadGroupMembers, type CategoryGroup } from "@v3/sales/lib/category-groups";
 
 /* ────────────────────────────────────────────────────────────
    Territory Management ("Teams") data layer.
    Everything is read live from the territory tables — real-only.
+   FastAPI: surface-api/sales/routers/teams_data.py (runs as the signed-in user). One request
+   per former supabase-js call, in the same order; the joins stay here.
    ──────────────────────────────────────────────────────────── */
 
-const db = supabase as unknown as { from: (t: string) => any; rpc: (fn: string, a?: any) => any };
+const T = "/sales/teams";
+type Territory = TerritorySlot & { group_key: string | null };
+type Counts = Record<string, number | null>;
 
 export const TIERS = ["ENT", "MM", "SMB", "SRE"] as const;
 export type Tier = (typeof TIERS)[number];
@@ -74,53 +78,33 @@ export type TeamsSummary = {
 /* ─────────── Reads ─────────── */
 
 export async function loadReps(): Promise<Rep[]> {
-  const { data, error } = await db
-    .from("exp_sales_reps")
-    .select("id,name,role,group_key,on_duty,is_demo,photo_url")
-    .order("name");
-  if (error) throw error;
-  return (data ?? []) as Rep[];
+  const data = await api.get<Rep[]>(`${T}/reps`);
+  return data ?? [];
+}
 
+/** The promos page's rep names (id, name; no order). */
+export async function loadRepNames(): Promise<{ id: string; name: string }[]> {
+  return (await api.get<{ id: string; name: string }[]>(`${T}/rep-names`)) ?? [];
 }
 
 async function brandsForTerritories(territoryIds: string[]): Promise<BrandRow[]> {
   if (!territoryIds.length) return [];
-  const { data, error } = await db
-    .from("exp_territory_brand")
-    .select("id,territory_id,lane,org_id")
-    .in("territory_id", territoryIds)
-    .is("success_handoff_at", null);
-  if (error) throw error;
-  const links = (data ?? []) as { id: string; territory_id: string; lane: string | null; org_id: string }[];
+  // The links (threw), their organizations, one office count per distinct org and one
+  // professional count per link (errors ignored: null counts).
+  const res = await api.post<{
+    links: { id: string; territory_id: string; lane: string | null; org_id: string }[];
+    orgs: any[];
+    offices: (number | null)[];
+    profiles: (number | null)[];
+  }>(`${T}/brands`, { territory_ids: territoryIds });
+  const links = res.links ?? [];
   if (!links.length) return [];
   const orgIds = [...new Set(links.map((l) => l.org_id))];
-  const { data: orgs } = await db
-    .from("organizations")
-    .select("id,name,slug,account_tier,is_demo,logo_url")
-    .in("id", orgIds);
-  const byId = new Map(((orgs ?? []) as any[]).map((o) => [o.id as string, o]));
+  const byId = new Map(((res.orgs ?? []) as any[]).map((o) => [o.id as string, o]));
 
   // Office + profile volume per brand, counted from the stamped rows.
-  const offices = await Promise.all(
-    orgIds.map(async (id) => {
-      const { count } = await db
-        .from("organizations")
-        .select("id", { count: "exact", head: true })
-        .eq("parent_org_id", id);
-      return [id, count ?? 0] as const;
-    }),
-  );
-  const officeMap = new Map(offices);
-  const profiles = await Promise.all(
-    links.map(async (l) => {
-      const { count } = await db
-        .from("professionals")
-        .select("id", { count: "exact", head: true })
-        .eq("territory_id", l.territory_id);
-      return [l.territory_id, count ?? 0] as const;
-    }),
-  );
-  const profileMap = new Map(profiles);
+  const officeMap = new Map(orgIds.map((id, i) => [id, res.offices?.[i] ?? 0] as const));
+  const profileMap = new Map(links.map((l, i) => [l.territory_id, res.profiles?.[i] ?? 0] as const));
 
   return links.map((l) => {
     const o = byId.get(l.org_id);
@@ -146,11 +130,10 @@ export async function loadTeamsSummary(): Promise<TeamsSummary> {
   const [groups, members, terrsRes, reps] = await Promise.all([
     loadCategoryGroups(),
     loadGroupMembers(),
-    db.from("exp_territories").select("*").order("tier").order("seq"),
+    api.get<Territory[]>(`${T}/territories`),
     loadReps(),
   ]);
-  if (terrsRes.error) throw terrsRes.error;
-  const terrs = (terrsRes.data ?? []) as (TerritorySlot & { group_key: string | null })[];
+  const terrs = (terrsRes ?? []) as Territory[];
   const brandLinks = await brandsForTerritories(terrs.map((t) => t.id));
 
   const rows = groups
@@ -202,22 +185,19 @@ export async function loadGroupTeams(groupKey: string): Promise<{
   members: { gcid: string; label: string }[];
   teams: TeamRow[];
 }> {
-  const period = currentPeriodStart();
   const [groups, members, terrsRes, reps, quotasRes] = await Promise.all([
     loadCategoryGroups(),
     loadGroupMembers(groupKey),
-    db.from("exp_territories").select("*").eq("group_key", groupKey).order("tier").order("seq"),
+    api.get<Territory[]>(`${T}/territories`, { params: { group_key: groupKey } }),
     loadReps(),
-    db
-      .from("exp_sales_quotas")
-      .select("rep_id,target,group_key,period_start")
-      .eq("group_key", groupKey)
-      .eq("period_start", period),
+    // the current period (first of this UTC month) by the server's clock; errors ignored: []
+    api.get<{ rep_id: string | null; target: number | null }[]>(`${T}/quotas`, {
+      params: { group_key: groupKey },
+    }),
   ]);
-  if (terrsRes.error) throw terrsRes.error;
-  const terrs = (terrsRes.data ?? []) as (TerritorySlot & { group_key: string | null })[];
+  const terrs = (terrsRes ?? []) as Territory[];
   const brands = await brandsForTerritories(terrs.map((t) => t.id));
-  const quotas = (quotasRes.data ?? []) as { rep_id: string | null; target: number | null }[];
+  const quotas = (quotasRes ?? []) as { rep_id: string | null; target: number | null }[];
 
   const teams: TeamRow[] = terrs.map((t) => {
     const rep = reps.find((r) => r.id === t.seller_id);
@@ -253,22 +233,18 @@ export type TeamDetail = {
 
 /** One team (territory) designation + its metrics. */
 export async function loadTeamDetail(territoryId: string): Promise<TeamDetail | null> {
-  const { data, error } = await db.from("exp_territories").select("*").eq("id", territoryId).maybeSingle();
-  if (error) throw error;
+  const data = await api.get<Territory | null>(`${T}/territories/${encodeURIComponent(territoryId)}`);
   if (!data) return null;
-  const row = data as TerritorySlot & { group_key: string | null };
+  const row = data;
   const groupKey = row.group_key ?? "";
-  const [groups, reps, brands, proCount, officeCount, siblingsRes] = await Promise.all([
+  const [groups, reps, brands, counts, siblingsRes] = await Promise.all([
     loadCategoryGroups(),
     loadReps(),
     brandsForTerritories([row.id]),
-    db.from("professionals").select("id", { count: "exact", head: true }).eq("territory_id", row.id),
-    db
-      .from("organizations")
-      .select("id", { count: "exact", head: true })
-      .eq("territory_id", row.id)
-      .eq("entity_type", "office"),
-    db.from("exp_territories").select("*").eq("group_key", groupKey).order("tier").order("seq"),
+    // professionals, then offices (errors ignored: null)
+    api.get<Counts>(`${T}/territories/${encodeURIComponent(row.id)}/counts`),
+    // siblings: error ignored
+    api.get<TerritorySlot[]>(`${T}/territories`, { params: { group_key: groupKey } }).catch(() => null),
   ]);
   const rep = reps.find((r) => r.id === row.seller_id);
   return {
@@ -284,9 +260,9 @@ export async function loadTeamDetail(territoryId: string): Promise<TeamDetail | 
       quotaTarget: 0,
     },
     group: groups.find((g) => g.group_key === groupKey) ?? null,
-    siblings: ((siblingsRes.data ?? []) as TerritorySlot[]).filter((t) => t.id !== row.id),
-    profiles: proCount.count ?? 0,
-    offices: officeCount.count ?? 0,
+    siblings: ((siblingsRes ?? []) as TerritorySlot[]).filter((t) => t.id !== row.id),
+    profiles: counts.profiles ?? 0,
+    offices: counts.offices ?? 0,
   };
 }
 
@@ -294,9 +270,8 @@ export async function loadTeamDetail(territoryId: string): Promise<TeamDetail | 
 export async function loadAllBrandLinks(): Promise<
   (BrandRow & { group_key: string | null; tier: string; territoryLabel: string })[]
 > {
-  const { data, error } = await db.from("exp_territories").select("*");
-  if (error) throw error;
-  const terrs = (data ?? []) as (TerritorySlot & { group_key: string | null })[];
+  const data = await api.get<Territory[]>(`${T}/territories/all`);
+  const terrs = (data ?? []) as Territory[];
   const brands = await brandsForTerritories(terrs.map((t) => t.id));
   return brands.map((b) => {
     const t = terrs.find((x) => x.id === b.territory_id);
@@ -313,24 +288,15 @@ export async function loadAllBrandLinks(): Promise<
 
 export async function recountTerritories(territoryIds: string[]) {
   for (const id of [...new Set(territoryIds)].filter(Boolean)) {
-    const [{ count: brandCount }, { count: officeCount }, { count: agentCount }] = await Promise.all([
-      db.from("exp_territory_brand").select("id", { count: "exact", head: true }).eq("territory_id", id),
-      db
-        .from("organizations")
-        .select("id", { count: "exact", head: true })
-        .eq("territory_id", id)
-        .eq("entity_type", "office"),
-      db.from("professionals").select("id", { count: "exact", head: true }).eq("territory_id", id),
-    ]);
-    const { error } = await db
-      .from("exp_territories")
-      .update({
-        brand_count: brandCount ?? 0,
-        office_count: officeCount ?? 0,
-        agent_count: agentCount ?? 0,
-      })
-      .eq("id", id);
-    if (error) throw error;
+    // brands, offices, professionals (errors ignored: null counts)
+    const c = await api.get<Counts>(`${T}/territories/${encodeURIComponent(id)}/counts`, {
+      params: { brands: true },
+    });
+    await api.patch(`${T}/territories/${encodeURIComponent(id)}`, {
+      brand_count: c.brands ?? 0,
+      office_count: c.offices ?? 0,
+      agent_count: c.profiles ?? 0,
+    });
   }
 }
 
@@ -341,38 +307,24 @@ export async function moveBrandTerritory(input: {
   fromTerritoryId: string;
   toTerritoryId: string;
 }) {
-  const { error } = await db
-    .from("exp_territory_brand")
-    .update({ territory_id: input.toTerritoryId })
-    .eq("id", input.linkId);
-  if (error) throw error;
+  const to = { territory_id: input.toTerritoryId };
+  const org = encodeURIComponent(input.orgId);
+  await api.patch(`${T}/brand-links/${encodeURIComponent(input.linkId)}`, to);
 
   // Re-stamp the brand itself, its offices and its professionals.
-  const { error: e1 } = await db
-    .from("organizations")
-    .update({ territory_id: input.toTerritoryId })
-    .eq("id", input.orgId);
-  if (e1) throw e1;
+  await api.patch(`${T}/organizations/${org}/territory`, to);
+  await api.patch(`${T}/organizations/${org}/offices/territory`, to);
 
-  const { error: e2 } = await db
-    .from("organizations")
-    .update({ territory_id: input.toTerritoryId })
-    .eq("parent_org_id", input.orgId);
-  if (e2) throw e2;
-
-  const { data: officeRows } = await db
-    .from("organizations")
-    .select("id")
-    .eq("parent_org_id", input.orgId)
-    .limit(50000);
-  const orgIds = [input.orgId, ...((officeRows ?? []) as { id: string }[]).map((o) => o.id)];
+  // At most 1000 office ids come back (the old limit(50000) was cut to 1000 by PostgREST), so
+  // only those offices' professionals move: ported as it is, see docs/BROWSER_TO_API_FOLLOWUPS.md
+  // 1j. Error ignored: [].
+  const officeRows = await api
+    .get<{ id: string }[]>(`${T}/organizations/${org}/offices`)
+    .catch(() => null);
+  const orgIds = [input.orgId, ...(officeRows ?? []).map((o) => o.id)];
   for (let i = 0; i < orgIds.length; i += 500) {
     const chunk = orgIds.slice(i, i + 500);
-    const { error: e3 } = await db
-      .from("professionals")
-      .update({ territory_id: input.toTerritoryId })
-      .in("primary_org_id", chunk);
-    if (e3) throw e3;
+    await api.patch(`${T}/professionals/territory`, { org_ids: chunk, territory_id: input.toTerritoryId });
   }
 
   await recountTerritories([input.fromTerritoryId, input.toTerritoryId]);
@@ -385,45 +337,35 @@ export async function assignSeller(input: {
   repId: string;
   quotaTarget?: number | null;
 }) {
-  const { error } = await db
-    .from("exp_territories")
-    .update({ seller_id: input.repId, status: "assigned" })
-    .eq("id", input.territoryId);
-  if (error) throw error;
+  await api.patch(`${T}/territories/${encodeURIComponent(input.territoryId)}`, {
+    seller_id: input.repId,
+    status: "assigned",
+  });
 
   if (input.quotaTarget != null && Number.isFinite(input.quotaTarget)) {
-    const period_start = currentPeriodStart();
-    const { data: existing } = await db
-      .from("exp_sales_quotas")
-      .select("id")
-      .eq("rep_id", input.repId)
-      .eq("group_key", input.groupKey)
-      .eq("period_start", period_start)
-      .maybeSingle();
+    // The current period (first of this UTC month) by the server's clock, for both the lookup
+    // and the insert. Error ignored: null.
+    const existing = await api
+      .get<{ id: string } | null>(`${T}/quotas/lookup`, {
+        params: { rep_id: input.repId, group_key: input.groupKey },
+      })
+      .catch(() => null);
     if (existing?.id) {
-      const { error: e2 } = await db
-        .from("exp_sales_quotas")
-        .update({ target: input.quotaTarget })
-        .eq("id", existing.id);
-      if (e2) throw e2;
+      await api.patch(`${T}/quotas/${encodeURIComponent(existing.id)}`, { target: input.quotaTarget });
     } else {
-      const { error: e3 } = await db.from("exp_sales_quotas").insert({
+      // period_type "month", period_start and actual 0 are set by the server
+      await api.post(`${T}/quotas`, {
         rep_id: input.repId,
         group_key: input.groupKey,
-        period_type: "month",
-        period_start,
         target: input.quotaTarget,
-        actual: 0,
       });
-      if (e3) throw e3;
     }
   }
 }
 
 export async function unassignSeller(territoryId: string) {
-  const { error } = await db
-    .from("exp_territories")
-    .update({ seller_id: null, status: "unassigned" })
-    .eq("id", territoryId);
-  if (error) throw error;
+  await api.patch(`${T}/territories/${encodeURIComponent(territoryId)}`, {
+    seller_id: null,
+    status: "unassigned",
+  });
 }

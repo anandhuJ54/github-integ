@@ -1,4 +1,4 @@
-import { supabase } from "@v3/ui/integrations/supabase/client";
+import { api } from "@v3/ui/lib/server-fn";
 import {
   approveProposal,
   loadProposals,
@@ -8,7 +8,10 @@ import {
 } from "@v3/ui/lib/territories";
 
 // Territory & team admin ("run it" controls). Sizing reads real profile counts only.
-const db = supabase as unknown as { from: (table: string) => any; rpc: (fn: string, args?: Record<string, unknown>) => any; auth: typeof supabase.auth };
+// FastAPI: surface-api/sales/routers/territories_data.py and category_groups_data.py (signed-in user).
+const T = "/sales/territories";
+const G = "/sales/category-groups";
+const enc = encodeURIComponent;
 
 export const PROFILES_PER_TERRITORY = 700_000;
 export const HYDRATION_GATE_PCT = 90;
@@ -18,8 +21,7 @@ export type LaneRole = (typeof LANE_ROLES)[number];
 export type GroupOption = { group_key: string; label: string };
 
 export async function loadAdminGroups(): Promise<GroupOption[]> {
-  const { data, error } = await db.from("exp_category_groups").select("group_key,label,is_catchall").order("label");
-  if (error) throw error;
+  const data = await api.get<any[]>(`${G}/admin`);
   return ((data ?? []) as any[]).filter((g) => !g.is_catchall).map((g) => ({ group_key: g.group_key, label: g.label ?? g.group_key }));
 }
 
@@ -36,8 +38,7 @@ export type CategorySizing = {
 /** Real profile totals (locations + professionals) and the whole-logo FFD split at 700K per territory. */
 export async function loadCategorySizing(groupKey: string): Promise<CategorySizing> {
   // Scoped RPC: the all-groups exp_territory_logo_profiles() exceeds the API time limit.
-  const { data, error } = await db.rpc("exp_territory_group_profiles", { p_group_key: groupKey });
-  if (error) throw new Error(error.message);
+  const data = await api.get<any[]>(`${T}/group-profiles`, { params: { group_key: groupKey } });
   const logos: LogoProfiles[] = ((data ?? []) as any[]).map((r) => ({
     group_key: r.group_key, logo_id: r.logo_id, logo_name: r.logo_name ?? "Unnamed logo",
     locations: Number(r.locations ?? 0), professionals: Number(r.professionals ?? 0),
@@ -62,12 +63,12 @@ export type Hydration = { total: number; deep: number; pct: number | null };
 
 /** Hydration = deep-hydrated staging rows / all staging rows for the group's member categories. */
 export async function loadHydration(groupKey: string): Promise<Hydration> {
-  const { data: members, error } = await db.from("exp_category_group_members").select("gcid").eq("group_key", groupKey);
-  if (error) throw error;
+  // The member gcids, then (only when there is one) the exact staging counts: all, and deep-hydrated (count errors → null).
+  const { members, total, deep } = await api.get<{ members: { gcid: string }[]; total: number | null; deep: number | null }>(
+    `${G}/${enc(groupKey)}/hydration`,
+  );
   const gcids = ((members ?? []) as any[]).map((m) => m.gcid as string);
   if (!gcids.length) return { total: 0, deep: 0, pct: null };
-  const head = () => db.from("exp_etl_staging").select("stage_id", { count: "exact", head: true }).in("gcid", gcids);
-  const [{ count: total }, { count: deep }] = await Promise.all([head(), head().eq("payload->>field_tier", "deep")]);
   const t = total ?? 0;
   return { total: t, deep: deep ?? 0, pct: t ? ((deep ?? 0) / t) * 100 : null };
 }
@@ -83,9 +84,9 @@ export async function proposeCategorySplit(groupKey: string, label: string): Pro
   const sizing = await loadCategorySizing(groupKey);
   if (!sizing.territoryCount) return 0;
   const pending = (await loadProposals("pending")).filter((p) => p.group_key === groupKey);
-  const { data: m } = await db.from("exp_category_group_members").select("gcid").eq("group_key", groupKey).order("gcid").limit(1);
+  const m = await api.get<{ gcid: string }[]>(`${T}/group-gcid`, { params: { group_key: groupKey } }).catch(() => []);
   const gcid = ((m ?? []) as any[])[0]?.gcid ?? null;
-  const { data: u } = await db.auth.getUser();
+  // created_by: the signed-in user, from the token (server-side).
   const rows = sizing.bins
     .map((b, i) => ({
       group_key: groupKey,
@@ -107,17 +108,15 @@ export async function proposeCategorySplit(groupKey: string, label: string): Pro
         region: null,
       },
       state: "pending",
-      created_by: u.user?.id ?? null,
     }))
     .filter((r) => !pending.some((p) => p.proposed_label === r.proposed_label));
   if (!rows.length) return 0;
-  const { error } = await db.from("exp_territory_proposals").insert(rows);
-  if (error) throw error;
+  await api.post(`${T}/proposals`, { rows });
   return rows.length;
 }
 
 export async function loadNoraRep(): Promise<{ id: string; name: string } | null> {
-  const { data } = await db.from("exp_sales_reps").select("id,name").ilike("role", "nora").limit(1);
+  const data = await api.get<{ id: string; name: string }[]>(`${T}/reps/nora`).catch(() => []);
   return ((data ?? []) as any[])[0] ?? null;
 }
 
@@ -127,10 +126,10 @@ export async function approveWithNora(p: TerritoryProposal): Promise<string> {
   const nora = await loadNoraRep();
   if (!nora) throw new Error("Territory created, but no NORA rep exists to seat as default seller");
   const role = (LANE_ROLES as readonly string[]).includes(p.proposed_tier ?? "") ? (p.proposed_tier as LaneRole) : "SMB";
-  const { error } = await db
-    .from("exp_territory_seats")
-    .upsert({ territory_id: territoryId, rep_id: nora.id, group_key: p.group_key, lane_role: role, is_nora_default: true }, { onConflict: "territory_id,rep_id,lane_role", ignoreDuplicates: true });
-  if (error) throw error;
+  await api.post(`${T}/seats`, {
+    rows: [{ territory_id: territoryId, rep_id: nora.id, group_key: p.group_key, lane_role: role, is_nora_default: true }],
+    ignore_duplicates: true,
+  });
   return territoryId;
 }
 
@@ -145,47 +144,39 @@ export type Seat = {
 };
 
 export async function loadSeats(groupKey: string): Promise<Seat[]> {
-  const { data, error } = await db.from("exp_territory_seats").select("*").eq("group_key", groupKey).order("created_at");
-  if (error) throw error;
+  const data = await api.get<Seat[]>(`${T}/seats`, { params: { group_key: groupKey } });
   return (data ?? []) as Seat[];
 }
 
 /** Add a seller seat. Many territories per rep and many reps per territory are both allowed. */
 export async function addSeat(input: { territoryIds: string[]; repId: string; groupKey: string; role: LaneRole; quota: number | null }) {
   if (!input.territoryIds.length) throw new Error("Pick at least one territory");
-  const { error } = await db.from("exp_territory_seats").upsert(
-    input.territoryIds.map((t) => ({ territory_id: t, rep_id: input.repId, group_key: input.groupKey, lane_role: input.role, monthly_quota: input.quota })),
-    { onConflict: "territory_id,rep_id,lane_role" },
-  );
-  if (error) throw error;
+  await api.post(`${T}/seats`, {
+    rows: input.territoryIds.map((t) => ({ territory_id: t, rep_id: input.repId, group_key: input.groupKey, lane_role: input.role, monthly_quota: input.quota })),
+  });
 }
 
 export async function updateSeatQuota(seatId: string, quota: number | null) {
-  const { error } = await db.from("exp_territory_seats").update({ monthly_quota: quota }).eq("id", seatId);
-  if (error) throw error;
+  await api.patch(`${T}/seats/${enc(seatId)}`, { monthly_quota: quota });
 }
 
 export async function removeSeat(seatId: string) {
-  const { error } = await db.from("exp_territory_seats").delete().eq("id", seatId);
-  if (error) throw error;
+  await api.delete(`${T}/seats/${enc(seatId)}`);
 }
 
 export type RampRow = { territory_id: string; rep_id: string | null; month_offset: number; ramp_pct: number };
 
 export async function loadRamps(territoryIds: string[]): Promise<RampRow[]> {
   if (!territoryIds.length) return [];
-  const { data, error } = await db.from("exp_territory_ramps").select("territory_id,rep_id,month_offset,ramp_pct").in("territory_id", territoryIds).order("month_offset");
-  if (error) throw error;
+  const data = await api.post<RampRow[]>(`${T}/ramps/search`, { territory_ids: territoryIds });
   return (data ?? []) as RampRow[];
 }
 
 /** Replace the ramp curve for ONE seller on ONE territory (other sellers' ramps untouched). */
 export async function saveSeatRamp(input: { territoryId: string; repId: string; pcts: number[] }) {
-  const { error: dErr } = await db.from("exp_territory_ramps").delete().eq("territory_id", input.territoryId).eq("rep_id", input.repId);
-  if (dErr) throw dErr;
+  await api.delete(`${T}/slots/${enc(input.territoryId)}/ramps?rep_id=${enc(input.repId)}`);
   if (!input.pcts.length) return;
-  const { error } = await db.from("exp_territory_ramps").insert(
-    input.pcts.map((p, i) => ({ territory_id: input.territoryId, rep_id: input.repId, month_offset: i, ramp_pct: Math.max(0, Math.min(100, p)) })),
-  );
-  if (error) throw error;
+  await api.post(`${T}/slots/${enc(input.territoryId)}/ramps`, {
+    rows: input.pcts.map((p, i) => ({ rep_id: input.repId, month_offset: i, ramp_pct: Math.max(0, Math.min(100, p)) })),
+  });
 }
