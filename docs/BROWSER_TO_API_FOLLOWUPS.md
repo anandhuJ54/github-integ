@@ -72,6 +72,15 @@ them also get faster), and nothing depends on the truncated behaviour.
 - If `hierarchy_path` gets backfilled, State Farm alone has 19,882 child offices. The read would then be cut to 1,000, and the users page's `professionals in (orgIds) limit 2000` would be cut too.
 - Also close to the cap: the office roster in `lib/enterprise-xmp.ts` reads every professional of an office with no limit. The largest office (`compass-new-york-ny-2`) has 990.
 
+### 1j. sales: reads cut by the cap (money numbers)
+All of these are cut to 1,000 rows today by PostgREST, and the API keeps that 1:1:
+- `lib/accounts.ts:50-51,128-129`: organizations and professionals `limit(5000)` (38,115 and 115,867 rows). The accounts lists are partial.
+- `lib/sales.ts:370-371`: organizations and professionals `limit(20000)`, used to build org/pro rollups. The rollups count only the first 1,000 rows.
+- `lib/sales-board.ts:170` (no limit) and `lib/sales-spine.ts:82,242` (limit over 1,000): `exp_claim_events` has 3,474 rows. Board and spine claim counts are partial.
+- `lib/sales-spine.ts:350`: `graph_nodes` `in(chunk) limit(10000)`. Each chunk is cut to 1,000.
+- **`lib/teams.ts:364` (a write path):** the territory move reads the org's child offices with `limit(50000)`, cut to 1,000 (State Farm has 19,882), and then moves only those offices' professionals. A move therefore silently leaves most professionals in the old territory. Ported as it is.
+- Fix: SQL aggregates and set-based updates (`update … where primary_org_id in (select id from organizations where parent_org_id = …)`). Needs a decision, because the numbers will change.
+
 ### 1f. Check every remaining Surface for the same pattern
 Look for any legacy read with a limit over 1,000, or with no limit on a large table. Record each
 one here before porting.

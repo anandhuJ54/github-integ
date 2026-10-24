@@ -278,8 +278,15 @@ Pages:
 - [x] 7. Parity PASS 46/46 (2026-10-24, signed in): roles, search, voce, geo, nav menus, enterprise ops, NORA registry and sandbox.
 - [ ] 8. Click-through · [ ] 9. Lint ratchet
 
-### 11. sales (144/87/16) — money: needs a second approval, split into 3–4 PRs
-- [ ] 1 · [ ] 2 · [ ] 3 · [ ] 4 · [ ] 5 · [ ] 6 · [ ] 7 parity · [ ] 8 · [ ] 9
+### 11. sales (actually ~222 reads, 88 writes, 15 RPCs in 26 files, plus ~70 calls in the `_base` money libs) — money: needs a second approval · branch `migrate/api-sales`
+- [x] 2. Tables and security (2026-10-24, read-only): **SF-10**. 23 tables have RLS off and 32 are always-true for writes. `exp_contract_provision`, `exp_alert_accept` and the two ticks are anon-callable with no caller check.
+  - Cap: **1j**. Accounts lists, org/pro rollups, claim-event counts and the territory move are all cut at 1,000 today.
+- Proposed split, one PR each, in this order:
+  - **S1 catalog & pricing (CPQ):** `catalog-admin.ts`, `cpq-catalog.ts`, `cpq-depth.ts`, `sales-cpq.ts` (quotes, promo codes, price tiers), `comp.ts`, and the money part of `_base` `console-surfaces.ts` (products, price book, contracts, entitlements)
+  - **S2 contracts, accounts & e-sign:** `contracts.ts`, `accounts.ts`, `sales.ts`, `csm.ts`, the `sales.quotes.$quoteId` route, the public `/sign/:token` (m4_* functions, anon)
+  - **S3 pipeline & alerts:** `opportunity-file.ts`, `worklist-actions.ts`, `opportunity-automation.tsx`, `sre-console.ts`, `_base` `sales-alerts.ts`
+  - **S4 territories, teams & boards:** `_base` `territories.ts`, `territory-admin.ts`, `category-groups.ts`, `teams.ts`, `seller-setup.ts`, `seller-desk.ts`, `seller-board.ts`, `sales-board.ts`, `sales-nav.ts`, `sales-spine.ts`, `sales-story.ts`, the `sales.promos` route
+- Per PR: [ ] 1 endpoints · [ ] 3 queries · [ ] 4 tests · [ ] 5 contract · [ ] 6 no direct calls · [ ] 7 parity · [ ] 8 click-through
 
 marketing and app make no direct calls.
 

@@ -98,3 +98,17 @@ The xmp port keeps today's access: calls run as the signed-in user, writes inclu
 - **No policy at all:** disco_jobs, plus the enterprise-ops tables crm_integrations, oauth_connections, sync_jobs, enterprise_settings, sso_config, user_roles and invitations. They always read empty for users. The disco jobs list in the console surfaces is therefore always empty.
 - **`bootstrap_control_super_admin()`** is SECURITY DEFINER and executable by anon. It returns `unauthenticated` when there's no user, and does nothing once any grant exists (21 do), so it's safe today. If `exp_control_grants` were ever emptied, the first signed-in caller would become super_admin.
 - The `search_docs*` RPCs are SECURITY INVOKER and public by design (the search page).
+
+## SF-10: sales Surface (checked 2026-10-24, read-only)
+The sales pages and the three `_base` money libs touch 64 tables and 17 RPCs. Almost everything is open:
+- **RLS off (SF-1), with anon read/write:** 23 tables, including exp_accounts, exp_contacts, exp_sales_pipeline (opportunities), exp_quotes, exp_price_tiers, exp_promo_codes, exp_promo_redemptions, exp_revenue_components, exp_sales_tasks, exp_sales_notes, exp_claim_events (contact phone and email), exp_opportunity_*, exp_territory_proposals, exp_territory_ramps and exp_trial_extensions.
+- **Always-true writes for `authenticated`:** 32 tables, including exp_contracts, exp_contract_line_items, exp_contract_signatures, exp_entitlements, exp_invoice, exp_invoice_line, exp_price_book, exp_pricing_config, exp_products, exp_comp_plans, exp_sales_reps, exp_sales_quotas, exp_territories and exp_usage_meter. Any signed-in account can change prices, contracts, invoices, comp plans and quotas.
+- **SECURITY DEFINER, anon-executable, no caller check:**
+  - `exp_contract_provision(p_contract)` creates entitlements for any contract.
+  - `exp_alert_accept(p_alert)` turns any NORA alert into a task.
+  - `exp_alerts_generate(p_now)` and `exp_task_reminders_tick(p_now)` are tick functions. The reminders tick writes **exp_email_outbox**, which queues emails. The `_base` `sales-alerts.ts` lib calls both from the browser.
+  - The territory profile aggregates are read-only.
+- **E-sign:** `m4_signer_fetch` and `m4_record_signature` are anon by design: the token in the link is the credential. They are SECURITY DEFINER with **no pinned search_path**.
+- **Role-checked:** the opportunity functions (`exp_opp_create`, `advance_stage`, `close_won`, `close_lost`), `exp_claim_queue_verification`, `exp_claim_set_contact` and `list_control_users`.
+- `exp_generate_territories` and `exp_generate_group_territories` are SECURITY INVOKER, so RLS applies.
+The sales port keeps today's access: calls run as the signed-in user, or anon for `/sign/:token`. **Porting must never run the tick, provision, generate or signature functions.**
