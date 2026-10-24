@@ -2,7 +2,7 @@ import { Fragment, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ChevronDown, ChevronRight, Inbox } from "lucide-react";
 import { toast } from "sonner";
-import { supabase } from "@v3/ui/integrations/supabase/client";
+import { api } from "@v3/ui/lib/server-fn";
 import { Badge } from "@v3/ui/components/ui/badge";
 import { Button } from "@v3/ui/components/ui/button";
 import { Label } from "@v3/ui/components/ui/label";
@@ -86,36 +86,20 @@ export function ClaimsTab() {
 
   const { data: claims, isLoading } = useQuery({
     queryKey: ["exp_claim", "all"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("exp_claim")
-        .select("claim_id, entity_id, user_id, claim_type, status, evidence, verified_at, created_at")
-        .order("created_at", { ascending: false })
-        .limit(500);
-      if (error) throw error;
-      return (data ?? []) as unknown as ClaimRow[];
-    },
+    queryFn: () => api.get<ClaimRow[]>("/graph/control/claims"),
   });
 
   const { data: entities } = useQuery({
     queryKey: ["exp_entity", "lite"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("exp_entity")
-        .select("entity_id, display_name, entity_type")
-        .limit(2000);
-      if (error) throw error;
-      return (data ?? []) as unknown as EntityLite[];
-    },
+    queryFn: () => api.get<EntityLite[]>("/graph/control/entities-lite"),
   });
 
   const { data: users } = useQuery({
     queryKey: ["control_users"],
-    queryFn: async () => {
-      const { data, error } = await supabase.rpc("list_control_users");
-      if (error) return [] as { user_id: string; email: string }[];
-      return (data ?? []) as unknown as { user_id: string; email: string }[];
-    },
+    queryFn: () =>
+      api
+        .get<{ user_id: string; email: string }[]>("/graph/control/users")
+        .catch(() => [] as { user_id: string; email: string }[]),
   });
 
   const entityById = useMemo(() => {
@@ -132,12 +116,9 @@ export function ClaimsTab() {
 
   const adjudicate = useMutation({
     mutationFn: async (vars: { claimId: string; approve: boolean; note?: string }) => {
-      const { error } = await supabase.rpc("exp_claim_adjudicate", {
-        p_claim: vars.claimId,
-        p_approve: vars.approve,
-        p_note: vars.note,
+      await api.post("/graph/control/rpc/exp_claim_adjudicate", {
+        args: { p_claim: vars.claimId, p_approve: vars.approve, p_note: vars.note },
       });
-      if (error) throw error;
     },
     onSuccess: (_d, vars) => {
       toast.success(vars.approve ? "Claim approved" : "Claim rejected");

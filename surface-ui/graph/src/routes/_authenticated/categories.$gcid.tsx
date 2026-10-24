@@ -12,7 +12,7 @@ import { OperationsTab } from "@v3/graph/components/operations-tab";
 import { ScoringTab } from "@v3/graph/components/scoring-tab";
 import { AiConfigTab } from "@v3/graph/components/ai-config-tab";
 import { SchemaTab } from "@v3/graph/components/schema-tab";
-import { supabase } from "@v3/ui/integrations/supabase/client";
+import { api } from "@v3/ui/lib/server-fn";
 import { Card, CardContent, CardHeader, CardTitle } from "@v3/ui/components/ui/card";
 import { Badge } from "@v3/ui/components/ui/badge";
 import { Button } from "@v3/ui/components/ui/button";
@@ -62,31 +62,26 @@ type TabName = (typeof TABS)[number];
 
 // ─── DATA FETCHING ────────────────────────────────────────────────────────────
 
+type DetailRows = {
+  category: any;
+  knowledge: any[] | null;
+  compliance: any;
+  nodes: any[] | null;
+  taxonomy: any[] | null;
+  uiConfigs: any[] | null;
+  directories: any[] | null;
+  secondaries: any[] | null;
+  groups: any[] | null;
+  validation: any[] | null;
+};
+
 async function fetchDetail(gcid: string) {
-  const [cat, know, comp, nodes, tax, ui, dirs, secs, groups, validation] = await Promise.all([
-    supabase.from("gbp_categories").select("*").eq("gcid", gcid).maybeSingle(),
-    supabase.from("exp_category_knowledge").select("*").eq("gcid", gcid),
-    supabase.from("exp_category_compliance").select("*").eq("gcid", gcid).maybeSingle(),
-    supabase.from("exp_vertical_node_registry").select("ring,entity_scope").eq("gcid", gcid),
-    supabase.from("exp_taxonomy").select("gcid").eq("gcid", gcid).limit(1),
-    supabase.from("exp_category_ui_config").select("*").eq("gcid", gcid),
-    supabase
-      .from("exp_category_directories")
-      .select("directory_key,directory_name,is_required,priority,schema_type,notes")
-      .eq("gcid", gcid)
-      .order("priority", { ascending: true }),
-    supabase
-      .from("exp_category_secondaries")
-      .select("secondary_gcid,relevance,notes")
-      .eq("primary_gcid", gcid)
-      .order("relevance", { ascending: true }),
-    (supabase as any)
-      .from("exp_category_group_memberships")
-      .select("is_primary, exp_category_groups(name,slug)")
-      .eq("gcid", gcid),
-    (supabase as any).rpc("exp_validate_category_full", { p_gcid: gcid }),
-  ]);
-  if (cat.error) throw cat.error;
+  // The ten reads in one request; a read whose error the page ignored comes back null.
+  const res = await api.get<DetailRows>("/graph/categories/detail", { params: { gcid } });
+  const cat = { data: res.category }, know = { data: res.knowledge }, comp = { data: res.compliance };
+  const nodes = { data: res.nodes }, tax = { data: res.taxonomy }, ui = { data: res.uiConfigs };
+  const dirs = { data: res.directories }, secs = { data: res.secondaries };
+  const groups = { data: res.groups }, validation = { data: res.validation };
   const ringCounts: Record<string, number> = {};
   const scopeCounts: Record<string, number> = {};
   for (const n of nodes.data ?? []) {
@@ -188,11 +183,7 @@ function CategoryDetailPage() {
 
   const updateCategory = useMutation({
     mutationFn: async (patch: { status?: string; supports_single_pro_office?: boolean }) => {
-      const { error } = await supabase
-        .from("gbp_categories")
-        .update(patch)
-        .eq("gcid", gcid);
-      if (error) throw error;
+      await api.patch("/graph/categories/category", { gcid, ...patch });
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["category-detail", gcid] });
@@ -208,11 +199,10 @@ function CategoryDetailPage() {
     enabled: (rel?.childrenGcids?.length ?? 0) > 0,
     queryFn: async () => {
       const ids = rel?.childrenGcids ?? [];
-      const { data: kids } = await (supabase as any)
-        .from("gbp_categories")
-        .select("gcid,display_name,entity_type,estimated_profiles,estimated_locations")
-        .in("gcid", ids)
-        .order("display_name", { ascending: true });
+      // the read's error was ignored (no rows)
+      const kids = await api
+        .post<any[]>("/graph/categories/children", { gcids: ids, view: "detail" })
+        .catch(() => null);
       return (kids ?? []) as Array<any>;
     },
   });

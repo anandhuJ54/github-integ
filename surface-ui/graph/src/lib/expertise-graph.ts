@@ -1,4 +1,4 @@
-import { supabase } from "@v3/ui/integrations/supabase/client";
+import { api } from "@v3/ui/lib/server-fn";
 
 export type GraphKind = "professional" | "office" | "company";
 
@@ -80,9 +80,6 @@ export type GraphEdge = {
   weight: number | null;
 };
 
-const NODE_COLS =
-  "id, entity_type, entity_id, node_type, ring, title, url, source, source_id, source_url, verified, verified_at, schema_type, schema_property, score_points, score_counted, fetched_at";
-
 export const RING_META: Record<
   number,
   { label: string; color: string }
@@ -128,23 +125,32 @@ export type EntityHeader = {
   record: Record<string, unknown>;
 };
 
-const PRO_COLS =
-  "id, first_name, last_name, display_name, slug, job_title, headline, photo_url, gcid, address_city, address_state, address_zip, phone, email, website_url, bio, short_bio, gbp_place_id, primary_license_number, primary_license_state, primary_license_type, primary_license_verified, languages, markets_served, claimed, primary_org_id, canonical_url, schema_type";
+type Rec = Record<string, any>; // eslint-disable-line @typescript-eslint/no-explicit-any
 
-const ORG_COLS =
-  "id, name, legal_name, slug, logo_url, gcid, address_city, address_state, address_zip, phone, website_url, entity_type, parent_org_id, claimed, gbp_place_id, description";
+/**
+ * GET /graph/expertise/:kind/:slug — the rows loadExpertiseGraph() read with supabase-js: the
+ * professional/organization row (null when the slug resolves to nothing), its active graph nodes,
+ * score, review count, office + brand, the edges touching its nodes and the nodes at their other
+ * ends. Node, edge and external-node reads are uncapped (ruling 2026-10-24).
+ */
+type ExpertiseRows = {
+  entity: Rec;
+  ownRows: GraphNode[];
+  score: {
+    total_score: number | null;
+    max_possible: number | null;
+    local_rank: number | null;
+    local_rank_of: number | null;
+  } | null;
+  reviewCount: number | null;
+  org: { id: string; name: string; slug: string | null; parent_org_id: string | null } | null;
+  brand: { id: string; name: string; slug: string | null } | null;
+  edges: GraphEdge[];
+  external: GraphNode[];
+} | null;
 
-async function resolveEntity(
-  kind: GraphKind,
-  slug: string,
-): Promise<EntityHeader | null> {
+function resolveEntity(kind: GraphKind, slug: string, data: Rec): EntityHeader {
   if (kind === "professional") {
-    const { data } = await supabase
-      .from("professionals")
-      .select(PRO_COLS)
-      .eq("slug", slug)
-      .maybeSingle();
-    if (!data) return null;
     const rec = data as Record<string, unknown>;
     return {
       id: data.id,
@@ -171,12 +177,6 @@ async function resolveEntity(
     };
   }
 
-  const { data } = await supabase
-    .from("organizations")
-    .select(ORG_COLS)
-    .eq("slug", slug)
-    .maybeSingle();
-  if (!data) return null;
   return {
     id: data.id,
     kind,
@@ -343,27 +343,12 @@ export type BranchSummary = {
 };
 
 export async function loadExpertiseGraph(kind: GraphKind, slug: string) {
-  const entity = await resolveEntity(kind, slug);
-  if (!entity) return null;
-
-  const [{ data: ownRows }, { data: scoreRow }, { count: reviewCount }] = await Promise.all([
-    supabase
-      .from("graph_nodes")
-      .select(NODE_COLS)
-      .eq("entity_type", entity.entityType)
-      .eq("entity_id", entity.id)
-      .eq("is_active", true),
-    supabase
-      .from("search_rank_scores")
-      .select("total_score, max_possible, local_rank, local_rank_of")
-      .eq("entity_type", entity.entityType)
-      .eq("entity_id", entity.id)
-      .maybeSingle(),
-    supabase
-      .from("reviews")
-      .select("id", { count: "exact", head: true })
-      .eq("entity_id", entity.id),
-  ]);
+  const rows = await api.get<ExpertiseRows>(
+    `/graph/expertise/${kind}/${encodeURIComponent(slug)}`,
+  );
+  if (!rows) return null;
+  const entity = resolveEntity(kind, slug, rows.entity);
+  const { score: scoreRow, reviewCount } = rows;
 
   entity.score = scoreRow?.total_score ?? null;
   entity.maxScore = scoreRow?.max_possible ?? 850;
@@ -371,63 +356,22 @@ export async function loadExpertiseGraph(kind: GraphKind, slug: string) {
   // Hierarchy: office (primary org) and the brand above it.
   let org: { id: string; name: string; slug: string | null } | null = null;
   let brand: { id: string; name: string; slug: string | null } | null = null;
-  const orgId =
-    entity.entityType === "professional"
-      ? ((entity.record["primary_org_id"] as string | null) ?? null)
-      : ((entity.record["parent_org_id"] as string | null) ?? null);
-  if (orgId) {
-    const { data: o } = await supabase
-      .from("organizations")
-      .select("id, name, slug, parent_org_id")
-      .eq("id", orgId)
-      .maybeSingle();
-    if (o) {
-      org = { id: o.id, name: o.name, slug: o.slug ?? null };
-      if (o.parent_org_id) {
-        const { data: b } = await supabase
-          .from("organizations")
-          .select("id, name, slug")
-          .eq("id", o.parent_org_id)
-          .maybeSingle();
-        if (b) brand = { id: b.id, name: b.name, slug: b.slug ?? null };
-      }
-    }
+  const o = rows.org;
+  if (o) {
+    org = { id: o.id, name: o.name, slug: o.slug ?? null };
+    const b = o.parent_org_id ? rows.brand : null;
+    if (b) brand = { id: b.id, name: b.name, slug: b.slug ?? null };
   }
   if (entity.entityType === "organization" && org) {
     brand = org;
     org = null;
   }
 
-  const own = (ownRows ?? []) as GraphNode[];
-  const ownIds = own.map((n) => n.id);
-
-  let edges: GraphEdge[] = [];
-  if (ownIds.length) {
-    const list = `(${ownIds.join(",")})`;
-    const { data: edgeRows } = await supabase
-      .from("graph_edges")
-      .select("id, from_node_id, to_node_id, edge_type, schema_property, weight")
-      .or(`from_node_id.in.${list},to_node_id.in.${list}`);
-    edges = (edgeRows ?? []) as GraphEdge[];
-  }
-
-  const known = new Set(ownIds);
-  const externalIds = Array.from(
-    new Set(
-      edges
-        .flatMap((e) => [e.from_node_id, e.to_node_id])
-        .filter((id) => !known.has(id)),
-    ),
-  );
-
-  let external: GraphNode[] = [];
-  if (externalIds.length) {
-    const { data: extRows } = await supabase
-      .from("graph_nodes")
-      .select(NODE_COLS)
-      .in("id", externalIds);
-    external = (extRows ?? []) as GraphNode[];
-  }
+  const own = (rows.ownRows ?? []) as GraphNode[];
+  // Edges touching the entity's own nodes (from or to), and the nodes at their other ends that
+  // aren't its own — both resolved server-side.
+  const edges: GraphEdge[] = own.length ? rows.edges : [];
+  const external: GraphNode[] = rows.external;
 
   const live = [...own, ...external].map((n) => ({ ...n, branch: branchOf(n) }));
   const derived = structuralNodes(entity, org, brand);

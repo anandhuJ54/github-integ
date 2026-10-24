@@ -187,11 +187,24 @@ Pages:
 - `/:category/:city/:professional`
 - public `/p|o|c/:slug/graph`
 
-- [ ] 1. Endpoints: reads first. Writes are held for a ruling (below).
+- [x] 1. Endpoints (46 routes):
+  - `/graph/categories/*` (`graph/routers/categories_data.py`): index, detail, the 9 tabs and the listings catalog, plus the category-edit writes ported as they are
+  - `/graph/control/*`: health, tree, entities, claims, and allow-listed RPCs (`GRAPH_RPCS`)
+  - `/graph/profile/{slug}`
+  - public `/graph/expertise/{kind}/{slug}` (anon when signed out, uncapped)
 - [x] 2. Tables and security (2026-10-24, read-only). 38 tables, all with RLS on and read-only policies. **SF-7**: audit_log always-true insert, two unpinned SECURITY DEFINER functions, anon EXECUTE on all six RPCs, and three tables with no policy (they always read empty).
   - Cap gaps: **1g** (claims entity lookup, `limit 2000`) and **1h** (expertise graph, up to 2,644 nodes per entity).
   - Every per-gcid read is within the cap: at most 473 node-registry rows and 402 taxonomy rows per gcid.
-- [ ] 3 · [ ] 4 · [ ] 5 · [ ] 6 · [ ] 7 parity · [ ] 8 · [ ] 9
+- [x] 3. `graph/queries/{categories,entities}.py` (Core only)
+- [x] 4. pytest: 55 new tests, 702 in total. Live read-only smoke as `authenticated` and `anon`. **No write or write RPC was run.**
+  - The group-memberships embed could never work (no foreign key, and `exp_category_groups` has no `name`/`slug`), so it returns `groups: null`, as the page effectively got.
+  - Most `audit_log` inserts already failed (no `metadata` column; gcid in a uuid column). They are kept as they were.
+  - The AI config knowledge read errors (406) on gcids with 2 knowledge rows, as before.
+  - Expertise: if one of the three uncapped reads fails, the page now shows an error instead of an empty graph.
+- [x] 5. `contracts/graph/openapi.json`
+- [x] 6. No `supabase.from` or `.rpc` calls remain in `surface-ui/graph` (only `auth.getSession`).
+- [ ] 7. Parity: `bun parity/run.ts graph`, about 67 cases (categories plus entities)
+- [ ] 8. Click-through · [ ] 9. Lint ratchet
 - **Writes ported as they are (ruling 2026-10-24: "modify as it is"), same statements as the signed-in user, with routing through proposals still open (FOLLOWUPS §3). Expertise graph: no cap (1h).** Context (§3, category data only through `exp_category_proposals`, never DELETE).** The browser does direct writes to:
   - `exp_taxonomy`, `exp_vertical_node_registry` and `content_compliance_rules`: insert, update and **delete**
   - `exp_category_knowledge.ai_agents`, plus `gbp_categories` (`status`, `supports_single_pro_office`): update

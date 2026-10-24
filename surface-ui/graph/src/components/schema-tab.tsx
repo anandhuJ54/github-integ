@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Sparkles, Loader2 } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useServerFn } from "@v3/ui/lib/server-fn";
+import { api, useServerFn } from "@v3/ui/lib/server-fn";
 import { Card, CardContent } from "@v3/ui/components/ui/card";
 import { Button } from "@v3/ui/components/ui/button";
 import { cn } from "@v3/ui/lib/utils";
@@ -115,11 +115,9 @@ export function SchemaTab({
     queryKey: ["category-schema", gcid],
     queryFn: async () => {
       try {
-        const { data } = await (supabase as any)
-          .from("exp_category_schema")
-          .select("schema_json, model")
-          .eq("gcid", gcid)
-          .maybeSingle();
+        const data = await api.get<{ schema_json: unknown; model: string | null } | null>("/graph/categories/schema", {
+          params: { gcid },
+        });
         if (!data?.schema_json) return null;
         return { schema: data.schema_json as CategorySchema, model: (data.model as string) ?? null };
       } catch {
@@ -134,12 +132,9 @@ export function SchemaTab({
   const registryQ = useQuery({
     queryKey: ["schema-tab-registry", gcid],
     queryFn: async () => {
-      const { data, error } = await (supabase as any)
-        .from("exp_vertical_node_registry")
-        .select("node_name, ring, entity_scope, connection_method, schema_type, schema_property, required_for_score, priority")
-        .eq("gcid", gcid)
-        .eq("is_active", true);
-      if (error) return [] as RegNode[];
+      const data = await api
+        .get<RegNode[]>("/graph/categories/schema/registry", { params: { gcid } })
+        .catch(() => [] as RegNode[]); // the read's error was ignored
       return (data ?? []) as RegNode[];
     },
   });

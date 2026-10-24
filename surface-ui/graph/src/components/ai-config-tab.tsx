@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { GripVertical, Plus, Trash2, X } from "lucide-react";
-import { supabase } from "@v3/ui/integrations/supabase/client";
+import { api } from "@v3/ui/lib/server-fn";
 import { Button } from "@v3/ui/components/ui/button";
 import { Input } from "@v3/ui/components/ui/input";
 import { Label } from "@v3/ui/components/ui/label";
@@ -184,12 +184,9 @@ export function AiConfigTab({ gcid }: { gcid: string }) {
   const { data: know } = useQuery({
     queryKey: ["ai-config", gcid],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("exp_category_knowledge")
-        .select("ai_agents")
-        .eq("gcid", gcid)
-        .maybeSingle();
-      if (error) throw error;
+      const data = await api.get<{ ai_agents: AiAgents | null } | null>("/graph/categories/ai-config/knowledge", {
+        params: { gcid },
+      });
       return data as { ai_agents: AiAgents | null } | null;
     },
   });
@@ -197,12 +194,7 @@ export function AiConfigTab({ gcid }: { gcid: string }) {
   const { data: comp } = useQuery({
     queryKey: ["ai-config-compliance", gcid],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("exp_category_compliance")
-        .select("content_restrictions, prohibited_phrases, required_disclaimers")
-        .eq("gcid", gcid)
-        .maybeSingle();
-      if (error) throw error;
+      const data = await api.get<unknown>("/graph/categories/ai-config/compliance", { params: { gcid } });
       return data as {
         content_restrictions: string[] | null;
         prohibited_phrases: string[] | null;
@@ -219,16 +211,8 @@ export function AiConfigTab({ gcid }: { gcid: string }) {
   const save = useMutation({
     mutationFn: async () => {
       const merged = { ...(know?.ai_agents ?? {}), ...agents };
-      const { error } = await supabase
-        .from("exp_category_knowledge")
-        .update({ ai_agents: merged as never })
-        .eq("gcid", gcid);
-      if (error) throw error;
-      await supabase.from("audit_log").insert({
-        action: "ai_config.update",
-        entity_type: "exp_category_knowledge",
-        entity_id: gcid,
-      } as never);
+      // the update, then the audit_log insert whose error was ignored (server side)
+      await api.post("/graph/categories/ai-config", { gcid, ai_agents: merged });
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["ai-config", gcid] });

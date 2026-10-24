@@ -1,8 +1,9 @@
 /** Publisher catalog — read side.
  *  Source of truth: exp_listings_publishers + exp_listings_field_map (migration 0026).
- *  `buildCatalogs` is pure (tested); `fetchCatalogs` does the two selects and returns
+ *  `buildCatalogs` is pure (tested); `fetchCatalogs` does the two selects (via the API) and returns
  *  null when the 0026 columns/rows are not there yet, so the caller can fall back to the
  *  deprecated constants in ./catalog.fallback. */
+import { api } from "@v3/ui/lib/server-fn";
 import type { MapRow, PublisherCatalog, RowStatus, Section } from "./catalog.fallback";
 
 /** field_map rows seeded from the listings-tab constants carry this tag; the 30 earlier
@@ -90,24 +91,13 @@ export function buildCatalogs(
   return cats.some((c) => c.sections.length) ? cats : null;
 }
 
-// Structural (untyped) handle: the 0026 columns are not in the generated supabase types until
-// the migration is applied and types are regenerated; also keeps this module client-agnostic.
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type Selectable = { from: (table: string) => any };
-
-export async function fetchCatalogs(client: Selectable): Promise<PublisherCatalog[] | null> {
-  const [p, f] = await Promise.all([
-    client
-      .from("exp_listings_publishers")
-      .select("id,name,kind,subtitle,publishes_to,ops_notes,display_sort,channel_role,role_status"),
-    client
-      .from("exp_listings_field_map")
-      .select(
-        "publisher_id,section,section_note,their_field,our_target,rules,applicability,status_default,variant_family,sort",
-      )
-      .eq("catalog_version", CATALOG_VERSION),
-  ]);
-  // A missing column (0026 unapplied) surfaces as an error → fall back.
-  if (p.error || f.error || !p.data || !f.data) return null;
-  return buildCatalogs(p.data as PublisherDbRow[], f.data as FieldMapDbRow[]);
+export async function fetchCatalogs(): Promise<PublisherCatalog[] | null> {
+  // Both selects in one request; a failed one comes back null.
+  const r = await api.get<{ publishers: PublisherDbRow[] | null; fieldMap: FieldMapDbRow[] | null }>(
+    "/graph/categories/listings/catalog",
+    { params: { catalog_version: CATALOG_VERSION } },
+  );
+  // A missing column (0026 unapplied) surfaces as an error (null) → fall back.
+  if (!r.publishers || !r.fieldMap) return null;
+  return buildCatalogs(r.publishers, r.fieldMap);
 }

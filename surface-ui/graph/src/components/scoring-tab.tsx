@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { supabase } from "@v3/ui/integrations/supabase/client";
+import { api } from "@v3/ui/lib/server-fn";
 import { CheckCircle2, Circle, Clock } from "lucide-react";
 import { ExpectedVolumeKeys, type LaneVolumeKey } from "@v3/graph/components/scoring/expected-volume-keys";
 
@@ -111,17 +111,14 @@ export function ScoringTab({ gcid }: { gcid: string }) {
   const [categoryLabel, setCategoryLabel] = useState<string>(gcid);
 
   const load = useCallback(async () => {
-    const [a, b, c, q, v, cat] = await Promise.all([
-      supabase.from("exp_category_ear").select("ear,band,ear_professional,non_reviewable").eq("gcid", gcid).maybeSingle(),
-      supabase.from("exp_category_eaa").select("eaa,band,eaa_professional,non_authored").eq("gcid", gcid).maybeSingle(),
-      supabase.from("exp_category_completeness").select("total_node_types,core_node_types,expected_m").eq("gcid", gcid).maybeSingle(),
-      supabase.from("exp_category_eaq").select("eaq,band,eaq_professional,non_qa").eq("gcid", gcid).maybeSingle(),
-      supabase.from("exp_category_eav").select("eav,band,eav_professional,non_video").eq("gcid", gcid).maybeSingle(),
-      supabase.from("gbp_categories").select("display_name").eq("gcid", gcid).maybeSingle(),
-    ]);
-    setEar(a.data); setEaa(b.data); setComp(c.data);
-    setEaq(q.data); setEav(v.data);
-    if (cat.data?.display_name) setCategoryLabel(cat.data.display_name as string);
+    // six `.maybeSingle()` reads in one request; each is null when missing (errors ignored)
+    const r = await api.get<Record<"ear" | "eaa" | "completeness" | "eaq" | "eav" | "category", any>>(
+      "/graph/categories/scoring",
+      { params: { gcid } },
+    );
+    setEar(r.ear); setEaa(r.eaa); setComp(r.completeness);
+    setEaq(r.eaq); setEav(r.eav);
+    if (r.category?.display_name) setCategoryLabel(r.category.display_name as string);
   }, [gcid]);
 
   useEffect(() => { void load(); }, [load]);

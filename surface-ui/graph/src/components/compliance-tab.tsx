@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Plus, Trash2, X } from "lucide-react";
 import { ModelLock, ModelLockNotice, ReadOnlyLock } from "@v3/ui/components/model-lock";
 import { useRole } from "@v3/ui/lib/roles";
-import { supabase } from "@v3/ui/integrations/supabase/client";
+import { api } from "@v3/ui/lib/server-fn";
 import { Button } from "@v3/ui/components/ui/button";
 import { Input } from "@v3/ui/components/ui/input";
 import { Label } from "@v3/ui/components/ui/label";
@@ -166,12 +166,7 @@ export function ComplianceTab({ gcid }: { gcid: string }) {
   const { data: comp } = useQuery({
     queryKey: ["compliance", gcid],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("exp_category_compliance")
-        .select("*")
-        .eq("gcid", gcid)
-        .maybeSingle();
-      if (error) throw error;
+      const data = await api.get<ComplianceRow | null>("/graph/categories/compliance", { params: { gcid } });
       return data as ComplianceRow | null;
     },
   });
@@ -179,12 +174,7 @@ export function ComplianceTab({ gcid }: { gcid: string }) {
   const { data: rules = [] } = useQuery({
     queryKey: ["compliance-rules", gcid],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("content_compliance_rules")
-        .select("*")
-        .eq("gcid", gcid)
-        .order("rule_name");
-      if (error) throw error;
+      const data = await api.get<RuleRow[]>("/graph/categories/compliance-rules", { params: { gcid } });
       return (data ?? []) as RuleRow[];
     },
   });
@@ -218,11 +208,7 @@ export function ComplianceTab({ gcid }: { gcid: string }) {
 
   const deleteRule = useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase
-        .from("content_compliance_rules")
-        .delete()
-        .eq("id", id);
-      if (error) throw error;
+      await api.delete(`/graph/categories/compliance-rules/${encodeURIComponent(id)}`);
     },
     onSuccess: () =>
       qc.invalidateQueries({ queryKey: ["compliance-rules", gcid] }),
@@ -230,11 +216,9 @@ export function ComplianceTab({ gcid }: { gcid: string }) {
 
   const toggleRule = useMutation({
     mutationFn: async (r: RuleRow) => {
-      const { error } = await supabase
-        .from("content_compliance_rules")
-        .update({ is_active: !r.is_active })
-        .eq("id", r.id);
-      if (error) throw error;
+      await api.patch(`/graph/categories/compliance-rules/${encodeURIComponent(r.id)}/active`, {
+        is_active: !r.is_active,
+      });
     },
     onSuccess: () =>
       qc.invalidateQueries({ queryKey: ["compliance-rules", gcid] }),
@@ -577,23 +561,12 @@ function RuleDialog({
         severity,
         is_active: active,
       };
+      // insert / update, then the audit_log insert whose error was ignored (server side)
       if (isNew) {
-        const { error } = await supabase
-          .from("content_compliance_rules")
-          .insert(payload as never);
-        if (error) throw error;
+        await api.post("/graph/categories/compliance-rules", payload);
       } else {
-        const { error } = await supabase
-          .from("content_compliance_rules")
-          .update(payload as never)
-          .eq("id", rule!.id);
-        if (error) throw error;
+        await api.patch(`/graph/categories/compliance-rules/${encodeURIComponent(rule!.id)}`, payload);
       }
-      await supabase.from("audit_log").insert({
-        action: isNew ? "compliance_rule.create" : "compliance_rule.update",
-        entity_type: "content_compliance_rules",
-        entity_id: rule?.id ?? gcid,
-      } as never);
     },
     onSuccess: onSaved,
   });

@@ -1,7 +1,8 @@
 import { BrandWordmark } from "@v3/ui/components/brand/logo";
 import { createFileRoute, notFound } from "@tanstack/react-router";
 import { useSuspenseQuery, queryOptions } from "@tanstack/react-query";
-import { supabase } from "@v3/ui/integrations/supabase/client";
+import { api } from "@v3/ui/lib/server-fn";
+import type { Database, Tables } from "@v3/ui/integrations/supabase/types";
 import { Badge } from "@v3/ui/components/ui/badge";
 import { Button } from "@v3/ui/components/ui/button";
 import { Card, CardContent } from "@v3/ui/components/ui/card";
@@ -30,18 +31,32 @@ function slugify(s: string | null | undefined): string {
 
 type ProfileData = Awaited<ReturnType<typeof loadProfile>>;
 
+type TableName = keyof Database["public"]["Tables"];
+/** The columns a supabase-js select("a, b") returned from table T. */
+type Row<T extends TableName, K extends keyof Tables<T>> = Pick<Tables<T>, K>;
+
+/** GET /graph/profile/:slug — the rows loadProfile() read with supabase-js, under its names. */
+type ProfileRows = {
+  profile: Tables<"v_professional_profile"> | null;
+  reviews: Row<"reviews", "id" | "rating" | "title" | "body" | "reviewer_name" | "review_date" | "reply_body" | "reply_date" | "source" | "is_verified">[];
+  content: Row<"content_items", "id" | "title" | "slug" | "excerpt" | "cover_image_url" | "published_at">[];
+  credentials: Row<"credentials", "id" | "credential_type" | "name" | "identifier" | "issuing_org" | "issuing_org_url" | "issuing_state" | "valid_until" | "verified" | "schema_credential_category" | "wikidata_id">[];
+  pro: Row<"professionals", "id" | "canonical_url" | "phone" | "email" | "website_url" | "address_zip" | "wikidata_id" | "primary_org_id"> | null;
+  graphNodes: Row<"graph_nodes", "node_type" | "url" | "title" | "schema_property" | "source">[];
+  taxonomy: Row<"exp_taxonomy", "term" | "level" | "wikidata_id">[];
+  transactionSignals: Row<"transaction_signals", "city" | "state" | "zip_code" | "transaction_type">[];
+  aggregateRating: Row<"aggregate_ratings", "rating_value" | "review_count" | "rating_1" | "rating_2" | "rating_3" | "rating_4" | "rating_5"> | null;
+  org: Row<"organizations", "id" | "name" | "slug" | "schema_type" | "website_url" | "canonical_url" | "logo_url" | "phone" | "address_street" | "address_city" | "address_state" | "address_zip" | "address_country" | "same_as" | "wikidata_id"> | null;
+};
+
 async function loadProfile(params: {
   category: string;
   city: string;
   professional: string;
 }) {
-  const { data: prof, error } = await supabase
-    .from("v_professional_profile")
-    .select("*")
-    .eq("slug", params.professional)
-    .maybeSingle();
-
-  if (error) throw error;
+  // One request: the view row, then (server-side, in one round trip) the side reads and the org.
+  const rows = await api.get<ProfileRows>(`/graph/profile/${encodeURIComponent(params.professional)}`);
+  const prof = rows.profile;
   if (!prof) throw notFound();
 
   // Validate slugs match (for canonicalization / 404 on mismatch)
@@ -53,81 +68,9 @@ async function loadProfile(params: {
   if (!cityOk || !catOk) throw notFound();
 
   const profId = prof.id as string;
-  const [
-    reviewsRes,
-    contentRes,
-    credsRes,
-    proRes,
-    graphNodesRes,
-    taxRes,
-    txRes,
-    aggRes,
-  ] = await Promise.all([
-    supabase
-      .from("reviews")
-      .select(
-        "id, rating, title, body, reviewer_name, review_date, reply_body, reply_date, source, is_verified",
-      )
-      .eq("entity_type", "professional")
-      .eq("entity_id", profId)
-      .order("review_date", { ascending: false })
-      .limit(5),
-    supabase
-      .from("content_items")
-      .select("id, title, slug, excerpt, cover_image_url, published_at")
-      .eq("author_type", "professional")
-      .eq("author_id", profId)
-      .eq("status", "published")
-      .order("published_at", { ascending: false })
-      .limit(3),
-    supabase
-      .from("credentials")
-      .select(
-        "id, credential_type, name, identifier, issuing_org, issuing_org_url, issuing_state, valid_until, verified, schema_credential_category, wikidata_id",
-      )
-      .eq("professional_id", profId)
-      .eq("is_current", true)
-      .order("verified", { ascending: false }),
-    supabase
-      .from("professionals")
-      .select(
-        "id, canonical_url, phone, email, website_url, address_zip, wikidata_id, primary_org_id",
-      )
-      .eq("id", profId)
-      .maybeSingle(),
-    supabase
-      .from("graph_nodes")
-      .select("node_type, url, title, schema_property, source")
-      .eq("entity_type", "professional")
-      .eq("entity_id", profId)
-      .eq("is_active", true)
-      .or("ring.eq.2,schema_property.eq.sameAs"),
-    prof.gcid
-      ? supabase
-          .from("exp_taxonomy")
-          .select("term, level, wikidata_id")
-          .eq("gcid", prof.gcid)
-          .in("level", ["specialization", "topic", "service", "product_service", "product"])
-          .limit(50)
-      : Promise.resolve({ data: [] }),
-    supabase
-      .from("transaction_signals")
-      .select("city, state, zip_code, transaction_type")
-      .eq("professional_id", profId)
-      .limit(50),
-    supabase
-      .from("aggregate_ratings")
-      .select("rating_value, review_count, rating_1, rating_2, rating_3, rating_4, rating_5")
-      .eq("entity_type", "professional")
-      .eq("entity_id", profId)
-      .eq("source", "all")
-      .maybeSingle(),
-  ]);
-
   // Org (Ring 7)
-  let org: Awaited<ReturnType<typeof loadOrg>> = null;
-  const orgId = (proRes.data as { primary_org_id?: string | null } | null)?.primary_org_id;
-  if (orgId) org = await loadOrg(orgId);
+  // loadOrg(proRes.primary_org_id), read with the rest
+  const org = rows.org;
 
   const path = `/${params.category}/${params.city}/${params.professional}`;
 
@@ -150,15 +93,15 @@ async function loadProfile(params: {
         headline: prof.headline,
         bio: prof.bio,
         photo_url: prof.photo_url,
-        canonical_url: (proRes.data?.canonical_url as string | null) ?? null,
+        canonical_url: (rows.pro?.canonical_url as string | null) ?? null,
         address_city: prof.address_city,
         address_state: prof.address_state,
-        address_zip: (proRes.data?.address_zip as string | null) ?? null,
-        phone: (proRes.data?.phone as string | null) ?? null,
-        email: (proRes.data?.email as string | null) ?? null,
-        website_url: (proRes.data?.website_url as string | null) ?? null,
+        address_zip: (rows.pro?.address_zip as string | null) ?? null,
+        phone: (rows.pro?.phone as string | null) ?? null,
+        email: (rows.pro?.email as string | null) ?? null,
+        website_url: (rows.pro?.website_url as string | null) ?? null,
         gcid: prof.gcid,
-        wikidata_id: (proRes.data?.wikidata_id as string | null) ?? null,
+        wikidata_id: (rows.pro?.wikidata_id as string | null) ?? null,
         same_as: (prof.same_as as string[] | null) ?? null,
         markets_served: (prof.markets_served as string[] | null) ?? null,
         category_name: prof.category_name,
@@ -182,12 +125,12 @@ async function loadProfile(params: {
             wikidata_id: org.wikidata_id,
           }
         : null,
-      credentials: (credsRes.data ?? []) as GraphInput["credentials"],
-      graphNodes: (graphNodesRes.data ?? []) as GraphInput["graphNodes"],
-      taxonomy: (taxRes.data ?? []) as GraphInput["taxonomy"],
-      transactionSignals: (txRes.data ?? []) as GraphInput["transactionSignals"],
-      aggregateRating: (aggRes.data ?? null) as GraphInput["aggregateRating"],
-      reviews: (reviewsRes.data ?? []) as GraphInput["reviews"],
+      credentials: (rows.credentials ?? []) as GraphInput["credentials"],
+      graphNodes: (rows.graphNodes ?? []) as GraphInput["graphNodes"],
+      taxonomy: (rows.taxonomy ?? []) as GraphInput["taxonomy"],
+      transactionSignals: (rows.transactionSignals ?? []) as GraphInput["transactionSignals"],
+      aggregateRating: (rows.aggregateRating ?? null) as GraphInput["aggregateRating"],
+      reviews: (rows.reviews ?? []) as GraphInput["reviews"],
       breadcrumbs: [
         { name: "Home", path: "/" },
         { name: prof.category_name ?? params.category, path: `/${params.category}` },
@@ -211,7 +154,7 @@ async function loadProfile(params: {
 
   return {
     profile: prof,
-    proExtras: (proRes.data ?? null) as
+    proExtras: (rows.pro ?? null) as
       | {
           canonical_url: string | null;
           phone: string | null;
@@ -221,27 +164,16 @@ async function loadProfile(params: {
           wikidata_id: string | null;
         }
       | null,
-    reviews: reviewsRes.data ?? [],
-    content: contentRes.data ?? [],
-    credentials: credsRes.data ?? [],
-    graphNodes: graphNodesRes.data ?? [],
-    taxonomy: taxRes.data ?? [],
-    transactionSignals: txRes.data ?? [],
-    aggregateRating: aggRes.data ?? null,
+    reviews: rows.reviews ?? [],
+    content: rows.content ?? [],
+    credentials: rows.credentials ?? [],
+    graphNodes: rows.graphNodes ?? [],
+    taxonomy: rows.taxonomy ?? [],
+    transactionSignals: rows.transactionSignals ?? [],
+    aggregateRating: rows.aggregateRating ?? null,
     org,
     schemaJson,
   };
-}
-
-async function loadOrg(id: string) {
-  const { data } = await supabase
-    .from("organizations")
-    .select(
-      "id, name, slug, schema_type, website_url, canonical_url, logo_url, phone, address_street, address_city, address_state, address_zip, address_country, same_as, wikidata_id",
-    )
-    .eq("id", id)
-    .maybeSingle();
-  return data;
 }
 
 function profileQueryOptions(params: {
@@ -647,14 +579,9 @@ function ServicesSection({ gcid }: { gcid: string | null }) {
       queryKey: ["srp-services", gcid],
       queryFn: async () => {
         if (!gcid) return [];
-        const { data } = await supabase
-          .from("exp_taxonomy")
-          .select("id, term, level")
-          .eq("gcid", gcid)
-          .in("level", ["product_service", "specialization"])
-          .order("priority", { ascending: true })
-          .limit(20);
-        return data ?? [];
+        return api.get<Row<"exp_taxonomy", "id" | "term" | "level">[]>("/graph/profile-services", {
+          params: { gcid },
+        });
       },
     }),
   );
