@@ -73,3 +73,12 @@ Of the 16 SECURITY DEFINER functions the ETL page calls, 14 check the caller's c
 
 Also: all 16 functions are executable by `anon` (EXECUTE was never revoked). The role checks stop misuse of the other 14; the fix is to revoke EXECUTE from anon/PUBLIC on all of them and add the role check to these two. ETL tables themselves have RLS on, with read-only policies for `authenticated`.
 The ETL port to FastAPI keeps today's access (it calls the same functions as the signed-in user).
+
+## SF-7: graph Surface (checked 2026-10-24, read-only)
+All 38 tables the graph pages read have RLS on, with read-only policies (most of them `USING (true)` for `anon` and `authenticated`, i.e. public reads). The DB is safe against the browser writes because no table has an insert/update/delete policy. Findings:
+- **audit_log:** has an always-true INSERT policy for `authenticated`, so any signed-in account can write audit entries with any content. The constitution allows always-true only for `service_role`.
+- **Unpinned search_path:** `exp_ctrl_create_node` and `exp_ctrl_update_node` are SECURITY DEFINER but set no `search_path`. Both check the role (`super_admin`/`architect`).
+- **EXECUTE never revoked from anon:** `anon` holds EXECUTE on all six graph RPCs. The four write and lookup functions check the role, so anon gets "insufficient grant" or "forbidden". `exp_validate_graph` and `exp_validate_category_full` are read-only validators with no role check.
+- **Every table grants `anon` INSERT/UPDATE/DELETE** (SF-1 pattern). RLS blocks these writes today, but one permissive policy would expose the table.
+- **No policy at all** on `content_compliance_rules`, `exp_category_ui_config` and `transaction_signals`. RLS returns nothing to the browser, so the compliance tab's rule list and the ui_config section are always empty. This is a functional bug, not a leak.
+The graph port keeps today's access: calls run as the signed-in user, or as `anon` for the public `/p|o|c/:slug/graph` pages.

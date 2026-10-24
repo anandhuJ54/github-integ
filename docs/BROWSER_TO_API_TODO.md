@@ -179,9 +179,25 @@ Counts are (reads/writes/rpc) as measured on 2026-10-23.
 - [ ] 8. Click-through: open `/discovery` and its tabs only. Every button is a gated or role-checked ETL action.
 - [ ] 9. Lint ratchet
 
-### 8. graph (42/19/6)
-- [ ] 1 · [ ] 2 · [ ] 3 · [ ] 4 · [ ] 5 · [ ] 6 · [ ] 7 parity · [ ] 8 · [ ] 9
-- Needs a ruling: it writes governed tables, and moving those writes to `exp_category_proposals` has to be decided.
+### 8. graph (actually 66 reads, 19 writes, 6 RPCs across 17 files) · branch `migrate/api-graph`
+Pages:
+- `/categories`
+- `/categories/:gcid` (summary plus 9 tabs)
+- `/control-graph` (health, control tree, entities, claims)
+- `/:category/:city/:professional`
+- public `/p|o|c/:slug/graph`
+
+- [ ] 1. Endpoints: reads first. Writes are held for a ruling (below).
+- [x] 2. Tables and security (2026-10-24, read-only). 38 tables, all with RLS on and read-only policies. **SF-7**: audit_log always-true insert, two unpinned SECURITY DEFINER functions, anon EXECUTE on all six RPCs, and three tables with no policy (they always read empty).
+  - Cap gaps: **1g** (claims entity lookup, `limit 2000`) and **1h** (expertise graph, up to 2,644 nodes per entity).
+  - Every per-gcid read is within the cap: at most 473 node-registry rows and 402 taxonomy rows per gcid.
+- [ ] 3 · [ ] 4 · [ ] 5 · [ ] 6 · [ ] 7 parity · [ ] 8 · [ ] 9
+- **Writes need a ruling (§3, category data only through `exp_category_proposals`, never DELETE).** The browser does direct writes to:
+  - `exp_taxonomy`, `exp_vertical_node_registry` and `content_compliance_rules`: insert, update and **delete**
+  - `exp_category_knowledge.ai_agents`, plus `gbp_categories` (`status`, `supports_single_pro_office`): update
+  - `audit_log`: insert
+
+  No table has a write policy, so on GCP these are already no-ops (updates and deletes match 0 rows; inserts fail). The control-tree and claims RPCs check the role and can be ported as they are.
 
 ### 9. xmp (58/29/6)
 - [ ] 1 · [ ] 2 · [ ] 3 · [ ] 4 · [ ] 5 · [ ] 6 · [ ] 7 parity · [ ] 8 · [ ] 9

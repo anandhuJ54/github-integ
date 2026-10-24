@@ -55,6 +55,17 @@ them also get faster), and nothing depends on the truncated behaviour.
 - If made complete: a `GROUP BY source_id, entity_type, resolution_status` count.
 - Code: `surface-api/etl/queries/sources.py` → `population_staged()`.
 
+### 1g. `/control-graph` claims tab: entity names (graph)
+- What the tab reads: `exp_entity` with `limit 2000` (181,564 rows) as a name lookup for the claims list, cut to 1,000.
+- What users see: a claim whose entity isn't among those 1,000 rows shows no entity name.
+- If made complete: look up only the claims' own `entity_id`s, i.e. `IN (...)` over at most 500 ids.
+- Code: `surface-api/graph` claims endpoint.
+
+### 1h. `/p|o|c/:slug/graph`: expertise graph nodes (graph)
+- What the page reads: every active `graph_nodes` row for the entity (no limit). The largest professional has 2,644 active nodes, so the read is cut to 1,000.
+- What users see: for entities with more than 1,000 nodes, the graph is missing nodes and the edges to them.
+- If made complete: drop the cap for this one query. It is bounded by one entity, but the payload is large, so it may need paging later.
+
 ### 1f. Check every remaining Surface for the same pattern
 Look for any legacy read with a limit over 1,000, or with no limit on a large table. Record each
 one here before porting.
