@@ -322,7 +322,7 @@ Pages:
     - Cap (1j): the opportunity file's claim events for one org (`limit 10000`) stay cut at 1,000; one logo org has 1,850.
     - `opportunity-automation.tsx` keeps its realtime channel on `exp_sales_alerts` (realtime is out of scope).
   - [x] 5. `contracts/sales/openapi.json` regenerated · [x] 6. No direct calls left in opportunity-file, worklist-actions, sre-console, `_base` sales-alerts, opportunity-automation
-  - [ ] 7. Parity: `run.ts sales` (S1 24 + S2 35 + S3 25 = 84 cases) · [ ] 8. Click-through: `/sales/pipeline` (or the worklist), an opportunity's file, `/sales/sre`, `/admin/integrations` (open only; don't press "run now")
+  - [ ] 7. Parity: `run.ts sales` (S1 24 + S2 35 + S3 25 = 84 cases) · [ ] 8. Click-through: `/sales/opportunities`, one opportunity, `/sales/worklist`, `/admin/integrations` (open only; don't press "run now")
 
 marketing and app make no direct calls.
 
