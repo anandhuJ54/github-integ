@@ -172,6 +172,20 @@ t_exp_activity_events = Table(
     schema='public'
 )
 
+t_exp_category_groups = Table(
+    'exp_category_groups', metadata,
+    Column('id', Uuid, primary_key=True, server_default=text('gen_random_uuid()')),
+    Column('group_key', Text),
+    Column('label', Text),
+    Column('description', Text),
+    Column('is_catchall', Boolean, server_default=text('false')),
+    Column('is_launch_priority', Boolean, server_default=text('false')),
+    Column('created_at', DateTime(True), server_default=text('now()')),
+    PrimaryKeyConstraint('id', name='exp_category_groups_pkey'),
+    UniqueConstraint('group_key', name='exp_category_groups_group_key_key'),
+    schema='public'
+)
+
 t_exp_category_page_template = Table(
     'exp_category_page_template', metadata,
     Column('id', Uuid, primary_key=True, server_default=text('gen_random_uuid()')),
@@ -202,6 +216,16 @@ t_exp_category_profile_config = Table(
     Column('show_prequalify', Boolean, server_default=text('false')),
     Column('updated_at', DateTime(True), server_default=text('now()')),
     PrimaryKeyConstraint('gcid', name='exp_category_profile_config_pkey'),
+    schema='public'
+)
+
+t_exp_category_schema_type = Table(
+    'exp_category_schema_type', metadata,
+    Column('gcid', Text, primary_key=True),
+    Column('schema_type', Text),
+    Column('confidence', Text),
+    Column('rule', Text),
+    PrimaryKeyConstraint('gcid', name='exp_category_schema_type_pkey'),
     schema='public'
 )
 
@@ -419,6 +443,59 @@ t_exp_index_submission_log = Table(
     schema='public'
 )
 
+t_exp_listings_category_status = Table(
+    'exp_listings_category_status', metadata,
+    Column('gcid', Text, primary_key=True),
+    Column('family', Text, primary_key=True),
+    Column('present', Boolean, nullable=False),
+    PrimaryKeyConstraint('gcid', 'family', name='exp_listings_category_status_pkey'),
+    schema='public'
+)
+
+t_exp_listings_crosswalk = Table(
+    'exp_listings_crosswalk', metadata,
+    Column('gcid', Text, primary_key=True),
+    Column('publisher_id', Text, primary_key=True),
+    Column('code', Text, nullable=False),
+    Column('label', Text),
+    Column('breadcrumb', Text),
+    Column('confidence', Text),
+    Column('verified', Boolean, nullable=False, server_default=text('false')),
+    PrimaryKeyConstraint('gcid', 'publisher_id', name='exp_listings_crosswalk_pkey'),
+    schema='public'
+)
+
+t_exp_listings_overlays = Table(
+    'exp_listings_overlays', metadata,
+    Column('gcid', Text, primary_key=True),
+    Column('overlay', Text, primary_key=True),
+    PrimaryKeyConstraint('gcid', 'overlay', name='exp_listings_overlays_pkey'),
+    schema='public'
+)
+
+t_exp_listings_publishers = Table(
+    'exp_listings_publishers', metadata,
+    Column('id', Text, primary_key=True),
+    Column('name', Text, nullable=False),
+    Column('kind', Text, nullable=False),
+    Column('api_notes', Text),
+    Column('publishes_to', Text),
+    Column('ops_notes', JSONB),
+    Column('subtitle', Text),
+    Column('display_sort', Integer),
+    Column('channel_role', Text),
+    Column('role_status', Text, nullable=False, server_default=text("'proposed'::text")),
+    Column('auth_model', Text),
+    Column('write_path', Text),
+    Column('read_path', Text),
+    Column('sandbox', Text),
+    Column('notes', Text),
+    CheckConstraint("channel_role IS NULL OR (channel_role = ANY (ARRAY['direct'::text, 'distribution'::text, 'verify_only'::text, 'hub'::text, 'candidate'::text]))", name='exp_listings_publishers_channel_role_chk'),
+    CheckConstraint("role_status = ANY (ARRAY['proposed'::text, 'ruled'::text])", name='exp_listings_publishers_role_status_chk'),
+    PrimaryKeyConstraint('id', name='exp_listings_publishers_pkey'),
+    schema='public'
+)
+
 t_exp_page_views_rollup = Table(
     'exp_page_views_rollup', metadata,
     Column('id', Uuid, primary_key=True, server_default=text('gen_random_uuid()')),
@@ -463,6 +540,23 @@ t_exp_ring = Table(
     schema='public'
 )
 
+t_exp_rings = Table(
+    'exp_rings', metadata,
+    Column('position', Integer, primary_key=True),
+    Column('ring_key', Text, nullable=False),
+    Column('ring_name', Text, nullable=False),
+    Column('legacy_key', Text),
+    Column('seo_function', Text, nullable=False),
+    Column('schema_types', ARRAY(Text()), nullable=False),
+    Column('schema_properties', ARRAY(Text()), nullable=False),
+    Column('edge_properties', ARRAY(Text()), nullable=False),
+    Column('notes', Text),
+    CheckConstraint('"position" >= 1 AND "position" <= 10', name='exp_rings_position_check'),
+    PrimaryKeyConstraint('position', name='exp_rings_pkey'),
+    UniqueConstraint('ring_key', name='exp_rings_ring_key_key'),
+    schema='public'
+)
+
 t_exp_sales_reps = Table(
     'exp_sales_reps', metadata,
     Column('id', Uuid, primary_key=True, server_default=text('gen_random_uuid()')),
@@ -484,6 +578,18 @@ t_exp_sales_reps = Table(
     Column('slack_channel', Text),
     Column('demo_batch', Text),
     PrimaryKeyConstraint('id', name='exp_sales_reps_pkey'),
+    schema='public'
+)
+
+t_exp_schema_type_ring_map = Table(
+    'exp_schema_type_ring_map', metadata,
+    Column('schema_type', Text, primary_key=True),
+    Column('ring_key', Text, nullable=False),
+    Column('schema_property', Text, primary_key=True),
+    Column('inherited_from', Text, nullable=False),
+    Column('value_range', Text),
+    PrimaryKeyConstraint('schema_type', 'schema_property', name='exp_schema_type_ring_map_pkey'),
+    Index('idx_strm_type_ring', 'schema_type', 'ring_key'),
     schema='public'
 )
 
@@ -683,6 +789,46 @@ t_user_accounts = Table(
     schema='public'
 )
 
+t_v_professional_profile = Table(
+    'v_professional_profile', metadata,
+    Column('id', Uuid),
+    Column('slug', Text),
+    Column('display_name', Text),
+    Column('job_title', Text),
+    Column('headline', Text),
+    Column('bio', Text),
+    Column('photo_url', Text),
+    Column('address_city', Text),
+    Column('address_state', Text),
+    Column('gcid', Text),
+    Column('category_name', Text),
+    Column('primary_license_number', Text),
+    Column('primary_license_type', Text),
+    Column('primary_license_verified', Boolean),
+    Column('markets_served', ARRAY(Text())),
+    Column('same_as', ARRAY(Text())),
+    Column('claimed', Boolean),
+    Column('compliance_complete', Boolean),
+    Column('compliance_score', SmallInteger),
+    Column('total_score', SmallInteger),
+    Column('score_pct', Numeric(5, 2)),
+    Column('local_rank', SmallInteger),
+    Column('local_rank_of', SmallInteger),
+    Column('top_pct', SmallInteger),
+    Column('score_change_7d', SmallInteger),
+    Column('gaps', JSONB),
+    Column('avg_rating', Numeric(3, 2)),
+    Column('review_count', Integer),
+    Column('org_name', Text),
+    Column('org_slug', Text),
+    Column('display_license_on_profile', Boolean),
+    Column('license_display_format', Text),
+    Column('required_disclaimers', ARRAY(Text())),
+    Column('age_gate_required', Boolean),
+    Column('subscription_plan', Text),
+    schema='public'
+)
+
 t_audit_log = Table(
     'audit_log', metadata,
     Column('id', Uuid, primary_key=True, server_default=text('gen_random_uuid()')),
@@ -758,6 +904,19 @@ t_disco_proposals = Table(
     schema='public'
 )
 
+t_exp_category_completeness = Table(
+    'exp_category_completeness', metadata,
+    Column('gcid', Text, primary_key=True),
+    Column('total_node_types', Integer, nullable=False),
+    Column('core_node_types', Integer, nullable=False),
+    Column('expected_m', Numeric, nullable=False),
+    Column('method_version', Text, nullable=False, server_default=text("'completeness_v1'::text")),
+    Column('provenance', Text, nullable=False, server_default=text("'prior'::text")),
+    ForeignKeyConstraint(['gcid'], ['public.gbp_categories.gcid'], name='exp_category_completeness_gcid_fkey'),
+    PrimaryKeyConstraint('gcid', name='exp_category_completeness_pkey'),
+    schema='public'
+)
+
 t_exp_category_compliance = Table(
     'exp_category_compliance', metadata,
     Column('gcid', Text, primary_key=True),
@@ -788,6 +947,195 @@ t_exp_category_compliance = Table(
     Column('updated_at', DateTime(True), server_default=text('now()')),
     ForeignKeyConstraint(['gcid'], ['public.gbp_categories.gcid'], name='exp_category_compliance_gcid_fkey'),
     PrimaryKeyConstraint('gcid', name='exp_category_compliance_pkey'),
+    schema='public'
+)
+
+t_exp_category_directories = Table(
+    'exp_category_directories', metadata,
+    Column('id', Uuid, primary_key=True, server_default=text('gen_random_uuid()')),
+    Column('gcid', Text, nullable=False),
+    Column('directory_key', Text, nullable=False),
+    Column('directory_name', Text, nullable=False),
+    Column('is_required', Boolean, server_default=text('false')),
+    Column('priority', SmallInteger, server_default=text('5')),
+    Column('schema_type', Text),
+    Column('notes', Text),
+    ForeignKeyConstraint(['gcid'], ['public.gbp_categories.gcid'], name='exp_category_directories_gcid_fkey'),
+    PrimaryKeyConstraint('id', name='exp_category_directories_pkey'),
+    UniqueConstraint('gcid', 'directory_key', name='unique_cat_directory'),
+    Index('idx_exp_cat_dirs_gcid', 'gcid'),
+    Index('idx_exp_cd_gcid', 'gcid'),
+    Index('idx_exp_cd_required', 'gcid', 'is_required'),
+    schema='public'
+)
+
+t_exp_category_eaa = Table(
+    'exp_category_eaa', metadata,
+    Column('gcid', Text, primary_key=True),
+    Column('annual_transactions', Numeric, nullable=False),
+    Column('eaa', Numeric, nullable=False),
+    Column('band', Text, nullable=False),
+    Column('eaa_professional', Numeric),
+    Column('band_professional', Text),
+    Column('confidence', Text),
+    Column('non_authored', Boolean, nullable=False, server_default=text('false')),
+    Column('method_version', Text, nullable=False, server_default=text("'articles_v1_standalone'::text")),
+    Column('provenance', Text, nullable=False, server_default=text("'prior'::text")),
+    CheckConstraint("band = ANY (ARRAY['floor'::text, 'mid'::text, 'cap'::text])", name='exp_category_eaa_band_check'),
+    ForeignKeyConstraint(['gcid'], ['public.gbp_categories.gcid'], name='exp_category_eaa_gcid_fkey'),
+    PrimaryKeyConstraint('gcid', name='exp_category_eaa_pkey'),
+    schema='public'
+)
+
+t_exp_category_eaq = Table(
+    'exp_category_eaq', metadata,
+    Column('gcid', Text, primary_key=True),
+    Column('annual_transactions', Numeric, nullable=False),
+    Column('eaq', Numeric, nullable=False),
+    Column('band', Text, nullable=False),
+    Column('eaq_professional', Numeric),
+    Column('band_professional', Text),
+    Column('confidence', Text),
+    Column('non_qa', Boolean, nullable=False, server_default=text('false')),
+    Column('method_version', Text, nullable=False, server_default=text("'qa_v1'::text")),
+    Column('provenance', Text, nullable=False, server_default=text("'prior'::text")),
+    CheckConstraint("band = ANY (ARRAY['floor'::text, 'mid'::text, 'cap'::text])", name='exp_category_eaq_band_check'),
+    ForeignKeyConstraint(['gcid'], ['public.gbp_categories.gcid'], name='exp_category_eaq_gcid_fkey'),
+    PrimaryKeyConstraint('gcid', name='exp_category_eaq_pkey'),
+    schema='public'
+)
+
+t_exp_category_ear = Table(
+    'exp_category_ear', metadata,
+    Column('gcid', Text, primary_key=True),
+    Column('annual_transactions', Numeric, nullable=False),
+    Column('ear', Numeric, nullable=False),
+    Column('band', Text, nullable=False),
+    Column('ear_professional', Numeric),
+    Column('band_professional', Text),
+    Column('confidence', Text),
+    Column('non_reviewable', Boolean, nullable=False, server_default=text('false')),
+    Column('method_version', Text, nullable=False, server_default=text("'reviews_v2_simplified'::text")),
+    Column('provenance', Text, nullable=False, server_default=text("'prior'::text")),
+    CheckConstraint("band = ANY (ARRAY['floor'::text, 'mid'::text, 'cap'::text])", name='exp_category_ear_band_check'),
+    ForeignKeyConstraint(['gcid'], ['public.gbp_categories.gcid'], name='exp_category_ear_gcid_fkey'),
+    PrimaryKeyConstraint('gcid', name='exp_category_ear_pkey'),
+    schema='public'
+)
+
+t_exp_category_eav = Table(
+    'exp_category_eav', metadata,
+    Column('gcid', Text, primary_key=True),
+    Column('annual_transactions', Numeric, nullable=False),
+    Column('eav', Numeric, nullable=False),
+    Column('band', Text, nullable=False),
+    Column('eav_professional', Numeric),
+    Column('band_professional', Text),
+    Column('confidence', Text),
+    Column('non_video', Boolean, nullable=False, server_default=text('false')),
+    Column('method_version', Text, nullable=False, server_default=text("'videos_v1'::text")),
+    Column('provenance', Text, nullable=False, server_default=text("'prior'::text")),
+    CheckConstraint("band = ANY (ARRAY['floor'::text, 'mid'::text, 'cap'::text])", name='exp_category_eav_band_check'),
+    ForeignKeyConstraint(['gcid'], ['public.gbp_categories.gcid'], name='exp_category_eav_gcid_fkey'),
+    PrimaryKeyConstraint('gcid', name='exp_category_eav_pkey'),
+    schema='public'
+)
+
+t_exp_category_group_memberships = Table(
+    'exp_category_group_memberships', metadata,
+    Column('group_id', Uuid, primary_key=True),
+    Column('gcid', Text, primary_key=True),
+    Column('is_primary', Boolean, server_default=text('false')),
+    ForeignKeyConstraint(['gcid'], ['public.gbp_categories.gcid'], name='exp_category_group_memberships_gcid_fkey'),
+    PrimaryKeyConstraint('group_id', 'gcid', name='exp_category_group_memberships_pkey'),
+    Index('idx_exp_group_memberships_gcid', 'gcid'),
+    schema='public'
+)
+
+t_exp_category_knowledge = Table(
+    'exp_category_knowledge', metadata,
+    Column('id', Uuid, primary_key=True, server_default=text('gen_random_uuid()')),
+    Column('gcid', Text, nullable=False),
+    Column('entity_type', Text, nullable=False),
+    Column('pricing_tier', Text, nullable=False),
+    Column('status', Text, nullable=False, server_default=text("'pending'::text")),
+    Column('exclusion_reason', Text),
+    Column('terminology', ARRAY(Text())),
+    Column('services', JSONB, server_default=text("'[]'::jsonb")),
+    Column('compliance_rules', ARRAY(Text())),
+    Column('customer_journey', JSONB, server_default=text("'[]'::jsonb")),
+    Column('ranking_factors', JSONB, server_default=text("'[]'::jsonb")),
+    Column('review_vocabulary', ARRAY(Text())),
+    Column('content_topics', ARRAY(Text())),
+    Column('expertise_signals', JSONB, server_default=text("'[]'::jsonb")),
+    Column('scoring_weights', JSONB, server_default=text('\'{"ai_visibility": 0.15, "review_volume": 0.20, "listing_coverage": 0.15, "content_freshness": 0.15, "schema_completeness": 0.15, "profile_completeness": 0.20}\'::jsonb')),
+    Column('ai_agents', JSONB, server_default=text('\'{"sdr": {"enabled": false}, "qa_assistant": {"enabled": false}, "receptionist": {"enabled": false}, "review_responder": {"enabled": false}, "content_assistant": {"enabled": false}, "listing_optimizer": {"enabled": false}}\'::jsonb')),
+    Column('knowledge_pct', SmallInteger, server_default=text('0')),
+    Column('is_launched', Boolean, server_default=text('false')),
+    Column('created_at', DateTime(True), server_default=text('now()')),
+    Column('updated_at', DateTime(True), server_default=text('now()')),
+    Column('value_props', JSONB),
+    Column('search_intents', JSONB),
+    Column('conversion_actions', JSONB),
+    CheckConstraint("entity_type = ANY (ARRAY['professional'::text, 'location'::text, 'both'::text])", name='exp_category_knowledge_entity_type_check'),
+    CheckConstraint('knowledge_pct >= 0 AND knowledge_pct <= 100', name='exp_category_knowledge_knowledge_pct_check'),
+    CheckConstraint("pricing_tier = ANY (ARRAY['professional'::text, 'location'::text, 'enterprise'::text])", name='exp_category_knowledge_pricing_tier_check'),
+    CheckConstraint("status = ANY (ARRAY['pending'::text, 'active'::text, 'excluded'::text, 'review_required'::text])", name='exp_category_knowledge_status_check'),
+    ForeignKeyConstraint(['gcid'], ['public.gbp_categories.gcid'], name='exp_category_knowledge_gcid_fkey'),
+    PrimaryKeyConstraint('id', name='exp_category_knowledge_pkey'),
+    UniqueConstraint('gcid', 'entity_type', name='unique_gcid_entity_knowledge'),
+    Index('idx_exp_ck_entity_type', 'entity_type'),
+    Index('idx_exp_ck_launched', 'is_launched'),
+    Index('idx_exp_ck_status', 'status'),
+    schema='public'
+)
+
+t_exp_category_schema = Table(
+    'exp_category_schema', metadata,
+    Column('gcid', Text, primary_key=True),
+    Column('entity_type', Text),
+    Column('schema_json', JSONB, nullable=False),
+    Column('model', Text),
+    Column('knowledge_updated_at', DateTime(True)),
+    Column('is_launched', Boolean, nullable=False, server_default=text('false')),
+    Column('generated_by', Uuid),
+    Column('reviewed_by', Uuid),
+    Column('reviewed_at', DateTime(True)),
+    Column('generated_at', DateTime(True), nullable=False, server_default=text('now()')),
+    Column('updated_at', DateTime(True), nullable=False, server_default=text('now()')),
+    Column('field_model_v3', JSONB),
+    ForeignKeyConstraint(['gcid'], ['public.gbp_categories.gcid'], ondelete='CASCADE', name='exp_category_schema_gcid_fkey'),
+    PrimaryKeyConstraint('gcid', name='exp_category_schema_pkey'),
+    schema='public'
+)
+
+t_exp_category_secondaries = Table(
+    'exp_category_secondaries', metadata,
+    Column('primary_gcid', Text, primary_key=True),
+    Column('secondary_gcid', Text, primary_key=True),
+    Column('relevance', Numeric(3, 2), server_default=text('0.50')),
+    Column('notes', Text),
+    ForeignKeyConstraint(['primary_gcid'], ['public.gbp_categories.gcid'], name='exp_category_secondaries_primary_gcid_fkey'),
+    ForeignKeyConstraint(['secondary_gcid'], ['public.gbp_categories.gcid'], name='exp_category_secondaries_secondary_gcid_fkey'),
+    PrimaryKeyConstraint('primary_gcid', 'secondary_gcid', name='exp_category_secondaries_pkey'),
+    Index('idx_exp_secondaries_primary', 'primary_gcid'),
+    schema='public'
+)
+
+t_exp_category_ui_config = Table(
+    'exp_category_ui_config', metadata,
+    Column('gcid', Text, primary_key=True),
+    Column('profile_sections', JSONB, nullable=False, server_default=text("'[]'::jsonb")),
+    Column('onboarding_steps', JSONB, nullable=False, server_default=text("'[]'::jsonb")),
+    Column('required_fields', ARRAY(Text())),
+    Column('recommended_fields', ARRAY(Text())),
+    Column('schema_template', Text),
+    Column('profile_page_template', Text),
+    Column('created_at', DateTime(True), server_default=text('now()')),
+    Column('updated_at', DateTime(True), server_default=text('now()')),
+    Column('entity_type', Text, primary_key=True, server_default=text("'shared'::text")),
+    ForeignKeyConstraint(['gcid'], ['public.gbp_categories.gcid'], name='exp_category_ui_config_gcid_fkey'),
+    PrimaryKeyConstraint('gcid', 'entity_type', name='exp_category_ui_config_pkey'),
     schema='public'
 )
 
@@ -883,6 +1231,25 @@ t_exp_control_grants = Table(
     PrimaryKeyConstraint('id', name='exp_control_grants_pkey'),
     UniqueConstraint('user_id', 'role', 'scope_type', 'scope_id', name='exp_control_grants_user_id_role_scope_type_scope_id_key'),
     Index('exp_control_grants_user_idx', 'user_id'),
+    schema='public'
+)
+
+t_exp_control_nodes = Table(
+    'exp_control_nodes', metadata,
+    Column('node_id', Uuid, primary_key=True, server_default=text('gen_random_uuid()')),
+    Column('parent_id', Uuid),
+    Column('node_type', Text, nullable=False),
+    Column('name', Text, nullable=False),
+    Column('is_billing_container', Boolean, nullable=False, server_default=text('false')),
+    Column('linked_entity_id', Uuid),
+    Column('settings', JSONB, nullable=False, server_default=text("'{}'::jsonb")),
+    Column('status', Text, nullable=False, server_default=text("'active'::text")),
+    Column('created_at', DateTime(True), nullable=False, server_default=text('now()')),
+    CheckConstraint("status = ANY (ARRAY['active'::text, 'archived'::text])", name='exp_control_nodes_status_check'),
+    ForeignKeyConstraint(['linked_entity_id'], ['public.exp_entity.entity_id'], name='exp_control_nodes_linked_entity_id_fkey'),
+    ForeignKeyConstraint(['parent_id'], ['public.exp_control_nodes.node_id'], name='exp_control_nodes_parent_id_fkey'),
+    PrimaryKeyConstraint('node_id', name='exp_control_nodes_pkey'),
+    Index('idx_control_parent', 'parent_id'),
     schema='public'
 )
 
@@ -1063,6 +1430,31 @@ t_exp_etl_sources = Table(
     ForeignKeyConstraint(['gcid'], ['public.gbp_categories.gcid'], name='exp_etl_sources_gcid_fkey'),
     PrimaryKeyConstraint('source_id', name='exp_etl_sources_pkey'),
     UniqueConstraint('gcid', 'source_domain', name='exp_etl_sources_gcid_source_domain_key'),
+    schema='public'
+)
+
+t_exp_listings_field_map = Table(
+    'exp_listings_field_map', metadata,
+    Column('id', Integer, primary_key=True, autoincrement=True),
+    Column('publisher_id', Text),
+    Column('section', Text, nullable=False),
+    Column('section_note', Text),
+    Column('their_field', Text, nullable=False),
+    Column('our_target', Text, nullable=False),
+    Column('rules', Text),
+    Column('applicability', Text, nullable=False, server_default=text("'base'::text")),
+    Column('status_default', Text, nullable=False, server_default=text("'mapped'::text")),
+    Column('variant_family', Text),
+    Column('sort', Integer, nullable=False, server_default=text('0')),
+    Column('catalog_version', Text),
+    Column('writable', Boolean),
+    Column('required', Boolean),
+    Column('api_field_path', Text),
+    Column('rule_spec', JSONB),
+    Column('notes', Text),
+    ForeignKeyConstraint(['publisher_id'], ['public.exp_listings_publishers.id'], name='exp_listings_field_map_publisher_id_fkey'),
+    PrimaryKeyConstraint('id', name='exp_listings_field_map_pkey'),
+    Index('exp_listings_field_map_catalog_uidx', 'publisher_id', 'catalog_version', 'section', 'their_field', postgresql_where='(catalog_version IS NOT NULL)', unique=True),
     schema='public'
 )
 
@@ -1801,5 +2193,37 @@ t_reviews = Table(
     Index('idx_reviews_entity', 'entity_type', 'entity_id'),
     Index('idx_reviews_flagged', 'is_flagged', postgresql_where='(is_flagged = true)'),
     Index('idx_reviews_source', 'source', 'source_review_id'),
+    schema='public'
+)
+
+t_transaction_signals = Table(
+    'transaction_signals', metadata,
+    Column('id', Uuid, primary_key=True, server_default=text('gen_random_uuid()')),
+    Column('professional_id', Uuid, nullable=False),
+    Column('graph_node_id', Uuid),
+    Column('transaction_type', Text, nullable=False),
+    Column('service_type', Text),
+    Column('city', Text),
+    Column('state', Text),
+    Column('zip_code', Text),
+    Column('neighborhood', Text),
+    Column('county', Text),
+    Column('price_range_low', Integer),
+    Column('price_range_high', Integer),
+    Column('price_bucket', Text),
+    Column('transaction_date', Date),
+    Column('transaction_year', SmallInteger),
+    Column('transaction_quarter', SmallInteger),
+    Column('source', Text),
+    Column('source_id', Text),
+    Column('pii_stripped', Boolean, server_default=text('true')),
+    Column('aggregated', Boolean, server_default=text('true')),
+    Column('created_at', DateTime(True), server_default=text('now()')),
+    ForeignKeyConstraint(['graph_node_id'], ['public.graph_nodes.id'], name='transaction_signals_graph_node_id_fkey'),
+    ForeignKeyConstraint(['professional_id'], ['public.professionals.id'], name='transaction_signals_professional_id_fkey'),
+    PrimaryKeyConstraint('id', name='transaction_signals_pkey'),
+    Index('idx_txn_date', 'professional_id', 'transaction_date'),
+    Index('idx_txn_geo', 'zip_code', 'city', 'state'),
+    Index('idx_txn_pro', 'professional_id'),
     schema='public'
 )

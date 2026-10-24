@@ -64,7 +64,8 @@ them also get faster), and nothing depends on the truncated behaviour.
 ### 1h. `/p|o|c/:slug/graph`: expertise graph nodes (graph)
 - What the page reads: every active `graph_nodes` row for the entity (no limit). The largest professional has 2,644 active nodes, so the read is cut to 1,000.
 - What users see: for entities with more than 1,000 nodes, the graph is missing nodes and the edges to them.
-- If made complete: drop the cap for this one query. It is bounded by one entity, but the payload is large, so it may need paging later.
+- **Decided 2026-10-24: get everything.** The expertise-graph node read has no cap (`max_rows=None`); the edges and external nodes read for it are uncapped as well. Parity records this as an explained difference for entities with more than 1,000 nodes.
+- Later: the payload can be large (2,644 nodes), so it may need paging.
 
 ### 1f. Check every remaining Surface for the same pattern
 Look for any legacy read with a limit over 1,000, or with no limit on a large table. Record each
@@ -84,4 +85,5 @@ Moved to `docs/SECURITY_FINDINGS.md` (finding SF-1). To be fixed later as a DB s
 | The API connects with a personal DB login (`panneer`): 5-minute timeout and `rolconnlimit = 10`, shared by every tool using that login. The role also switches to `postgres` on connect, so plain `connection()` sessions run with postgres rights; `role_connection` still drops to `authenticated` per request. Needs a dedicated service account. Until then, keep `DB_POOL_MAX=4` in `surface-api/.env` | `BROWSER_TO_API_TODO.md` → Phase 0 | Open |
 | Optional: answer a pool timeout with "503 database busy" instead of a bare 500 | Seen in admin parity 2026-10-23 | Not started |
 | `exp_disco_worker_config` is missing on GCP; three ETL tick functions read it | ETL audit 2026-10-23 | Open; ETL crons are gated (O9) |
+| graph: the category-edit writes (insert/update/**delete** on `exp_taxonomy`, `exp_vertical_node_registry`, `content_compliance_rules`; updates to `exp_category_knowledge.ai_agents` and `gbp_categories`; `audit_log` inserts) are ported **as they are** (ruling 2026-10-24: "modify as it is"). They run as the signed-in user under the same RLS, so they still do nothing on GCP (no write policy). Moving them to `exp_category_proposals` (never DELETE) is still open | `BROWSER_TO_API_TODO.md` → graph | Ported as-is; proposals routing open |
 | `tools/lint/lint_all.py` doesn't exist on this branch, so the per-Surface lint ratchet (step 9) is blocked | `BROWSER_TO_API_TODO.md` → Phase 0 | Open |

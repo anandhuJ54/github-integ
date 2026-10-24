@@ -192,7 +192,7 @@ Pages:
   - Cap gaps: **1g** (claims entity lookup, `limit 2000`) and **1h** (expertise graph, up to 2,644 nodes per entity).
   - Every per-gcid read is within the cap: at most 473 node-registry rows and 402 taxonomy rows per gcid.
 - [ ] 3 · [ ] 4 · [ ] 5 · [ ] 6 · [ ] 7 parity · [ ] 8 · [ ] 9
-- **Writes need a ruling (§3, category data only through `exp_category_proposals`, never DELETE).** The browser does direct writes to:
+- **Writes ported as they are (ruling 2026-10-24: "modify as it is"), same statements as the signed-in user, with routing through proposals still open (FOLLOWUPS §3). Expertise graph: no cap (1h).** Context (§3, category data only through `exp_category_proposals`, never DELETE).** The browser does direct writes to:
   - `exp_taxonomy`, `exp_vertical_node_registry` and `content_compliance_rules`: insert, update and **delete**
   - `exp_category_knowledge.ai_agents`, plus `gbp_categories` (`status`, `supports_single_pro_office`): update
   - `audit_log`: insert
