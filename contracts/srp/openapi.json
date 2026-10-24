@@ -136,6 +136,58 @@
         }
       }
     },
+    "/srp/geo/city-centroids": {
+      "post": {
+        "tags": [
+          "srp"
+        ],
+        "summary": "City Centroids",
+        "description": "exp_us_cities rows (city, state_abbr, lat, lng) whose city is one of `cities`.\nA read, sent as POST so 200 city names don't ride in the URL.",
+        "operationId": "city_centroids_srp_geo_city_centroids_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SrpGeoCentroidsIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "additionalProperties": true,
+                    "type": "object"
+                  },
+                  "type": "array",
+                  "title": "Response City Centroids Srp Geo City Centroids Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
     "/srp/hello": {
       "get": {
         "tags": [
@@ -453,6 +505,24 @@
           "zip"
         ],
         "title": "PageViewIn"
+      },
+      "SrpGeoCentroidsIn": {
+        "properties": {
+          "cities": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 200,
+            "title": "Cities"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "cities"
+        ],
+        "title": "SrpGeoCentroidsIn"
       },
       "ValidationError": {
         "properties": {

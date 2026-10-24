@@ -1,7 +1,9 @@
 """xmp /website CMS data — replaces the direct supabase-js calls in surface-ui/xmp/src/lib/website.ts.
 
 Every endpoint runs as the signed-in user, so RLS decides exactly as it did for the browser (no
-/website page renders for signed-out visitors). The writes are the browser's own statements:
+/website page renders for signed-out visitors). The one exception is the assigned site
+navigation (`GET /nav-menus/assigned`, the live site chrome's read in
+surface-ui/_base/src/lib/nav-menus.ts), which runs as `anon` when signed out. The writes are the browser's own statements:
 each request model allow-lists the columns the page sends, and patches write only the keys sent
 (as PostgREST did). Inserts write the same fixed column set the page always sent.
 """
@@ -10,12 +12,15 @@ from __future__ import annotations
 from typing import Any
 
 import psycopg
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from pydantic import BaseModel, ConfigDict, Field
 
 from _base.core import db
 from _base.core.auth import current_user
+from _base.core.server_fn import optional_user
+from xmp.queries import nav_menus as nav
 from xmp.queries import website as q
+from xmp.queries.common import MultipleRows
 
 router = APIRouter(prefix="/xmp/website", tags=["xmp"])
 
@@ -25,6 +30,8 @@ Ids = Field(max_length=1000)
 def _guard(fn, *args):
     try:
         return fn(*args)
+    except MultipleRows as exc:  # PostgREST answered `.single()` on 0 or 2+ rows with 406
+        raise HTTPException(status.HTTP_406_NOT_ACCEPTABLE, str(exc)) from exc
     except psycopg.Error as exc:  # the database's message reaches the page (it threw it)
         msg = (exc.diag.message_primary if exc.diag else None) or str(exc) or "Request failed"
         refused = isinstance(exc, psycopg.errors.InsufficientPrivilege) or \
@@ -522,3 +529,83 @@ def update_media(media_id: str, body: WebMediaPatch, claims: dict = Depends(curr
 @router.delete("/media/{media_id}")
 def delete_media(media_id: str, claims: dict = Depends(current_user)) -> dict:
     return _write_with(claims, q.delete, q.media, media_id)
+
+
+# --- navigation menus (surface-ui/_base/src/lib/nav-menus.ts) ---------------------------------
+
+@router.get("/nav-menus")
+def nav_menus(claims: dict = Depends(current_user)) -> list:
+    return _read_with(claims, nav.load_nav_menus)
+
+
+@router.get("/nav-menus/trash")
+def deleted_nav_menus(claims: dict = Depends(current_user)) -> list:
+    return _read_with(claims, nav.load_deleted_nav_menus)
+
+
+@router.get("/nav-menus/assigned")
+def assigned_nav(site: str = Query("main_site", max_length=200),
+                 claims: dict | None = Depends(optional_user)) -> list:
+    """The public site chrome's read: `anon` when signed out (the table's public policy shows
+    only assigned, live menus), the signed-in user otherwise."""
+    role = db.role_connection("anon") if claims is None \
+        else db.role_connection("authenticated", claims)
+    with role as conn:
+        return _guard(nav.load_assigned_nav, conn, site)
+
+
+@router.get("/nav-menus/{menu_id}")
+def nav_menu(menu_id: str, claims: dict = Depends(current_user)) -> dict:
+    return _read_with(claims, nav.get_nav_menu, menu_id)
+
+
+class WebNavMenuNew(_Body):
+    name: str
+    menu_type: str
+    items: Any = None
+    notes: str | None = None
+
+
+@router.post("/nav-menus")
+def create_nav_menu(body: WebNavMenuNew, claims: dict = Depends(current_user)) -> dict:
+    with db.role_connection("authenticated", claims, write=True) as conn:
+        return _guard(nav.create_nav_menu, conn, body.row())
+
+
+class WebNavMenuPatch(_Body):
+    name: str | None = None
+    items: Any = None
+    notes: str | None = None
+
+
+@router.patch("/nav-menus/{menu_id}")
+def update_nav_menu(menu_id: str, body: WebNavMenuPatch,
+                    claims: dict = Depends(current_user)) -> dict:
+    return _write_with(claims, nav.update_nav_menu, menu_id, body.sent())
+
+
+class WebNavAssignment(_Body):
+    menu_type: str
+    site: str | None
+
+
+@router.put("/nav-menus/{menu_id}/assignment")
+def set_nav_assignment(menu_id: str, body: WebNavAssignment,
+                       claims: dict = Depends(current_user)) -> dict:
+    return _write_with(claims, nav.set_assignment, menu_id, body.menu_type, body.site)
+
+
+@router.post("/nav-menus/{menu_id}/trash")
+def trash_nav_menu(menu_id: str, body: WebPageDeletedBy,
+                   claims: dict = Depends(current_user)) -> dict:
+    return _write_with(claims, nav.soft_delete, menu_id, body.deleted_by)
+
+
+@router.post("/nav-menus/{menu_id}/restore")
+def restore_nav_menu(menu_id: str, claims: dict = Depends(current_user)) -> dict:
+    return _write_with(claims, nav.restore, menu_id)
+
+
+@router.delete("/nav-menus/{menu_id}")
+def delete_nav_menu(menu_id: str, claims: dict = Depends(current_user)) -> dict:
+    return _write_with(claims, nav.hard_delete, menu_id)

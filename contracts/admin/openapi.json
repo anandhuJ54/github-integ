@@ -271,6 +271,127 @@
         ]
       }
     },
+    "/admin/me/audit": {
+      "post": {
+        "tags": [
+          "admin"
+        ],
+        "summary": "Log Audit",
+        "description": "logAudit(): one exp_admin_audit row. user_id is the token's `sub` (the UI used to send its\nsession user id, the same value); RLS requires user_id = auth.uid().",
+        "operationId": "log_audit_admin_me_audit_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminMeAuditIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": {
+                    "type": "boolean"
+                  },
+                  "type": "object",
+                  "title": "Response Log Audit Admin Me Audit Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/admin/me/bootstrap": {
+      "post": {
+        "tags": [
+          "admin"
+        ],
+        "summary": "Bootstrap",
+        "description": "No grants yet: rpc(\"bootstrap_control_super_admin\") (the function decides; its result\nand error are ignored as in the TS), then the same read as GET /grants on the primary.",
+        "operationId": "bootstrap_admin_me_bootstrap_post",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": {
+                    "items": {
+                      "additionalProperties": true,
+                      "type": "object"
+                    },
+                    "type": "array"
+                  },
+                  "type": "object",
+                  "title": "Response Bootstrap Admin Me Bootstrap Post"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/admin/me/grants": {
+      "get": {
+        "tags": [
+          "admin"
+        ],
+        "summary": "My Grants",
+        "description": "load()'s exp_control_grants read and resolveScopeLabels()' name lookups, one round trip:\n{grants, entities: [{entity_id, display_name}], nodes: [{node_id, name}]}.",
+        "operationId": "my_grants_admin_me_grants_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": {
+                    "items": {
+                      "additionalProperties": true,
+                      "type": "object"
+                    },
+                    "type": "array"
+                  },
+                  "type": "object",
+                  "title": "Response My Grants Admin Me Grants Get"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
     "/admin/organizations": {
       "get": {
         "tags": [
@@ -725,6 +846,51 @@
   },
   "components": {
     "schemas": {
+      "AdminMeAuditIn": {
+        "properties": {
+          "action": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Action"
+          },
+          "acting_role": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 60
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Acting Role"
+          },
+          "target": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 500
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Target"
+          },
+          "details": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Details"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "action"
+        ],
+        "title": "AdminMeAuditIn"
+      },
       "GrantIn": {
         "properties": {
           "user_id": {

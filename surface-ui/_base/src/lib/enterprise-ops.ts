@@ -7,9 +7,11 @@
  * feed has never been wired we return empty and the surface renders an honest
  * "instrument to activate" state — nothing is estimated.
  */
-import { supabase } from "@v3/ui/integrations/supabase/client";
+import { api } from "@v3/ui/lib/server-fn";
 
-const db = supabase as unknown as { from: (t: string) => any };
+// Raw rows from FastAPI (xmp: /xmp/enterprise/ops/*); errors read as empty, as before.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type Row = any;
 
 export type FeedHealth = "live" | "stale" | "never" | "error";
 
@@ -83,26 +85,11 @@ function health(
 }
 
 export async function loadIngestion(orgId: string): Promise<IngestionSnapshot> {
-  const [crmRes, oauthRes] = await Promise.all([
-    db
-      .from("crm_integrations")
-      .select(
-        "id, crm_type, display_name, sync_direction, sync_frequency, last_sync_at, sync_status, records_synced, is_active, config",
-      )
-      .eq("org_id", orgId)
-      .order("created_at", { ascending: false }),
-    db
-      .from("oauth_connections")
-      .select(
-        "id, provider, provider_name, last_sync_at, sync_status, sync_error, sync_count, is_active",
-      )
-      .eq("entity_type", "organization")
-      .eq("entity_id", orgId)
-      .order("connected_at", { ascending: false }),
-  ]);
-
-  const crm = (crmRes.data ?? []) as any[];
-  const oauth = (oauthRes.data ?? []) as any[];
+  const raw = await api.get<{ crm: Row[]; oauth: Row[]; jobs: Row[] }>("/xmp/enterprise/ops/ingestion", {
+    params: { org_id: orgId },
+  });
+  const crm = (raw.crm ?? []) as Row[];
+  const oauth = (raw.oauth ?? []) as Row[];
 
   const feeds: FeedRow[] = [
     ...crm.map((r) => ({
@@ -133,29 +120,18 @@ export async function loadIngestion(orgId: string): Promise<IngestionSnapshot> {
     })),
   ];
 
-  const ids = crm.map((r) => String(r.id));
-  let jobs: SyncJobRow[] = [];
-  if (ids.length) {
-    const { data } = await db
-      .from("sync_jobs")
-      .select(
-        "id, job_type, status, records_processed, records_failed, error_log, started_at, completed_at, duration_ms",
-      )
-      .in("integration_id", ids)
-      .order("started_at", { ascending: false, nullsFirst: false })
-      .limit(200);
-    jobs = ((data ?? []) as any[]).map((r) => ({
-      id: String(r.id),
-      job_type: r.job_type ?? null,
-      status: r.status ?? null,
-      records_processed: r.records_processed ?? null,
-      records_failed: r.records_failed ?? null,
-      error_log: r.error_log ?? null,
-      started_at: r.started_at ?? null,
-      completed_at: r.completed_at ?? null,
-      duration_ms: r.duration_ms ?? null,
-    }));
-  }
+  // sync_jobs of these CRM feeds (read server-side only when there are any).
+  const jobs: SyncJobRow[] = ((raw.jobs ?? []) as Row[]).map((r) => ({
+    id: String(r.id),
+    job_type: r.job_type ?? null,
+    status: r.status ?? null,
+    records_processed: r.records_processed ?? null,
+    records_failed: r.records_failed ?? null,
+    error_log: r.error_log ?? null,
+    started_at: r.started_at ?? null,
+    completed_at: r.completed_at ?? null,
+    duration_ms: r.duration_ms ?? null,
+  }));
 
   const audit: VolumeAuditRow[] = crm.map((r) => {
     const reported = Number(r.config?.crm_record_count);
@@ -256,33 +232,13 @@ export type SettingsSnapshot = {
 };
 
 export async function loadEnterpriseSettings(orgId: string): Promise<SettingsSnapshot> {
-  const [s, u, i, sso, crm] = await Promise.all([
-    db.from("enterprise_settings").select("*").eq("org_id", orgId).maybeSingle(),
-    db
-      .from("user_roles")
-      .select(
-        "id, role, is_active, can_manage_users, can_publish_content, can_manage_billing, invited_at, accepted_at",
-      )
-      .eq("entity_type", "organization")
-      .eq("entity_id", orgId)
-      .limit(200),
-    db
-      .from("invitations")
-      .select("id, email, full_name, role, status, invited_at, expires_at")
-      .eq("entity_type", "organization")
-      .eq("entity_id", orgId)
-      .order("invited_at", { ascending: false })
-      .limit(50),
-    db.from("sso_config").select("id, provider, issuer_url, is_active").eq("org_id", orgId),
-    db.from("crm_integrations").select("id", { count: "exact", head: true }).eq("org_id", orgId),
-  ]);
-
+  const r = await api.get<SettingsSnapshot>("/xmp/enterprise/ops/settings", { params: { org_id: orgId } });
   return {
-    settings: (s.data ?? null) as EnterpriseSettingsRow | null,
-    users: (u.data ?? []) as OrgUserRow[],
-    invites: (i.data ?? []) as InviteRow[],
-    sso: (sso.data ?? []) as SsoRow[],
-    integrations: crm.count ?? 0,
+    settings: (r.settings ?? null) as EnterpriseSettingsRow | null,
+    users: (r.users ?? []) as OrgUserRow[],
+    invites: (r.invites ?? []) as InviteRow[],
+    sso: (r.sso ?? []) as SsoRow[],
+    integrations: r.integrations ?? 0,
   };
 }
 

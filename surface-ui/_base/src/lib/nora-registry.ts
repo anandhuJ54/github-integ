@@ -1,10 +1,11 @@
-import { supabase } from "@v3/ui/integrations/supabase/client";
+import { api } from "@v3/ui/lib/server-fn";
 import type { SkillRun } from "@v3/ui/lib/nora-runner";
 
-/* NORA build & registry — exp_skill_registry, exp_capability_registry, exp_build_map. */
+/* NORA build & registry — exp_skill_registry, exp_capability_registry, exp_build_map.
+   Reads and writes go through FastAPI (nora_os: /nora-os/registry/*), as the signed-in user. */
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const db = supabase as any;
+const REG = "/nora-os/registry";
+const seg = (v: string) => encodeURIComponent(v);
 
 export const SKILL_STATUSES = ["draft", "in_eval", "published", "deprecated"] as const;
 export const BUILD_STATES = ["built", "welded", "screen_only", "not_built"] as const;
@@ -118,11 +119,6 @@ export type BuildStep = {
   sort_order: number | null;
 };
 
-function must<T>(res: { data: T | null; error: { message: string } | null }): T {
-  if (res.error) throw new Error(res.error.message);
-  return res.data as T;
-}
-
 /** Pure: the one-line card an agent sees for a skill. */
 export function agentCard(s: Pick<Skill, "key" | "status" | "version"> & { entity_types?: string[] | null }) {
   const base = `${s.key} · ${s.status ?? "draft"} · ${s.version ?? "—"}`;
@@ -157,45 +153,48 @@ export function capabilityUsage(skills: Pick<Skill, "key" | "tools_used">[]) {
 }
 
 export async function listSkills(): Promise<Skill[]> {
-  return must<Skill[]>(await db.from("exp_skill_registry").select("*").order("key")) ?? [];
+  return (await api.get<Skill[]>(`${REG}/skills`)) ?? [];
 }
 export async function getSkill(key: string): Promise<Skill | null> {
-  return must<Skill | null>(await db.from("exp_skill_registry").select("*").eq("key", key).maybeSingle());
+  return api.get<Skill | null>(`${REG}/skills/${seg(key)}`);
 }
-async function upsertRow<T extends { id?: string; key: string }>(table: string, row: T): Promise<T> {
+/** The row without id / created_at / updated_at (never written). */
+function rowBody<T extends { id?: string }>(row: T) {
   const { id, ...rest } = row as T & { created_at?: unknown; updated_at?: unknown };
   delete (rest as Record<string, unknown>).created_at;
   delete (rest as Record<string, unknown>).updated_at;
-  if (id) return must<T>(await db.from(table).update(rest).eq("id", id).select("*").single());
-  return must<T>(await db.from(table).insert(rest).select("*").single());
+  return { id, rest };
 }
-export const upsertSkill = (s: Skill) => upsertRow("exp_skill_registry", s);
+async function upsertRow<T extends { id?: string; key: string }>(path: string, row: T): Promise<T> {
+  const { id, rest } = rowBody(row);
+  if (id) return api.patch<T>(`${path}/${seg(id)}`, rest);
+  return api.post<T>(path, rest);
+}
+export const upsertSkill = (s: Skill) => upsertRow(`${REG}/skills`, s);
 
 export async function listCapabilities(): Promise<Capability[]> {
-  return must<Capability[]>(await db.from("exp_capability_registry").select("*").order("key")) ?? [];
+  return (await api.get<Capability[]>(`${REG}/capabilities`)) ?? [];
 }
 export async function getCapability(key: string): Promise<Capability | null> {
-  return must<Capability | null>(await db.from("exp_capability_registry").select("*").eq("key", key).maybeSingle());
+  return api.get<Capability | null>(`${REG}/capabilities/${seg(key)}`);
 }
-export const upsertCapability = (c: Capability) => upsertRow("exp_capability_registry", c);
+export const upsertCapability = (c: Capability) => upsertRow(`${REG}/capabilities`, c);
 
 export async function listBuildMap(): Promise<BuildStep[]> {
-  return (
-    must<BuildStep[]>(await db.from("exp_build_map").select("*").order("track").order("sort_order").order("step_no")) ?? []
-  );
+  return (await api.get<BuildStep[]>(`${REG}/build-map`)) ?? [];
 }
 export async function setBuildState(id: string, state: string) {
-  must(await db.from("exp_build_map").update({ state }).eq("id", id).select("id"));
+  await api.patch(`${REG}/build-map/${seg(id)}`, { state });
 }
 
 /* ───────── Phase 3: build map editing ───────── */
 export type NewBuildStep = Omit<BuildStep, "id" | "sort_order"> & { sort_order?: number | null };
 export async function updateBuildStep(id: string, patch: Partial<Omit<BuildStep, "id">>) {
-  must(await db.from("exp_build_map").update(patch).eq("id", id).select("id"));
+  await api.patch(`${REG}/build-map/${seg(id)}`, patch);
 }
 export async function addBuildStep(step: NewBuildStep) {
   const sort = step.sort_order ?? step.step_no ?? null;
-  return must<BuildStep>(await db.from("exp_build_map").insert({ ...step, sort_order: sort }).select("*").single());
+  return api.post<BuildStep>(`${REG}/build-map`, { ...step, sort_order: sort });
 }
 
 /* ───────── Phase 4: entity types, evals, versions, publish gate ───────── */
@@ -242,40 +241,30 @@ export function publishBlockers(
 }
 
 export async function listEvals(skillKey?: string): Promise<SkillEval[]> {
-  let q = db.from("exp_skill_eval").select("*").order("skill_key").order("name");
-  if (skillKey) q = q.eq("skill_key", skillKey);
-  return must<SkillEval[]>(await q) ?? [];
+  return (await api.get<SkillEval[]>(`${REG}/evals`, { params: { skill_key: skillKey || undefined } })) ?? [];
 }
 export async function upsertEval(e: SkillEval): Promise<SkillEval> {
   const { id, ...rest } = e;
-  if (id) return must<SkillEval>(await db.from("exp_skill_eval").update(rest).eq("id", id).select("*").single());
-  return must<SkillEval>(await db.from("exp_skill_eval").insert({ ...rest, status: rest.status ?? "untested" }).select("*").single());
+  if (id) return api.patch<SkillEval>(`${REG}/evals/${seg(id)}`, rest);
+  return api.post<SkillEval>(`${REG}/evals`, { ...rest, status: rest.status ?? "untested" });
 }
 export async function setEvalResult(id: string, status: "pass" | "fail" | "untested") {
-  must(
-    await db
-      .from("exp_skill_eval")
-      .update({ status, last_run_at: new Date().toISOString(), last_result: { manual: true, status } })
-      .eq("id", id)
-      .select("id"),
-  );
+  // status, last_run_at (server clock) and last_result { manual: true, status }
+  await api.post(`${REG}/evals/${seg(id)}/result`, { status });
 }
 export async function listVersions(skillKey: string): Promise<SkillVersion[]> {
-  return must<SkillVersion[]>(
-    await db.from("exp_skill_version").select("*").eq("skill_key", skillKey).order("published_at", { ascending: false }),
-  ) ?? [];
+  return (await api.get<SkillVersion[]>(`${REG}/versions`, { params: { skill_key: skillKey } })) ?? [];
 }
 
-async function currentUserId() {
-  const { data } = await supabase.auth.getUser();
-  return data.user?.id ?? null;
-}
-function manifestOf(s: Skill) {
-  const m = { ...s } as Record<string, unknown>;
-  delete m.id;
-  delete m.created_at;
-  delete m.updated_at;
-  return m;
+/** Saves the skill and snapshots a version row (published_by = the signed-in user, server-side). */
+async function releaseSkill(skill: Skill, release: "published" | "yanked", note?: string | null): Promise<Skill> {
+  const { id, rest } = rowBody(skill);
+  return api.post<Skill>(`${REG}/skills/release`, {
+    ...(id ? { id } : {}),
+    skill: rest,
+    release,
+    ...(release === "yanked" ? { note: note ?? null } : {}),
+  });
 }
 
 /** Saves the skill as published only when the gate is open, then snapshots a version row. */
@@ -283,38 +272,15 @@ export async function publishSkill(skill: Skill): Promise<Skill> {
   const [caps, evals] = await Promise.all([listCapabilities(), listEvals(skill.key)]);
   const reasons = publishBlockers(skill, caps.map((c) => c.key), evals);
   if (reasons.length) throw new Error(`Cannot publish: ${reasons.join("; ")}`);
-  const saved = await upsertSkill({ ...skill, status: "published" });
-  must(
-    await db.from("exp_skill_version").insert({
-      skill_key: saved.key,
-      version: saved.version,
-      manifest: manifestOf(saved),
-      status: "published",
-      published_by: await currentUserId(),
-    }).select("id"),
-  );
-  return saved;
+  return releaseSkill({ ...skill, status: "published" }, "published");
 }
 
 /* ───────── Skill runs (exp_skill_run, written by runSkill in nora-runner.functions.ts) ───────── */
 export async function listSkillRuns(limit = 100): Promise<SkillRun[]> {
-  return must<SkillRun[]>(
-    await db.from("exp_skill_run").select("*").order("created_at", { ascending: false }).limit(limit),
-  ) ?? [];
+  return (await api.get<SkillRun[]>(`${REG}/skill-runs`, { params: { limit } })) ?? [];
 }
 
 /** Deprecates the skill and records a yanked version row. */
 export async function yankSkill(skill: Skill, note?: string): Promise<Skill> {
-  const saved = await upsertSkill({ ...skill, status: "deprecated" });
-  must(
-    await db.from("exp_skill_version").insert({
-      skill_key: saved.key,
-      version: saved.version,
-      manifest: manifestOf(saved),
-      status: "yanked",
-      published_by: await currentUserId(),
-      note: note ?? null,
-    }).select("id"),
-  );
-  return saved;
+  return releaseSkill({ ...skill, status: "deprecated" }, "yanked", note);
 }

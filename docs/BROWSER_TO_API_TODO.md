@@ -261,7 +261,22 @@ Pages:
   | `geo-coords.ts` | exp_us_cities | `_base` map component | srp |
   | `console-surfaces.ts` | exp_products, exp_price_book, exp_contracts, exp_entitlements (money); disco_jobs and counts (etl) | admin, search, ops, nora-os | **sales** (money) + etl |
   | `sales-alerts.ts`, `territories.ts` | exp_sales_*, exp_territor*, alerts RPCs (money, about 60 calls) | sales | **sales**: moved to Surface 11 (second approval) |
-- [ ] 1 · [ ] 3 · [ ] 4 · [ ] 5 · [ ] 6 · [ ] 7 parity · [ ] 8 · [ ] 9
+- [x] 1. Endpoints, in the owner Surface's API:
+  - roles: `/admin/me/grants`, `bootstrap`, `audit`
+  - search and voce: `/search/public/results|suggest` and `/search/voce/*` (anon when signed out)
+  - geo: `/srp/geo/city-centroids`
+  - nav menus: `/xmp/website/nav-menus*` (assigned nav is anon-readable)
+  - enterprise ops: `/xmp/enterprise/ops/*`
+  - NORA: `/nora-os/registry/*` and `/nora-os/sandbox/*`
+- [x] 3. Queries in `admin/queries/me.py`, `search/queries/{public_search,voce}.py`, `srp/queries/geo.py`, `xmp/queries/{nav_menus,enterprise_ops}.py` and `nora_os/queries/{registry,sandbox}.py`
+- [x] 4. pytest: 92 new tests, 907 in total. Live read-only smoke. **No write, bootstrap or audit insert was run.**
+  - The audit `user_id` and `published_by` now come from the token.
+  - Publish/yank and the nav assignment change each run in one transaction.
+  - One bad `scope_id` now loses only its own grant's name.
+- [x] 5. Contracts regenerated: admin, search, srp, xmp, nora-os
+- [x] 6. The only direct calls left in `@v3/ui` libs are the money libs (`console-surfaces.ts`, `sales-alerts.ts`, `territories.ts`), which move with **sales**. Auth calls and the Storage upload stay.
+- [ ] 7. Parity: `cd surface-ui/parity && bun --env-file=../app/.env run.ts base` (46 cases; the 15 admin/search/srp cases already pass signed out)
+- [ ] 8. Click-through · [ ] 9. Lint ratchet
 
 ### 11. sales (144/87/16) — money: needs a second approval, split into 3–4 PRs
 - [ ] 1 · [ ] 2 · [ ] 3 · [ ] 4 · [ ] 5 · [ ] 6 · [ ] 7 parity · [ ] 8 · [ ] 9

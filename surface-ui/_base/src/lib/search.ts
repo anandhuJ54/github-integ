@@ -1,5 +1,5 @@
-import { supabase } from "@v3/ui/integrations/supabase/client";
 import { withCoordinates } from "@v3/ui/lib/geo-coords";
+import { api } from "@v3/ui/lib/server-fn";
 
 export type SearchKind = "professional" | "location" | "brand";
 
@@ -108,34 +108,52 @@ export function decodeName(v: string | null | undefined): string {
     .replace(/&gt;/g, ">");
 }
 
+/** GET /search/public/results: the three RPCs' data (null where one failed) and first error. */
+type ResultsPayload = {
+  rows: SearchDoc[] | null;
+  count: number | null;
+  facets: Facets | null;
+  error: string | null;
+};
+
 export async function runSearch(s: SearchQuery) {
   const base = args(s);
-  const [rows, count, facets] = await Promise.all([
-    supabase.rpc("search_docs", {
-      ...base,
-      p_sort: s.sort,
-      p_limit: PAGE_SIZE,
-      p_offset: (Math.max(1, s.page) - 1) * PAGE_SIZE,
-    }),
-    supabase.rpc("search_docs_count", base),
-    supabase.rpc("search_docs_facets", base),
-  ]);
-  const named = ((rows.data ?? []) as SearchDoc[]).map((r) => ({ ...r, name: decodeName(r.name) }));
+  // supabase-js never threw here; a failed request reads as its error, with no data.
+  const res = await api
+    .get<ResultsPayload>("/search/public/results", {
+      params: {
+        ...base,
+        p_sort: s.sort,
+        p_limit: PAGE_SIZE,
+        p_offset: (Math.max(1, s.page) - 1) * PAGE_SIZE,
+      },
+    })
+    .catch(
+      (e: unknown): ResultsPayload => ({
+        rows: null,
+        count: null,
+        facets: null,
+        error: e instanceof Error ? e.message : String(e),
+      }),
+    );
+  const named = (res.rows ?? []).map((r) => ({ ...r, name: decodeName(r.name) }));
   // Precise geo is sparse, so fall back to the city centroid for map pins.
-  const mapped = await withCoordinates(supabase as never, named).catch(() => named);
+  const mapped = await withCoordinates(named).catch(() => named);
   return {
     results: mapped,
-    total: Number(count.data ?? 0),
-    facets: ((facets.data as Facets | null) ?? EMPTY_FACETS),
-    error: rows.error?.message ?? count.error?.message ?? facets.error?.message ?? null,
+    total: Number(res.count ?? 0),
+    facets: res.facets ?? EMPTY_FACETS,
+    error: res.error ?? null,
   };
 }
 
 export async function suggest(q: string): Promise<Suggestion[]> {
   const term = q.trim();
   if (term.length < 2) return [];
-  const { data } = await supabase.rpc("search_docs_suggest", { p_q: term, p_limit: 8 });
-  return ((data ?? []) as Suggestion[]).map((r) => ({ ...r, name: decodeName(r.name) }));
+  const data = await api
+    .get<Suggestion[]>("/search/public/suggest", { params: { p_q: term, p_limit: 8 } })
+    .catch(() => [] as Suggestion[]);
+  return (data ?? []).map((r) => ({ ...r, name: decodeName(r.name) }));
 }
 
 export const KIND_LABEL: Record<SearchKind, string> = {

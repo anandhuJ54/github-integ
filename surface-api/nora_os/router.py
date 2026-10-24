@@ -10,9 +10,11 @@ from nora_os.routers.claim_fn import router as claim_fn_router
 from nora_os.routers.etl_monitor import router as etl_monitor_router
 from nora_os.routers.health import router as health_router
 from nora_os.routers.nora_runner_fn import router as nora_runner_fn_router
+from nora_os.routers.registry import router as registry_router
 
 router = APIRouter()
 router.include_router(health_router)
 router.include_router(nora_runner_fn_router)
 router.include_router(claim_fn_router)
 router.include_router(etl_monitor_router)
+router.include_router(registry_router)

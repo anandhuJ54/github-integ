@@ -1,9 +1,10 @@
-import { supabase } from "@v3/ui/integrations/supabase/client";
+import { api } from "@v3/ui/lib/server-fn";
 
-/* NORA sandbox — read entity state + weights, write only opportunity feedback. */
+/* NORA sandbox — read entity state + weights, write only opportunity feedback.
+   Through FastAPI (nora_os: /nora-os/sandbox/*), as the signed-in user. */
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const db = supabase as any;
+const SBX = "/nora-os/sandbox";
+const seg = (v: string) => encodeURIComponent(v);
 
 export type Gap = {
   key: string;
@@ -53,33 +54,26 @@ export type Feedback = {
 export type Weights = Record<string, number>;
 export const WEIGHT_KEYS = ["impact", "feasibility", "urgency", "confidence", "effort_penalty"] as const;
 
-function must<T>(res: { data: T | null; error: { message: string } | null }): T {
-  if (res.error) throw new Error(res.error.message);
-  return res.data as T;
-}
-
 export async function listSandboxEntities(): Promise<SandboxEntity[]> {
-  return must<SandboxEntity[]>(
-    await db.from("exp_nora_state").select("entity_ref,entity_type,name,title,market,category").order("name"),
-  ) ?? [];
+  return (await api.get<SandboxEntity[]>(`${SBX}/entities`)) ?? [];
 }
 export async function getSandboxState(entityRef: string): Promise<SandboxEntity | null> {
-  return must<SandboxEntity | null>(await db.from("exp_nora_state").select("*").eq("entity_ref", entityRef).maybeSingle());
+  return api.get<SandboxEntity | null>(`${SBX}/entities/${seg(entityRef)}`);
 }
 export async function listWeights(): Promise<Weights> {
-  const rows = must<{ key: string; weight: number }[]>(await db.from("exp_nora_weights").select("key,weight")) ?? [];
+  const rows = (await api.get<{ key: string; weight: number }[]>(`${SBX}/weights`)) ?? [];
   const w: Weights = {};
   for (const r of rows) w[r.key] = Number(r.weight);
   return w;
 }
 export async function saveWeight(key: string, weight: number) {
-  must(await db.from("exp_nora_weights").update({ weight }).eq("key", key).select("key"));
+  await api.put(`${SBX}/weights/${seg(key)}`, { weight });
 }
 export async function listFeedback(entityRef: string): Promise<Feedback[]> {
-  return must<Feedback[]>(await db.from("exp_opportunity_feedback").select("*").eq("entity_id", entityRef)) ?? [];
+  return (await api.get<Feedback[]>(`${SBX}/feedback`, { params: { entity_id: entityRef } })) ?? [];
 }
 export async function giveFeedback(f: Feedback) {
-  must(await db.from("exp_opportunity_feedback").insert(f).select("entity_id"));
+  await api.post(`${SBX}/feedback`, f);
 }
 
 /* ───────── Pure ranking ───────── */
@@ -280,35 +274,24 @@ export function srsGapsToGaps(gaps: SrsRow["gaps"]): Gap[] {
   }));
 }
 
-async function namesFor(ids: string[]) {
-  if (!ids.length) return new Map<string, string>();
-  const res = await db.from("exp_entity").select("entity_id,display_name").in("entity_id", ids);
-  const m = new Map<string, string>();
-  for (const r of (res.data ?? []) as { entity_id: string; display_name: string | null }[]) if (r.display_name) m.set(String(r.entity_id), r.display_name);
-  return m;
-}
-
+/** Scores by total desc, each with its exp_entity display name (joined server-side; null when unknown). */
 export async function listScoredEntities(): Promise<ScoredEntity[]> {
-  const rows = must<SrsRow[]>(
-    await db.from("search_rank_scores").select("entity_id,entity_type,gcid,total_score").order("total_score", { ascending: false }),
-  ) ?? [];
-  const names = await namesFor(rows.map((r) => String(r.entity_id)));
+  const rows =
+    (await api.get<(Pick<SrsRow, "entity_id" | "entity_type" | "gcid" | "total_score"> & { display_name: string | null })[]>(
+      `${SBX}/scored`,
+    )) ?? [];
   return rows.map((r) => ({
     entity_ref: String(r.entity_id),
     entity_type: r.entity_type,
     gcid: r.gcid,
     total_score: r.total_score,
-    display_name: names.get(String(r.entity_id)) ?? null,
+    display_name: r.display_name ?? null,
   }));
 }
 
+/** The latest SRS row for `ref` with its display name, or null. */
 export async function getScore(ref: string): Promise<(SrsRow & { display_name: string | null }) | null> {
-  const row = must<SrsRow | null>(
-    await db.from("search_rank_scores").select("*").eq("entity_id", ref).order("calculated_at", { ascending: false }).limit(1).maybeSingle(),
-  );
-  if (!row) return null;
-  const names = await namesFor([ref]);
-  return { ...row, display_name: names.get(ref) ?? null };
+  return api.get<(SrsRow & { display_name: string | null }) | null>(`${SBX}/scores/${seg(ref)}`);
 }
 
 export type SandboxView = { source: "srs" | "synthetic"; entity: SandboxEntity; srs: (SrsRow & { display_name: string | null }) | null };

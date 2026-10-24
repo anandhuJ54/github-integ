@@ -18,7 +18,7 @@ from pydantic import BaseModel, ConfigDict, Field
 from _base.core import db
 from _base.core.auth import current_user
 from _base.core.sql import fetch_all
-from xmp.queries import common, dashboard, enterprise, seat
+from xmp.queries import common, dashboard, enterprise, enterprise_ops, seat
 
 router = APIRouter(prefix="/xmp", tags=["xmp"])
 
@@ -302,3 +302,17 @@ def dashboard_listings(entity_type: seat.Kind, entity_id: str, gcid: str | None 
 def dashboard_reviews(professional_id: str | None = ProId,
                       claims: dict = Depends(current_user)) -> dict:
     return _read_with(claims, dashboard.reviews, _uid(claims), professional_id)
+
+
+# --- enterprise operations (surface-ui/_base/src/lib/enterprise-ops.ts) ------------------------
+
+@router.get("/enterprise/ops/ingestion")
+def ops_ingestion(org_id: str = Query(max_length=200), claims: dict = Depends(current_user)) -> dict:
+    """loadIngestion's reads: {crm, oauth, jobs} raw rows (each [] on error, as the page saw)."""
+    return _read_with(claims, enterprise_ops.load_ingestion, org_id)
+
+
+@router.get("/enterprise/ops/settings")
+def ops_settings(org_id: str = Query(max_length=200), claims: dict = Depends(current_user)) -> dict:
+    """loadEnterpriseSettings: {settings, users, invites, sso, integrations}."""
+    return _read_with(claims, enterprise_ops.load_enterprise_settings, org_id)

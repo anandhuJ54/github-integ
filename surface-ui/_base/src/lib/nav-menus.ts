@@ -1,4 +1,4 @@
-import { supabase } from "@v3/ui/integrations/supabase/client";
+import { api } from "@v3/ui/lib/server-fn";
 import type { Json } from "@v3/ui/integrations/supabase/types";
 
 /* ───────────── Types ───────────── */
@@ -117,41 +117,23 @@ export function navLinkCount(menu: NavMenu): number {
   return normalizeFooter(menu.items).columns.reduce((n, c) => n + c.links.length, 0);
 }
 
-/* ───────────── Reads ───────────── */
+/* ───────────── Reads (FastAPI, xmp: /xmp/website/nav-menus) ───────────── */
 
-const COLUMNS =
-  "id, name, menu_type, items, assigned_site, design_tag, notes, created_at, updated_at, deleted_at, deleted_by";
+const NAV = "/xmp/website/nav-menus";
 
 export async function loadNavMenus(): Promise<NavMenu[]> {
-  const { data, error } = await supabase
-    .from("exp_web_nav_menus")
-    .select(COLUMNS)
-    .is("deleted_at", null)
-    .order("menu_type", { ascending: true })
-    .order("name", { ascending: true });
-  if (error) throw new Error(error.message);
-  return (data ?? []) as NavMenu[];
+  return api.get<NavMenu[]>(NAV);
 }
 
 export async function loadDeletedNavMenus(): Promise<NavMenu[]> {
-  const { data, error } = await supabase
-    .from("exp_web_nav_menus")
-    .select(COLUMNS)
-    .not("deleted_at", "is", null)
-    .order("deleted_at", { ascending: false });
-  if (error) throw new Error(error.message);
-  return (data ?? []) as NavMenu[];
+  return api.get<NavMenu[]>(`${NAV}/trash`);
 }
 
 /** Public read: the navigation assigned to a site (used by the live site chrome). */
 export async function loadAssignedNav(site = "main_site") {
-  const { data, error } = await supabase
-    .from("exp_web_nav_menus")
-    .select("id, menu_type, items")
-    .eq("assigned_site", site)
-    .is("deleted_at", null);
-  if (error) throw new Error(error.message);
-  const rows = (data ?? []) as { menu_type: string; items: Json }[];
+  const rows = await api.get<{ id: string; menu_type: string; items: Json }[]>(`${NAV}/assigned`, {
+    params: { site },
+  });
   const header = rows.find((r) => r.menu_type === "header");
   const footer = rows.find((r) => r.menu_type === "footer");
   return {
@@ -168,35 +150,25 @@ function starterItems(type: NavMenuType): Json {
     : { blurb: "", columns: [] }) as unknown as Json;
 }
 
+const at = (id: string) => `${NAV}/${encodeURIComponent(id)}`;
+
 export const navMutations = {
   async create(input: { name: string; menu_type: NavMenuType; items?: Json; notes?: string }) {
-    const { data, error } = await supabase
-      .from("exp_web_nav_menus")
-      .insert({
-        name: input.name,
-        menu_type: input.menu_type,
-        items: input.items ?? starterItems(input.menu_type),
-        notes: input.notes ?? null,
-        design_tag: "new",
-      })
-      .select("id")
-      .single();
-    if (error) throw new Error(error.message);
+    const data = await api.post<{ id: string }>(NAV, {
+      name: input.name,
+      menu_type: input.menu_type,
+      items: input.items ?? starterItems(input.menu_type),
+      notes: input.notes ?? null,
+    });
     return data.id as string;
   },
 
   async update(id: string, patch: { name?: string; items?: Json; notes?: string | null }) {
-    const { error } = await supabase.from("exp_web_nav_menus").update(patch).eq("id", id);
-    if (error) throw new Error(error.message);
+    await api.patch(at(id), patch);
   },
 
   async duplicate(id: string) {
-    const { data, error } = await supabase
-      .from("exp_web_nav_menus")
-      .select("name, menu_type, items, notes")
-      .eq("id", id)
-      .single();
-    if (error) throw new Error(error.message);
+    const data = await api.get<{ name: string; menu_type: string; items: Json; notes: string | null }>(at(id));
     return navMutations.create({
       name: `${data.name} (copy)`,
       menu_type: data.menu_type as NavMenuType,
@@ -207,40 +179,18 @@ export const navMutations = {
 
   /** Assign to a site (unassigns whatever menu of the same type held the slot) or clear with null. */
   async setAssignment(id: string, menuType: NavMenuType, site: string | null) {
-    if (site) {
-      const { error: clearError } = await supabase
-        .from("exp_web_nav_menus")
-        .update({ assigned_site: null })
-        .eq("assigned_site", site)
-        .eq("menu_type", menuType)
-        .neq("id", id);
-      if (clearError) throw new Error(clearError.message);
-    }
-    const { error } = await supabase
-      .from("exp_web_nav_menus")
-      .update({ assigned_site: site })
-      .eq("id", id);
-    if (error) throw new Error(error.message);
+    await api.put(`${at(id)}/assignment`, { menu_type: menuType, site });
   },
 
   async softDelete(id: string, userId: string | null) {
-    const { error } = await supabase
-      .from("exp_web_nav_menus")
-      .update({ deleted_at: new Date().toISOString(), deleted_by: userId, assigned_site: null })
-      .eq("id", id);
-    if (error) throw new Error(error.message);
+    await api.post(`${at(id)}/trash`, { deleted_by: userId });
   },
 
   async restore(id: string) {
-    const { error } = await supabase
-      .from("exp_web_nav_menus")
-      .update({ deleted_at: null, deleted_by: null })
-      .eq("id", id);
-    if (error) throw new Error(error.message);
+    await api.post(`${at(id)}/restore`);
   },
 
   async hardDelete(id: string) {
-    const { error } = await supabase.from("exp_web_nav_menus").delete().eq("id", id);
-    if (error) throw new Error(error.message);
+    await api.delete(at(id));
   },
 };

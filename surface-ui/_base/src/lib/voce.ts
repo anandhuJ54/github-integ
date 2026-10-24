@@ -1,4 +1,4 @@
-import { supabase } from "@v3/ui/integrations/supabase/client";
+import { api } from "@v3/ui/lib/server-fn";
 
 /* ────────────────────────────────────────────────────────────
    VOCE boost mapping — connects VOCE articles to the growth
@@ -44,10 +44,13 @@ export type VoceArticle = {
   is_demo: boolean;
 };
 
-const COLS =
-  "id, title, slug, body_excerpt, author_entity_type, author_entity_id, author_name, gcid, topic, knows_about, published_on, boosted, boost_placements, boost_starts_on, boost_ends_on, boost_spend, is_demo";
+// Rows come from the search API (/search/voce/*), which selects the VoceArticle columns.
+type Row = Record<string, unknown>;
 
-const db = supabase as unknown as { from: (table: string) => any };
+/** The public loaders returned [] (or null) on any error; so do their API reads. */
+function publicRows(path: string, params: Record<string, string | undefined>): Promise<Row[]> {
+  return api.get<Row[]>(path, { params }).catch(() => [] as Row[]);
+}
 
 function strList(v: unknown): string[] {
   if (!Array.isArray(v)) return [];
@@ -114,18 +117,11 @@ export async function loadAuthorArticles(
   entityId: string,
   authorName: string | null,
 ): Promise<VoceArticle[]> {
-  const filters = [`author_entity_id.eq.${entityId}`];
-  if (authorName && authorName.trim()) {
-    filters.push(`author_name.eq.${authorName.replace(/[,()]/g, " ").trim()}`);
-  }
-  const { data, error } = await db
-    .from("exp_voce_article")
-    .select(COLS)
-    .or(filters.join(","))
-    .order("published_on", { ascending: false })
-    .limit(24);
-  if (error) return [];
-  return ((data ?? []) as Record<string, unknown>[]).map(toArticle).sort(byFeatured);
+  // The name is cleaned as it was for the PostgREST `.or()` filter string.
+  const name =
+    authorName && authorName.trim() ? authorName.replace(/[,()]/g, " ").trim() : undefined;
+  const data = await publicRows("/search/voce/author", { entity_id: entityId, author_name: name });
+  return data.map(toArticle).sort(byFeatured);
 }
 
 /* ───────────── 2. Category / topic hubs ───────────── */
@@ -134,16 +130,8 @@ export async function loadHubArticles(
   gcid: string,
   topic: string | null,
 ): Promise<VoceArticle[]> {
-  let q = db
-    .from("exp_voce_article")
-    .select(COLS)
-    .eq("gcid", gcid)
-    .order("published_on", { ascending: false })
-    .limit(60);
-  if (topic) q = q.eq("topic", topic);
-  const { data, error } = await q;
-  if (error) return [];
-  const all = ((data ?? []) as Record<string, unknown>[]).map(toArticle);
+  const data = await publicRows("/search/voce/hub", { gcid, topic: topic || undefined });
+  const all = data.map(toArticle);
   const placement: BoostPlacement = topic ? "topic_hub" : "category_hub";
   const boosted = all.filter((a) => servesIn(a, placement));
   // Hubs lead with boosted placements, then carry the rest of the category's
@@ -170,11 +158,13 @@ export async function loadFeaturedArticle(
 ): Promise<VoceArticle | null> {
   const query = q.trim().toLowerCase();
   if (!query && !gcid) return null;
-  let sel = db.from("exp_voce_article").select(COLS).eq("boosted", true).limit(60);
-  if (gcid) sel = sel.eq("gcid", gcid);
-  const { data, error } = await sel;
-  if (error) return null;
-  const live = ((data ?? []) as Record<string, unknown>[])
+  let data: Row[];
+  try {
+    data = await api.get<Row[]>("/search/voce/featured", { params: { gcid: gcid || undefined } });
+  } catch {
+    return null;
+  }
+  const live = data
     .map(toArticle)
     .filter((a) => servesIn(a, "search"));
   if (live.length === 0) return null;
@@ -198,12 +188,8 @@ export async function loadFeaturedArticle(
 /* ───────────── 4. Admin: boost manager ───────────── */
 
 export async function loadAllArticles(): Promise<VoceArticle[]> {
-  const { data, error } = await db
-    .from("exp_voce_article")
-    .select(COLS)
-    .order("published_on", { ascending: false, nullsFirst: false });
-  if (error) throw new Error(error.message);
-  return ((data ?? []) as Record<string, unknown>[]).map(toArticle);
+  const data = await api.get<Row[]>("/search/voce/articles");
+  return data.map(toArticle);
 }
 
 export type BoostPatch = {
@@ -215,8 +201,7 @@ export type BoostPatch = {
 };
 
 export async function updateBoost(id: string, patch: BoostPatch): Promise<void> {
-  const { error } = await db.from("exp_voce_article").update(patch).eq("id", id);
-  if (error) throw new Error(error.message);
+  await api.patch(`/search/voce/articles/${encodeURIComponent(id)}`, patch);
 }
 
 export function boostTotals(list: VoceArticle[]) {
