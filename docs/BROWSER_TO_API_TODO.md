@@ -240,7 +240,7 @@ Pages:
   - No professional has `user_id` set, so `/dashboard` is empty for everyone, as before.
 - [x] 5. `contracts/xmp/openapi.json`
 - [x] 6. No `supabase.from` or `.rpc` calls remain in `surface-ui/xmp` (only auth, plus the Storage upload in section-editor). `/website/cms` still shows `exp_web_nav_menus` and `exp_admin_audit` calls, from `@v3/ui` `nav-menus.ts` and `roles.tsx`. Those move with **`_base`**.
-- [ ] 7. Parity: `cd surface-ui/parity && bun --env-file=../app/.env run.ts xmp`
+- [x] 7. Parity PASS 69/69 (2026-10-24, signed in): 13 website loaders, enterprise, seat, office mode, interview, team and dashboard. The first run gave 404s only because the API was started before the xmp routes existed.
 - [ ] 8. Click-through · [ ] 9. Lint ratchet
 - Writes are ported as they are (same statements, as the signed-in user). Unlike graph, the website CMS writes **do** work on GCP (always-true policies).
 - Writes to the no-policy tables (invitations, review_campaigns, professionals update) fail or match 0 rows, as before.
