@@ -307,7 +307,7 @@ Pages:
     - Cap (1j, kept 1:1): `/sales/core/account-tiers/inputs`, `/sales/accounts/list-rows`, `/tree-rows`.
     - Generated schema: +4 tables (`exp_contract_{versions,recipients,approvals,documents}`).
   - [x] 5. `contracts/sales/openapi.json` regenerated · [x] 6. No direct calls left in contracts, csm, sales, accounts, the quote route or the sign route
-  - [ ] 7. Parity: `run.ts sales` (24 S1 + 17 contracts + 18 core = 59 cases) · [ ] 8. Click-through: `/sales/contracts`, a contract detail, `/sales/accounts`, an account, `/sales/price-book`, `/sales` (dashboard), a quote, `/sign/<any>` (opens only; press nothing)
+  - [x] 7. Parity: covered by the S1–S3 run, **PASS 82/82** (2026-10-24) · [ ] 8. Click-through: `/sales/contracts`, a contract detail, `/sales/accounts`, an account, `/sales/price-book`, `/sales` (dashboard), a quote, `/sign/<any>` (opens only; press nothing)
   - Bugs found, kept as they are (legacy behaviour):
     - The quote page passes the quote *name* (e.g. `Q-18788`) to uuid columns, so "create contract from quote" and its existing-contract read fail with "invalid input syntax for type uuid".
     - The sign page treats `m4_record_signature`'s `{error:"invalid"}` as success (it only checks `ok === false`).
@@ -322,7 +322,7 @@ Pages:
     - Cap (1j): the opportunity file's claim events for one org (`limit 10000`) stay cut at 1,000; one logo org has 1,850.
     - `opportunity-automation.tsx` keeps its realtime channel on `exp_sales_alerts` (realtime is out of scope).
   - [x] 5. `contracts/sales/openapi.json` regenerated · [x] 6. No direct calls left in opportunity-file, worklist-actions, sre-console, `_base` sales-alerts, opportunity-automation
-  - [ ] 7. Parity: `run.ts sales` (S1 24 + S2 35 + S3 25 = 84 cases) · [ ] 8. Click-through: `/sales/opportunities`, one opportunity, `/sales/worklist`, `/admin/integrations` (open only; don't press "run now")
+  - [x] 7. Parity: `run.ts sales` **PASS 82/82** (S1–S3, 2026-10-24) · [ ] 8. Click-through: `/sales/opportunities`, one opportunity, `/sales/worklist`, `/admin/integrations` (open only; don't press "run now")
 
 marketing and app make no direct calls.
 
