@@ -6,8 +6,9 @@
  * object in place. The object keeps the shape cpq-pricing / sales-cpq / the
  * quote builder already consume, so formulas stay in cpq-pricing.ts.
  * Until loaded every number is 0 and `CATALOG.loaded` is false.
+ * The rows come through FastAPI (sales: GET /sales/catalog/cpq), as the signed-in user.
  */
-import { supabase } from "@v3/ui/integrations/supabase/client";
+import { api } from "@v3/ui/lib/server-fn";
 
 /** Quote-state package ids (stable). Each maps to a lane='base' product_key. */
 export type PackageId = "engage" | "amplify";
@@ -211,17 +212,8 @@ export function laneOf(productKey: string): CatalogProduct {
   );
 }
 
-/** Reads the three catalog tables and fills CATALOG. */
+/** Reads the three catalog tables (one request) and fills CATALOG. */
 export async function loadCatalog(): Promise<typeof CATALOG> {
-  const [p, b, c] = await Promise.all([
-    supabase
-      .from("exp_products")
-      .select("product_key,name,description,lane,price_monthly,price_monthly_location,active,creditable,discountable,passthrough,min_charge,package_includes"),
-    supabase.from("exp_price_book").select("product_key,scope,unit,list_price,billing_type"),
-    supabase.from("exp_pricing_config").select("key,value,value_json"),
-  ]);
-  if (p.error) throw p.error;
-  if (b.error) throw b.error;
-  if (c.error) throw c.error;
-  return applyCatalog({ products: (p.data ?? []) as ProductRow[], book: (b.data ?? []) as BookPriceRow[], config: (c.data ?? []) as ConfigRow[] });
+  const rows = await api.get<CatalogRows>("/sales/catalog/cpq");
+  return applyCatalog({ products: rows.products ?? [], book: rows.book ?? [], config: rows.config ?? [] });
 }

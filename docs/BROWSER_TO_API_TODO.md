@@ -287,6 +287,17 @@ Pages:
   - **S3 pipeline & alerts:** `opportunity-file.ts`, `worklist-actions.ts`, `opportunity-automation.tsx`, `sre-console.ts`, `_base` `sales-alerts.ts`
   - **S4 territories, teams & boards:** `_base` `territories.ts`, `territory-admin.ts`, `category-groups.ts`, `teams.ts`, `seller-setup.ts`, `seller-desk.ts`, `seller-board.ts`, `sales-board.ts`, `sales-nav.ts`, `sales-spine.ts`, `sales-story.ts`, the `sales.promos` route
 - Per PR: [ ] 1 endpoints · [ ] 3 queries · [ ] 4 tests · [ ] 5 contract · [ ] 6 no direct calls · [ ] 7 parity · [ ] 8 click-through
+- **S1 catalog & pricing:**
+  - [x] 1. `/sales/catalog/*` (admin products, pricing config, volume tiers, CPQ catalog, pricing context, comp plans, product catalog, billing)
+  - [x] `/sales/cpq/*` (quotes, accounts, contract commit steps, price tiers, promos, allow-listed `rpc/exp_contract_provision`)
+  - [x] `/etl/platform/*` (report metrics, nora-os jobs and counts, org stats: exact counts, as before)
+  - [x] 3/4. `sales/queries/{catalog,cpq}.py` and `etl/queries/platform.py`; 73 new tests, 980 in total. Live read-only smoke. **No write and no provision call was run.**
+    - Money is bound as Decimal, never rounded or floated; responses are PostgREST-shaped.
+    - `created_by` comes from the token; `updated_at` uses the server clock.
+    - `saveQuote` runs as one transaction. The contract commit keeps its separate steps in the original order.
+  - [x] 5. `contracts/sales/openapi.json` (new); etl regenerated
+  - [x] 6. No direct calls left in catalog-admin, cpq-catalog, cpq-depth, comp, sales-cpq or console-surfaces
+  - [ ] 7. Parity: `run.ts sales` (26 cases) · [ ] 8. Click-through: `/sales/price-book`, `/sales/pricing`, `/sales/comp`, `/sales/quotes`, `/sales/promos`, `/billing`, `/reports`
 
 marketing and app make no direct calls.
 

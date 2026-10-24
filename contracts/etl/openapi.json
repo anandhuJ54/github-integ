@@ -2234,6 +2234,93 @@
           }
         ]
       }
+    },
+    "/etl/platform/nora-os": {
+      "get": {
+        "tags": [
+          "etl"
+        ],
+        "summary": "Nora Os",
+        "description": "loadNoraOs's reads: `{ jobs, counts: { proposals, llm, siteContracts, engineRequests,\nengineSnapshots, enginePrompts } }`. The page derives byStatus / byStep / lastTick.",
+        "operationId": "nora_os_etl_platform_nora_os_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "type": "object",
+                  "title": "Response Nora Os Etl Platform Nora Os Get"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/etl/platform/org-stats": {
+      "get": {
+        "tags": [
+          "etl"
+        ],
+        "summary": "Org Stats",
+        "description": "loadOrgStats: six exact organizations counts.",
+        "operationId": "org_stats_etl_platform_org_stats_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "type": "object",
+                  "title": "Response Org Stats Etl Platform Org Stats Get"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/etl/platform/report-metrics": {
+      "get": {
+        "tags": [
+          "etl"
+        ],
+        "summary": "Report Metrics",
+        "description": "loadReportMetrics: fourteen exact counts, keyed as the page returns them.",
+        "operationId": "report_metrics_etl_platform_report_metrics_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "type": "object",
+                  "title": "Response Report Metrics Etl Platform Report Metrics Get"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
     }
   },
   "components": {

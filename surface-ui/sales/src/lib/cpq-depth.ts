@@ -4,7 +4,7 @@
  * credit (consumption) lane with COGS + top-up projection, and bundled
  * "Included" lines. Margin/tier classification reuses margin.ts unchanged.
  */
-import { supabase } from "@v3/ui/integrations/supabase/client";
+import { api } from "@v3/ui/lib/server-fn";
 import { CATALOG } from "./cpq-catalog";
 import type { QuoteState } from "./cpq-state";
 import { includedAddOnQuantities, safeNumber, volumeTierPct } from "./cpq-pricing";
@@ -49,18 +49,9 @@ export type PricingContext = { tiers: TierRow[]; book: BookRow[]; products: Cred
 export async function loadPricingContext(): Promise<PricingContext> {
   // exp_price_tiers is DEPRECATED as a pricing source: the single volume
   // schedule is exp_pricing_config.volume_tiers (CATALOG.config.volumeTiers).
-  const [b, p] = await Promise.all([
-    supabase
-      .from("exp_price_book")
-      .select("product_key,scope,unit,list_price,billing_type,cost_type,cost_value,floor_margin_pct,discount_tiers,credit_cost_per_unit"),
-    supabase
-      .from("exp_products")
-      .select("product_key,name,billing_type,consumes_llm_credits,est_credits_per_professional,est_credits_per_location")
-      .order("sort"),
-  ]);
-  if (b.error) throw b.error;
-  if (p.error) throw p.error;
-  return { tiers: [], book: (b.data ?? []) as BookRow[], products: (p.data ?? []) as CreditProduct[] };
+  // Both reads in one request (sales: GET /sales/catalog/pricing-context), as the signed-in user.
+  const r = await api.get<{ book: BookRow[]; products: CreditProduct[] }>("/sales/catalog/pricing-context");
+  return { tiers: [], book: r.book ?? [], products: r.products ?? [] };
 }
 
 /* ─────────── 1. Per-product bands (DEPRECATED — always empty; kept for type compatibility) ─────────── */

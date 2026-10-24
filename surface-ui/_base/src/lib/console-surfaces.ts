@@ -1,23 +1,14 @@
-import { supabase } from "@v3/ui/integrations/supabase/client";
+import { api } from "@v3/ui/lib/server-fn";
 
 /* ────────────────────────────────────────────────────────────
    Shared live loaders for the depth-pass console surfaces.
    Real-only policy: every number here comes from a table read.
    Absent data surfaces as null and the UI renders an honest
    "instrument to activate" state — never a fabricated figure.
+   Through FastAPI, as the signed-in user: the money reads (products, price book, contracts,
+   entitlements) from sales (/sales/catalog/*), the platform counts and the discovery job list
+   from etl (/etl/platform/*). Each loader is one request; counts are exact.
    ──────────────────────────────────────────────────────────── */
-
-const db = supabase as unknown as {
-  from: (table: string) => any;
-};
-
-async function countOf(table: string, apply?: (q: any) => any): Promise<number> {
-  let q: any = db.from(table).select("*", { count: "exact", head: true });
-  if (apply) q = apply(q);
-  const { count, error } = await q;
-  if (error) throw error;
-  return count ?? 0;
-}
 
 export const money = (n: number | null | undefined) =>
   n == null
@@ -64,24 +55,9 @@ export type PriceBookRow = {
 export type ProductCatalogEntry = ProductRow & { pricing: PriceBookRow[] };
 
 export async function loadProductCatalog() {
-  const [prods, pb] = await Promise.all([
-    supabase
-      .from("exp_products")
-      .select(
-        "product_key, name, description, entity_scope, billing_type, price_monthly, price_monthly_location, price_unit, is_addon, active, sort",
-      )
-      .order("sort", { ascending: true }),
-    supabase
-      .from("exp_price_book")
-      .select(
-        "id, product_key, scope, unit, list_price, contract_price, billing_type, cost_type, cost_value, floor_margin_pct, discount_tiers, description",
-      )
-      .order("product_key", { ascending: true }),
-  ]);
-  if (prods.error) throw prods.error;
-  if (pb.error) throw pb.error;
+  const res = await api.get<{ products: ProductRow[]; price_book: PriceBookRow[] }>("/sales/catalog/product-catalog");
 
-  const priceRows = (pb.data ?? []) as PriceBookRow[];
+  const priceRows = res.price_book ?? [];
   const byKey = new Map<string, PriceBookRow[]>();
   for (const r of priceRows) {
     const list = byKey.get(r.product_key) ?? [];
@@ -89,7 +65,7 @@ export async function loadProductCatalog() {
     byKey.set(r.product_key, list);
   }
 
-  const entries: ProductCatalogEntry[] = ((prods.data ?? []) as ProductRow[]).map((p) => ({
+  const entries: ProductCatalogEntry[] = (res.products ?? []).map((p) => ({
     ...p,
     pricing: byKey.get(p.product_key) ?? [],
   }));
@@ -145,35 +121,17 @@ export type EntitlementRow = {
 };
 
 export async function loadBilling() {
-  const [contracts, ents, products] = await Promise.all([
-    supabase
-      .from("exp_contracts")
-      .select(
-        "id, name, org_id, account_id, status, start_date, end_date, mrr, net, cost, margin_pct, approval_state, token_package, is_demo",
-      )
-      .order("created_at", { ascending: false }),
-    supabase
-      .from("exp_entitlements")
-      .select(
-        "id, subject_type, subject_id, product_key, state, source, tokens_included, granted_at, expires_at",
-      )
-      .order("granted_at", { ascending: false }),
-    supabase.from("exp_products").select("product_key, name"),
-  ]);
-  if (contracts.error) throw contracts.error;
-  if (ents.error) throw ents.error;
-  if (products.error) throw products.error;
+  const res = await api.get<{
+    contracts: ContractRow[];
+    entitlements: EntitlementRow[];
+    products: { product_key: string; name: string }[];
+  }>("/sales/catalog/billing");
 
-  const all = (contracts.data ?? []) as ContractRow[];
+  const all = res.contracts ?? [];
   const real = all.filter((c) => !c.is_demo);
   const demo = all.filter((c) => c.is_demo);
-  const entitlements = (ents.data ?? []) as EntitlementRow[];
-  const productNames = new Map(
-    ((products.data ?? []) as { product_key: string; name: string }[]).map((p) => [
-      p.product_key,
-      p.name,
-    ]),
-  );
+  const entitlements = res.entitlements ?? [];
+  const productNames = new Map((res.products ?? []).map((p) => [p.product_key, p.name]));
 
   const sum = (rows: ContractRow[], key: "mrr" | "net") =>
     rows.reduce((acc, r) => acc + Number(r[key] ?? 0), 0);
@@ -213,54 +171,41 @@ export async function loadBilling() {
 
 /* ─────────── Reports index ─────────── */
 
-export async function loadReportMetrics() {
-  const [
-    categories,
-    launched,
-    fieldModels,
-    graphNodes,
-    scored,
-    orgs,
-    pros,
-    registry,
-    contracts,
-    entitlements,
-    devTeams,
-    devProjects,
-    leads,
-    pages,
-  ] = await Promise.all([
-    countOf("gbp_categories"),
-    countOf("gbp_categories", (q) => q.eq("is_launched", true)),
-    countOf("exp_category_schema", (q) => q.eq("is_launched", true)),
-    countOf("graph_nodes"),
-    countOf("search_rank_scores"),
-    countOf("organizations", (q) => q.not("is_demo", "is", true)),
-    countOf("professionals", (q) => q.not("is_demo", "is", true)),
-    countOf("exp_vertical_node_registry"),
-    countOf("exp_contracts", (q) => q.not("is_demo", "is", true)),
-    countOf("exp_entitlements", (q) => q.eq("state", "active")),
-    countOf("exp_dev_teams"),
-    countOf("exp_dev_projects"),
-    countOf("exp_web_leads"),
-    countOf("exp_web_pages"),
-  ]);
+export type ReportMetrics = {
+  categories: number;
+  launched: number;
+  fieldModels: number;
+  graphNodes: number;
+  scored: number;
+  orgs: number;
+  pros: number;
+  registry: number;
+  contracts: number;
+  entitlements: number;
+  devTeams: number;
+  devProjects: number;
+  leads: number;
+  pages: number;
+};
 
+/** Fourteen exact counts, one request (etl: GET /etl/platform/report-metrics). */
+export async function loadReportMetrics(): Promise<ReportMetrics> {
+  const m = await api.get<ReportMetrics>("/etl/platform/report-metrics");
   return {
-    categories,
-    launched,
-    fieldModels,
-    graphNodes,
-    scored,
-    orgs,
-    pros,
-    registry,
-    contracts,
-    entitlements,
-    devTeams,
-    devProjects,
-    leads,
-    pages,
+    categories: m.categories,
+    launched: m.launched,
+    fieldModels: m.fieldModels,
+    graphNodes: m.graphNodes,
+    scored: m.scored,
+    orgs: m.orgs,
+    pros: m.pros,
+    registry: m.registry,
+    contracts: m.contracts,
+    entitlements: m.entitlements,
+    devTeams: m.devTeams,
+    devProjects: m.devProjects,
+    leads: m.leads,
+    pages: m.pages,
   };
 }
 
@@ -277,22 +222,21 @@ export type DiscoJob = {
 };
 
 export async function loadNoraOs() {
-  const [jobs, proposals, llm, contract, engineReq, engineSnap, prompts] = await Promise.all([
-    supabase
-      .from("disco_jobs")
-      .select("job_id, category_slug, step, status, note, created_at, updated_at")
-      .order("updated_at", { ascending: false })
-      .limit(100),
-    countOf("disco_proposals"),
-    countOf("disco_llm_requests"),
-    countOf("disco_site_contract"),
-    countOf("exp_engine_requests"),
-    countOf("exp_engine_snapshots"),
-    countOf("exp_engine_prompts"),
-  ]);
-  if (jobs.error) throw jobs.error;
+  const r = await api.get<{
+    jobs: DiscoJob[];
+    counts: {
+      proposals: number;
+      llm: number;
+      siteContracts: number;
+      engineRequests: number;
+      engineSnapshots: number;
+      enginePrompts: number;
+    };
+  }>("/etl/platform/nora-os");
+  const { proposals, llm, siteContracts: contract, engineRequests: engineReq, engineSnapshots: engineSnap, enginePrompts: prompts } =
+    r.counts;
 
-  const rows = (jobs.data ?? []) as unknown as DiscoJob[];
+  const rows = r.jobs ?? [];
   const byStatus = rows.reduce<Record<string, number>>((acc, j) => {
     const k = j.status ?? "unknown";
     acc[k] = (acc[k] ?? 0) + 1;
@@ -346,14 +290,15 @@ export type OrgRow = {
 export const ORG_COLUMNS =
   "id, name, slug, gcid, entity_type, parent_org_id, claimed, is_active, is_demo, search_rank_score, score_updated_at, address_city, address_state, phone, website_url, hierarchy_depth, gbp_connected";
 
+/** Six exact organizations counts, one request (etl: GET /etl/platform/org-stats). */
 export async function loadOrgStats() {
-  const [total, real, demo, claimed, scored, gbp] = await Promise.all([
-    countOf("organizations"),
-    countOf("organizations", (q) => q.not("is_demo", "is", true)),
-    countOf("organizations", (q) => q.eq("is_demo", true)),
-    countOf("organizations", (q) => q.eq("claimed", true)),
-    countOf("organizations", (q) => q.not("search_rank_score", "is", null)),
-    countOf("organizations", (q) => q.eq("gbp_connected", true)),
-  ]);
+  const { total, real, demo, claimed, scored, gbp } = await api.get<{
+    total: number;
+    real: number;
+    demo: number;
+    claimed: number;
+    scored: number;
+    gbp: number;
+  }>("/etl/platform/org-stats");
   return { total, real, demo, claimed, scored, gbp };
 }

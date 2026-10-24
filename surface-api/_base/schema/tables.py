@@ -394,6 +394,38 @@ t_exp_dev_teams = Table(
     schema='public'
 )
 
+t_exp_engine_prompts = Table(
+    'exp_engine_prompts', metadata,
+    Column('prompt_key', Text, primary_key=True),
+    Column('version', Integer, nullable=False, server_default=text('1')),
+    Column('template', Text, nullable=False),
+    Column('updated_at', DateTime(True), server_default=text('now()')),
+    PrimaryKeyConstraint('prompt_key', name='exp_engine_prompts_pkey'),
+    schema='public'
+)
+
+t_exp_engine_requests = Table(
+    'exp_engine_requests', metadata,
+    Column('request_id', BigInteger, primary_key=True),
+    Column('gcid', Text, nullable=False),
+    Column('purpose', Text, nullable=False),
+    Column('created_at', DateTime(True), server_default=text('now()')),
+    PrimaryKeyConstraint('request_id', name='exp_engine_requests_pkey'),
+    schema='public'
+)
+
+t_exp_engine_snapshots = Table(
+    'exp_engine_snapshots', metadata,
+    Column('id', BigInteger, primary_key=True, autoincrement=True),
+    Column('gcid', Text, nullable=False),
+    Column('layer', Text, nullable=False),
+    Column('payload', JSONB, nullable=False),
+    Column('created_at', DateTime(True), server_default=text('now()')),
+    PrimaryKeyConstraint('id', name='exp_engine_snapshots_pkey'),
+    Index('idx_engine_snapshots_gcid', 'gcid', 'layer'),
+    schema='public'
+)
+
 t_exp_entity = Table(
     'exp_entity', metadata,
     Column('entity_id', Uuid, primary_key=True, server_default=text('gen_random_uuid()')),

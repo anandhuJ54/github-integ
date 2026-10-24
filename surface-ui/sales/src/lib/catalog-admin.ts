@@ -1,5 +1,9 @@
-/** Catalog + assumptions admin: reads/writes exp_products and exp_pricing_config only. */
-import { supabase } from "@v3/ui/integrations/supabase/client";
+/** Catalog + assumptions admin: reads/writes exp_products and exp_pricing_config only.
+ *  Through FastAPI (sales: /sales/catalog/admin/*), as the signed-in user. */
+import { api } from "@v3/ui/lib/server-fn";
+
+const ADMIN = "/sales/catalog/admin";
+const seg = (v: string) => encodeURIComponent(v);
 
 export const LANES = ["base", "included", "product", "enterprise", "passthrough", "retired"] as const;
 export type AdminLane = (typeof LANES)[number];
@@ -33,12 +37,8 @@ export type AdminProduct = {
 };
 export type ProductPatch = Omit<AdminProduct, "product_key" | "sort">;
 
-const COLS =
-  "product_key,name,description,lane,price_monthly,price_monthly_location,price_unit,billing_type,creditable,discountable,passthrough,min_charge,package_includes,active,sort";
-
 export async function listAdminProducts(): Promise<AdminProduct[]> {
-  const { data, error } = await supabase.from("exp_products").select(COLS).order("sort", { ascending: true });
-  if (error) throw error;
+  const data = await api.get<AdminProduct[]>(`${ADMIN}/products`);
   return (data ?? []).map((r) => ({
     ...(r as unknown as AdminProduct),
     package_includes: Array.isArray(r.package_includes) ? (r.package_includes as string[]) : [],
@@ -57,33 +57,25 @@ const toRow = (p: ProductPatch, key: string) => ({
 
 /** product_key is frozen: it is the match key and is never part of the patch. */
 export async function updateAdminProduct(productKey: string, patch: ProductPatch) {
-  const { data, error } = await supabase.from("exp_products").update(toRow(patch, productKey)).eq("product_key", productKey).select("product_key");
-  if (error) throw error;
+  const data = await api.patch<{ product_key: string }[]>(`${ADMIN}/products/${seg(productKey)}`, toRow(patch, productKey));
   if (!data?.length) throw new Error("No row updated (check permissions).");
 }
 
 export async function addAdminProduct(productKey: string, patch: ProductPatch) {
   const key = productKey.trim();
   if (!/^[a-z][a-z0-9_]*$/.test(key)) throw new Error("Product key must be lowercase letters, digits and underscores.");
-  const { error } = await supabase.from("exp_products").insert({ product_key: key, ...toRow(patch, key) });
-  if (error) throw error;
+  await api.post(`${ADMIN}/products`, { product_key: key, ...toRow(patch, key) });
 }
 
 export type ConfigEntry = { key: string; value: number | null; value_json: unknown; label: string | null; unit: string | null; updated_at: string | null };
 
 export async function listPricingConfig(): Promise<ConfigEntry[]> {
-  const { data, error } = await supabase.from("exp_pricing_config").select("key,value,value_json,label,unit,updated_at").order("key");
-  if (error) throw error;
-  return (data ?? []) as ConfigEntry[];
+  return (await api.get<ConfigEntry[]>(`${ADMIN}/pricing-config`)) ?? [];
 }
 
 export async function savePricingConfigValue(key: string, value: number) {
-  const { data, error } = await supabase
-    .from("exp_pricing_config")
-    .update({ value, updated_at: new Date().toISOString() })
-    .eq("key", key)
-    .select("key,value");
-  if (error) throw error;
+  // updated_at is stamped by the server's clock
+  const data = await api.patch<{ key: string; value: number | null }[]>(`${ADMIN}/pricing-config/${seg(key)}`, { value });
   if (!data?.length) throw new Error("No row updated (check permissions).");
   return data[0];
 }
@@ -93,11 +85,7 @@ export async function saveVolumeTiers(tiers: VolumeTier[]) {
   const clean = tiers
     .filter((t) => Number.isFinite(t.min) && Number.isFinite(t.pct))
     .sort((a, b) => b.min - a.min);
-  const { data, error } = await supabase
-    .from("exp_pricing_config")
-    .update({ value_json: clean, updated_at: new Date().toISOString() })
-    .eq("key", "volume_tiers")
-    .select("key");
-  if (error) throw error;
+  // written to the volume_tiers row's value_json; updated_at is stamped by the server's clock
+  const data = await api.put<{ key: string }[]>(`${ADMIN}/pricing-config/volume-tiers`, { tiers: clean });
   if (!data?.length) throw new Error("No row updated (check permissions).");
 }
