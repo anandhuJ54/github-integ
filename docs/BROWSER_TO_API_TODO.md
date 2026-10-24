@@ -203,7 +203,10 @@ Pages:
   - Expertise: if one of the three uncapped reads fails, the page now shows an error instead of an empty graph.
 - [x] 5. `contracts/graph/openapi.json`
 - [x] 6. No `supabase.from` or `.rpc` calls remain in `surface-ui/graph` (only `auth.getSession`).
-- [ ] 7. Parity: `cd surface-ui/parity && bun --env-file=../app/.env run.ts graph`, about 67 cases (categories plus entities)
+- [x] 7. Parity PASS 68/68 (2026-10-24, signed in, not super_admin): all 51 category cases, 8 control, 4 profile, 5 expertise.
+  - amber-ernst is explained: 1,000 legacy nodes vs 2,644 from the API (uncapped ruling).
+  - The newest-1000 entities case compares only the tie-free part, because bulk loads share one `created_at`.
+  - The users case compares what the page shows: a refusal becomes `[]`.
 - [ ] 8. Click-through · [ ] 9. Lint ratchet
 - **Writes ported as they are (ruling 2026-10-24: "modify as it is"), same statements as the signed-in user, with routing through proposals still open (FOLLOWUPS §3). Expertise graph: no cap (1h).** Context (§3, category data only through `exp_category_proposals`, never DELETE).** The browser does direct writes to:
   - `exp_taxonomy`, `exp_vertical_node_registry` and `content_compliance_rules`: insert, update and **delete**
