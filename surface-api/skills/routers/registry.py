@@ -16,10 +16,10 @@ from pydantic import BaseModel, ConfigDict
 
 from _base.core import db
 from _base.core.auth import current_user
-from nora_os.queries import registry as reg
-from nora_os.queries import sandbox as sbx
+from skills.queries import registry as reg
+from skills.queries import sandbox as sbx
 
-router = APIRouter(prefix="/nora-os", tags=["nora-os"])
+router = APIRouter(prefix="/skills", tags=["skills"])
 
 
 def _guard(fn, *args):

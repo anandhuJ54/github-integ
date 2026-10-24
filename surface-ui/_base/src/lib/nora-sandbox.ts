@@ -1,9 +1,9 @@
 import { api } from "@v3/ui/lib/server-fn";
 
 /* NORA sandbox — read entity state + weights, write only opportunity feedback.
-   Through FastAPI (nora_os: /nora-os/sandbox/*), as the signed-in user. */
+   Through FastAPI (skills: /skills/sandbox/*), as the signed-in user. */
 
-const SBX = "/nora-os/sandbox";
+const SBX = "/skills/sandbox";
 const seg = (v: string) => encodeURIComponent(v);
 
 export type Gap = {

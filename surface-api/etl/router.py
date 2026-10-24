@@ -23,6 +23,7 @@ from etl.routers.etl_deep_hydrate import router as etl_deep_hydrate_router
 from etl.routers.export_prompt_bundles import router as export_prompt_bundles_router
 from etl.routers.health import router as health_router
 from etl.routers.platform import router as platform_router
+from etl.routers.run_monitor import router as run_monitor_router
 
 router = APIRouter()
 router.include_router(health_router)
@@ -38,3 +39,4 @@ router.include_router(etl_deep_hydrate_router)
 router.include_router(export_prompt_bundles_router)
 router.include_router(console_data_router)
 router.include_router(platform_router)
+router.include_router(run_monitor_router)

@@ -61,6 +61,7 @@ import { Route as AuthenticatedProfessionalsRouteImport } from './../../admin/sr
 import { Route as AuthenticatedReportsRouteImport } from './../../ops/src/routes/_authenticated/reports'
 import { Route as AuthenticatedSalesRouteImport } from './../../sales/src/routes/_authenticated/sales'
 import { Route as AuthenticatedSearchRouteImport } from './../../search/src/routes/_authenticated/search'
+import { Route as AuthenticatedSkillsRouteImport } from './../../skills/src/routes/_authenticated/skills'
 import { Route as AuthenticatedSupportRouteImport } from './../../admin/src/routes/_authenticated/support'
 import { Route as AuthenticatedWebsiteRouteImport } from './../../xmp/src/routes/_authenticated/website'
 import { Route as CDotslugRouteImport } from './../../srp/src/routes/c.$slug'
@@ -431,6 +432,11 @@ const AuthenticatedSalesRoute = AuthenticatedSalesRouteImport.update({
 const AuthenticatedSearchRoute = AuthenticatedSearchRouteImport.update({
   id: '/search',
   path: '/search',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedSkillsRoute = AuthenticatedSkillsRouteImport.update({
+  id: '/skills',
+  path: '/skills',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedSupportRoute = AuthenticatedSupportRouteImport.update({
@@ -1119,6 +1125,7 @@ export interface FileRoutesByFullPath {
   '/reports': typeof AuthenticatedReportsRoute
   '/sales': typeof AuthenticatedSalesRouteWithChildren
   '/search': typeof AuthenticatedSearchRouteWithChildren
+  '/skills': typeof AuthenticatedSkillsRoute
   '/support': typeof AuthenticatedSupportRoute
   '/website': typeof AuthenticatedWebsiteRouteWithChildren
   '/c/$slug': typeof CDotslugRoute
@@ -1273,6 +1280,7 @@ export interface FileRoutesByTo {
   '/products': typeof AuthenticatedProductsRoute
   '/professionals': typeof AuthenticatedProfessionalsRoute
   '/reports': typeof AuthenticatedReportsRoute
+  '/skills': typeof AuthenticatedSkillsRoute
   '/support': typeof AuthenticatedSupportRoute
   '/c/$slug': typeof CDotslugRoute
   '/o/$slug': typeof ODotslugRoute
@@ -1432,6 +1440,7 @@ export interface FileRoutesById {
   '/_authenticated/reports': typeof AuthenticatedReportsRoute
   '/_authenticated/sales': typeof AuthenticatedSalesRouteWithChildren
   '/_authenticated/search': typeof AuthenticatedSearchRouteWithChildren
+  '/_authenticated/skills': typeof AuthenticatedSkillsRoute
   '/_authenticated/support': typeof AuthenticatedSupportRoute
   '/_authenticated/website': typeof AuthenticatedWebsiteRouteWithChildren
   '/c/$slug': typeof CDotslugRoute
@@ -1595,6 +1604,7 @@ export interface FileRouteTypes {
     | '/reports'
     | '/sales'
     | '/search'
+    | '/skills'
     | '/support'
     | '/website'
     | '/c/$slug'
@@ -1749,6 +1759,7 @@ export interface FileRouteTypes {
     | '/products'
     | '/professionals'
     | '/reports'
+    | '/skills'
     | '/support'
     | '/c/$slug'
     | '/o/$slug'
@@ -1907,6 +1918,7 @@ export interface FileRouteTypes {
     | '/_authenticated/reports'
     | '/_authenticated/sales'
     | '/_authenticated/search'
+    | '/_authenticated/skills'
     | '/_authenticated/support'
     | '/_authenticated/website'
     | '/c/$slug'
@@ -2430,6 +2442,13 @@ declare module '@tanstack/react-router' {
       path: '/search'
       fullPath: '/search'
       preLoaderRoute: typeof AuthenticatedSearchRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/skills': {
+      id: '/_authenticated/skills'
+      path: '/skills'
+      fullPath: '/skills'
+      preLoaderRoute: typeof AuthenticatedSkillsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/support': {
@@ -3546,6 +3565,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedReportsRoute: typeof AuthenticatedReportsRoute
   AuthenticatedSalesRoute: typeof AuthenticatedSalesRouteWithChildren
   AuthenticatedSearchRoute: typeof AuthenticatedSearchRouteWithChildren
+  AuthenticatedSkillsRoute: typeof AuthenticatedSkillsRoute
   AuthenticatedSupportRoute: typeof AuthenticatedSupportRoute
   AuthenticatedWebsiteRoute: typeof AuthenticatedWebsiteRouteWithChildren
   AuthenticatedAdminDotintegrationsRoute: typeof AuthenticatedAdminDotintegrationsRoute
@@ -3578,6 +3598,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedReportsRoute: AuthenticatedReportsRoute,
   AuthenticatedSalesRoute: AuthenticatedSalesRouteWithChildren,
   AuthenticatedSearchRoute: AuthenticatedSearchRouteWithChildren,
+  AuthenticatedSkillsRoute: AuthenticatedSkillsRoute,
   AuthenticatedSupportRoute: AuthenticatedSupportRoute,
   AuthenticatedWebsiteRoute: AuthenticatedWebsiteRouteWithChildren,
   AuthenticatedAdminDotintegrationsRoute:

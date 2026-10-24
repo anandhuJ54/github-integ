@@ -1,4 +1,4 @@
-"""GET /nora-os/etl-monitor: SQL shape, figures and the TS-parity edge cases (no live DB/auth)."""
+"""GET /etl/run-monitor: SQL shape, figures and the TS-parity edge cases (no live DB/auth)."""
 from __future__ import annotations
 
 from contextlib import contextmanager
@@ -9,7 +9,7 @@ from fastapi.testclient import TestClient
 
 from _base.core import db as core_db
 from _base.core.auth import current_user
-from nora_os.router import router
+from etl.routers.run_monitor import router
 
 CLAIMS = {"sub": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa", "role": "authenticated"}
 
@@ -89,12 +89,12 @@ def client() -> TestClient:
 def test_requires_a_signed_in_user():
     app = FastAPI()
     app.include_router(router)
-    assert TestClient(app).get("/nora-os/etl-monitor").status_code == 403
+    assert TestClient(app).get("/etl/run-monitor").status_code == 403
 
 
 def test_reads_as_the_user_and_builds_the_monitor(calls):
     log, roles = calls
-    r = client().get("/nora-os/etl-monitor")
+    r = client().get("/etl/run-monitor")
     assert r.status_code == 200
     assert roles == [("authenticated", CLAIMS, False)]
     assert r.json() == {
@@ -128,12 +128,12 @@ def test_reads_as_the_user_and_builds_the_monitor(calls):
 
 
 def test_zero_totals_do_not_divide(calls, monkeypatch):
-    from nora_os.queries import etl_monitor as q
+    from etl.queries import run_monitor as q
 
     monkeypatch.setattr(q, "staging_counts",
                         lambda c: {"total": 0, "processed": 0, "remaining": 0, "flagged": 0})
     monkeypatch.setattr(q, "deep_field_counts", lambda c: [])
-    body = client().get("/nora-os/etl-monitor").json()
+    body = client().get("/etl/run-monitor").json()
     assert body["progress"]["pctComplete"] == 0
     assert body["gate"]["shallowRate"] == 0
     assert body["depth"]["avgFieldsNow"] is None

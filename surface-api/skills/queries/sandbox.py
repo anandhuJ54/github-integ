@@ -1,6 +1,6 @@
 """NORA sandbox — port of the supabase-js calls in surface-ui/_base/src/lib/nora-sandbox.ts
 (exp_nora_state, exp_nora_weights, exp_opportunity_feedback, search_rank_scores and the
-exp_entity display names), used by nora-os' components/nora/sandbox-tab.tsx.
+exp_entity display names), used by the skills page's sandbox tab (surface-ui/skills).
 
 Runs as the signed-in user, so RLS decides as it did for the browser. Every read but the entity
 names threw its error (`must`); the names read ignored it (`res.data ?? []`) and still does. The
@@ -19,7 +19,7 @@ from sqlalchemy import select
 
 from _base.core.sql import fetch_all, fetch_many
 from _base.schema import tables as T
-from nora_os.queries.registry import adapt, execute, maybe_one
+from skills.queries.registry import adapt, execute, maybe_one
 
 state = T.t_exp_nora_state
 weights = T.t_exp_nora_weights

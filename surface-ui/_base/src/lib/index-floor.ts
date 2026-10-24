@@ -109,6 +109,7 @@ export const CONSOLE_PATH_PREFIXES = [
   "emp",
   "enterprise",
   "nora-os",
+  "skills",
   "organizations",
   "products",
   "professionals",

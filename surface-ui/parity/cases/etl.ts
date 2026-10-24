@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import type { ParityCase } from "./types";
 import { api } from "@v3/ui/lib/server-fn";
+import { runMonitorCases } from "./etl-run-monitor";
 
 // ETL /discovery: the legacy queries (copied verbatim from surface-ui/etl/src/components/discovery
 // at migrate/from-experiencesrp-clone, where they were inline in components) against the
@@ -468,4 +469,5 @@ export const cases: ParityCase[] = [
       api: { method: "GET", path: `/etl/console/population/discover-running?gcid=${encodeURIComponent(g)}` },
     },
   ]),
+  ...runMonitorCases,
 ];

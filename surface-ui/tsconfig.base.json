@@ -53,6 +53,9 @@
       "@v3/etl/*": [
         "./etl/src/*"
       ],
+      "@v3/skills/*": [
+        "./skills/src/*"
+      ],
       "@v3/nora-os/*": [
         "./nora-os/src/*"
       ],

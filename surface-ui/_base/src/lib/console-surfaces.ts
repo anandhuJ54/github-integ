@@ -221,7 +221,7 @@ export type DiscoJob = {
   updated_at: string | null;
 };
 
-export async function loadNoraOs() {
+export async function loadPipelineHealth() {
   const r = await api.get<{
     jobs: DiscoJob[];
     counts: {
@@ -232,7 +232,7 @@ export async function loadNoraOs() {
       engineSnapshots: number;
       enginePrompts: number;
     };
-  }>("/etl/platform/nora-os");
+  }>("/etl/platform/pipeline-health");
   const { proposals, llm, siteContracts: contract, engineRequests: engineReq, engineSnapshots: engineSnap, enginePrompts: prompts } =
     r.counts;
 

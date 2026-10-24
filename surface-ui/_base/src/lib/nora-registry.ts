@@ -2,9 +2,9 @@ import { api } from "@v3/ui/lib/server-fn";
 import type { SkillRun } from "@v3/ui/lib/nora-runner";
 
 /* NORA build & registry — exp_skill_registry, exp_capability_registry, exp_build_map.
-   Reads and writes go through FastAPI (nora_os: /nora-os/registry/*), as the signed-in user. */
+   Reads and writes go through FastAPI (skills: /skills/registry/*), as the signed-in user. */
 
-const REG = "/nora-os/registry";
+const REG = "/skills/registry";
 const seg = (v: string) => encodeURIComponent(v);
 
 export const SKILL_STATUSES = ["draft", "in_eval", "published", "deprecated"] as const;

@@ -1,7 +1,7 @@
 """NORA build & registry — port of the supabase-js calls in
 surface-ui/_base/src/lib/nora-registry.ts (exp_skill_registry, exp_capability_registry,
 exp_build_map, exp_skill_eval, exp_skill_version, exp_skill_run), used by the `_base`
-components nora/registry-tabs.tsx and nora/skill-runs.tsx and nora-os' sandbox tab.
+components nora/registry-tabs.tsx and nora/skill-runs.tsx and the skills page's sandbox tab.
 
 Runs as the signed-in user, so RLS decides as it did for the browser. Every call threw its error
 (`must`), so errors reach the page. Lists keep the PostgREST shape and the 1000-row cap;

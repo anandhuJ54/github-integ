@@ -10,6 +10,7 @@ import { CategoryPopulationTab } from "@v3/etl/components/discovery/category-pop
 import { SchedulesTab } from "@v3/etl/components/discovery/schedules-tab";
 import { SourceStatsTab } from "@v3/etl/components/discovery/source-stats-tab";
 import { AiCostTab } from "@v3/etl/components/discovery/ai-cost-tab";
+import { PipelineHealthTab } from "@v3/etl/components/discovery/pipeline-health-tab";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@v3/ui/components/ui/tabs";
 
 export const Route = createFileRoute("/_authenticated/discovery")({
@@ -56,6 +57,7 @@ function DiscoveryPage() {
             <TabsTrigger value="schedules">Schedules</TabsTrigger>
             <TabsTrigger value="stats">Source Stats</TabsTrigger>
             <TabsTrigger value="ai_cost">AI Cost</TabsTrigger>
+            <TabsTrigger value="health">Pipeline Health</TabsTrigger>
           </TabsList>
           <TabsContent value="sources" className="mt-4">
             <SourceRegistryTab />
@@ -83,6 +85,9 @@ function DiscoveryPage() {
           </TabsContent>
           <TabsContent value="ai_cost" className="mt-4">
             <AiCostTab />
+          </TabsContent>
+          <TabsContent value="health" className="mt-4">
+            <PipelineHealthTab />
           </TabsContent>
         </Tabs>
       </div>

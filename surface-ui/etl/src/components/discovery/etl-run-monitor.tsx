@@ -7,7 +7,7 @@ import {
   EmptyState,
   type Column,
 } from "@v3/ui/components/console/primitives";
-import { loadEtlMonitor, type FlaggedRow } from "@v3/nora-os/lib/etl-monitor";
+import { loadEtlMonitor, type FlaggedRow } from "@v3/etl/lib/etl-monitor";
 import { num } from "@v3/ui/lib/console-surfaces";
 import { cn } from "@v3/ui/lib/utils";
 

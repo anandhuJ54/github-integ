@@ -49,7 +49,7 @@ const NAV: NavGroup[] = [
     items: [
       { to: "/categories", label: "Categories", icon: Grid3x3 },
       { to: "/professionals", label: "Profiles & Graph", icon: Network },
-      { to: "/nora-os", label: "Nora OS", icon: Bot },
+      { to: "/skills", label: "Skills", icon: Bot },
     ],
   },
   {

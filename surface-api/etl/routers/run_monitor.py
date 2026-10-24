@@ -1,4 +1,4 @@
-"""GET /nora-os/etl-monitor — the console's live ETL run monitor (read-only)."""
+"""GET /etl/run-monitor — the console's live ETL run monitor (read-only)."""
 from __future__ import annotations
 
 from fastapi import APIRouter, Depends
@@ -6,9 +6,9 @@ from pydantic import BaseModel, Field
 
 from _base.core import db
 from _base.core.auth import current_user
-from nora_os.queries.etl_monitor import load_etl_monitor
+from etl.queries.run_monitor import load_etl_monitor
 
-router = APIRouter(prefix="/nora-os", tags=["nora-os"])
+router = APIRouter(prefix="/etl", tags=["etl"])
 
 
 class Progress(BaseModel):
@@ -71,7 +71,7 @@ class EtlMonitor(BaseModel):
     depth: Depth
 
 
-@router.get("/etl-monitor", response_model=EtlMonitor, response_model_by_alias=True)
+@router.get("/run-monitor", response_model=EtlMonitor, response_model_by_alias=True)
 def etl_monitor(claims: dict = Depends(current_user)) -> dict:
     with db.role_connection("authenticated", claims) as conn:
         return load_etl_monitor(conn)

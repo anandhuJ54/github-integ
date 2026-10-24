@@ -113,14 +113,14 @@ const billingOrder = (r: any) =>
         entitlements: sortRows(r.entitlements),
       }
     : r;
-/** loadNoraOs: disco_jobs.updated_at ties; lastTick is the max either way. */
+/** loadNoraOs (now loadPipelineHealth): disco_jobs.updated_at ties; lastTick is the max either way. */
 const noraOrder = (r: any) => (r && typeof r === "object" ? { ...r, jobs: sortRows(r.jobs) } : r);
 
 const csCases: ParityCase[] = [
   lib(CS, "console: product catalog (sales)", "loadProductCatalog", () => cs.loadProductCatalog(), { normalize: productCatalogOrder }),
   lib(CS, "console: billing (sales)", "loadBilling", () => cs.loadBilling(), { normalize: billingOrder }),
   lib(CS, "console: report metrics, 14 exact counts (etl)", "loadReportMetrics", () => cs.loadReportMetrics()),
-  lib(CS, "console: nora os jobs + counts (etl)", "loadNoraOs", () => cs.loadNoraOs(), { normalize: noraOrder }),
+  lib(CS, "console: pipeline health, disco jobs + counts (etl)", "loadNoraOs", () => cs.loadPipelineHealth(), { normalize: noraOrder }),
   lib(CS, "console: organization stats (etl)", "loadOrgStats", () => cs.loadOrgStats()),
 ];
 

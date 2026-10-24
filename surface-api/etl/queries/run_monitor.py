@@ -1,4 +1,4 @@
-"""Live ETL run monitor (read-only) — port of surface-ui/nora-os/src/lib/etl-monitor.ts.
+"""Live ETL run monitor (read-only) — port of surface-ui/etl/src/lib/etl-monitor.ts.
 
 Every figure is a table read against exp_etl_staging, exp_etl_field_floors, professionals and
 graph_nodes, made as the signed-in user (role `authenticated`, RLS applies) like the browser's

@@ -2,7 +2,7 @@ import { api } from "@v3/ui/lib/server-fn";
 
 /* ────────────────────────────────────────────────────────────
    Live ETL run monitor (read-only).
-   Served by GET /nora-os/etl-monitor (surface-api/nora_os/queries/etl_monitor.py):
+   Served by GET /etl/run-monitor (surface-api/etl/queries/run_monitor.py):
    table reads against exp_etl_staging, exp_etl_field_floors,
    professionals and graph_nodes, made as the signed-in user.
    ──────────────────────────────────────────────────────────── */
@@ -46,5 +46,5 @@ export type EtlMonitor = {
 };
 
 export function loadEtlMonitor(): Promise<EtlMonitor> {
-  return api.get<EtlMonitor>("/nora-os/etl-monitor");
+  return api.get<EtlMonitor>("/etl/run-monitor");
 }

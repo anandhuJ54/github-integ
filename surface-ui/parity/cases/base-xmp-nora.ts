@@ -7,7 +7,7 @@ import * as sbx from "@v3/ui/lib/nora-sandbox";
 
 // Shared @v3/ui libs ported to their owner Surface's API (all signed in):
 //   lib/nav-menus.ts → xmp /xmp/website/nav-menus*, lib/enterprise-ops.ts → xmp /xmp/enterprise/ops/*,
-//   lib/nora-registry.ts + lib/nora-sandbox.ts → nora_os /nora-os/registry/*, /nora-os/sandbox/*.
+//   lib/nora-registry.ts + lib/nora-sandbox.ts → skills /skills/registry/*, /skills/sandbox/* (moved from nora-os, surface audit 2026-10-24).
 // The legacy lib (direct supabase-js, from PARITY_LEGACY_REF) against the current one (same lib,
 // rows from FastAPI). Reads only: the writes (nav menu create/update/assign/trash/restore/delete,
 // skill/capability/build-step/eval upserts, publish/yank version rows, weights, feedback) are

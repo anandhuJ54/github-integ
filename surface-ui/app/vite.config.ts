@@ -17,6 +17,7 @@ const SURFACES = [
   "xmp",
   "etl",
   "nora-os",
+  "skills",
   "conversion-agents",
   "admin",
   "ops",

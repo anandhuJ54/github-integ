@@ -1,4 +1,4 @@
-"""/nora-os/registry and /nora-os/sandbox endpoints (no live DB/auth): the SQL each one sends,
+"""/skills/registry and /skills/sandbox endpoints (no live DB/auth): the SQL each one sends,
 the PostgREST-shaped answers, and the writes as the page sent them. No write reaches a database
 here."""
 from __future__ import annotations
@@ -12,14 +12,14 @@ from fastapi.testclient import TestClient
 
 from _base.core import db as core_db
 from _base.core.auth import current_user
-from nora_os.routers.registry import router
+from skills.routers.registry import router
 from xmp.queries.website_test import FakeConn, values, writes
 
 CLAIMS = {"sub": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa", "role": "authenticated"}
 RID = "11111111-1111-4111-8111-111111111111"
 ENT = "22222222-2222-4222-8222-222222222222"
-R = "/nora-os/registry"
-S = "/nora-os/sandbox"
+R = "/skills/registry"
+S = "/skills/sandbox"
 
 
 @pytest.fixture
