@@ -331,7 +331,7 @@ Pages:
     - Cap (1j, kept 1:1): the territory move's office read, board/spine claim events, spine graph_nodes chunks, plus the new ones listed in 1j.
     - Storage stays in the browser: seller photo upload (`seller-photos`).
   - [x] 5. `contracts/sales/openapi.json` regenerated · [x] 6. No direct table/RPC calls left anywhere in `surface-ui` (Storage, Auth and one realtime channel excepted)
-  - [ ] 7. Parity: `run.ts sales` (S1–S4, 230 cases) · [ ] 8. Click-through: `/sales/territories`, one category group, `/sales/teams` (or the team page), seller setup, the seller desk, `/sales` board, nav browse pages (open only; press nothing, especially not generate or move)
+  - [x] 7. Parity: `run.ts sales` **PASS 230/230** (S1–S4, 2026-10-24) · [ ] 8. Click-through: `/sales/territories`, one category group, `/sales/teams` (or the team page), seller setup, the seller desk, `/sales` board, nav browse pages (open only; press nothing, especially not generate or move)
 
 marketing and app make no direct calls.
 
