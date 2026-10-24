@@ -13,6 +13,8 @@
 // result type, a parser, and a loader — it does NOT re-implement the decision.
 // ─────────────────────────────────────────────────────────────────────────────
 
+import { api } from "@v3/ui/lib/server-fn";
+
 export type OfficeModeKind =
   | "single_pro"
   | "multi_pro"
@@ -64,24 +66,16 @@ export function parseOfficeMode(raw: unknown): OfficeMode | null {
 export const isSinglePro = (m: OfficeMode | null | undefined): m is OfficeMode =>
   !!m && m.mode === "single_pro" && !!m.professionalId && !!m.locationId;
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type RpcClient = { rpc: (fn: string, args: Record<string, unknown>) => PromiseLike<any> };
-
 /**
- * Call exp_office_mode. Returns null when the function is not deployed yet (0027
- * unapplied) or errors — callers then keep today's behaviour (the record as itself).
+ * Call exp_office_mode (through FastAPI's read-only RPC allow-list). Returns null when the
+ * function is not deployed yet (0027 unapplied) or errors — callers then keep today's behaviour
+ * (the record as itself).
  */
-export async function loadOfficeMode(
-  db: RpcClient,
-  entityType: RecordType,
-  entityId: string,
-): Promise<OfficeMode | null> {
+export async function loadOfficeMode(entityType: RecordType, entityId: string): Promise<OfficeMode | null> {
   try {
-    const { data, error } = await db.rpc("exp_office_mode", {
-      p_entity_type: entityType,
-      p_entity_id: entityId,
+    const data = await api.post<unknown>("/xmp/rpc/exp_office_mode", {
+      args: { p_entity_type: entityType, p_entity_id: entityId },
     });
-    if (error) return null;
     return parseOfficeMode(data);
   } catch {
     return null;

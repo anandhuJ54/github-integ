@@ -11,6 +11,7 @@ import {
   FileText,
 } from "lucide-react";
 import { supabase } from "@v3/ui/integrations/supabase/client";
+import { api } from "@v3/ui/lib/server-fn";
 import { Button } from "@v3/ui/components/ui/button";
 import { Card } from "@v3/ui/components/ui/card";
 import { Badge } from "@v3/ui/components/ui/badge";
@@ -78,65 +79,32 @@ function ContentPage() {
         navigate({ to: "/auth" as any });
         return;
       }
-      const { data: proRow } = await supabase
-        .from("professionals")
-        .select("id,display_name,first_name,last_name,photo_url,gcid")
-        .eq("user_id", session.user.id)
-        .maybeSingle();
-      if (!proRow) {
+      // the signed-in user's professional, its content and its category's terms (server side)
+      const data = await api.get<{
+        pro: Professional | null;
+        items?: ContentItem[];
+        topics?: TaxTerm[];
+        questions?: TaxTerm[];
+        terms?: TaxTerm[];
+      }>("/xmp/dashboard/content");
+      if (!data.pro) {
         setLoading(false);
         return;
       }
-      setPro(proRow as Professional);
+      setPro(data.pro);
+      const ci = data.items ?? [];
 
-      const [{ data: ci }, topicsRes, qRes, allTerms] = await Promise.all([
-        supabase
-          .from("content_items")
-          .select(
-            "id,title,slug,excerpt,status,published_at,views,ai_mentions,keywords,topic_ids,published_url,content_type",
-          )
-          .eq("author_type", "professional")
-          .eq("author_id", proRow.id)
-          .order("created_at", { ascending: false })
-          .limit(100),
-        proRow.gcid
-          ? supabase
-              .from("exp_taxonomy")
-              .select("id,term,term_display,level,search_volume_monthly,search_intent,priority")
-              .eq("gcid", proRow.gcid)
-              .eq("level", "topic")
-              .eq("is_active", true)
-              .order("search_volume_monthly", { ascending: false, nullsFirst: false })
-              .limit(5)
-          : Promise.resolve({ data: [] as TaxTerm[] }),
-        proRow.gcid
-          ? supabase
-              .from("exp_taxonomy")
-              .select("id,term,term_display,level,search_volume_monthly,search_intent,priority")
-              .eq("gcid", proRow.gcid)
-              .eq("level", "question")
-              .eq("is_active", true)
-              .order("search_volume_monthly", { ascending: false, nullsFirst: false })
-              .limit(20)
-          : Promise.resolve({ data: [] as TaxTerm[] }),
-        proRow.gcid
-          ? supabase
-              .from("exp_taxonomy")
-              .select("id,term,term_display,level,search_volume_monthly,search_intent,priority")
-              .eq("gcid", proRow.gcid)
-          : Promise.resolve({ data: [] as TaxTerm[] }),
-      ]);
-      setItems((ci as ContentItem[]) ?? []);
-      setTopics((topicsRes.data as TaxTerm[]) ?? []);
-      const allQ = (qRes.data as TaxTerm[]) ?? [];
+      setItems(ci);
+      setTopics(data.topics ?? []);
+      const allQ = data.questions ?? [];
 
       const map = new Map<string, TaxTerm>();
-      for (const t of (allTerms.data as TaxTerm[]) ?? []) map.set(t.id, t);
+      for (const t of data.terms ?? []) map.set(t.id, t);
       setTopicMap(map);
 
       // Filter answered questions: any content item whose topic_ids include the question id
       const answered = new Set<string>();
-      for (const c of (ci as ContentItem[]) ?? []) {
+      for (const c of ci) {
         for (const tid of c.topic_ids ?? []) answered.add(tid);
       }
       setQuestions(allQ.filter((q) => !answered.has(q.id)).slice(0, 6));

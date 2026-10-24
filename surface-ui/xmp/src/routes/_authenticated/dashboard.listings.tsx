@@ -12,6 +12,7 @@ import {
   Globe,
 } from "lucide-react";
 import { supabase } from "@v3/ui/integrations/supabase/client";
+import { api } from "@v3/ui/lib/server-fn";
 import { Button } from "@v3/ui/components/ui/button";
 import { Card } from "@v3/ui/components/ui/card";
 import { Badge } from "@v3/ui/components/ui/badge";
@@ -108,46 +109,26 @@ function ListingsPage() {
       navigate({ to: "/auth" as any });
       return;
     }
-    const { data: proRow } = await supabase
-      .from("professionals")
-      .select("id,display_name,first_name,last_name,photo_url,gcid")
-      .eq("user_id", session.user.id)
-      .maybeSingle();
+    // the signed-in user's professional (server side)
+    const { pro: proRow } = await api.get<{ pro: Professional | null }>("/xmp/dashboard/me");
     if (!proRow) {
       setLoading(false);
       return;
     }
-    setPro(proRow as Professional);
+    setPro(proRow);
 
     // Single-pro office: listings belong to the location (exp_office_mode, 0027). Until 0027 is
     // applied the mode is null and the professional's own rows are read, as before.
     const subject = listingSubject(
       { entityType: "professional", entityId: proRow.id },
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      await loadOfficeMode(supabase as any, "professional", proRow.id),
+      await loadOfficeMode("professional", proRow.id),
     );
 
-    const [{ data: lst }, { data: reg }] = await Promise.all([
-      supabase
-        .from("listings")
-        .select(
-          "id,directory_key,directory_name,directory_url,status,listing_url,last_verified,last_submitted,has_drift,drift_fields,score_points,name_match,phone_match,address_match",
-        )
-        .eq("entity_type", subject.entityType)
-        .eq("entity_id", subject.entityId),
-      proRow.gcid
-        ? supabase
-            .from("exp_vertical_node_registry")
-            .select(
-              "id,node_name,node_slug,connection_method,score_points,priority,url_pattern,ring",
-            )
-            .eq("gcid", proRow.gcid)
-            // Rings are named (identity, presence, …); the old "ring_2" literal matched nothing.
-            .eq("ring", "presence")
-            .eq("is_active", true)
-            .order("priority", { ascending: true })
-        : Promise.resolve({ data: [] as Registry[] }),
-    ]);
+    // the subject's listings and the category's presence-ring registry (server side)
+    const { listings: lst, registry: reg } = await api.get<{ listings: Listing[]; registry: Registry[] }>(
+      "/xmp/dashboard/listings",
+      { params: { entity_type: subject.entityType, entity_id: subject.entityId, gcid: proRow.gcid } },
+    );
     setListings((lst as Listing[]) ?? []);
     setRegistry((reg as Registry[]) ?? []);
     setLoading(false);

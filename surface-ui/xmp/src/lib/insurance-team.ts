@@ -1,4 +1,4 @@
-import { supabase } from "@v3/ui/integrations/supabase/client";
+import { api } from "@v3/ui/lib/server-fn";
 
 /* ────────────────────────────────────────────────────────────
    Team Central — one sales team read live from the commercial
@@ -6,8 +6,6 @@ import { supabase } from "@v3/ui/integrations/supabase/client";
    territory→brand links, organizations, expansion views).
    No graph / taxonomy / registry / scoring / compliance reads.
    ──────────────────────────────────────────────────────────── */
-
-const db = supabase as unknown as { from: (t: string) => any };
 
 export type PeriodKey = "month" | "quarter" | "year";
 
@@ -129,17 +127,15 @@ const num = (v: unknown) => (v == null ? 0 : Number(v));
 export async function loadTeamCentral(groupKey: string, now = new Date()): Promise<TeamCentral> {
   const pb = bounds(now);
 
-  const [repsQ, terrQ, revQ, quotaQ, groupQ] = await Promise.all([
-    db.from("exp_sales_reps").select("*").eq("group_key", groupKey).order("role"),
-    db.from("exp_territories").select("*").order("tier").order("seq"),
-    db
-      .from("exp_revenue_components")
-      .select("id, seller_id, attributed_seller_id, amount, period_start, source")
-      .eq("group_key", groupKey),
-    db.from("exp_sales_quotas").select("*").eq("group_key", groupKey),
-    db.from("exp_category_groups").select("group_key, label"),
-  ]);
-  for (const q of [repsQ, terrQ, revQ, quotaQ, groupQ]) if (q.error) throw q.error;
+  // reps, territories, revenue components, quotas and category groups (server side, read-only)
+  const base = await api.get<Record<"reps" | "territories" | "revenue" | "quotas" | "groups", any[]>>(
+    `/xmp/team/${encodeURIComponent(groupKey)}`,
+  );
+  const repsQ = { data: base.reps };
+  const terrQ = { data: base.territories };
+  const revQ = { data: base.revenue };
+  const quotaQ = { data: base.quotas };
+  const groupQ = { data: base.groups };
 
   const allTerr = (terrQ.data ?? []) as any[];
   const familyKey: string | null =
@@ -151,33 +147,18 @@ export async function loadTeamCentral(groupKey: string, now = new Date()): Promi
   const terrs = familyKey ? allTerr.filter((t) => t.group_key === familyKey) : [];
   const terrIds = terrs.map((t) => t.id);
 
-  const [linkQ, expQ, monthQ] = await Promise.all([
-    terrIds.length
-      ? db
-          .from("exp_territory_brand")
-          .select("territory_id, org_id")
-          .in("territory_id", terrIds)
-      : Promise.resolve({ data: [], error: null }),
-    familyKey
-      ? db.from("v_logo_expansion").select("*").eq("group_key", familyKey).order("year")
-      : Promise.resolve({ data: [], error: null }),
-    familyKey
-      ? db
-          .from("v_logo_expansion_month")
-          .select("month_start, month_revenue, cumulative_revenue, year")
-          .eq("group_key", familyKey)
-          .eq("year", now.getUTCFullYear())
-          .order("month_start")
-      : Promise.resolve({ data: [], error: null }),
-  ]);
-  for (const q of [linkQ, expQ, monthQ] as any[]) if (q.error) throw q.error;
+  // territory→brand links, the linked organizations, the expansion views and the territory
+  // sellers' names (server side, read-only)
+  const fam = await api.post<Record<"links" | "orgs" | "sellers" | "expansion" | "months", any[]>>(
+    "/xmp/team/family",
+    { family_key: familyKey, territory_ids: terrIds, year: now.getUTCFullYear() },
+  );
+  const linkQ = { data: fam.links };
+  const expQ = { data: fam.expansion };
+  const monthQ = { data: fam.months };
 
   const rawLinks = (linkQ.data ?? []) as any[];
-  const orgIds = Array.from(new Set(rawLinks.map((l) => l.org_id as string)));
-  const orgQ = orgIds.length
-    ? await db.from("organizations").select("id, name").in("id", orgIds)
-    : { data: [], error: null };
-  if ((orgQ as any).error) throw (orgQ as any).error;
+  const orgQ = { data: fam.orgs };
   const orgName = new Map(((orgQ.data ?? []) as any[]).map((o) => [o.id as string, o.name as string]));
 
   const links = rawLinks.map((l) => ({
@@ -263,10 +244,7 @@ export async function loadTeamCentral(groupKey: string, now = new Date()): Promi
 
   const sellerIds = Array.from(new Set(terrs.map((t) => t.seller_id).filter(Boolean))) as string[];
   const outsideIds = sellerIds.filter((id) => !members.some((m) => m.id === id));
-  const outsideQ = outsideIds.length
-    ? await db.from("exp_sales_reps").select("id, name").in("id", outsideIds)
-    : { data: [], error: null };
-  if ((outsideQ as any).error) throw (outsideQ as any).error;
+  const outsideQ = { data: (fam.sellers ?? []).filter((r: any) => outsideIds.includes(r.id)) };
   const sellerName = new Map<string, string>([
     ...members.map((m) => [m.id, m.name] as [string, string]),
     ...((outsideQ.data ?? []) as any[]).map((r) => [r.id as string, r.name as string] as [string, string]),

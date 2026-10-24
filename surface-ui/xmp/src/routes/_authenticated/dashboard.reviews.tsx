@@ -3,6 +3,7 @@ import { useServerFn } from "@v3/ui/lib/server-fn";
 import { useEffect, useMemo, useState } from "react";
 import { Star, Flag, Sparkles, AlertTriangle, CheckCircle2, Send, Megaphone } from "lucide-react";
 import { supabase } from "@v3/ui/integrations/supabase/client";
+import { api } from "@v3/ui/lib/server-fn";
 import { Button } from "@v3/ui/components/ui/button";
 import { Card } from "@v3/ui/components/ui/card";
 import { Badge } from "@v3/ui/components/ui/badge";
@@ -102,25 +103,14 @@ function ReviewsPage() {
       navigate({ to: "/auth" as any });
       return;
     }
-    const { data: proRow } = await supabase
-      .from("professionals")
-      .select("id,display_name,first_name,last_name,photo_url,gcid")
-      .eq("user_id", session.user.id)
-      .maybeSingle();
-    if (!proRow) {
+    // the signed-in user's professional and its newest 200 reviews (server side)
+    const data = await api.get<{ pro: Professional | null; reviews?: Review[] }>("/xmp/dashboard/reviews");
+    if (!data.pro) {
       setLoading(false);
       return;
     }
-    setPro(proRow as Professional);
-
-    const { data: rows } = await supabase
-      .from("reviews")
-      .select("id,rating,title,body,reviewer_name,review_date,source,reply_body,reply_date,is_flagged,flag_reason")
-      .eq("entity_type", "professional")
-      .eq("entity_id", proRow.id)
-      .order("review_date", { ascending: false })
-      .limit(200);
-    setReviews((rows as Review[]) ?? []);
+    setPro(data.pro);
+    setReviews(data.reviews ?? []);
     setLoading(false);
   };
 

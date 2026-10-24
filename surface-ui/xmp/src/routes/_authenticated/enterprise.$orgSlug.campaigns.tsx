@@ -19,7 +19,7 @@ import {
   CheckCircle2,
   Send,
 } from "lucide-react";
-import { supabase } from "@v3/ui/integrations/supabase/client";
+import { api } from "@v3/ui/lib/server-fn";
 import { Card } from "@v3/ui/components/ui/card";
 import { Badge } from "@v3/ui/components/ui/badge";
 import { Button } from "@v3/ui/components/ui/button";
@@ -109,45 +109,30 @@ function CampaignsPage() {
   const [builderOpen, setBuilderOpen] = useState(false);
 
   const load = async () => {
-    const { data: rootRow } = await supabase
-      .from("organizations")
-      .select("id,name,slug,entity_type,gcid,hierarchy_path")
-      .eq("slug", orgSlug)
-      .maybeSingle();
+    // the org, the orgs under it (hierarchy_path), their campaigns and the active compliance
+    // rules for its gcid (server side; errors were ignored)
+    const data = await api.get<{
+      root: Org | null;
+      descendants?: Org[];
+      campaigns?: Campaign[];
+      rules?: Rule[];
+    }>(`/xmp/enterprise/orgs/${encodeURIComponent(orgSlug)}/campaigns`);
+    const rootRow = data.root;
     if (!rootRow) {
       setLoading(false);
       return;
     }
-    setOrg(rootRow as Org);
+    setOrg(rootRow);
 
-    const { data: descRows } = await supabase
-      .from("organizations")
-      .select("id,name,slug,entity_type,gcid,hierarchy_path")
-      .like("hierarchy_path", `%${rootRow.id}%`);
+    const descRows = data.descendants;
     const allOrgs = [
       rootRow as Org,
       ...((descRows ?? []) as Org[]).filter((o) => o.id !== rootRow.id),
     ];
     setOrgs(allOrgs);
 
-    const orgIds = allOrgs.map((o) => o.id);
-    const [campRes, ruleRes] = await Promise.all([
-      supabase
-        .from("review_campaigns")
-        .select(
-          "id,entity_type,entity_id,name,campaign_type,status,subject,message_body,target_platform,sent_count,opened_count,clicked_count,completed_count,compliance_approved,includes_required_disclosures,created_at",
-        )
-        .eq("entity_type", "organization")
-        .in("entity_id", orgIds)
-        .order("created_at", { ascending: false }),
-      rootRow.gcid
-        ? supabase
-            .from("content_compliance_rules")
-            .select("id,rule_name,rule_type,rule_value,applies_to,severity")
-            .eq("gcid", rootRow.gcid)
-            .eq("is_active", true)
-        : Promise.resolve({ data: [] as Rule[] }),
-    ]);
+    const campRes = { data: data.campaigns };
+    const ruleRes = { data: data.rules };
 
     setCampaigns(((campRes.data ?? []) as Campaign[]));
     setRules(((ruleRes.data ?? []) as Rule[]));
@@ -176,17 +161,16 @@ function CampaignsPage() {
   }, [campaigns, tab]);
 
   const updateStatus = async (c: Campaign, status: string) => {
-    const { error } = await supabase
-      .from("review_campaigns")
-      .update({ status })
-      .eq("id", c.id);
+    const error = await api
+      .patch(`/xmp/enterprise/campaigns/${encodeURIComponent(c.id)}`, { status })
+      .then(() => null, (e: Error) => e);
     if (error) return toast.error("Failed to update", { description: error.message });
     toast.success(`Campaign ${status}`);
     load();
   };
 
   const duplicate = async (c: Campaign) => {
-    const { error } = await supabase.from("review_campaigns").insert({
+    const error = await api.post("/xmp/enterprise/campaigns", {
       entity_type: c.entity_type,
       entity_id: c.entity_id,
       name: `${c.name} (Copy)`,
@@ -197,7 +181,7 @@ function CampaignsPage() {
       target_platform: c.target_platform,
       compliance_approved: false,
       includes_required_disclosures: c.includes_required_disclosures,
-    } as any);
+    }).then(() => null, (e: Error) => e);
     if (error) return toast.error("Duplicate failed", { description: error.message });
     toast.success("Duplicated as draft");
     load();
@@ -521,7 +505,7 @@ function CampaignBuilder({
     setSubmitting(true);
     const entityId =
       audience === "branch" || audience === "tier" ? audienceOrgId : org.id;
-    const { error } = await supabase.from("review_campaigns").insert({
+    const error = await api.post("/xmp/enterprise/campaigns", {
       entity_type: "organization",
       entity_id: entityId,
       name,
@@ -536,7 +520,7 @@ function CampaignBuilder({
       completed_count: 0,
       compliance_approved: compliancePass,
       includes_required_disclosures: compliancePass,
-    } as any);
+    }).then(() => null, (e: Error) => e);
     setSubmitting(false);
     if (error) return toast.error("Failed to create campaign", { description: error.message });
     toast.success(asDraft ? "Saved as draft" : "Campaign launched");

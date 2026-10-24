@@ -222,14 +222,26 @@ Pages:
 - `/seat/:kind/:id` (+ tabs, `lib/seat.ts`, `lib/insurance-team.ts`, `lib/nora/interview-data.ts`, `lib/office-mode.ts`)
 - `/website/*` CMS (`lib/website.ts`, most of the writes)
 
-- [ ] 1. Endpoints
+- [x] 1. Endpoints:
+  - `/xmp/website/*` (`xmp/routers/website_data.py`): 13 loaders and about 40 CMS writes
+  - `/xmp/*` (`xmp/routers/seat_data.py`): enterprise (brand, offices, moderation, view-as, campaigns, users, invitations, impersonate/deactivate), seat, interview, team, dashboard, and the allow-listed `POST rpc/{name}` (`XMP_RPCS`)
 - [x] 2. Tables and security (2026-10-24, read-only). 38 tables; the 7 RPCs are SECURITY INVOKER. **SF-8**:
   - The website CMS and exp_web_leads are always-true for `authenticated`.
   - The sales reps/quotas/territories tables are always-true.
   - exp_revenue_components has RLS off.
   - 7 tables have no policy, so they always read empty: invitations, user_roles, user_accounts, review_campaigns, listings, plg_rules, content_compliance_rules.
   - Cap: no read is cut today. **1i**: hierarchy reads are latent (only 2 orgs have `hierarchy_path`), and the largest office roster is 990 of the 1,000 cap.
-- [ ] 3 · [ ] 4 · [ ] 5 · [ ] 6 · [ ] 7 parity · [ ] 8 · [ ] 9
+- [x] 3. `xmp/queries/{website,common,enterprise,seat,dashboard}.py` (Core only)
+- [x] 4. pytest: 112 new tests, 815 in total. Live read-only smoke as `authenticated`. **No write was run.**
+  - `reviews.review_text` doesn't exist, so the legacy view-as and moderation review reads always failed (the page showed nothing). The API returns `[]` for both.
+  - `invited_by` and the audit `user_id` now come from the token, no longer from the page.
+  - Timestamps (`updated_at`, `published_at`, …) now use the server clock.
+  - CMS patch models accept only the columns the UI sends.
+  - No professional has `user_id` set, so `/dashboard` is empty for everyone, as before.
+- [x] 5. `contracts/xmp/openapi.json`
+- [x] 6. No `supabase.from` or `.rpc` calls remain in `surface-ui/xmp` (only auth, plus the Storage upload in section-editor). `/website/cms` still shows `exp_web_nav_menus` and `exp_admin_audit` calls, from `@v3/ui` `nav-menus.ts` and `roles.tsx`. Those move with **`_base`**.
+- [ ] 7. Parity: `cd surface-ui/parity && bun --env-file=../app/.env run.ts xmp`
+- [ ] 8. Click-through · [ ] 9. Lint ratchet
 - Writes are ported as they are (same statements, as the signed-in user). Unlike graph, the website CMS writes **do** work on GCP (always-true policies).
 - Writes to the no-policy tables (invitations, review_campaigns, professionals update) fail or match 0 rows, as before.
 - The `section-editor.tsx` image upload uses Supabase Storage. It stays as it is (storage is out of scope).

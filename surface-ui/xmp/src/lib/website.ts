@@ -1,4 +1,4 @@
-import { supabase } from "@v3/ui/integrations/supabase/client";
+import { api } from "@v3/ui/lib/server-fn";
 import type { Json } from "@v3/ui/integrations/supabase/types";
 import { blocksOf } from "@v3/ui/lib/public-site";
 
@@ -162,109 +162,38 @@ export type WebMedia = {
 
 export type SellerOption = { id: string; name: string; role: string | null };
 
-/* ───────────── Loaders (live reads only) ───────────── */
+/* ───────────── Loaders (live reads only, through FastAPI /xmp/website) ───────────── */
 
-const rows = <T,>(res: { data: unknown }) => (res.data ?? []) as T[];
+const W = "/xmp/website";
 
-export async function loadPages(): Promise<WebPage[]> {
-  const res = await supabase
-    .from("exp_web_pages")
-    .select("*")
-    .is("deleted_at", null)
-    .order("updated_at", { ascending: false })
-    .limit(500);
-  return rows<WebPage>(res);
-}
+export const loadPages = () => api.get<WebPage[]>(`${W}/pages`);
 
 /** Pages in the Trash, newest deletion first. */
-export async function loadDeletedPages(): Promise<WebPage[]> {
-  const res = await supabase
-    .from("exp_web_pages")
-    .select("*")
-    .not("deleted_at", "is", null)
-    .order("deleted_at", { ascending: false })
-    .limit(500);
-  return rows<WebPage>(res);
-}
+export const loadDeletedPages = () => api.get<WebPage[]>(`${W}/pages/trash`);
 
 /** Templates in the Trash, newest deletion first. */
-export async function loadDeletedPageTemplates(): Promise<WebPageTemplate[]> {
-  const res = await supabase
-    .from("exp_web_page_templates")
-    .select("*")
-    .not("deleted_at", "is", null)
-    .order("deleted_at", { ascending: false });
-  return rows<WebPageTemplate>(res);
-}
+export const loadDeletedPageTemplates = () => api.get<WebPageTemplate[]>(`${W}/templates/trash`);
 
-export async function loadPageTemplates(): Promise<WebPageTemplate[]> {
-  const res = await supabase
-    .from("exp_web_page_templates")
-    .select("*")
-    .is("deleted_at", null)
-    .order("updated_at", { ascending: false });
-  if (res.error) throw new Error(res.error.message);
-  return rows<WebPageTemplate>(res);
-}
+export const loadPageTemplates = () => api.get<WebPageTemplate[]>(`${W}/templates`);
 
-export async function loadForms(): Promise<WebForm[]> {
-  const res = await supabase.from("exp_web_forms").select("*").order("created_at", { ascending: false });
-  return rows<WebForm>(res);
-}
+export const loadForms = () => api.get<WebForm[]>(`${W}/forms`);
 
-export async function loadLeads(): Promise<WebLead[]> {
-  const res = await supabase
-    .from("exp_web_leads")
-    .select("*")
-    .order("created_at", { ascending: false })
-    .limit(1000);
-  return rows<WebLead>(res);
-}
+export const loadLeads = () => api.get<WebLead[]>(`${W}/leads`);
 
-export async function loadTrustItems(): Promise<TrustItem[]> {
-  const res = await supabase
-    .from("exp_web_trust_items")
-    .select("*")
-    .order("sort_order", { ascending: true });
-  return rows<TrustItem>(res);
-}
+export const loadTrustItems = () => api.get<TrustItem[]>(`${W}/trust`);
 
-export async function loadConsent(): Promise<{ events: ConsentEvent[]; config: ConsentConfig | null }> {
-  const [ev, cfg] = await Promise.all([
-    supabase.from("exp_web_consent_events").select("*").order("created_at", { ascending: false }).limit(1000),
-    supabase.from("exp_web_consent_config").select("*").eq("id", "default").maybeSingle(),
-  ]);
-  return { events: rows<ConsentEvent>(ev), config: (cfg.data ?? null) as ConsentConfig | null };
-}
+export const loadConsent = () =>
+  api.get<{ events: ConsentEvent[]; config: ConsentConfig | null }>(`${W}/consent`);
 
-export async function loadAlerts(): Promise<WebAlert[]> {
-  const res = await supabase.from("exp_web_alerts").select("*").order("created_at", { ascending: false });
-  return rows<WebAlert>(res);
-}
+export const loadAlerts = () => api.get<WebAlert[]>(`${W}/alerts`);
 
-export async function loadAds(): Promise<WebAd[]> {
-  const res = await supabase.from("exp_web_ads").select("*").order("created_at", { ascending: false });
-  return rows<WebAd>(res);
-}
+export const loadAds = () => api.get<WebAd[]>(`${W}/ads`);
 
-export async function loadCampaigns(): Promise<WebCampaign[]> {
-  const res = await supabase.from("exp_web_campaigns").select("*").order("created_at", { ascending: false });
-  return rows<WebCampaign>(res);
-}
+export const loadCampaigns = () => api.get<WebCampaign[]>(`${W}/campaigns`);
 
-export async function loadMedia(): Promise<WebMedia[]> {
-  const res = await supabase.from("exp_web_media").select("*").order("created_at", { ascending: false });
-  return rows<WebMedia>(res);
-}
+export const loadMedia = () => api.get<WebMedia[]>(`${W}/media`);
 
-export async function loadSellers(): Promise<SellerOption[]> {
-  const res = await supabase
-    .from("exp_sales_reps")
-    .select("id, name, role")
-    .order("name", { ascending: true })
-    .limit(500);
-  return rows<SellerOption>(res);
-}
+export const loadSellers = () => api.get<SellerOption[]>(`${W}/sellers`);
 
 /* ───────────── Lead metrics + SLA ───────────── */
 
@@ -390,137 +319,55 @@ export function slugify(v: string) {
     .replace(/^-|-$/g, "");
 }
 
-/* ───────────── Mutations ───────────── */
+/* ───────────── Mutations (FastAPI /xmp/website; same statements, run as the signed-in user) ───────────── */
 
-async function run<T>(p: PromiseLike<{ error: { message: string } | null; data?: unknown }>) {
-  const { error } = await p;
-  if (error) throw new Error(error.message);
-  return true as unknown as T;
-}
+/** The old `run()`: resolves `true`, throws the database's message. */
+const ok = (p: Promise<unknown>) => p.then(() => true as const);
+const post = (path: string, body?: unknown) => ok(api.post(`${W}${path}`, body ?? {}));
+const patch = (path: string, body: unknown) => ok(api.patch(`${W}${path}`, body));
+const del = (path: string) => ok(api.delete(`${W}${path}`));
+
+/** The columns a CMS page edit may send (updated_at is stamped by the server). */
+export type WebPagePatch = Partial<
+  Pick<WebPage, "title" | "slug" | "seo_title" | "seo_desc" | "body" | "design_tag" | "updated_by">
+>;
 
 export const webMutations = {
   /* CMS */
   createPage: (v: { title: string; slug: string; page_type: string; updated_by?: string | null }) =>
-    run(
-      supabase.from("exp_web_pages").insert({
-        title: v.title,
-        slug: v.slug,
-        page_type: v.page_type,
-        status: "draft",
-        body: {} as Json,
-        updated_by: v.updated_by ?? null,
-      }),
-    ),
-  updatePage: (id: string, patch: Partial<WebPage> & { updated_by?: string | null }) =>
-    run(
-      supabase
-        .from("exp_web_pages")
-        .update({
-          ...patch,
-          design_tag: patch.design_tag ?? undefined,
-          code_rendered: patch.code_rendered ?? undefined,
-          updated_at: new Date().toISOString(),
-        })
-        .eq("id", id),
-    ),
+    post("/pages", { title: v.title, slug: v.slug, page_type: v.page_type, updated_by: v.updated_by ?? null }),
+  updatePage: (id: string, patch_: WebPagePatch) =>
+    patch(`/pages/${id}`, { ...patch_, design_tag: patch_.design_tag ?? undefined }),
   publishPage: (id: string, updated_by?: string | null) =>
-    run(
-      supabase
-        .from("exp_web_pages")
-        .update({
-          status: "published",
-          published_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-          updated_by: updated_by ?? null,
-        })
-        .eq("id", id),
-    ),
-  unpublishPage: (id: string) =>
-    run(
-      supabase
-        .from("exp_web_pages")
-        .update({ status: "draft", updated_at: new Date().toISOString() })
-        .eq("id", id),
-    ),
+    post(`/pages/${id}/publish`, { updated_by: updated_by ?? null }),
+  unpublishPage: (id: string) => post(`/pages/${id}/unpublish`),
   /** Move a page to Trash (recoverable) rather than removing the row. */
   deletePage: (id: string, deleted_by?: string | null) =>
-    run(
-      supabase
-        .from("exp_web_pages")
-        .update({ deleted_at: new Date().toISOString(), deleted_by: deleted_by ?? null })
-        .eq("id", id),
-    ),
-  restorePage: (id: string) =>
-    run(
-      supabase
-        .from("exp_web_pages")
-        .update({ deleted_at: null, deleted_by: null, status: "draft" })
-        .eq("id", id),
-    ),
-  purgePage: (id: string) => run(supabase.from("exp_web_pages").delete().eq("id", id)),
-  duplicatePage: async (p: WebPage, updated_by?: string | null) => {
-    const base = slugify(`${p.slug ?? p.title ?? "page"}-copy`);
-    const { data: existing } = await supabase
-      .from("exp_web_pages")
-      .select("slug")
-      .eq("page_type", p.page_type ?? "page")
-      .like("slug", `${base}%`);
-    const taken = new Set(((existing as { slug: string | null }[] | null) ?? []).map((r) => r.slug));
-    let slug = base;
-    let n = 2;
-    while (taken.has(slug)) slug = `${base}-${n++}`;
-    return run(
-      supabase.from("exp_web_pages").insert({
-        title: `${p.title ?? "Untitled"} (copy)`,
-        slug,
-        page_type: p.page_type ?? "page",
-        status: "draft",
-        body: (p.body ?? {}) as Json,
-        seo_title: p.seo_title ?? null,
-        seo_desc: p.seo_desc ?? null,
-        design_tag: p.design_tag ?? undefined,
-        updated_by: updated_by ?? null,
-      }),
-    );
-  },
-  setPageDesignTag: (id: string, design_tag: DesignTag) =>
-    run(
-      supabase
-        .from("exp_web_pages")
-        .update({ design_tag, updated_at: new Date().toISOString() })
-        .eq("id", id),
-    ),
+    post(`/pages/${id}/trash`, { deleted_by: deleted_by ?? null }),
+  restorePage: (id: string) => post(`/pages/${id}/restore`),
+  purgePage: (id: string) => del(`/pages/${id}`),
+  duplicatePage: (p: WebPage, updated_by?: string | null) =>
+    post("/pages/duplicate", {
+      slug_base: slugify(`${p.slug ?? p.title ?? "page"}-copy`),
+      title: `${p.title ?? "Untitled"} (copy)`,
+      page_type: p.page_type ?? "page",
+      body: (p.body ?? {}) as Json,
+      seo_title: p.seo_title ?? null,
+      seo_desc: p.seo_desc ?? null,
+      design_tag: p.design_tag ?? undefined,
+      updated_by: updated_by ?? null,
+    }),
+  setPageDesignTag: (id: string, design_tag: DesignTag) => patch(`/pages/${id}`, { design_tag }),
 
   /* Bulk CMS actions */
   bulkPublishPages: (ids: string[], updated_by?: string | null) =>
-    run(
-      supabase
-        .from("exp_web_pages")
-        .update({
-          status: "published",
-          published_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-          updated_by: updated_by ?? null,
-        })
-        .in("id", ids),
-    ),
-  bulkUnpublishPages: (ids: string[]) =>
-    run(
-      supabase
-        .from("exp_web_pages")
-        .update({ status: "draft", updated_at: new Date().toISOString() })
-        .in("id", ids),
-    ),
+    post("/pages/bulk-publish", { ids, updated_by: updated_by ?? null }),
+  bulkUnpublishPages: (ids: string[]) => post("/pages/bulk-unpublish", { ids }),
   bulkDeletePages: (ids: string[], deleted_by?: string | null) =>
-    run(
-      supabase
-        .from("exp_web_pages")
-        .update({ deleted_at: new Date().toISOString(), deleted_by: deleted_by ?? null })
-        .in("id", ids),
-    ),
+    post("/pages/bulk-trash", { ids, deleted_by: deleted_by ?? null }),
 
   /* CMS templates */
-  createPageTemplate: async (v: {
+  createPageTemplate: (v: {
     name: string;
     template_kind: "page" | "section";
     source_page_id: string;
@@ -531,149 +378,78 @@ export const webMutations = {
     design_tag: string;
     created_by: string;
     created_by_label?: string | null;
-  }) => {
-    const { data, error } = await supabase
-      .from("exp_web_page_templates")
-      .insert(v)
-      .select("*")
-      .single();
-    if (error) throw new Error(error.message);
-    return data as WebPageTemplate;
-  },
+  }) => api.post<WebPageTemplate>(`${W}/templates`, v),
   /** Point a page at a template (or clear the link with null). */
   setPageTemplate: (pageId: string, templateId: string | null) =>
-    run(supabase.from("exp_web_pages").update({ template_id: templateId }).eq("id", pageId)),
-  renamePageTemplate: (id: string, name: string) =>
-    run(supabase.from("exp_web_page_templates").update({ name }).eq("id", id)),
+    ok(api.put(`${W}/pages/${pageId}/template`, { template_id: templateId })),
+  renamePageTemplate: (id: string, name: string) => patch(`/templates/${id}`, { name }),
   deletePageTemplate: (id: string, deleted_by?: string | null) =>
-    run(
-      supabase
-        .from("exp_web_page_templates")
-        .update({ deleted_at: new Date().toISOString(), deleted_by: deleted_by ?? null })
-        .eq("id", id),
-    ),
-  restorePageTemplate: (id: string) =>
-    run(supabase.from("exp_web_page_templates").update({ deleted_at: null, deleted_by: null }).eq("id", id)),
-  purgePageTemplate: (id: string) =>
-    run(supabase.from("exp_web_page_templates").delete().eq("id", id)),
-  createPageFromTemplate: async (v: {
+    post(`/templates/${id}/trash`, { deleted_by: deleted_by ?? null }),
+  restorePageTemplate: (id: string) => post(`/templates/${id}/restore`),
+  purgePageTemplate: (id: string) => del(`/templates/${id}`),
+  createPageFromTemplate: (v: {
     title: string;
     page_type: string;
     body: Json;
     settings?: Record<string, unknown>;
     updated_by?: string | null;
   }) => {
-    const base = slugify(v.title);
-    const { data: existing } = await supabase.from("exp_web_pages").select("slug").like("slug", `${base}%`);
-    const taken = new Set(((existing as { slug: string | null }[] | null) ?? []).map((r) => r.slug));
-    let slug = base;
-    let n = 2;
-    while (taken.has(slug)) slug = `${base}-${n++}`;
     const settings = v.settings ?? {};
-    const { data, error } = await supabase
-      .from("exp_web_pages")
-      .insert({
-        title: v.title,
-        slug,
-        page_type: v.page_type,
-        status: "draft",
-        body: v.body,
-        seo_title: typeof settings.seo_title === "string" ? settings.seo_title : null,
-        seo_desc: typeof settings.seo_desc === "string" ? settings.seo_desc : null,
-        design_tag: settings.design_tag === "old_design" ? "old_design" : "new",
-        updated_by: v.updated_by ?? null,
-      })
-      .select("*")
-      .single();
-    if (error) throw new Error(error.message);
-    return data as WebPage;
+    return api.post<WebPage>(`${W}/pages/from-template`, {
+      slug_base: slugify(v.title),
+      title: v.title,
+      page_type: v.page_type,
+      body: v.body,
+      seo_title: typeof settings.seo_title === "string" ? settings.seo_title : null,
+      seo_desc: typeof settings.seo_desc === "string" ? settings.seo_desc : null,
+      design_tag: settings.design_tag === "old_design" ? "old_design" : "new",
+      updated_by: v.updated_by ?? null,
+    });
   },
   applyPageTemplate: (pageId: string, body: Json, settings: Record<string, unknown>, updated_by?: string | null) =>
-    run(
-      supabase
-        .from("exp_web_pages")
-        .update({
-          body,
-          seo_title: typeof settings.seo_title === "string" ? settings.seo_title : undefined,
-          seo_desc: typeof settings.seo_desc === "string" ? settings.seo_desc : undefined,
-          design_tag: settings.design_tag === "old_design" ? "old_design" : "new",
-          updated_by: updated_by ?? null,
-          updated_at: new Date().toISOString(),
-        })
-        .eq("id", pageId),
-    ),
+    patch(`/pages/${pageId}`, {
+      body,
+      seo_title: typeof settings.seo_title === "string" ? settings.seo_title : undefined,
+      seo_desc: typeof settings.seo_desc === "string" ? settings.seo_desc : undefined,
+      design_tag: settings.design_tag === "old_design" ? "old_design" : "new",
+      updated_by: updated_by ?? null,
+    }),
   appendSectionTemplate: (page: WebPage, body: Json, updated_by?: string | null) =>
-    run(
-      supabase
-        .from("exp_web_pages")
-        .update({
-          body: [...blocksOf(page.body), ...blocksOf(body)] as unknown as Json,
-          updated_by: updated_by ?? null,
-          updated_at: new Date().toISOString(),
-        })
-        .eq("id", page.id),
-    ),
+    patch(`/pages/${page.id}`, {
+      body: [...blocksOf(page.body), ...blocksOf(body)] as unknown as Json,
+      updated_by: updated_by ?? null,
+    }),
 
   /* Forms */
   createForm: (v: { name: string; slug: string; destination?: string | null; fields?: Json }) =>
-    run(
-      supabase.from("exp_web_forms").insert({
-        name: v.name,
-        slug: v.slug,
-        destination: v.destination ?? null,
-        fields: v.fields ?? ([] as unknown as Json),
-        active: true,
-      }),
-    ),
-  updateForm: (id: string, patch: Partial<WebForm>) =>
-    run(supabase.from("exp_web_forms").update(patch).eq("id", id)),
-  deleteForm: (id: string) => run(supabase.from("exp_web_forms").delete().eq("id", id)),
+    post("/forms", {
+      name: v.name,
+      slug: v.slug,
+      destination: v.destination ?? null,
+      fields: v.fields ?? ([] as unknown as Json),
+    }),
+  updateForm: (id: string, p: Partial<Pick<WebForm, "active">>) => patch(`/forms/${id}`, p),
+  deleteForm: (id: string) => del(`/forms/${id}`),
 
   /* Leads */
-  setLeadStatus: (id: string, status: LeadStatus) =>
-    run(supabase.from("exp_web_leads").update({ status }).eq("id", id)),
-  assignLead: (id: string, assigned_to: string | null) =>
-    run(
-      supabase
-        .from("exp_web_leads")
-        .update({ assigned_to, assigned_at: assigned_to ? new Date().toISOString() : null })
-        .eq("id", id),
-    ),
+  setLeadStatus: (id: string, status: LeadStatus) => patch(`/leads/${id}/status`, { status }),
+  assignLead: (id: string, assigned_to: string | null) => patch(`/leads/${id}/assignee`, { assigned_to }),
 
   /* Trust */
   createTrustItem: (v: { category: string; title: string; body?: string | null; doc_url?: string | null }) =>
-    run(
-      supabase.from("exp_web_trust_items").insert({
-        category: v.category,
-        title: v.title,
-        body: v.body ?? null,
-        doc_url: v.doc_url ?? null,
-      }),
-    ),
-  updateTrustItem: (id: string, patch: Partial<TrustItem>) =>
-    run(
-      supabase
-        .from("exp_web_trust_items")
-        .update({ ...patch, updated_at: new Date().toISOString() })
-        .eq("id", id),
-    ),
-  deleteTrustItem: (id: string) => run(supabase.from("exp_web_trust_items").delete().eq("id", id)),
+    post("/trust", { category: v.category, title: v.title, body: v.body ?? null, doc_url: v.doc_url ?? null }),
+  updateTrustItem: (id: string, p: Partial<Pick<TrustItem, "category" | "title" | "body" | "doc_url" | "sort_order">>) =>
+    patch(`/trust/${id}`, p),
+  deleteTrustItem: (id: string) => del(`/trust/${id}`),
 
   /* Consent config */
-  saveConsentConfig: (patch: Partial<ConsentConfig>) =>
-    run(
-      supabase
-        .from("exp_web_consent_config")
-        .update({ ...patch, updated_at: new Date().toISOString() })
-        .eq("id", "default"),
-    ),
+  saveConsentConfig: (p: Partial<Omit<ConsentConfig, "id">>) => patch("/consent", p),
 
   /* Alerts */
   createAlert: (v: { alert_type: string; message: string }) =>
-    run(supabase.from("exp_web_alerts").insert({ alert_type: v.alert_type, message: v.message, active: true })),
-  updateAlert: (id: string, patch: Partial<WebAlert>) =>
-    run(supabase.from("exp_web_alerts").update(patch).eq("id", id)),
-  deleteAlert: (id: string) => run(supabase.from("exp_web_alerts").delete().eq("id", id)),
+    post("/alerts", { alert_type: v.alert_type, message: v.message }),
+  updateAlert: (id: string, p: Partial<Pick<WebAlert, "active">>) => patch(`/alerts/${id}`, p),
+  deleteAlert: (id: string) => del(`/alerts/${id}`),
 
   /* Ads */
   createAd: (v: {
@@ -684,37 +460,23 @@ export const webMutations = {
     ends_on?: string | null;
     creative?: Json;
   }) =>
-    run(
-      supabase.from("exp_web_ads").insert({
-        name: v.name,
-        placement: v.placement,
-        budget: v.budget ?? null,
-        starts_on: v.starts_on || null,
-        ends_on: v.ends_on || null,
-        creative: v.creative ?? ({} as Json),
-        status: "draft",
-        spend: 0,
-      }),
-    ),
-  updateAd: (id: string, patch: Partial<WebAd>) =>
-    run(supabase.from("exp_web_ads").update(patch).eq("id", id)),
-  deleteAd: (id: string) => run(supabase.from("exp_web_ads").delete().eq("id", id)),
+    post("/ads", {
+      name: v.name,
+      placement: v.placement,
+      budget: v.budget ?? null,
+      starts_on: v.starts_on || null,
+      ends_on: v.ends_on || null,
+      creative: v.creative ?? ({} as Json),
+    }),
+  updateAd: (id: string, p: Partial<Pick<WebAd, "status">>) => patch(`/ads/${id}`, p),
+  deleteAd: (id: string) => del(`/ads/${id}`),
 
   /* Campaigns */
   createCampaign: (v: { name: string; cohort: string; channel: string; starts_on?: string | null }) =>
-    run(
-      supabase.from("exp_web_campaigns").insert({
-        name: v.name,
-        cohort: v.cohort,
-        channel: v.channel,
-        starts_on: v.starts_on || null,
-        status: "draft",
-        assigned_profiles: 0,
-      }),
-    ),
-  updateCampaign: (id: string, patch: Partial<WebCampaign>) =>
-    run(supabase.from("exp_web_campaigns").update(patch).eq("id", id)),
-  deleteCampaign: (id: string) => run(supabase.from("exp_web_campaigns").delete().eq("id", id)),
+    post("/campaigns", { name: v.name, cohort: v.cohort, channel: v.channel, starts_on: v.starts_on || null }),
+  updateCampaign: (id: string, p: Partial<Pick<WebCampaign, "status" | "assigned_profiles">>) =>
+    patch(`/campaigns/${id}`, p),
+  deleteCampaign: (id: string) => del(`/campaigns/${id}`),
 
   /* Media */
   createMedia: (v: {
@@ -724,16 +486,7 @@ export const webMutations = {
     gated: boolean;
     form_slug?: string | null;
   }) =>
-    run(
-      supabase.from("exp_web_media").insert({
-        title: v.title,
-        media_type: v.media_type,
-        url: v.url,
-        gated: v.gated,
-        form_slug: v.form_slug || null,
-      }),
-    ),
-  updateMedia: (id: string, patch: Partial<WebMedia>) =>
-    run(supabase.from("exp_web_media").update(patch).eq("id", id)),
-  deleteMedia: (id: string) => run(supabase.from("exp_web_media").delete().eq("id", id)),
+    post("/media", { title: v.title, media_type: v.media_type, url: v.url, gated: v.gated, form_slug: v.form_slug || null }),
+  updateMedia: (id: string, p: Partial<Pick<WebMedia, "gated">>) => patch(`/media/${id}`, p),
+  deleteMedia: (id: string) => del(`/media/${id}`),
 };

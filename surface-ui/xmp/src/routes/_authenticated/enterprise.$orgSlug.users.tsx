@@ -12,6 +12,7 @@ import {
   ArrowLeft,
 } from "lucide-react";
 import { supabase } from "@v3/ui/integrations/supabase/client";
+import { api } from "@v3/ui/lib/server-fn";
 import { Card } from "@v3/ui/components/ui/card";
 import { Badge } from "@v3/ui/components/ui/badge";
 import { Button } from "@v3/ui/components/ui/button";
@@ -118,59 +119,37 @@ function EnterpriseUsersPage() {
     const { data: { session } } = await supabase.auth.getSession();
     setAdminUserId(session?.user.id ?? null);
 
-    const { data: rootRow } = await supabase
-      .from("organizations")
-      .select("id,name,slug,entity_type,parent_org_id,hierarchy_path,hierarchy_depth")
-      .eq("slug", orgSlug)
-      .maybeSingle();
+    // the org, the orgs under it (hierarchy_path), their roster (1000-row cap), roles,
+    // invitations, the signed-in user's own roles there and the roster's accounts (server side;
+    // errors were ignored)
+    const data = await api.get<{
+      root: Org | null;
+      descendants?: Org[];
+      pros?: Pro[];
+      roles?: RoleRow[];
+      invites?: Invite[];
+      adminRoles?: Array<{ can_login_as: boolean | null }>;
+      accounts?: Acct[];
+    }>(`/xmp/enterprise/orgs/${encodeURIComponent(orgSlug)}/users`);
+    const rootRow = data.root;
     if (!rootRow) {
       setLoading(false);
       return;
     }
-    setOrg(rootRow as Org);
+    setOrg(rootRow);
     setSingleOrgId(rootRow.id);
 
-    const { data: descRows } = await supabase
-      .from("organizations")
-      .select("id,name,slug,entity_type,parent_org_id,hierarchy_path,hierarchy_depth")
-      .like("hierarchy_path", `%${rootRow.id}%`);
+    const descRows = data.descendants;
     const allOrgs = [
       rootRow as Org,
       ...((descRows ?? []) as Org[]).filter((o) => o.id !== rootRow.id),
     ];
     setOrgs(allOrgs);
-    const orgIds = allOrgs.map((o) => o.id);
 
-    const [proRes, roleRes, inviteRes, adminRoleRes] = await Promise.all([
-      supabase
-        .from("professionals")
-        .select(
-          "id,display_name,first_name,last_name,photo_url,email,user_id,primary_org_id,search_rank_score,claimed,is_active",
-        )
-        .in("primary_org_id", orgIds)
-        .limit(2000),
-      supabase
-        .from("user_roles")
-        .select("id,user_id,role,entity_type,entity_id,can_login_as,is_active")
-        .eq("entity_type", "organization")
-        .in("entity_id", orgIds),
-      supabase
-        .from("invitations")
-        .select("id,email,status,invited_at,entity_type,entity_id")
-        .eq("entity_type", "organization")
-        .in("entity_id", orgIds)
-        .order("invited_at", { ascending: false })
-        .limit(100),
-      session?.user.id
-        ? supabase
-            .from("user_roles")
-            .select("can_login_as")
-            .eq("user_id", session.user.id)
-            .eq("entity_type", "organization")
-            .in("entity_id", orgIds)
-            .eq("is_active", true)
-        : Promise.resolve({ data: [] as Array<{ can_login_as: boolean | null }> }),
-    ]);
+    const proRes = { data: data.pros };
+    const roleRes = { data: data.roles };
+    const inviteRes = { data: data.invites };
+    const adminRoleRes = { data: data.adminRoles };
 
     const proList = (proRes.data as Pro[]) ?? [];
     setPros(proList);
@@ -192,10 +171,7 @@ function EnterpriseUsersPage() {
 
     const userIds = proList.map((p) => p.user_id).filter(Boolean) as string[];
     if (userIds.length) {
-      const { data: acctRows } = await supabase
-        .from("user_accounts")
-        .select("supabase_user_id,email,last_login_at,is_active")
-        .in("supabase_user_id", userIds);
+      const acctRows = data.accounts;
       const map = new Map<string, Acct>();
       for (const a of ((acctRows ?? []) as Acct[])) map.set(a.supabase_user_id, a);
       setAccts(map);
@@ -287,16 +263,22 @@ function EnterpriseUsersPage() {
       return;
     }
     setSubmitting(true);
-    const { error } = await supabase.from("invitations").insert({
-      email: singleEmail,
-      full_name: singleName || null,
-      entity_type: "organization",
-      entity_id: singleOrgId,
-      role: singleRole,
-      invited_by: adminUserId,
-      status: "pending",
-      expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
-    } as any);
+    // invited_by is the signed-in user (server side)
+    const error = await api
+      .post("/xmp/enterprise/invitations", {
+        records: [
+          {
+            email: singleEmail,
+            full_name: singleName || null,
+            entity_type: "organization",
+            entity_id: singleOrgId,
+            role: singleRole,
+            status: "pending",
+            expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+          },
+        ],
+      })
+      .then(() => null, (e: Error) => e);
     setSubmitting(false);
     if (error) {
       toast.error("Failed to send invite", { description: error.message });
@@ -328,12 +310,14 @@ function EnterpriseUsersPage() {
         role: role || "member",
         entity_type: "organization",
         entity_id: singleOrgId,
-        invited_by: adminUserId,
         status: "pending",
         expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
       };
     });
-    const { error } = await supabase.from("invitations").insert(records as any);
+    // invited_by is the signed-in user (server side)
+    const error = await api
+      .post("/xmp/enterprise/invitations", { records })
+      .then(() => null, (e: Error) => e);
     setSubmitting(false);
     if (error) {
       toast.error("Bulk invite failed", { description: error.message });
@@ -347,14 +331,13 @@ function EnterpriseUsersPage() {
 
   const impersonate = async (p: Pro) => {
     if (!adminCanLoginAs || !adminUserId || !p.user_id) return;
-    const { error } = await supabase.from("audit_log").insert({
-      user_id: adminUserId,
-      impersonating: p.user_id,
-      action: "user.impersonate",
-      entity_type: "professional",
-      entity_id: p.id,
-      field_changes: { org_slug: orgSlug },
-    } as any);
+    // the audit_log insert (user.impersonate, user_id = the signed-in user), server side
+    const error = await api
+      .post(`/xmp/enterprise/professionals/${encodeURIComponent(p.id)}/impersonate`, {
+        impersonating: p.user_id,
+        org_slug: orgSlug,
+      })
+      .then(() => null, (e: Error) => e);
     if (error) {
       toast.error("Could not start impersonation", { description: error.message });
       return;
@@ -363,21 +346,14 @@ function EnterpriseUsersPage() {
   };
 
   const deactivate = async (p: Pro) => {
-    const { error } = await supabase
-      .from("professionals")
-      .update({ is_active: false })
-      .eq("id", p.id);
+    // the professionals update, then the audit_log insert whose error was ignored (server side)
+    const error = await api
+      .post(`/xmp/enterprise/professionals/${encodeURIComponent(p.id)}/deactivate`)
+      .then(() => null, (e: Error) => e);
     if (error) {
       toast.error("Failed to deactivate", { description: error.message });
       return;
     }
-    await supabase.from("audit_log").insert({
-      user_id: adminUserId,
-      action: "user.deactivate",
-      entity_type: "professional",
-      entity_id: p.id,
-      field_changes: { is_active: false },
-    } as any);
     toast.success("User deactivated");
     load();
   };

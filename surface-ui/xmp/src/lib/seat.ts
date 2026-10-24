@@ -10,7 +10,7 @@
  * Every query is filtered by the seat's own id (or its roster of ids), so a
  * seat can never read another account's rows.
  */
-import { supabase } from "@v3/ui/integrations/supabase/client";
+import { api } from "@v3/ui/lib/server-fn";
 import { loadOfficeMode } from "@v3/xmp/lib/office-mode";
 import { listingSubject } from "@v3/xmp/lib/listings/subject";
 
@@ -119,59 +119,16 @@ export const seatProName = (p: Pick<SeatPro, "display_name" | "first_name" | "la
   [p.first_name, p.last_name].filter(Boolean).join(" ").trim() ||
   "Unnamed professional";
 
-const PRO_COLS =
-  "id,display_name,first_name,last_name,slug,photo_url,bio,headline,job_title,email,phone,gcid,address_city,address_state,search_rank_score,claimed,is_demo,primary_org_id";
-const ORG_COLS =
-  "id,name,slug,logo_url,phone,email,website_url,gcid,address_street,address_city,address_state,address_zip,gbp_place_id,gbp_connected,search_rank_score,claimed,is_demo,parent_org_id";
-
-async function loadScore(entityType: string, entityId: string): Promise<SeatScore | null> {
-  const { data } = await supabase
-    .from("search_rank_scores")
-    .select(
-      "total_score,max_possible,score_pct,score_reviews,score_profile,score_listings,score_content,score_web_analytics,score_connections,gaps,next_milestone,next_milestone_gap,calculated_at",
-    )
-    .eq("entity_type", entityType)
-    .eq("entity_id", entityId)
-    .order("calculated_at", { ascending: false })
-    .limit(1)
-    .maybeSingle();
-  return (data as SeatScore | null) ?? null;
-}
-
-async function loadRatings(entityType: string, entityIds: string[]): Promise<SeatRating[]> {
-  if (entityIds.length === 0) return [];
-  const { data } = await supabase
-    .from("aggregate_ratings")
-    .select("source,rating_value,review_count,last_review_date")
-    .eq("entity_type", entityType)
-    .in("entity_id", entityIds);
-  return ((data as SeatRating[]) ?? []).filter((r) => (r.review_count ?? 0) > 0 || r.rating_value != null);
-}
-
-async function loadReviews(entityType: string, entityIds: string[], limit = 20): Promise<SeatReview[]> {
-  if (entityIds.length === 0) return [];
-  const { data } = await supabase
-    .from("reviews")
-    .select(
-      "id,rating,title,body,reviewer_name,reviewer_photo_url,review_date,source,reply_body,entity_id",
-    )
-    .eq("entity_type", entityType)
-    .in("entity_id", entityIds)
-    .order("review_date", { ascending: false })
-    .limit(limit);
-  return (data as SeatReview[]) ?? [];
-}
+/** loadRatings()'s filter: only sources with reviews or a rating. */
+const withRatings = (rows: SeatRating[] | null | undefined) =>
+  (rows ?? []).filter((r) => (r.review_count ?? 0) > 0 || r.rating_value != null);
 
 async function loadListings(entityType: string, entityIds: string[]): Promise<SeatListing[]> {
   if (entityIds.length === 0) return [];
-  const { data } = await supabase
-    .from("listings")
-    .select("id,directory_key,directory_name,directory_url,listing_url,status,has_drift,last_verified")
-    .eq("entity_type", entityType)
-    .in("entity_id", entityIds)
-    .order("directory_key")
-    .limit(100);
-  return (data as SeatListing[]) ?? [];
+  // errors were ignored (no listings)
+  return api
+    .get<SeatListing[]>("/xmp/seat/listings", { params: { entity_type: entityType, entity_id: entityIds[0] } })
+    .catch(() => []);
 }
 
 /* ─────────────────────────── LOCATION seat ─────────────────────────── */
@@ -188,47 +145,33 @@ export type LocationSeat = {
 };
 
 export async function loadLocationSeat(officeId: string): Promise<LocationSeat | null> {
-  const { data: office } = await supabase
-    .from("organizations")
-    .select(ORG_COLS)
-    .eq("id", officeId)
-    .maybeSingle();
-  if (!office) return null;
-  const o = office as SeatOffice;
+  // the office, its brand, roster (200), score, ratings and reviews (server side; null when the
+  // office isn't readable)
+  const data = await api.get<{
+    office: SeatOffice;
+    brand: LocationSeat["brand"];
+    pros: SeatPro[] | null;
+    score: SeatScore | null;
+    ratings: SeatRating[];
+    proRatings: SeatRating[];
+    officeReviews: SeatReview[];
+    proReviews: SeatReview[];
+  } | null>(`/xmp/seat/location/${encodeURIComponent(officeId)}`);
+  if (!data) return null;
+  const o = data.office;
+  const pros = (data.pros ?? []).map((p) => p);
 
-  const [brandRes, prosRes, score, ratings] = await Promise.all([
-    o.parent_org_id
-      ? supabase.from("organizations").select("id,name,slug,logo_url").eq("id", o.parent_org_id).maybeSingle()
-      : Promise.resolve({ data: null }),
-    supabase
-      .from("professionals")
-      .select(PRO_COLS)
-      .eq("primary_org_id", officeId)
-      .order("search_rank_score", { ascending: false, nullsFirst: false })
-      .limit(200),
-    loadScore("organization", officeId),
-    loadRatings("organization", [officeId]),
-  ]);
-
-  const pros = ((prosRes.data as SeatPro[]) ?? []).map((p) => p);
-  const proIds = pros.map((p) => p.id);
-  const [proRatings, officeReviews, proReviews] = await Promise.all([
-    loadRatings("professional", proIds.slice(0, 200)),
-    loadReviews("organization", [officeId], 20),
-    loadReviews("professional", proIds.slice(0, 200), 20),
-  ]);
-
-  const reviews = [...officeReviews, ...proReviews]
+  const reviews = [...(data.officeReviews ?? []), ...(data.proReviews ?? [])]
     .sort((a, b) => (b.review_date ?? "").localeCompare(a.review_date ?? ""))
     .slice(0, 20);
 
   return {
     office: o,
-    brand: (brandRes.data as LocationSeat["brand"]) ?? null,
+    brand: data.brand ?? null,
     pros,
-    score,
-    ratings,
-    proRatings,
+    score: data.score ?? null,
+    ratings: withRatings(data.ratings),
+    proRatings: withRatings(data.proRatings),
     reviews,
     isDemo: Boolean(o.is_demo) || pros.some((p) => p.is_demo),
   };
@@ -277,60 +220,40 @@ export type ProfessionalSeat = {
 };
 
 export async function loadProfessionalSeat(proId: string): Promise<ProfessionalSeat | null> {
-  const { data: pro } = await supabase.from("professionals").select(PRO_COLS).eq("id", proId).maybeSingle();
-  if (!pro) return null;
-  const p = pro as SeatPro;
-
-  const [officeRes, score, ratings, reviews, nodesRes, listings] = await Promise.all([
-    p.primary_org_id
-      ? supabase
-          .from("organizations")
-          .select("id,name,slug,logo_url,address_city,address_state,parent_org_id")
-          .eq("id", p.primary_org_id)
-          .maybeSingle()
-      : Promise.resolve({ data: null }),
-    loadScore("professional", proId),
-    loadRatings("professional", [proId]),
-    loadReviews("professional", [proId], 25),
-    supabase
-      .from("graph_nodes")
-      .select("id,ring,node_type,title,url,source,score_points,verified")
-      .eq("entity_type", "professional")
-      .eq("entity_id", proId)
-      .eq("is_active", true)
-      .order("ring")
-      .limit(400),
+  const [data, listings] = await Promise.all([
+    // the professional, its office and brand, score, ratings, reviews (25) and active nodes (400)
+    // (server side; null when the professional isn't readable)
+    api.get<{
+      pro: SeatPro;
+      office: (LocationLite & { parent_org_id?: string | null }) | null;
+      brand: LocationLite | null;
+      score: SeatScore | null;
+      ratings: SeatRating[];
+      reviews: SeatReview[] | null;
+      nodes: SeatNode[] | null;
+    } | null>(`/xmp/seat/professional/${encodeURIComponent(proId)}`),
     // Single-pro office: listings belong to the location (exp_office_mode, 0027); null mode
     // (0027 unapplied) keeps the professional's own rows.
     (async () => {
       const s = listingSubject(
         { entityType: "professional", entityId: proId },
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        await loadOfficeMode(supabase as any, "professional", proId),
+        await loadOfficeMode("professional", proId),
       );
       return loadListings(s.entityType, [s.entityId]);
     })(),
   ]);
-
-  const office = (officeRes.data as (LocationLite & { parent_org_id?: string | null }) | null) ?? null;
-  let brand: LocationLite | null = null;
-  if (office?.parent_org_id) {
-    const { data } = await supabase
-      .from("organizations")
-      .select("id,name,slug,logo_url,address_city,address_state")
-      .eq("id", office.parent_org_id)
-      .maybeSingle();
-    brand = (data as LocationLite | null) ?? null;
-  }
+  if (!data) return null;
+  const p = data.pro;
+  const office = data.office ?? null;
 
   return {
     pro: p,
     office: office ? { ...office } : null,
-    brand,
-    score,
-    ratings,
-    reviews,
-    nodes: ((nodesRes.data as SeatNode[]) ?? []),
+    brand: data.brand ?? null,
+    score: data.score ?? null,
+    ratings: withRatings(data.ratings),
+    reviews: data.reviews ?? [],
+    nodes: data.nodes ?? [],
     listings,
     isDemo: Boolean(p.is_demo),
   };

@@ -1,4 +1,4 @@
-import { supabase } from "@v3/ui/integrations/supabase/client";
+import { api } from "@v3/ui/lib/server-fn";
 import type { ClaimSource, InterviewSubject, SubjectKind } from "@v3/xmp/lib/nora/interview";
 
 /*
@@ -12,15 +12,20 @@ export async function loadInterviewSubject(
   kind: SubjectKind,
   id: string,
 ): Promise<InterviewSubject | null> {
+  const path = `/xmp/interview/subject/${kind}/${encodeURIComponent(id)}`;
   if (kind === "professional") {
-    const { data, error } = await supabase
-      .from("professionals")
-      .select(
-        "id,display_name,first_name,last_name,gcid,website_url,address_city,address_state,phone,claimed",
-      )
-      .eq("id", id)
-      .maybeSingle();
-    if (error) throw new Error(error.message);
+    const data = await api.get<{
+      id: string;
+      display_name: string | null;
+      first_name: string | null;
+      last_name: string | null;
+      gcid: string | null;
+      website_url: string | null;
+      address_city: string | null;
+      address_state: string | null;
+      phone: string | null;
+      claimed: boolean | null;
+    } | null>(path);
     if (!data) return null;
     return {
       kind,
@@ -36,12 +41,16 @@ export async function loadInterviewSubject(
       claimed: data.claimed,
     };
   }
-  const { data, error } = await supabase
-    .from("organizations")
-    .select("id,name,gcid,website_url,address_city,address_state,phone,claimed")
-    .eq("id", id)
-    .maybeSingle();
-  if (error) throw new Error(error.message);
+  const data = await api.get<{
+    id: string;
+    name: string | null;
+    gcid: string | null;
+    website_url: string | null;
+    address_city: string | null;
+    address_state: string | null;
+    phone: string | null;
+    claimed: boolean | null;
+  } | null>(path);
   if (!data) return null;
   return {
     kind,
@@ -58,12 +67,8 @@ export async function loadInterviewSubject(
 
 export async function loadClaimSource(subject: InterviewSubject): Promise<ClaimSource> {
   // claim_queue may be unreadable under RLS for this viewer — then the record flag alone decides.
-  const { data } = await supabase
-    .from("claim_queue")
-    .select("*")
-    .eq("entity_id", subject.id)
-    .order("created_at", { ascending: false })
-    .limit(1)
-    .maybeSingle();
+  const data = await api
+    .get<ClaimSource["queue"]>(`/xmp/interview/claim/${encodeURIComponent(subject.id)}`)
+    .catch(() => null);
   return { recordClaimed: subject.claimed, queue: (data as ClaimSource["queue"]) ?? null };
 }

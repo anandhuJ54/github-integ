@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { ArrowRight, Sparkles } from "lucide-react";
 import { supabase } from "@v3/ui/integrations/supabase/client";
+import { api } from "@v3/ui/lib/server-fn";
 import { Avatar, AvatarFallback, AvatarImage } from "@v3/ui/components/ui/avatar";
 import { Button } from "@v3/ui/components/ui/button";
 import { Card } from "@v3/ui/components/ui/card";
@@ -79,47 +80,23 @@ function DashboardPage() {
         window.location.href = "/auth";
         return;
       }
-      const userId = session.user.id;
+      // the signed-in user's professional, its newest score, subscription and PLG rules (server side)
+      const data = await api.get<{
+        pro: Professional | null;
+        score?: Score | null;
+        subscription?: Subscription | null;
+        plg?: PlgRule[];
+      }>("/xmp/dashboard/home");
 
-      const { data: proRow } = await supabase
-        .from("professionals")
-        .select("id,display_name,first_name,last_name,job_title,headline,photo_url,address_city,gcid,local_rank,local_rank_of")
-        .eq("user_id", userId)
-        .maybeSingle();
-
-      if (!proRow) {
+      if (!data.pro) {
         setLoading(false);
         return;
       }
-      setPro(proRow as Professional);
+      setPro(data.pro);
 
-      const [{ data: scoreRow }, { data: subRow }, { data: plgRows }] = await Promise.all([
-        supabase
-          .from("search_rank_scores")
-          .select("total_score,max_possible,score_change_7d,score_reviews,score_web_analytics,score_profile,score_connections,score_listings,score_content,gaps,next_milestone")
-          .eq("entity_type", "professional")
-          .eq("entity_id", proRow.id)
-          .order("calculated_at", { ascending: false })
-          .limit(1)
-          .maybeSingle(),
-        supabase
-          .from("subscriptions")
-          .select("plan_name,status")
-          .eq("entity_type", "professional")
-          .eq("entity_id", proRow.id)
-          .maybeSingle(),
-        supabase
-          .from("plg_rules")
-          .select("id,headline,body,cta_text,cta_url,cta_action,icon,priority")
-          .eq("is_active", true)
-          .eq("gcid", proRow.gcid ?? "")
-          .order("priority", { ascending: true })
-          .limit(5),
-      ]);
-
-      setScore((scoreRow as Score) ?? null);
-      setSub((subRow as Subscription) ?? null);
-      setPlg((plgRows as PlgRule[]) ?? []);
+      setScore(data.score ?? null);
+      setSub(data.subscription ?? null);
+      setPlg(data.plg ?? []);
       setLoading(false);
     })();
   }, []);
