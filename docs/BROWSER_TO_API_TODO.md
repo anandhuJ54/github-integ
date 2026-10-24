@@ -173,9 +173,9 @@ Counts are (reads/writes/rpc) as measured on 2026-10-23.
   - **No gated function was run** (schedules, run, reharvest, activate, discover).
 - [x] 5. `contracts/etl/openapi.json`
 - [x] 6. etl makes no direct Supabase calls.
-- [ ] 7. Parity:
-  - Group 1: 24/24 PASS (2026-10-24), including every embed case (brand `or`, office `!inner`, unofficed `is null`, entity panel)
-  - Group 2: cases added (pipeline, site contract, source states, registry, population for 2 categories); not run yet
+- [x] 7. Parity PASS 46/46 (2026-10-24, signed in): every tab, hierarchy embed and population case.
+  - The staging page compares total + observed_at order, because 25,809 rows share one observed_at.
+  - An intermittent first-request 500 was a connection-lease failure. The API now answers 503 with the reason (`_base/app_factory.py`).
 - [ ] 8. Click-through: open `/discovery` and its tabs only. Every button is a gated or role-checked ETL action.
 - [ ] 9. Lint ratchet
 
