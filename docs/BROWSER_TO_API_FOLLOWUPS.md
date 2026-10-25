@@ -118,4 +118,4 @@ Sales is complete: parity 230/230 and the click-through is confirmed. These were
 - **B. Lint:** the lint lives at `cur-tools/lint/lint_all.py`, not `tools/lint/` as AGENTS.md says. It reports 61 existing findings (none in the migrated files). Decide where it lives, then run the per-Surface ratchet.
 - **C. The 1,000-row cap gaps (§1, 1a–1j):** each needs a ruling, because completing a read changes the numbers on the page.
 - **Printed contracts name a person as the company signer:** `sales/src/components/contracts/contract-print-document.tsx:53` (fallback when `experience_signer` is empty) and `contract-billing.tsx:55` (fixed text). No-names rule vs. legal documents: needs a decision (e.g. read the signer from configuration).
-
+- **E. Contract entries for cross-Surface APIs:** see `docs/SURFACE_AUDIT.md` → "Published cross-Surface APIs" (deferred 2026-10-25).

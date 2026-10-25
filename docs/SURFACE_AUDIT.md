@@ -192,6 +192,11 @@ Contents after the moves, confirmed as right (2026-10-25):
 
 ## Published cross-Surface APIs (to add as contract entries)
 
+**Deferred (2026-10-25, to come back to):** write one capability file per row below in the owner's
+`contracts/<owner>/capabilities/` (format: `contracts/srp/capabilities/get-claim-status.v1.json`):
+HTTP method and path, consumers, read-only vs side effects (claim adjudicate, run alert engine and
+CSM assign are writes), input/output by `$ref` into the owner's `openapi.json`. No code changes.
+
 | Owner | API | Used by (page) |
 |---|---|---|
 | etl | `/etl/platform/report-metrics` | admin `/console`, `/reports` |
