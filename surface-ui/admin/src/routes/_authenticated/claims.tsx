@@ -15,6 +15,8 @@ import {
   SheetDescription,
 } from "@v3/ui/components/ui/sheet";
 import { cn } from "@v3/ui/lib/utils";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@v3/ui/components/ui/tabs";
+import { ClaimsTab as ControlGraphClaimsTab } from "@v3/admin/components/claims/claims-tab";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/claims")({
@@ -88,6 +90,9 @@ function MethodBadge({ value }: { value: string | null }) {
 
 function ClaimsPage() {
   const qc = useQueryClient();
+  // "Claim queue" (claim_queue) is the default; "Control graph claims" (exp_claim) moved here
+  // from /control-graph's Claims tab (surface audit 2026-10-25).
+  const [section, setSection] = useState("queue");
   const [tab, setTab] = useState<(typeof TABS)[number]["id"]>("pending");
   const [openId, setOpenId] = useState<string | null>(null);
   const [notes, setNotes] = useState("");
@@ -149,6 +154,13 @@ function ClaimsPage() {
           <h1 className="text-2xl font-semibold text-slate-900">Claims</h1>
           <p className="text-sm text-slate-500 mt-1">Review and approve profile claims</p>
         </div>
+
+        <Tabs value={section} onValueChange={setSection}>
+          <TabsList className="mb-6">
+            <TabsTrigger value="queue">Claim queue</TabsTrigger>
+            <TabsTrigger value="control">Control graph claims</TabsTrigger>
+          </TabsList>
+          <TabsContent value="queue" className="mt-0">
 
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
           <StatCard label="Pending" value={stats?.pending ?? "—"} tone="text-amber-700" />
@@ -252,6 +264,11 @@ function ClaimsPage() {
             </table>
           </div>
         </div>
+          </TabsContent>
+          <TabsContent value="control" className="mt-0">
+            <ControlGraphClaimsTab />
+          </TabsContent>
+        </Tabs>
       </div>
 
       <Sheet open={!!openId} onOpenChange={(o) => { if (!o) { setOpenId(null); setNotes(""); } }}>

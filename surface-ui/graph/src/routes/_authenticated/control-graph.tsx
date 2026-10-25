@@ -4,7 +4,6 @@ import { EmpLayout } from "@v3/ui/components/emp-layout";
 import { GraphHealthCard } from "@v3/graph/components/control/graph-health-card";
 import { ControlTreeTab } from "@v3/graph/components/control/control-tree-tab";
 import { EntitiesTab } from "@v3/graph/components/control/entities-tab";
-import { ClaimsTab } from "@v3/graph/components/control/claims-tab";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@v3/ui/components/ui/tabs";
 
 export const Route = createFileRoute("/_authenticated/control-graph")({
@@ -43,19 +42,16 @@ function ControlGraphPage() {
         <GraphHealthCard />
 
         <Tabs value={tab} onValueChange={setTab}>
+          {/* The Claims tab moved to admin's /claims ("Control graph claims"), surface audit 2026-10-25. */}
           <TabsList>
             <TabsTrigger value="tree">Control Tree</TabsTrigger>
             <TabsTrigger value="entities">Entities</TabsTrigger>
-            <TabsTrigger value="claims">Claims</TabsTrigger>
           </TabsList>
           <TabsContent value="tree" className="mt-4">
             <ControlTreeTab />
           </TabsContent>
           <TabsContent value="entities" className="mt-4">
             <EntitiesTab />
-          </TabsContent>
-          <TabsContent value="claims" className="mt-4">
-            <ClaimsTab />
           </TabsContent>
         </Tabs>
       </div>

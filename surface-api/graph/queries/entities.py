@@ -8,6 +8,11 @@ the functions check roles themselves, as they did for the browser.
 Caps: every read keeps the 1000-row PostgREST cap (`_base.core.sql.MAX_ROWS`), except the
 expertise graph's node, edge and external-node reads, which return everything (ruling
 2026-10-24: the largest professional has 2,644 active nodes).
+
+The /control-graph Claims tab (its claims, entities-lite and control-users reads and the
+exp_claim_adjudicate RPC) moved to admin (admin/queries/control_claims.py), surface audit
+2026-10-25. The /p|o|c/:slug/graph and /:category/:city/:professional pages moved to search; their
+API stays here, published for search.
 """
 from __future__ import annotations
 
@@ -25,8 +30,7 @@ pro_t, org_t, nodes_t, edges_t = T.t_professionals, T.t_organizations, T.t_graph
     T.t_graph_edges
 tax_t, tx_t, ratings_t, scores_t = T.t_exp_taxonomy, T.t_transaction_signals, \
     T.t_aggregate_ratings, T.t_search_rank_scores
-entity_t, rel_t, claim_t, ctrl_t = T.t_exp_entity, T.t_exp_rel, T.t_exp_claim, \
-    T.t_exp_control_nodes
+entity_t, rel_t, ctrl_t = T.t_exp_entity, T.t_exp_rel, T.t_exp_control_nodes
 
 
 def _cols(t: Any, names: str) -> list[Any]:
@@ -64,11 +68,6 @@ def validate_graph(conn: psycopg.Connection) -> list[dict[str, Any]]:
     return rpc_rows(conn, "select * from public.exp_validate_graph()")
 
 
-def control_users(conn: psycopg.Connection) -> list[dict[str, Any]]:
-    """claims-tab.tsx: rpc("list_control_users")."""
-    return rpc_rows(conn, "select * from public.list_control_users()")
-
-
 def control_nodes_stmt() -> Any:
     """control-tree-tab.tsx: exp_control_nodes ordered by name."""
     return select(*_cols(ctrl_t, "node_id, name, node_type, parent_id, is_billing_container, "
@@ -98,22 +97,8 @@ def relationships_stmt(entity_id: str) -> Any:
         .order_by(rel_t.c.created_at.desc()).limit(200)
 
 
-def claims_stmt() -> Any:
-    """claims-tab.tsx: the newest 500 claims."""
-    return select(*_cols(claim_t, "claim_id, entity_id, user_id, claim_type, status, evidence, "
-                                  "verified_at, created_at")) \
-        .order_by(claim_t.c.created_at.desc()).limit(500)
-
-
-def entities_lite_stmt() -> Any:
-    """claims-tab.tsx: `.limit(2000)` unordered — capped at 1000 like PostgREST (gap 1g)."""
-    e = entity_t.c
-    return select(e.entity_id, e.display_name, e.entity_type).limit(2000)
-
-
 # name → [(param, db type)]. Each is a role-checked SECURITY DEFINER function; it decides.
 GRAPH_RPCS: dict[str, list[tuple[str, str]]] = {
-    "exp_claim_adjudicate": [("p_claim", "uuid"), ("p_approve", "boolean"), ("p_note", "text")],
     "exp_ctrl_create_node": [("p_name", "text"), ("p_node_type", "text"), ("p_parent", "uuid"),
                              ("p_billing", "boolean"), ("p_linked_entity", "uuid")],
     "exp_ctrl_update_node": [("p_id", "uuid"), ("p_name", "text"), ("p_node_type", "text"),

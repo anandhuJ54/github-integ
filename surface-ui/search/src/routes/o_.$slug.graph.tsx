@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { ExpertiseGraphPage } from "@v3/graph/components/graph/expertise-graph-page";
+import { ExpertiseGraphPage } from "@v3/search/components/graph/expertise-graph-page";
 
 export const Route = createFileRoute("/o_/$slug/graph")({
   head: () => ({

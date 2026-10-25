@@ -1781,34 +1781,6 @@
         ]
       }
     },
-    "/graph/control/claims": {
-      "get": {
-        "tags": [
-          "graph"
-        ],
-        "summary": "Control Claims",
-        "operationId": "control_claims_graph_control_claims_get",
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "items": {},
-                  "type": "array",
-                  "title": "Response Control Claims Graph Control Claims Get"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "HTTPBearer": []
-          }
-        ]
-      }
-    },
     "/graph/control/entities": {
       "get": {
         "tags": [
@@ -1825,34 +1797,6 @@
                   "items": {},
                   "type": "array",
                   "title": "Response Control Entities Graph Control Entities Get"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "HTTPBearer": []
-          }
-        ]
-      }
-    },
-    "/graph/control/entities-lite": {
-      "get": {
-        "tags": [
-          "graph"
-        ],
-        "summary": "Control Entities Lite",
-        "operationId": "control_entities_lite_graph_control_entities_lite_get",
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "items": {},
-                  "type": "array",
-                  "title": "Response Control Entities Lite Graph Control Entities Lite Get"
                 }
               }
             }
@@ -1948,7 +1892,7 @@
           "graph"
         ],
         "summary": "Call Rpc",
-        "description": "An allow-listed governed write (q.GRAPH_RPCS): claim adjudication, control-tree nodes.\nThe role-checked functions decide, as they did for the browser.",
+        "description": "An allow-listed governed write (q.GRAPH_RPCS): control-tree nodes, expected volume.\nThe role-checked functions decide, as they did for the browser.",
         "operationId": "call_rpc_graph_control_rpc__name__post",
         "security": [
           {
@@ -1998,35 +1942,6 @@
             }
           }
         }
-      }
-    },
-    "/graph/control/users": {
-      "get": {
-        "tags": [
-          "graph"
-        ],
-        "summary": "Control Users",
-        "description": "claims-tab.tsx: list_control_users() (the page shows no emails when refused).",
-        "operationId": "control_users_graph_control_users_get",
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "items": {},
-                  "type": "array",
-                  "title": "Response Control Users Graph Control Users Get"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "HTTPBearer": []
-          }
-        ]
       }
     },
     "/graph/control/validate": {

@@ -18,8 +18,8 @@ import {
   MapPin,
   TrendingUp,
 } from "lucide-react";
-import { buildProfileGraph, type GraphInput } from "@v3/graph/lib/profile-graph";
-import { getCachedSchema, cacheSchema } from "@v3/graph/lib/schema-cache.functions";
+import { buildProfileGraph, type GraphInput } from "@v3/search/lib/profile-graph";
+import { getCachedSchema, cacheSchema } from "@v3/search/lib/schema-cache.functions";
 
 function slugify(s: string | null | undefined): string {
   return (s ?? "")

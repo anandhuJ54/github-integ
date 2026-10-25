@@ -139,10 +139,19 @@ Under the serving-vs-editing rule:
 | # | Item | UI URL | Decision (2026-10-25) |
 |---|---|---|---|
 | 1, 2 | Category list and category detail (9 tabs) | `/categories`, `/categories/$gcid` | Keep in graph |
-| 3 | Control graph (health, control tree, entities, claims tab) | `/control-graph` | Open: claims tab (asked for the URL) |
-| 4 | Long-form professional profile | `/:category/:city/:professional` | Open (asked for example URLs) |
-| 5 | Expertise graph pages | `/p|o|c/$slug/graph` | Page → **search** (public serving page); the API `/graph/expertise/*` stays in **graph** and is published for search |
+| 3 | Control graph (health, control tree, entities, claims tab) | `/control-graph` | Control Tree and Entities stay in graph. **Claims tab → admin** (2026-10-25): shown as a second tab on `/claims`; its endpoints (`/graph/control/claims`, `entities-lite`, `users`, RPC `exp_claim_adjudicate`) move to admin. **Done**: `/admin/control-claims*` |
+| 4 | Long-form professional profile | `/:category/:city/:professional` | Page → **search** (2026-10-25, **done**); API `/graph/profile/*`, `/graph/profile-services`, schema-cache fns stay in **graph**, published |
+| 5 | Expertise graph pages | `/p|o|c/$slug/graph` | Page → **search** (public serving page, **done**); the API `/graph/expertise/*` stays in **graph** and is published for search |
 | 6 | Category brief (graph copy used by xmp; nora-os has its own copy) | — | Keep both for now |
+
+## 9. xmp
+
+| # | Area | UI URLs | Decision (2026-10-25) |
+|---|---|---|---|
+| A | Enterprise console | `/enterprise/$orgSlug/*` | Stays in **xmp**, except **review campaigns** (`/enterprise/$orgSlug/campaigns`, `/xmp/enterprise/orgs/{slug}/campaigns*`) → **campaigns** |
+| B | Seat (one pro or location) | `/seat/$kind/$id/*` | Open (URLs shared) |
+| C | Pro dashboard | `/dashboard/*` | Open (URLs shared). Note: empty for everyone today, no professional is linked to a login |
+| D | Demand engine | `/website/*`; API `/xmp/website/*`; `_base` nav-menus | Move to **marketing** |
 
 ## Published cross-Surface APIs (to add as contract entries)
 
@@ -157,6 +166,7 @@ Under the serving-vs-editing rule:
 | srp | `/srp/fn/draftReviewReply`, `checkReplyCompliance`, `saveReviewReply`, `flagReview` | xmp seat Reviews (`/seat/.../reviews`) |
 | graph | `/graph/expertise/{kind}/{slug}` | search expertise graph pages `/p|o|c/$slug/graph` |
 | graph | `/graph/fn/getCategoryBrief` | xmp |
+| graph | `/graph/profile/{slug}`, `/graph/profile-services`, `/graph/fn/getCachedSchema`, `cacheSchema` | search long-form profile `/:category/:city/:professional` |
 | nora-os | `/nora_os/fn/runSkill` | skills `/skills` sandbox, xmp seat interview |
 | nora-os | `/nora_os/fn/submitClaim`, `verifyClaimCode`, `releaseClaim` | srp `/claim/$professional` |
 | admin | `/admin/me/*` (who am I, grants, audit) | every console page |

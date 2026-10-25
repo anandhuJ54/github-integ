@@ -458,6 +458,149 @@
         ]
       }
     },
+    "/admin/control-claims": {
+      "get": {
+        "tags": [
+          "admin"
+        ],
+        "summary": "Control Claims",
+        "operationId": "control_claims_admin_control_claims_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {},
+                  "type": "array",
+                  "title": "Response Control Claims Admin Control Claims Get"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/admin/control-claims/entities-lite": {
+      "get": {
+        "tags": [
+          "admin"
+        ],
+        "summary": "Control Entities Lite",
+        "operationId": "control_entities_lite_admin_control_claims_entities_lite_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {},
+                  "type": "array",
+                  "title": "Response Control Entities Lite Admin Control Claims Entities Lite Get"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/admin/control-claims/rpc/{name}": {
+      "post": {
+        "tags": [
+          "admin"
+        ],
+        "summary": "Call Rpc",
+        "description": "An allow-listed governed write (q.ADMIN_CONTROL_RPCS): claim adjudication.\nThe role-checked function decides, as it did for the browser.",
+        "operationId": "call_rpc_admin_control_claims_rpc__name__post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "name",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Name"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RpcArgs"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "title": "Response Call Rpc Admin Control Claims Rpc  Name  Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/control-claims/users": {
+      "get": {
+        "tags": [
+          "admin"
+        ],
+        "summary": "Control Users",
+        "description": "claims-tab.tsx: list_control_users() (the page shows no emails when refused).",
+        "operationId": "control_users_admin_control_claims_users_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {},
+                  "type": "array",
+                  "title": "Response Control Users Admin Control Claims Users Get"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
     "/admin/control-grants": {
       "get": {
         "tags": [
@@ -3068,6 +3211,17 @@
         },
         "type": "object",
         "title": "ProIds"
+      },
+      "RpcArgs": {
+        "properties": {
+          "args": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Args"
+          }
+        },
+        "type": "object",
+        "title": "RpcArgs"
       },
       "Rule": {
         "properties": {

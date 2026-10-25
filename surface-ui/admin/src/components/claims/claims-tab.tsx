@@ -86,19 +86,19 @@ export function ClaimsTab() {
 
   const { data: claims, isLoading } = useQuery({
     queryKey: ["exp_claim", "all"],
-    queryFn: () => api.get<ClaimRow[]>("/graph/control/claims"),
+    queryFn: () => api.get<ClaimRow[]>("/admin/control-claims"),
   });
 
   const { data: entities } = useQuery({
     queryKey: ["exp_entity", "lite"],
-    queryFn: () => api.get<EntityLite[]>("/graph/control/entities-lite"),
+    queryFn: () => api.get<EntityLite[]>("/admin/control-claims/entities-lite"),
   });
 
   const { data: users } = useQuery({
     queryKey: ["control_users"],
     queryFn: () =>
       api
-        .get<{ user_id: string; email: string }[]>("/graph/control/users")
+        .get<{ user_id: string; email: string }[]>("/admin/control-claims/users")
         .catch(() => [] as { user_id: string; email: string }[]),
   });
 
@@ -116,7 +116,7 @@ export function ClaimsTab() {
 
   const adjudicate = useMutation({
     mutationFn: async (vars: { claimId: string; approve: boolean; note?: string }) => {
-      await api.post("/graph/control/rpc/exp_claim_adjudicate", {
+      await api.post("/admin/control-claims/rpc/exp_claim_adjudicate", {
         args: { p_claim: vars.claimId, p_approve: vars.approve, p_note: vars.note },
       });
     },

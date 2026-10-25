@@ -39,17 +39,11 @@ def test_brands_exclude_merged_and_deactivated_by_name_500():
     assert p["param_1"] == 500 and {"merged", "deactivated"} <= set(p.values())
 
 
-def test_entities_lite_keeps_the_1000_cap():
-    # claims-tab asked for 2000; PostgREST max-rows returned 1000 (gap 1g, kept)
-    assert params(q.entities_lite_stmt())["param_1"] == 1000
-    assert "ORDER BY" not in sql(q.entities_lite_stmt())
-
-
-def test_entities_and_claims_newest_first():
+def test_entities_newest_first():
+    # the claims and entities-lite reads moved to admin (surface audit 2026-10-25):
+    # admin/queries/control_claims_test.py
     assert "ORDER BY public.exp_entity.created_at DESC" in sql(q.entities_stmt())
     assert params(q.entities_stmt())["param_1"] == 1000
-    assert "ORDER BY public.exp_claim.created_at DESC" in sql(q.claims_stmt())
-    assert params(q.claims_stmt())["param_1"] == 500
 
 
 def test_relationships_of_one_subject_newest_200():
@@ -107,9 +101,7 @@ def test_rpc_casts_given_arguments_and_omits_the_rest():
     assert p == {"p_id": PID, "p_move": True, "p_parent": OID}
 
 
-def test_rpc_adjudicate_and_create():
-    s, _ = q.rpc_sql("exp_claim_adjudicate", {"p_claim": PID, "p_approve": False})
-    assert "exp_claim_adjudicate(p_claim => %(p_claim)s::uuid, p_approve => %(p_approve)s::boolean)" in s
+def test_rpc_create():
     s, _ = q.rpc_sql("exp_ctrl_create_node", {"p_name": "x", "p_node_type": "brand",
                                               "p_billing": True})
     assert "p_billing => %(p_billing)s::boolean" in s and "p_parent" not in s
@@ -126,6 +118,7 @@ def test_rpc_set_expected_volume():
 
 @pytest.mark.parametrize("name,args", [
     ("exp_graph_upsert_nodes", {}),
+    ("exp_claim_adjudicate", {}),  # moved to admin (surface audit 2026-10-25)
     ("exp_ctrl_create_node", {"p_name": "x", "p_evil": 1}),
 ])
 def test_rpc_outside_the_allow_list_is_refused(name, args):
@@ -208,7 +201,7 @@ def client(user=CLAIMS) -> TestClient:
 
 
 @pytest.mark.parametrize("method,path", [
-    ("get", "/graph/control/claims"), ("post", "/graph/control/rpc/exp_claim_adjudicate"),
+    ("get", "/graph/control/entities"), ("post", "/graph/control/rpc/exp_ctrl_create_node"),
     ("get", "/graph/profile/x"), ("get", "/graph/control/validate"),
 ])
 def test_control_and_profile_need_a_signed_in_user(method, path):
@@ -221,10 +214,10 @@ def test_control_and_profile_need_a_signed_in_user(method, path):
 def test_rpc_runs_as_the_user_on_the_primary(fake):
     log, leases, state = fake
     state["answer"] = lambda s, p: [{"v": None}]
-    r = client().post("/graph/control/rpc/exp_claim_adjudicate",
-                      json={"args": {"p_claim": PID, "p_approve": True}})
+    r = client().post("/graph/control/rpc/exp_ctrl_update_node",
+                      json={"args": {"p_id": PID, "p_name": "x"}})
     assert r.status_code == 200 and leases == [("authenticated", CLAIMS, True)]
-    assert "exp_claim_adjudicate(" in log[0][0]
+    assert "exp_ctrl_update_node(" in log[0][0]
 
 
 def test_unknown_rpc_is_400_without_a_connection(fake):
