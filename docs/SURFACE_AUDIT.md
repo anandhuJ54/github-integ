@@ -67,6 +67,15 @@ migration (2026-10-23) by reading the old app's files.
 
 `/emp/plg-rules` and `/discovery` had no link anywhere (also not in the original app); both, plus `/claims`, get links in the **Admin** menu for now (2026-10-25; can move later). All UI URLs stay the same; only code location and API paths change.
 
+## 3. search
+
+| # | Item | UI URL | API (today) | Decision |
+|---|---|---|---|---|
+| 1–5 | Search console: Overview (metrics), Indexing (incl. the site-indexing switch), Sponsored (rate card + slots), Ads, VOCE boosts | `/search`, `/search/indexing`, `/search/sponsored`, `/search/ads`, `/search/voce` | `/search/console/*`, `/search/fn/setSiteIndexing`, `PATCH /search/voce/articles` | Move to **admin** (admin-only tools) (2026-10-25). URLs stay the same for now; rename later. Menu unchanged for now |
+| 6–9 | Public search (results, suggest), VOCE article reads, results presentation, site-indexing flag read | used on `/find`, `/voce`, every page | `/search/public/*`, `/search/voce/*` reads, `/search/fn/getSearchPresentation`, `getSiteIndexing` | Stay in **search** |
+| + | Card actions, compare, related searches (from conversion-agents) | `/`, profile pages | `/search/fn/*` | In **search** (done) |
+| 10 | Search assistant ("coming soon" placeholder) | the `/find` search box | `/search-assistant` | Open: keep or remove |
+
 ## Decisions noted ahead (to apply when that Surface is audited)
 
 | Surface | Item | UI URL | Decision |
