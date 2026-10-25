@@ -111,6 +111,16 @@ Under the serving-vs-editing rule:
 | 11 | Sitemap and robots.txt | `/public/sitemap.xml`, `/public/sitemap/{partition}`, `/robots.txt` | Move to **search** (serving) |
 | 12 | Area detection, nearby areas, city centroids | `/srp/fn/getDetectedArea`, `getNearbyAreas`, `resolveAreaFromCoords`, `/srp/geo/city-centroids` | Move to **search** (serving) |
 
+## 6. ops
+
+| # | Item | UI URL | Decision (2026-10-25) |
+|---|---|---|---|
+| 1 | Console home (super-admin metrics: profiles, revenue, categories, NORA events) | `/console` | Move to **admin** |
+| 2 | Reports (metrics; reads etl) | `/reports` | Move to **admin** |
+| 3 | SRP Dev Progress (tracker: overview, board, priorities, teams, weekly) | `/dev/*` | Keep in **ops** |
+| 4 | Build (the same pages again, plus teams) and the Build wiki | `/build/*`, `/build/spaces/*` | Keep in **ops**; keep both `/dev` and `/build` for now |
+| 5 | Weekly-update reminder and digest emails (Resend; not scheduled) | — | Keep in ops |
+
 ## Decisions noted ahead (to apply when that Surface is audited)
 
 | Surface | Item | UI URL | Decision |
