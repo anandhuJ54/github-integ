@@ -160,10 +160,10 @@ Everything under Growth Hub (`/sales/...`: Overview, Teams, Worklist, CPQ, Contr
 
 | # | Item | UI URL | Decision (2026-10-25) |
 |---|---|---|---|
-| 1 | Accounts list and detail (menu: Customers → Accounts) | `/accounts`, `/accounts/$accountId` | Move to **admin**. **Done**: `/admin/accounts/*`. Its CSM control (`/sales/csm/*`) stays a sales API used by admin (open: move it too?) |
+| 1 | Accounts list and detail (menu: Customers → Accounts) | `/accounts`, `/accounts/$accountId` | Move to **admin**. **Done**: `/admin/accounts/*`. Its CSM control calls `/sales/csm/*`, which stays in **sales** (2026-10-25), published for admin |
 | 2 | Public e-sign page | `/sign/$token` | Keep in **sales** |
 | 3 | Directory (`/sales/directory`) | `/sales/directory` | **sales** (2026-10-25) |
-| 3a | Directory drill-downs (brand, location, professional), reached from Directory → Logos / Locations / Professionals | `/sales/brands/$orgId`, `/sales/locations/$orgId`, `/sales/professionals/$proId` | Pages stay in **sales** (2026-10-25). Their data API moves to the owners: professional and location (`/sales/nav/professionals/{id}`, `/sales/nav/organizations/{id}`) → **srp**; brand (`/sales/nav/organizations/{id}/brand-rollup`) → **xmp**; published for sales. **Done**: `/srp/directory/professionals/{id}`, `/srp/directory/organizations/{id}`, `/xmp/directory/brands/{id}/rollup` (the rollup is used by the brand and location pages) |
+| 3a | Directory drill-downs (brand, location, professional), reached from Directory → Logos / Locations / Professionals | `/sales/brands/$orgId`, `/sales/locations/$orgId`, `/sales/professionals/$proId` | Pages stay in **sales** (2026-10-25). Their data API moves to the owners: professional and location (`/sales/nav/professionals/{id}`, `/sales/nav/organizations/{id}`) → **srp**; brand (`/sales/nav/organizations/{id}/brand-rollup`) → **xmp**; published for sales. **Done**: `/srp/directory/professionals/{id}`, `/srp/directory/organizations/{id}`, `/xmp/directory/brands/{id}/rollup` (the rollup is used by the brand and location pages; stays in **xmp**, which has all the brand data, 2026-10-25) |
 | 4 | Printable contract | `/sales/contracts/$contractId/print` | sales (Growth Hub) |
 
 ## 11. _base (shared code)
