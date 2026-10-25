@@ -174,6 +174,8 @@ export const cases: ParityCase[] = [
     normalize: unordered,
   },
   {
+    // role-checked: for a super_admin / architect both return rows and they are compared; for
+    // anyone else both refuse
     name: "source stats: real_estate_agency (role-checked)",
     expectRefusal: true,
     legacy: async (sb: any) => { const { data, error } = await sb.rpc("exp_etl_source_stats", { p_gcid: "gcid:real_estate_agency", p_source: null }); if (error) throw error; return data ?? []; },
