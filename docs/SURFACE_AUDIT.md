@@ -88,8 +88,8 @@ migration (2026-10-23) by reading the old app's files.
 | 7 | Support | `/support` | Keep in admin |
 | 8 | `/products` (retired, redirects to `/sales/price-book`) | `/products` | Keep the redirect (2026-10-25) |
 | 9 | "Who am I" (`/admin/me/*`, used by every console page) | — | Keep in admin |
-| 10 | Google Workspace **Send email**, **Schedule meeting**, **Book demo** buttons (on the sales opportunity page; code in admin `google_workspace_fn.py`) | `/sales/opportunities/$oppId` | Move to **sales** (2026-10-25; Growth Hub). Only the opportunity functions move (send email, schedule meeting, and the delivery-status check the dialogs use); Google connect, domain verification and outbox stay with `/admin/integrations` |
-| 11 | Staging keys (used only by etl `/discovery` → Field Yield) | `/discovery` | Open: move to etl or keep |
+| 10 | Google Workspace **Send email**, **Schedule meeting**, **Book demo** buttons (on the sales opportunity page; code in admin `google_workspace_fn.py`) | `/sales/opportunities/$oppId` | Move to **sales** (2026-10-25; Growth Hub). Only the opportunity functions move (send email, schedule meeting, and the delivery-status check the dialogs use); Google connect, domain verification and the outbox ("Send queued") stay with `/admin/integrations` (outbox confirmed admin, 2026-10-25). **Done**: `/sales/fn/getGoogleDeliveryStatus`, `sendOpportunityEmail`, `scheduleOpportunityMeeting` |
+| 11 | Staging keys (used only by etl `/discovery` → Field Yield) | `/discovery` | Keep in **admin** (2026-10-25) |
 | + | Arriving: claims queue, PLG rules (done), search console pages (pending) | `/claims`, `/emp/plg-rules`, `/search/*` | — |
 
 ## Decisions noted ahead (to apply when that Surface is audited)

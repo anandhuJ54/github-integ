@@ -18,7 +18,7 @@ import { cn } from "@v3/ui/lib/utils";
 import { prepareOpportunityQuote } from "@v3/sales/lib/sales-cpq";
 import { buildTimeline, missingRequired, type TimelineItem } from "@v3/sales/lib/crm-lifecycle";
 import { useServerFn } from "@v3/ui/lib/server-fn";
-import { scheduleOpportunityMeeting } from "@v3/ui/lib/google-workspace.functions";
+import { scheduleOpportunityMeeting } from "@v3/sales/lib/google-workspace.functions";
 import { AlertsFeed, AuditPanel, EmailDialog, useGoogleDelivery } from "@v3/sales/components/sales/opportunity-automation";
 
 const MODULE_STAGES = ["qualification", "discovery", "design", "demo", "buy_in", "proposal"];

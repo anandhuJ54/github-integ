@@ -15,6 +15,7 @@ from sales.routers.contracts_data import router as contracts_data_router
 from sales.routers.core_data import router as core_data_router
 from sales.routers.cpq_data import router as cpq_data_router
 from sales.routers.csm_data import router as csm_data_router
+from sales.routers.google_workspace_fn import router as google_workspace_fn_router
 from sales.routers.health import router as health_router
 from sales.routers.nav_data import router as nav_data_router
 from sales.routers.opportunity_data import router as opportunity_data_router
@@ -46,3 +47,4 @@ router.include_router(category_groups_data_router)
 router.include_router(boards_data_router)
 router.include_router(nav_data_router)
 router.include_router(spine_data_router)
+router.include_router(google_workspace_fn_router)
