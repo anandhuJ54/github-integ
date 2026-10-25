@@ -181,6 +181,20 @@ def test_sitemap_index_on(fake_db):
     assert "https://example.test/api/public/sitemap/priority-high.xml" in res.text
 
 
+def test_site_origin_setting_wins_over_the_request_host(fake_db, monkeypatch):
+    from _base.core.config import get_settings
+
+    monkeypatch.setenv("SITE_ORIGIN", "https://site.test/")
+    get_settings.cache_clear()
+    try:
+        fake_db(switch(True, [PART]))
+        assert "Sitemap: https://site.test/api/public/sitemap.xml" in _client().get("/robots.txt").text
+        assert "https://site.test/api/public/sitemap/priority-high.xml" in _client().get("/public/sitemap.xml").text
+    finally:
+        monkeypatch.delenv("SITE_ORIGIN")
+        get_settings.cache_clear()
+
+
 def test_partition_unknown_is_404(fake_db):
     fake_db(switch(True))
     res = _client().get("/public/sitemap/held-below-floor.xml")

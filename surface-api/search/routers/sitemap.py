@@ -10,6 +10,7 @@ import re
 from fastapi import APIRouter, Request
 from fastapi.responses import PlainTextResponse, Response
 
+from _base.core.config import get_settings
 from search import site_indexing, sitemap
 from search.robots import robots_txt
 
@@ -20,7 +21,9 @@ _XML_TYPE = "application/xml; charset=utf-8"
 
 
 def _origin(request: Request) -> str:
-    return f"{request.url.scheme}://{request.url.netloc}"
+    """The public site's origin for the URLs listed: SITE_ORIGIN when set, else the address the
+    request came in on (the UI's, when the site forwards /robots.txt and /public/sitemap* here)."""
+    return get_settings().site_origin or f"{request.url.scheme}://{request.url.netloc}"
 
 
 def _xml(xml: str) -> Response:
