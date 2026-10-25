@@ -5,6 +5,56 @@
     "version": "1"
   },
   "paths": {
+    "/xmp/directory/brands/{org_id}/rollup": {
+      "get": {
+        "tags": [
+          "xmp"
+        ],
+        "summary": "Load Brand Rollup",
+        "description": "loadBrandRollup's rows: `{ locations, childCount, directCount, viaOfficesCount, claims }`\n(a failed count is null).",
+        "operationId": "load_brand_rollup_xmp_directory_brands__org_id__rollup_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "org_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Org Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Load Brand Rollup Xmp Directory Brands  Org Id  Rollup Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/xmp/enterprise/brands/{brand_id}/moderation": {
       "get": {
         "tags": [

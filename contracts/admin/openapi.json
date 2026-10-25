@@ -5,6 +5,281 @@
     "version": "1"
   },
   "paths": {
+    "/admin/accounts/discovered-counts": {
+      "post": {
+        "tags": [
+          "admin"
+        ],
+        "summary": "Discovered Counts",
+        "description": "The exp_entity display_name ilike %name% exact count for each name, in order (null when a\ncount failed). A read; POST so the list fits.",
+        "operationId": "discovered_counts_admin_accounts_discovered_counts_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminAccountsNames"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {},
+                  "type": "array",
+                  "title": "Response Discovered Counts Admin Accounts Discovered Counts Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/admin/accounts/list-rows": {
+      "get": {
+        "tags": [
+          "admin"
+        ],
+        "summary": "List Rows",
+        "description": "loadAccounts' reads: `{ orgs, pros, contracts }` (orgs and pros cut to 1000 rows, as\nPostgREST cut the page's limit(5000); follow-up 1j).",
+        "operationId": "list_rows_admin_accounts_list_rows_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "type": "object",
+                  "title": "Response List Rows Admin Accounts List Rows Get"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/admin/accounts/login-as": {
+      "post": {
+        "tags": [
+          "admin"
+        ],
+        "summary": "Record Login As",
+        "description": "recordLoginAs: the audit_log row; actor_email is the signed-in user's, from the verified\ntoken (every caller passed the signed-in user's email). An insert error reaches the page,\nwhich threw it before.",
+        "operationId": "record_login_as_admin_accounts_login_as_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminAccountsLoginAs"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "type": "object",
+                  "title": "Response Record Login As Admin Accounts Login As Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/admin/accounts/tree-rows": {
+      "get": {
+        "tags": [
+          "admin"
+        ],
+        "summary": "Tree Rows",
+        "description": "loadAccount's reads: `{ orgs, pros, contracts }` (as above, more contract columns).",
+        "operationId": "tree_rows_admin_accounts_tree_rows_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "type": "object",
+                  "title": "Response Tree Rows Admin Accounts Tree Rows Get"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/admin/accounts/{account_id}/entitlements": {
+      "get": {
+        "tags": [
+          "admin"
+        ],
+        "summary": "Entitlements",
+        "description": "loadEntitlements' rows: `{ products, entitlements }` (one round trip).",
+        "operationId": "entitlements_admin_accounts__account_id__entitlements_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "account_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Account Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Entitlements Admin Accounts  Account Id  Entitlements Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/accounts/{account_id}/entitlements/{product_key}": {
+      "put": {
+        "tags": [
+          "admin"
+        ],
+        "summary": "Set Entitlement",
+        "description": "setEntitlement: the organization's upsert, source \"console\".",
+        "operationId": "set_entitlement_admin_accounts__account_id__entitlements__product_key__put",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "account_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Account Id"
+            }
+          },
+          {
+            "name": "product_key",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Product Key"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminAccountsEntitlement"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Set Entitlement Admin Accounts  Account Id  Entitlements  Product Key  Put"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/admin/claims": {
       "get": {
         "tags": [
@@ -2610,6 +2885,82 @@
           "approve"
         ],
         "title": "AdjudicateIn"
+      },
+      "AdminAccountsEntitlement": {
+        "properties": {
+          "state": {
+            "type": "string",
+            "title": "State"
+          },
+          "tokens_included": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Tokens Included"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "state"
+        ],
+        "title": "AdminAccountsEntitlement"
+      },
+      "AdminAccountsLoginAs": {
+        "properties": {
+          "node_type": {
+            "type": "string",
+            "enum": [
+              "organization",
+              "professional"
+            ],
+            "title": "Node Type"
+          },
+          "node_id": {
+            "type": "string",
+            "title": "Node Id"
+          },
+          "node_name": {
+            "type": "string",
+            "title": "Node Name"
+          },
+          "account_id": {
+            "type": "string",
+            "title": "Account Id"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "node_type",
+          "node_id",
+          "node_name",
+          "account_id"
+        ],
+        "title": "AdminAccountsLoginAs"
+      },
+      "AdminAccountsNames": {
+        "properties": {
+          "names": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 1000,
+            "title": "Names"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "names"
+        ],
+        "title": "AdminAccountsNames"
       },
       "AdminMeAuditIn": {
         "properties": {

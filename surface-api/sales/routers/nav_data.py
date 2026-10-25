@@ -4,6 +4,10 @@ surface-ui/sales/src/lib/sales-nav.ts.
 Every endpoint runs as the signed-in user, so RLS decides exactly as it did for the browser. Each
 returns the rows of one loader, raw; the browser keeps the overview math, the browse mapping and
 the drill-down rollups. Read-only.
+
+The Directory drill-downs' professional and organization rows moved to srp
+(/srp/directory/professionals/{id}, /srp/directory/organizations/{id}) and the brand rollup to
+xmp (/xmp/directory/brands/{id}/rollup), surface audit 2026-10-25; the pages stay here.
 """
 from __future__ import annotations
 
@@ -43,25 +47,6 @@ def browse(tab: str = Query(..., pattern="^(" + "|".join(q.TABS) + ")$"),
 def load_score(entity_id: str, claims: dict = Depends(current_user)) -> dict | None:
     """loadScore: the entity's newest search_rank_scores row, or null."""
     return _read_with(claims, q.load_score, entity_id)
-
-
-@router.get("/organizations/{org_id}")
-def load_org(org_id: str, claims: dict = Depends(current_user)) -> dict | None:
-    """loadOrg: the organization row, or null."""
-    return _read_with(claims, q.load_org, org_id)
-
-
-@router.get("/organizations/{org_id}/brand-rollup")
-def load_brand_rollup(org_id: str, claims: dict = Depends(current_user)) -> dict:
-    """loadBrandRollup's rows: `{ locations, childCount, directCount, viaOfficesCount, claims }`
-    (a failed count is null)."""
-    return _read_with(claims, q.load_brand_rollup, org_id)
-
-
-@router.get("/professionals/{pro_id}")
-def load_professional(pro_id: str, claims: dict = Depends(current_user)) -> dict | None:
-    """loadProfessional: the professional row, or null."""
-    return _read_with(claims, q.load_professional, pro_id)
 
 
 @router.get("/events")

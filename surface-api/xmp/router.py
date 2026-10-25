@@ -10,9 +10,11 @@ from __future__ import annotations
 
 from fastapi import APIRouter
 
+from xmp.routers.directory_data import router as directory_data_router
 from xmp.routers.enterprise_data import router as enterprise_data_router
 from xmp.routers.health import router as health_router
 
 router = APIRouter()
 router.include_router(health_router)
 router.include_router(enterprise_data_router)
+router.include_router(directory_data_router)  # sales Directory drill-down data, surface audit 2026-10-25

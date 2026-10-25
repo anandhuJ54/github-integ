@@ -23,9 +23,9 @@ import {
 } from "@v3/ui/components/ui/select";
 import { ROLE_FOR_KIND, useImpersonation } from "@v3/ui/lib/impersonation";
 import { useRole } from "@v3/ui/lib/roles";
-import { loadAccounts, recordLoginAs, type AccountSummary } from "@v3/sales/lib/accounts";
-import { isMine, listActiveCsms } from "@v3/sales/lib/csm";
-import { CsmControl } from "@v3/sales/components/accounts/csm-control";
+import { loadAccounts, recordLoginAs, type AccountSummary } from "@v3/admin/lib/accounts";
+import { isMine, listActiveCsms } from "@v3/admin/lib/csm";
+import { CsmControl } from "@v3/admin/components/accounts/csm-control";
 import { cn } from "@v3/ui/lib/utils";
 
 const TAB_KEY = "xp.accounts.tab";

@@ -2,7 +2,8 @@ import { api } from "@v3/ui/lib/server-fn";
 
 /* CSM assignments — one active row per (subject_type, subject_id). subject_id = org id as text,
    the same identifier exp_contracts.org_id uses, so renewal routing aligns.
-   FastAPI: surface-api/sales/routers/csm_data.py (runs as the signed-in user; subject_type is
+   FastAPI: surface-api/sales/routers/csm_data.py, a sales API (this lib moved to admin with the
+   Accounts pages, surface audit 2026-10-25; runs as the signed-in user; subject_type is
    "organization" there). */
 const CSM = "/sales/csm";
 

@@ -204,6 +204,9 @@ const navCases: ParityCase[] = [
   },
   lib(NAV, "nav: loadScore(scored)", "loadScore", [PRO], () => nav.loadScore(PRO)),
   lib(NAV, "nav: loadScore(none) → null", "loadScore", [NO_ID], () => nav.loadScore(NO_ID)),
+  // moved (surface audit 2026-10-25): loadOrg / loadProfessional now call srp
+  // (/srp/directory/organizations|professionals/:id), loadBrandRollup xmp
+  // (/xmp/directory/brands/:id/rollup); sales-nav.ts and the pages stay in sales
   lib(NAV, "nav: loadOrg(brand)", "loadOrg", [BRAND], () => nav.loadOrg(BRAND)),
   lib(NAV, "nav: loadOrg(none) → null", "loadOrg", [NO_ID], () => nav.loadOrg(NO_ID)),
   // locations: name ties inside the 500 compared as a set
@@ -213,12 +216,13 @@ const navCases: ParityCase[] = [
   lib(NAV, "nav: loadBrandRollup(none)", "loadBrandRollup", [NO_ID], () => nav.loadBrandRollup(NO_ID)),
   {
     // loadBrandRollup's claim events (sales-nav.ts:392), verbatim: .limit(10000), no ORDER BY
-    name: "nav: brand claim events (capped, unordered) → GET /sales/nav/organizations/:id/brand-rollup .claims",
+    name: "nav: brand claim events (capped, unordered) → GET /xmp/directory/brands/:id/rollup .claims",
     legacy: async (supabase: any) => {
       const db = supabase as unknown as { from: (t: string) => any };
       return strict(db.from("exp_claim_events").select("entity_id,entity_type,event_type").eq("logo_org_id", BRAND).in("event_type", ["claimed", "engaged", "upgraded"]).limit(10000));
     },
-    api: { method: "GET", path: `/sales/nav/organizations/${BRAND}/brand-rollup` },
+    // moved (surface audit 2026-10-25): /sales/nav/organizations/:id/brand-rollup → xmp
+    api: { method: "GET", path: `/xmp/directory/brands/${BRAND}/rollup` },
     normalize: (r: any) => countAndShape(Array.isArray(r) ? r : r?.claims),
   },
   lib(NAV, "nav: loadProfessional", "loadProfessional", [PRO], () => nav.loadProfessional(PRO)),

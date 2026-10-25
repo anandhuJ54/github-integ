@@ -16,7 +16,7 @@
  * whose name contains this text, case-insensitive).
  */
 import { execFileSync } from "node:child_process";
-import { mkdirSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { supabase } from "@v3/ui/integrations/supabase/client";
@@ -43,11 +43,44 @@ function aliasOf(path: string): string {
   return `@v3/${m[1] === "_base" ? "ui" : m[1]}/${m[2]}`;
 }
 
+/** `@v3/srp/lib/x` → `surface-ui/srp/src/lib/x` (no extension; `@v3/ui` is `_base`). */
+function pathOfAlias(alias: string): string | null {
+  const m = alias.match(/^@v3\/([^/]+)\/(.+)$/);
+  return m ? `surface-ui/${m[1] === "ui" ? "_base" : m[1]}/src/${m[2]}` : null;
+}
+
+const legacyFiles = new Map<string, string>();
+
+/** The legacy file at `path`, written under .legacy/. Its `@v3/...` imports that no longer exist
+ * in the working tree (the file moved to another Surface since the legacy ref) are rewritten to
+ * their legacy copies too, recursively, so old code still loads after a surface-audit move. */
 function extract(path: string): string {
+  const done = legacyFiles.get(path);
+  if (done) return done;
   const out = join(HERE, ".legacy", path);
+  legacyFiles.set(path, out);
   mkdirSync(dirname(out), { recursive: true });
-  writeFileSync(out, execFileSync("git", ["show", `${REF}:${path}`], { cwd: ROOT }));
+  const src = execFileSync("git", ["show", `${REF}:${path}`], { cwd: ROOT }).toString();
+  writeFileSync(out, rewriteMoved(src));
   return out;
+}
+
+function rewriteMoved(src: string): string {
+  return src.replace(/(["'])(@v3\/[^"']+)\1/g, (whole, _q, alias: string) => {
+    const base = pathOfAlias(alias);
+    if (!base) return whole;
+    const exists = [".ts", ".tsx", "/index.ts", "/index.tsx"].some((ext) => existsSync(join(ROOT, base + ext)));
+    if (exists) return whole;
+    for (const ext of [".ts", ".tsx"]) {
+      try {
+        execFileSync("git", ["cat-file", "-e", `${REF}:${base}${ext}`], { cwd: ROOT, stdio: "ignore" });
+        return JSON.stringify(extract(base + ext));
+      } catch {
+        /* not at the legacy ref with this extension */
+      }
+    }
+    return whole;
+  });
 }
 
 async function legacyModule(
@@ -65,6 +98,7 @@ async function legacyModule(
     // the legacy module must see the legacy version of what the port changed
     src = src.split(`"${aliasOf(dep)}"`).join(JSON.stringify(extract(dep)));
   }
+  src = rewriteMoved(src);
   const out = join(HERE, ".legacy", path);
   mkdirSync(dirname(out), { recursive: true });
   writeFileSync(out, src);

@@ -1,4 +1,4 @@
-"""sales accounts (S2) — port of the supabase-js calls in surface-ui/sales/src/lib/accounts.ts:
+"""admin accounts (S2) — port of the supabase-js calls in surface-ui/admin/src/lib/accounts.ts:
 the account hierarchy (organizations, professionals), their contracts (exp_contracts), the
 "discovered" counts (exp_entity), entitlements (exp_products, exp_entitlements) and the
 login-as audit row (audit_log).
@@ -8,6 +8,9 @@ PostgREST shape and the 1000-row cap: the browser's `.limit(5000)` on organizati
 and professionals (116k) was cut to 1000 by PostgREST and still is (follow-up 1j). Those reads
 have no ORDER BY, so which 1000 rows come back is up to Postgres, for both. Reads whose error the
 browser ignored (the contracts, every exact count) are tolerant; the others are not.
+
+Moved from sales (sales/queries/accounts.py), surface audit 2026-10-25; same SQL. `cols` and
+`execute` are copied from sales/queries/cpq.py (no cross-Surface import).
 """
 from __future__ import annotations
 
@@ -17,10 +20,10 @@ import psycopg
 from psycopg.types.json import Jsonb
 from sqlalchemy import func, select
 from sqlalchemy.dialects.postgresql import insert as pg_insert
+from sqlalchemy.sql import ClauseElement
 
-from _base.core.sql import fetch_many
+from _base.core.sql import compile_sql, fetch_many, jsonish
 from _base.schema import tables as T
-from sales.queries.cpq import cols, execute
 
 orgs = T.t_organizations
 pros = T.t_professionals
@@ -29,6 +32,19 @@ entity = T.t_exp_entity
 products = T.t_exp_products
 entitlements = T.t_exp_entitlements
 audit = T.t_audit_log
+
+
+def cols(t: Any, names: str) -> list[Any]:
+    """A supabase-js select list ("a,b,c") as the table's columns."""
+    return [t.c[n.strip()] for n in names.split(",")]
+
+
+def execute(conn: psycopg.Connection, stmt: ClauseElement) -> list[dict[str, Any]]:
+    """Run a write; the RETURNING rows (PostgREST-shaped) when it has a RETURNING clause."""
+    sql, params = compile_sql(stmt)
+    with conn.cursor() as cur:
+        cur.execute(sql, params)
+        return [jsonish(dict(r)) for r in cur.fetchall()] if cur.description else []
 
 ORG_COLS = ("id,name,slug,entity_type,parent_org_id,hierarchy_depth,is_active,claimed,"
             "search_rank_score,address_city,address_state")

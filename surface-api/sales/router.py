@@ -1,12 +1,15 @@
 """Aggregate router for the sales Surface.
 
+Accounts (/sales/accounts/*) moved to admin (/admin/accounts/*); the Directory drill-down data
+moved to the owners: professional and organization rows to srp (/srp/directory/*), the brand
+rollup to xmp (/xmp/directory/brands/*), surface audit 2026-10-25.
+
 The app mounts only this. Include new sales sub-routers here, not in app.py.
 """
 from __future__ import annotations
 
 from fastapi import APIRouter
 
-from sales.routers.accounts_data import router as accounts_data_router
 from sales.routers.alerts_data import router as alerts_data_router
 from sales.routers.boards_data import router as boards_data_router
 from sales.routers.catalog_data import router as catalog_data_router
@@ -32,7 +35,6 @@ router.include_router(health_router)
 router.include_router(catalog_data_router)
 router.include_router(cpq_data_router)
 router.include_router(core_data_router)
-router.include_router(accounts_data_router)
 router.include_router(contracts_data_router)
 router.include_router(csm_data_router)
 router.include_router(sign_public_router)

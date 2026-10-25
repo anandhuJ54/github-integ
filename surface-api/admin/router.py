@@ -6,6 +6,7 @@ from __future__ import annotations
 
 from fastapi import APIRouter
 
+from admin.routers.accounts_data import router as accounts_data_router
 from admin.routers.claims import router as claims_router
 from admin.routers.console_home import router as console_home_router
 from admin.routers.console_pages import router as console_pages_router
@@ -34,3 +35,4 @@ router.include_router(search_console_router)
 router.include_router(site_indexing_fn_router)
 router.include_router(console_home_router)
 router.include_router(control_claims_router)
+router.include_router(accounts_data_router)  # moved from sales, surface audit 2026-10-25

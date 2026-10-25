@@ -32,8 +32,8 @@ import {
 } from "@v3/ui/components/ui/select";
 import { ROLE_FOR_KIND, useImpersonation } from "@v3/ui/lib/impersonation";
 import { useRole } from "@v3/ui/lib/roles";
-import { getAccountCsm } from "@v3/sales/lib/csm";
-import { CsmControl } from "@v3/sales/components/accounts/csm-control";
+import { getAccountCsm } from "@v3/admin/lib/csm";
+import { CsmControl } from "@v3/admin/components/accounts/csm-control";
 import { useQuery as useCsmQuery } from "@tanstack/react-query";
 import {
   loadAccount,
@@ -42,7 +42,7 @@ import {
   setEntitlement,
   type AccountTreeNode,
   type EntitlementState,
-} from "@v3/sales/lib/accounts";
+} from "@v3/admin/lib/accounts";
 
 export const Route = createFileRoute("/_authenticated/accounts/$accountId")({
   head: () => ({

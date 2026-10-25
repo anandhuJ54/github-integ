@@ -3,6 +3,11 @@ import { SELLER_ROLES, type SellerRole } from "@v3/sales/lib/sales";
 
 /** FastAPI: surface-api/sales/routers/nav_data.py (runs as the signed-in user). */
 const N = "/sales/nav";
+/** The Directory drill-downs' data moved to the data owners, surface audit 2026-10-25:
+ *  professional and organization rows → srp (surface-api/srp/routers/directory_data.py),
+ *  the brand rollup → xmp (surface-api/xmp/routers/directory_data.py). Same SQL and shapes. */
+const SRP_DIR = "/srp/directory";
+const XMP_DIR = "/xmp/directory";
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type Raw = Record<string, any>;
 const enc = encodeURIComponent;
@@ -314,7 +319,7 @@ export async function loadScore(entityId: string): Promise<ScoreRow | null> {
 }
 
 export async function loadOrg(orgId: string) {
-  return api.get<Raw | null>(`${N}/organizations/${enc(orgId)}`);
+  return api.get<Raw | null>(`${SRP_DIR}/organizations/${enc(orgId)}`);
 }
 
 export async function loadBrandRollup(orgId: string) {
@@ -324,7 +329,7 @@ export async function loadBrandRollup(orgId: string) {
     directCount: number | null;
     viaOfficesCount: number | null;
     claims: { entity_id: string | null; entity_type: string | null; event_type: string | null }[];
-  }>(`${N}/organizations/${enc(orgId)}/brand-rollup`);
+  }>(`${XMP_DIR}/brands/${enc(orgId)}/rollup`);
   const claimRows = r.claims ?? [];
   const claimedLocations = new Set(claimRows.filter((r) => r.entity_type === "location" && r.entity_id).map((r) => r.entity_id)).size;
   const claimedProfessionals = new Set(claimRows.filter((r) => r.entity_type === "professional" && r.entity_id).map((r) => r.entity_id)).size;
@@ -339,7 +344,7 @@ export async function loadBrandRollup(orgId: string) {
 }
 
 export async function loadProfessional(proId: string) {
-  return api.get<Raw | null>(`${N}/professionals/${enc(proId)}`);
+  return api.get<Raw | null>(`${SRP_DIR}/professionals/${enc(proId)}`);
 }
 
 export async function loadEventsFor(opts: { accountId?: string; logo?: string; location?: string; subjectId?: string }) {

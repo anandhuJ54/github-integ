@@ -14,7 +14,6 @@ from sales.queries import nav as q
 from sales.queries.contracts_test import (
     AUTH_READ,
     RID,
-    RID2,
     install_fake_db,
     make_client,
     sqls,
@@ -40,8 +39,7 @@ def params_of(log, sql):
 
 @pytest.mark.parametrize("path", [
     f"{P}/overview?period=month&since=2026-10-01", f"{P}/browse?tab=categories&page_size=6",
-    f"{P}/scores/{RID}", f"{P}/organizations/{RID}", f"{P}/organizations/{RID}/brand-rollup",
-    f"{P}/professionals/{RID}", f"{P}/events", f"{P}/sellers/{RID}",
+    f"{P}/scores/{RID}", f"{P}/events", f"{P}/sellers/{RID}",
     f"{P}/category-dashboard?gcid=gcid:x", f"{P}/teams/insurance",
 ])
 def test_every_read_needs_a_signed_in_user(path):
@@ -180,44 +178,8 @@ def test_score_newest_one(dbfake):
     assert client().get(f"{P}/scores/{RID}").json() is None
 
 
-def test_org_and_professional_star_maybe_single(dbfake):
-    log, state, _ = dbfake
-    state["answer"] = lambda s, p: [{"id": uuid.UUID(RID)}]
-    assert client().get(f"{P}/organizations/{RID}").json() == {"id": RID}
-    assert client().get(f"{P}/professionals/{RID}").json() == {"id": RID}
-    assert "public.organizations.hierarchy_depth" in sqls(log)[0]  # select("*")
-    state["answer"] = lambda s, p: [{"id": 1}, {"id": 2}]
-    assert client().get(f"{P}/organizations/{RID}").status_code == 406
-    state["answer"] = lambda s, p: psycopg.errors.InvalidTextRepresentation("invalid input syntax")
-    assert client().get(f"{P}/professionals/x").status_code == 400
-
-
-def test_brand_rollup_locations_threw_the_rest_tolerant(dbfake):
-    log, state, _ = dbfake
-
-    def answer(sql, params):
-        if "count(*)" in sql:
-            if "JOIN public.organizations" in sql:
-                return psycopg.errors.UndefinedTable("no embed")
-            return [{"n": 3}]
-        if table_of(sql) == "exp_claim_events":
-            return [{"entity_id": uuid.UUID(RID), "entity_type": "location", "event_type": "claimed"}]
-        return [{"id": uuid.UUID(RID2)}]
-
-    state["answer"] = answer
-    out = client().get(f"{P}/organizations/{RID}/brand-rollup").json()
-    assert out == {"locations": [{"id": RID2}], "childCount": 3, "directCount": 3,
-                   "viaOfficesCount": None,
-                   "claims": [{"entity_id": RID, "entity_type": "location", "event_type": "claimed"}]}
-    s = sqls(log)
-    assert "ORDER BY public.organizations.name ASC" in s[0] and params_of(log, s[0])["param_1"] == 500
-    via = next(x for x in s if "JOIN public.organizations" in x)
-    assert "professionals.primary_org_id = public.organizations.id" in via
-    assert "public.organizations.parent_org_id = " in via
-    claims_sql = next(x for x in s if "FROM public.exp_claim_events" in x)
-    assert "ORDER BY" not in claims_sql and params_of(log, claims_sql)["param_1"] == 1000
-    state["answer"] = lambda s, p: psycopg.errors.InsufficientPrivilege("permission denied")
-    assert client().get(f"{P}/organizations/{RID}/brand-rollup").status_code == 403
+# loadOrg / loadProfessional moved to srp (srp/routers/directory_router_test.py) and
+# loadBrandRollup to xmp (xmp/routers/directory_router_test.py), surface audit 2026-10-25.
 
 
 def test_events_for_first_filter_given(dbfake):

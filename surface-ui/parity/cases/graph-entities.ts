@@ -10,7 +10,7 @@ import { loadExpertiseGraph, type GraphKind } from "@v3/search/lib/expertise-gra
 // /admin/control-claims.
 // Reads only: the governed writes (exp_claim_adjudicate, exp_ctrl_create_node,
 // exp_ctrl_update_node) are covered by compiled-SQL unit tests, never run here.
-const EXPERTISE = "surface-ui/search/src/lib/expertise-graph.ts";
+const EXPERTISE = "surface-ui/graph/src/lib/expertise-graph.ts"; // legacy path at the parity ref (now in search)
 
 // Lists the page doesn't order (or whose ties come back in any order) are compared in one order.
 const key = (r: any) => JSON.stringify(r);

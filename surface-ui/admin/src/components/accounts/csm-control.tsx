@@ -4,7 +4,7 @@ import { toast } from "sonner";
 import { Button } from "@v3/ui/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@v3/ui/components/ui/popover";
 import { useRole } from "@v3/ui/lib/roles";
-import { assignCsm, clearCsm, isMine, listCsmCandidates, type CsmAssignment } from "@v3/sales/lib/csm";
+import { assignCsm, clearCsm, isMine, listCsmCandidates, type CsmAssignment } from "@v3/admin/lib/csm";
 
 /** "CSM: <name> · Change/Assign" — super-admins pick anyone; others can claim or release for themselves. */
 export function CsmControl({ orgId, csm, compact }: { orgId: string; csm: CsmAssignment | null | undefined; compact?: boolean }) {

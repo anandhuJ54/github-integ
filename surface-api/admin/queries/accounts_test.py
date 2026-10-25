@@ -1,8 +1,13 @@
-"""sales accounts endpoints (no live DB/auth): the SQL each one sends, the PostgREST-shaped
-answers, and the writes as the page sent them. No write reaches a database here."""
+"""admin accounts endpoints (no live DB/auth): the SQL each one sends, the PostgREST-shaped
+answers, and the writes as the page sent them. No write reaches a database here.
+
+Moved from sales (sales/queries/accounts_test.py, /sales/accounts), surface audit 2026-10-25. The
+fake connection is copied from sales/queries/cpq_test.py and core_test.py (no cross-Surface
+import)."""
 from __future__ import annotations
 
 import uuid
+from contextlib import contextmanager
 
 import psycopg
 import pytest
@@ -10,15 +15,98 @@ from fastapi import FastAPI
 from fastapi.testclient import TestClient
 from psycopg.types.json import Jsonb
 
+from _base.core import db as core_db
 from _base.core.auth import current_user
-from sales.queries import accounts as q
-from sales.queries import core_test as ct
-from sales.queries.cpq_test import RID, RID2
-from sales.routers.accounts_data import router
+from admin.queries import accounts as q
+from admin.routers.accounts_data import router
 
-P = "/sales/accounts"
-CLAIMS, select_list, selects = ct.CLAIMS, ct.select_list, ct.selects
-dbfake = ct.dbfake  # the same fake connection fixture (claims with an email)
+P = "/admin/accounts"
+UID = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa"
+CLAIMS = {"sub": UID, "role": "authenticated", "email": "seller@example.com"}
+RID = "11111111-1111-4111-8111-111111111111"
+RID2 = "22222222-2222-4222-8222-222222222222"
+
+
+class Cur:
+    def __init__(self, rows, description=True):
+        self.rows = rows or []
+        self.description = description
+
+    def fetchall(self):
+        return self.rows
+
+    def fetchone(self):
+        return self.rows[0] if self.rows else None
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *a):
+        return False
+
+
+class FakeConn:
+    def __init__(self, log, answer, write):
+        self.log, self.answer, self.write = log, answer, write
+
+    @contextmanager
+    def pipeline(self):
+        yield
+
+    @contextmanager
+    def transaction(self):
+        yield
+
+    def execute(self, sql, params=None):
+        self.log.append((self.write, sql, params or {}))
+        rows = [] if "savepoint" in sql else self.answer(sql, params or {})
+        if isinstance(rows, Exception):
+            raise rows
+        return Cur(rows)
+
+    def cursor(self):
+        conn = self
+
+        class C(Cur):
+            def __init__(self):
+                super().__init__([], None)
+
+            def execute(self, sql, params=None):
+                self.rows = conn.execute(sql, params).rows
+                # a write without RETURNING has no result set (psycopg: description None)
+                self.description = None if sql.startswith(("UPDATE", "INSERT", "DELETE")) \
+                    and "RETURNING" not in sql else True
+
+            def fetchall(self):
+                if self.description is None:
+                    raise AssertionError("fetchall on a statement with no result set")
+                return self.rows
+
+        return C()
+
+
+@pytest.fixture
+def dbfake(monkeypatch):
+    log: list = []
+    leases: list = []
+    state = {"answer": lambda sql, params: []}
+
+    @contextmanager
+    def fake_role_connection(role, claims=None, *, write=False, fresh=False):
+        assert role == "authenticated" and claims == CLAIMS
+        leases.append(write)
+        yield FakeConn(log, lambda s, p: state["answer"](s, p), write)
+
+    monkeypatch.setattr(core_db, "role_connection", fake_role_connection)
+    return log, state, leases
+
+
+def selects(log):
+    return [x for x in log if x[1].startswith("SELECT")]
+
+
+def select_list(table: str, names: str) -> str:
+    return ", ".join(f"public.{table}.{c}" for c in names.split(","))
 
 
 def client() -> TestClient:

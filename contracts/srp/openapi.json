@@ -362,6 +362,120 @@
         }
       }
     },
+    "/srp/directory/organizations/{org_id}": {
+      "get": {
+        "tags": [
+          "srp"
+        ],
+        "summary": "Load Org",
+        "description": "loadOrg: the organization row, or null.",
+        "operationId": "load_org_srp_directory_organizations__org_id__get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "org_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Org Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "additionalProperties": true
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "title": "Response Load Org Srp Directory Organizations  Org Id  Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/srp/directory/professionals/{pro_id}": {
+      "get": {
+        "tags": [
+          "srp"
+        ],
+        "summary": "Load Professional",
+        "description": "loadProfessional: the professional row, or null.",
+        "operationId": "load_professional_srp_directory_professionals__pro_id__get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "pro_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Pro Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "additionalProperties": true
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "title": "Response Load Professional Srp Directory Professionals  Pro Id  Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/srp/hello": {
       "get": {
         "tags": [

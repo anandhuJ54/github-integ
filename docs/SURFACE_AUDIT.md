@@ -151,7 +151,7 @@ Under the serving-vs-editing rule:
 | A | Enterprise console | `/enterprise/$orgSlug/*` | Stays in **xmp**, except **review campaigns** (`/enterprise/$orgSlug/campaigns`, `/xmp/enterprise/orgs/{slug}/campaigns*`) → **campaigns**. **Done**: `/campaigns/enterprise/*` (first campaigns page) |
 | B | Seat (one pro or location) | `/seat/$kind/$id/*` | Move to **srp**, both `/seat/professional/*` and `/seat/location/*` (2026-10-25). **Done**: `/srp/seat/*`, `/srp/interview/*`, `/srp/rpc/exp_office_mode` |
 | C | Pro dashboard | `/dashboard/*` | Move to **srp** (2026-10-25; this dashboard only, not a rule). **Done**: `/srp/dashboard/*`. Note: empty for everyone today, no professional is linked to a login |
-| E | Team Central (`/xmp/team/*`, `lib/insurance-team.ts`; reads sales tables; no page uses it, only parity) | — | Open |
+| E | Team Central (`/xmp/team/*`, `lib/insurance-team.ts`; reads sales tables; no page uses it, only parity) | — | Move to **sales** (2026-10-25; pending) |
 | D | Demand engine | `/website/*` (incl. `/website/campaigns`, marketing campaigns); API `/xmp/website/*`; `_base` nav-menus | Move to **marketing** (confirmed for `/website/campaigns`, 2026-10-25). **Done**: `/marketing/website/*` |
 
 ## 10. sales
@@ -160,11 +160,23 @@ Everything under Growth Hub (`/sales/...`: Overview, Teams, Worklist, CPQ, Contr
 
 | # | Item | UI URL | Decision (2026-10-25) |
 |---|---|---|---|
-| 1 | Accounts list and detail (menu: Customers → Accounts) | `/accounts`, `/accounts/$accountId` | Move to **admin** |
+| 1 | Accounts list and detail (menu: Customers → Accounts) | `/accounts`, `/accounts/$accountId` | Move to **admin**. **Done**: `/admin/accounts/*`. Its CSM control (`/sales/csm/*`) stays a sales API used by admin (open: move it too?) |
 | 2 | Public e-sign page | `/sign/$token` | Keep in **sales** |
 | 3 | Directory (`/sales/directory`) | `/sales/directory` | **sales** (2026-10-25) |
-| 3a | Directory drill-downs (brand, location, professional), reached from Directory → Logos / Locations / Professionals | `/sales/brands/$orgId`, `/sales/locations/$orgId`, `/sales/professionals/$proId` | Pages stay in **sales** (2026-10-25). Their data API moves to the owners: professional and location (`/sales/nav/professionals/{id}`, `/sales/nav/organizations/{id}`) → **srp**; brand (`/sales/nav/organizations/{id}/brand-rollup`) → **xmp**; published for sales (pending) |
+| 3a | Directory drill-downs (brand, location, professional), reached from Directory → Logos / Locations / Professionals | `/sales/brands/$orgId`, `/sales/locations/$orgId`, `/sales/professionals/$proId` | Pages stay in **sales** (2026-10-25). Their data API moves to the owners: professional and location (`/sales/nav/professionals/{id}`, `/sales/nav/organizations/{id}`) → **srp**; brand (`/sales/nav/organizations/{id}/brand-rollup`) → **xmp**; published for sales. **Done**: `/srp/directory/professionals/{id}`, `/srp/directory/organizations/{id}`, `/xmp/directory/brands/{id}/rollup` (the rollup is used by the brand and location pages) |
 | 4 | Printable contract | `/sales/contracts/$contractId/print` | sales (Growth Hub) |
+
+## 11. _base (shared code)
+
+Moving a file out of `_base` changes nothing on screen; it only sets which Surface owns it.
+
+| # | Group | Files | Decision (2026-10-25) |
+|---|---|---|---|
+| 1 | search code (public search, facets, city detection, card actions, visitor lists, phone format) | `lib/search.ts`, `search-presentation.functions.ts`, `geo.functions.ts`, `geo-coords.ts`, `engagement.functions.ts`, `visitor-lists.ts`, `us-phone.ts` | Keep in **_base** |
+| 2a | marketing settings and components (site address, meta tags, demo links, section images, marketing layouts/sections) | `lib/marketing/seo.ts`, `envUrls.ts`, `section-images.ts`, `components/marketing/*` | Move to **marketing** (pending). The app shell's 404 page imports from marketing |
+| 2b | public header/menu data | `lib/nav-menus.ts`, `home.functions.ts` | Keep in **_base** (every public page's header uses them) |
+| 3 | public site pages and VOCE (shared by search, marketing, admin) | `lib/public-site.ts`, `public-site.functions.ts`, `voce.ts` | Keep in **_base** |
+| 4 | skills and NORA code (registry, sandbox, runner client, registry tabs, run list) | `lib/nora-registry.ts`, `nora-sandbox.ts`, `nora-runner.ts`, `nora-runner.functions.ts`, `components/nora/*` | Move to **skills** (2026-10-25; pending). srp's seat interview gets its own copy of what it uses |
 
 ## Published cross-Surface APIs (to add as contract entries)
 
@@ -186,6 +198,7 @@ Everything under Growth Hub (`/sales/...`: Overview, Teams, Worklist, CPQ, Contr
 | sales | `/sales/catalog/billing` | admin `/billing` |
 | sales | `/sales/territories/slots/{id}/label` | admin `/professionals` (territory chip) |
 | sales | `/sales/alerts/*` | admin `/admin/integrations` ("run now") |
+| sales | `/sales/csm/*` (CSM assignments) | admin `/accounts`, `/accounts/$accountId` (CsmControl; lib moved to admin with the pages) |
 | search | public search, VOCE reads, presentation, area detection | marketing pages, `_base` public chrome |
 
 ## Decisions noted ahead (to apply when that Surface is audited)

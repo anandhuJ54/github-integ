@@ -1,8 +1,9 @@
 import type { Tables } from "@v3/ui/integrations/supabase/types";
 import { api } from "@v3/ui/lib/server-fn";
 
-// FastAPI: surface-api/sales/routers/accounts_data.py (runs as the signed-in user).
-const ACCOUNTS = "/sales/accounts";
+// FastAPI: surface-api/admin/routers/accounts_data.py (runs as the signed-in user). Moved from
+// sales (/sales/accounts), surface audit 2026-10-25.
+const ACCOUNTS = "/admin/accounts";
 const enc = encodeURIComponent;
 
 // The rows the old selects returned (same columns, same generated types).
@@ -47,7 +48,7 @@ export type ProNode = {
   job_title: string | null;
 };
 
-// The organization / professional select lists live in surface-api/sales/queries/accounts.py.
+// The organization / professional select lists live in surface-api/admin/queries/accounts.py.
 
 export type AccountSummary = {
   account: OrgNode;
