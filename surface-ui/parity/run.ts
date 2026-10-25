@@ -12,7 +12,8 @@
  *
  * Env: VITE_SUPABASE_URL, VITE_SUPABASE_PUBLISHABLE_KEY (from the app's .env), PARITY_EMAIL,
  * PARITY_PASSWORD (omit both to run signed out), PARITY_API_URL (default http://localhost:8000),
- * PARITY_LEGACY_REF (default migrate/from-experiencesrp-clone).
+ * PARITY_LEGACY_REF (default migrate/from-experiencesrp-clone), PARITY_ONLY (run only the cases
+ * whose name contains this text, case-insensitive).
  */
 import { execFileSync } from "node:child_process";
 import { mkdirSync, writeFileSync } from "node:fs";
@@ -31,7 +32,9 @@ const REF = process.env.PARITY_LEGACY_REF ?? "migrate/from-experiencesrp-clone";
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(HERE, "..", "..");
 
-const { cases } = (await import(`./cases/${surface}.ts`)) as { cases: ParityCase[] };
+const { cases: all } = (await import(`./cases/${surface}.ts`)) as { cases: ParityCase[] };
+const ONLY = process.env.PARITY_ONLY?.toLowerCase();
+const cases = ONLY ? all.filter((c) => c.name.toLowerCase().includes(ONLY)) : all;
 
 /** `surface-ui/srp/src/lib/x.ts` → `@v3/srp/lib/x` (`_base` is `@v3/ui`). */
 function aliasOf(path: string): string {
