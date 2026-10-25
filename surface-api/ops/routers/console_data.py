@@ -1,9 +1,9 @@
 """Ops pages' data — replaces the direct supabase-js reads/writes in surface-ui/ops: the dev
-tracker (/dev, /build/teams, /dev/weekly, /dev/board), the build wiki (/build/spaces) and the
-console home (/console).
+tracker (/dev, /build/teams, /dev/weekly, /dev/board) and the build wiki (/build/spaces).
+The console home (/console) moved to the admin Surface (surface audit 2026-10-25).
 
-Everything runs as the signed-in user (role `authenticated`), so the exp_dev_* / exp_wiki_* /
-exp_contracts RLS decides access exactly as it did for the browser. Who-fields (author, updated_by,
+Everything runs as the signed-in user (role `authenticated`), so the exp_dev_* / exp_wiki_*
+RLS decides access exactly as it did for the browser. Who-fields (author, updated_by,
 submitted_by, voter, user_ref) are set here from the verified login: the user's email, else their
 id — the value the page used to send itself.
 """
@@ -17,7 +17,7 @@ from pydantic import BaseModel, Field
 
 from _base.core import db
 from _base.core.auth import current_user
-from ops.queries import console, dev, wiki
+from ops.queries import dev, wiki
 
 router = APIRouter(prefix="/ops", tags=["ops"])
 
@@ -233,29 +233,3 @@ def wiki_toggle_watch(body: WatchTarget, claims: dict = Depends(current_user)) -
     with _write(claims) as conn:
         return _guard(wiki.toggle_watch, conn, who(claims), body.doc_id, body.space_id)
 
-
-# --- console home -----------------------------------------------------------------------------
-
-@router.get("/console/profiles")
-def console_profiles(d7: str, d14: str, today: str,
-                     claims: dict = Depends(current_user)) -> dict[str, int]:
-    with _read(claims) as conn:
-        return _guard(console.profiles, conn, d7, d14, today)
-
-
-@router.get("/console/revenue")
-def console_revenue(claims: dict = Depends(current_user)) -> list[dict]:
-    with _read(claims) as conn:
-        return _guard(console.revenue, conn)
-
-
-@router.get("/console/categories")
-def console_categories(today: str, claims: dict = Depends(current_user)) -> dict[str, int]:
-    with _read(claims) as conn:
-        return _guard(console.categories, conn, today)
-
-
-@router.get("/console/nora-events")
-def console_nora_events(since: str, claims: dict = Depends(current_user)) -> list[dict]:
-    with _read(claims) as conn:
-        return _guard(console.nora_events, conn, since)

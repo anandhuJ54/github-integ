@@ -82,6 +82,7 @@ export const cases: ParityCase[] = [
   legacyFn(WIKI, "searchWiki", () => ["ring"], () => wikiNow.searchWiki("ring"), "wiki: search 'ring' (1 hit)", { normalize: byId }),
   legacyFn(WIKI, "isWatching", (c) => [{ spaceId: c.spaceId }], (c) => wikiNow.isWatching({ spaceId: c.spaceId }), "wiki: watching a space"),
   {
+    // console home moved (surface audit 2026-10-25): /ops/console/* → /admin/console/* (page now in surface-ui/admin)
     // console.tsx useProfiles(): the 14 counts
     name: "console: profile counts",
     legacy: async (sb) => {
@@ -102,12 +103,12 @@ export const cases: ParityCase[] = [
       }
       return out;
     },
-    api: { method: "GET", path: `/ops/console/profiles?d7=${encodeURIComponent(d7)}&d14=${encodeURIComponent(d14)}&today=${encodeURIComponent(today)}` },
+    api: { method: "GET", path: `/admin/console/profiles?d7=${encodeURIComponent(d7)}&d14=${encodeURIComponent(d14)}&today=${encodeURIComponent(today)}` },
   },
   {
     name: "console: revenue rows",
     legacy: async (sb) => (await sb.from("exp_contracts").select("id,status,mrr,end_date")).data ?? [],
-    api: { method: "GET", path: "/ops/console/revenue" },
+    api: { method: "GET", path: "/admin/console/revenue" },
     normalize: byId,
   },
   {
@@ -119,12 +120,12 @@ export const cases: ParityCase[] = [
       prosToday: await legacyCount(sb, "professionals", (q) => q.gte("created_at", today)),
       orgsToday: await legacyCount(sb, "organizations", (q) => q.gte("created_at", today)),
     }),
-    api: { method: "GET", path: `/ops/console/categories?today=${encodeURIComponent(today)}` },
+    api: { method: "GET", path: `/admin/console/categories?today=${encodeURIComponent(today)}` },
   },
   {
     name: "console: nora events (60 days)",
     legacy: async (sb) => (await sb.from("exp_activity_events").select("event_type,occurred_at").gte("occurred_at", d60)).data ?? [],
-    api: { method: "GET", path: `/ops/console/nora-events?since=${encodeURIComponent(d60)}` },
+    api: { method: "GET", path: `/admin/console/nora-events?since=${encodeURIComponent(d60)}` },
     normalize: (rows: any[]) => [...rows].sort((a, b) => `${a.occurred_at}${a.event_type}`.localeCompare(`${b.occurred_at}${b.event_type}`)),
   },
 ];

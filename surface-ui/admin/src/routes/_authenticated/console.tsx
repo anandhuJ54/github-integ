@@ -143,8 +143,8 @@ function useProfiles() {
       const d7 = isoDaysAgo(7);
       const d14 = isoDaysAgo(14);
       const today = startOfTodayIso();
-      // the 14 counts (professionals + organizations), from /ops/console/profiles
-      const c = await api.get<Record<string, number>>("/ops/console/profiles", {
+      // the 14 counts (professionals + organizations), from /admin/console/profiles
+      const c = await api.get<Record<string, number>>("/admin/console/profiles", {
         params: { d7, d14, today },
       });
       const [
@@ -187,7 +187,7 @@ function useRevenue() {
     queryFn: async () => {
       const data = await api.get<
         { id: string; status: string | null; mrr: number | null; end_date: string | null }[]
-      >("/ops/console/revenue");
+      >("/admin/console/revenue");
       const active = data.filter((r) => r.status === "active");
       const mrr = active.reduce((s, r) => s + Number(r.mrr ?? 0), 0);
       const horizon = new Date(Date.now() + 90 * 86_400_000);
@@ -210,7 +210,7 @@ function useCategoryIntel() {
         etlRunning: number;
         prosToday: number;
         orgsToday: number;
-      }>("/ops/console/categories", { params: { today } });
+      }>("/admin/console/categories", { params: { today } });
       return {
         active,
         notActive: total - active,
@@ -229,7 +229,7 @@ function useNoraEvents() {
       const d30 = isoDaysAgo(30);
       const d60 = isoDaysAgo(60);
       const rows = await api.get<{ event_type: string | null; occurred_at: string | null }[]>(
-        "/ops/console/nora-events",
+        "/admin/console/nora-events",
         { params: { since: d60 } },
       );
       const inWindow = (r: { occurred_at: string | null }, from: string, to?: string) =>

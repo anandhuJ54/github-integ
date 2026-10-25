@@ -91,7 +91,6 @@ def sqls(log, needle):
 
 @pytest.mark.parametrize("method,path", [
     ("get", "/ops/dev/overview"), ("get", "/ops/wiki/spaces"), ("delete", "/ops/dev/members/m1"),
-    ("get", "/ops/console/revenue"),
 ])
 def test_every_endpoint_needs_a_signed_in_user(method, path):
     app = FastAPI()
@@ -253,16 +252,3 @@ def test_doc_patch_allow_list(dbfake):
     assert client().patch("/ops/wiki/docs/d1", json={"title": "x"}).json() == {"ok": True}
     assert client().patch("/ops/wiki/docs/d1", json={"author": "x"}).status_code == 400
 
-
-# --- console ---------------------------------------------------------------------------------
-
-def test_console_profiles_two_queries_with_date_typed_bounds(dbfake):
-    log, state = dbfake
-    keys = ["total", "new7", "prev7", "claimed", "claims7", "claimsPrev7", "claimsToday"]
-    state["answer"] = lambda s, p: [dict.fromkeys(keys, 1)]
-    body = client().get("/ops/console/profiles", params={
-        "d7": "2026-10-16T00:00:00Z", "d14": "2026-10-09T00:00:00Z",
-        "today": "2026-10-23T00:00:00Z"}).json()
-    assert set(body) == {f"{t}_{k}" for t in ("pros", "orgs") for k in keys}
-    counts = [s for _, s, _ in log if "count(*)" in s]
-    assert len(counts) == 2 and all("::TIMESTAMP WITH TIME ZONE" in s for s in counts)

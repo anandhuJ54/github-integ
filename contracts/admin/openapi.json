@@ -255,6 +255,209 @@
         ]
       }
     },
+    "/admin/console/categories": {
+      "get": {
+        "tags": [
+          "admin"
+        ],
+        "summary": "Console Categories",
+        "operationId": "console_categories_admin_console_categories_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "today",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Today"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "integer"
+                  },
+                  "title": "Response Console Categories Admin Console Categories Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/console/nora-events": {
+      "get": {
+        "tags": [
+          "admin"
+        ],
+        "summary": "Console Nora Events",
+        "operationId": "console_nora_events_admin_console_nora_events_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "since",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Since"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "additionalProperties": true
+                  },
+                  "title": "Response Console Nora Events Admin Console Nora Events Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/console/profiles": {
+      "get": {
+        "tags": [
+          "admin"
+        ],
+        "summary": "Console Profiles",
+        "operationId": "console_profiles_admin_console_profiles_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "d7",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "D7"
+            }
+          },
+          {
+            "name": "d14",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "D14"
+            }
+          },
+          {
+            "name": "today",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Today"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "integer"
+                  },
+                  "title": "Response Console Profiles Admin Console Profiles Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/console/revenue": {
+      "get": {
+        "tags": [
+          "admin"
+        ],
+        "summary": "Console Revenue",
+        "operationId": "console_revenue_admin_console_revenue_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "additionalProperties": true,
+                    "type": "object"
+                  },
+                  "type": "array",
+                  "title": "Response Console Revenue Admin Console Revenue Get"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
     "/admin/control-grants": {
       "get": {
         "tags": [

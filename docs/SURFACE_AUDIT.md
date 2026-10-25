@@ -17,6 +17,10 @@ generated read-only from the code (pages, endpoints, tables, cross-Surface calls
 - **Serving vs editing** (ruling 2026-10-25): every public page a visitor sees and reads (the
   serving pages) belongs to **search**; editing, updating and creating (a professional or location
   managing its own data) belongs to **srp**.
+- **The API lives with the Surface that owns the data** (ruling 2026-10-25). Another Surface's
+  page uses it only through that Surface's published contract (`contracts/<owner>/`, a
+  capability entry), never informally. No code moves for this; each cross-Surface use is listed
+  in "Published cross-Surface APIs" below and gets a contract entry.
 - **Everything under Growth Hub (`/sales/...`) belongs to sales** (ruling 2026-10-25).
 - **Demand engine (`/website/...`: CMS, Leads, Campaigns, Ads, Demo Center, Trust Center, Cookie
   Consent, Alerts, Developers) goes to marketing** (ruling 2026-10-25); it lives in xmp today.
@@ -115,8 +119,8 @@ Under the serving-vs-editing rule:
 
 | # | Item | UI URL | Decision (2026-10-25) |
 |---|---|---|---|
-| 1 | Console home (super-admin metrics: profiles, revenue, categories, NORA events) | `/console` | Move to **admin** |
-| 2 | Reports (metrics; reads etl) | `/reports` | Move to **admin** |
+| 1 | Console home (super-admin metrics: profiles, revenue, categories, NORA events) | `/console` | Move to **admin**. **Done**: API `/admin/console/*` |
+| 2 | Reports (metrics; reads etl) | `/reports` | Move to **admin**. **Done** (still reads `/etl/platform/report-metrics`, published) |
 | 3 | SRP Dev Progress (tracker: overview, board, priorities, teams, weekly) | `/dev/*` | Keep in **ops** |
 | 4 | Build (the same pages again, plus teams) and the Build wiki | `/build/*`, `/build/spaces/*` | Keep in **ops**; keep both `/dev` and `/build` for now |
 | 5 | Weekly-update reminder and digest emails (Resend; not scheduled) | — | Keep in ops |
@@ -127,8 +131,39 @@ Under the serving-vs-editing rule:
 |---|---|---|---|
 | 1 | Discovery console (9 tabs; metrics and job actions) | `/discovery`; `/etl/console/*` | Keep in **etl** |
 | 2 | Background workers | `/public/disco-*`, `/public/etl-deep-hydrate`, `/public/export-prompt-bundles` | Keep in etl |
-| 3 | Metrics behind admin pages and Run health | `/etl/platform/report-metrics`, `org-stats`, `pipeline-health`, `/etl/run-monitor` | Proposed: keep in **etl** (data owner); admin/NORA OS pages use them through a published `contracts/etl` capability. Awaiting confirmation |
-| 4 | Category boundary panel on `/discovery` | `/graph/fn/getCategoryBoundary`, `regenerateCategoryBoundary` | API stays in **graph**; etl uses it (via a published `contracts/graph` capability, if the rule above is adopted) |
+| 3 | Metrics behind admin pages and Run health | `/etl/platform/report-metrics`, `org-stats`, `pipeline-health`, `/etl/run-monitor` | Keep in **etl** (data owner); admin/NORA OS pages use them through a published `contracts/etl` capability (2026-10-25) |
+| 4 | Category boundary panel on `/discovery` | `/graph/fn/getCategoryBoundary`, `regenerateCategoryBoundary` | API stays in **graph**; etl uses it through a published `contracts/graph` capability (2026-10-25) |
+
+## 8. graph
+
+| # | Item | UI URL | Decision (2026-10-25) |
+|---|---|---|---|
+| 1, 2 | Category list and category detail (9 tabs) | `/categories`, `/categories/$gcid` | Keep in graph |
+| 3 | Control graph (health, control tree, entities, claims tab) | `/control-graph` | Open: claims tab (asked for the URL) |
+| 4 | Long-form professional profile | `/:category/:city/:professional` | Open (asked for example URLs) |
+| 5 | Expertise graph pages | `/p|o|c/$slug/graph` | Page → **search** (public serving page); the API `/graph/expertise/*` stays in **graph** and is published for search |
+| 6 | Category brief (graph copy used by xmp; nora-os has its own copy) | — | Keep both for now |
+
+## Published cross-Surface APIs (to add as contract entries)
+
+| Owner | API | Used by (page) |
+|---|---|---|
+| etl | `/etl/platform/report-metrics` | admin `/console`, `/reports` |
+| etl | `/etl/platform/org-stats` | admin `/organizations`, `/support` |
+| etl | `/etl/platform/pipeline-health`, `/etl/run-monitor` | `/run-health` (NORA OS menu; route in etl) |
+| graph | `/graph/fn/getCategoryBoundary`, `regenerateCategoryBoundary` | etl `/discovery` |
+| marketing | `/marketing/fn/getHomeData` | search `/topics` |
+| search | `/search/fn/getPublicPage` | marketing CMS pages (`/platform/$slug`, `/product/$slug`, landing example) |
+| srp | `/srp/fn/draftReviewReply`, `checkReplyCompliance`, `saveReviewReply`, `flagReview` | xmp seat Reviews (`/seat/.../reviews`) |
+| graph | `/graph/expertise/{kind}/{slug}` | search expertise graph pages `/p|o|c/$slug/graph` |
+| graph | `/graph/fn/getCategoryBrief` | xmp |
+| nora-os | `/nora_os/fn/runSkill` | skills `/skills` sandbox, xmp seat interview |
+| nora-os | `/nora_os/fn/submitClaim`, `verifyClaimCode`, `releaseClaim` | srp `/claim/$professional` |
+| admin | `/admin/me/*` (who am I, grants, audit) | every console page |
+| sales | `/sales/catalog/billing` | admin `/billing` |
+| sales | `/sales/territories/slots/{id}/label` | admin `/professionals` (territory chip) |
+| sales | `/sales/alerts/*` | admin `/admin/integrations` ("run now") |
+| search | public search, VOCE reads, presentation, area detection | marketing pages, `_base` public chrome |
 
 ## Decisions noted ahead (to apply when that Surface is audited)
 

@@ -1,6 +1,8 @@
 """Console home (/console) — port of the supabase-js reads in
-surface-ui/ops/src/routes/_authenticated/console.tsx. The page still does its sums; these return
-what each of its queries returned. Time boundaries come from the page (as it computed them)."""
+surface-ui/admin/src/routes/_authenticated/console.tsx. The page still does its sums; these return
+what each of its queries returned. Time boundaries come from the page (as it computed them).
+
+Moved from the ops Surface (ops/queries/console.py), surface audit 2026-10-25."""
 from __future__ import annotations
 
 from typing import Any
