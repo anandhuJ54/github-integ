@@ -181,6 +181,7 @@ Moving a file out of `_base` changes nothing on screen; it only sets which Surfa
 | 6 | admin code (Google Workspace, site-indexing switch) | `lib/google-workspace.functions.ts` → **admin** (only `/admin/integrations` uses it). `lib/site-indexing.functions.ts`: the **read** (every page load, search API) stays in **_base**; the **write** (the indexing switch) → **admin** (2026-10-25; pending) |
 | 7a | enterprise code | `lib/enterprise-ops.ts` (Enterprise Settings and Transactions) | Move to **xmp** (2026-10-25; pending) |
 | 7b | metrics loaders + number formatting | `lib/console-surfaces.ts` | Split (2026-10-25; pending): formatting helpers (`money`, `num`, `pct`) stay in **_base**; `loadPipelineHealth` → **etl** (Run health); `loadBilling`, `loadProductCatalog`, `loadReportMetrics`, `loadOrgStats` → **admin** (Billing, Reports, Organizations, Support), still calling etl/sales APIs through their contracts |
+| API | `surface-api/_base`: `core/`, `schema/`, `app_factory.py`, `contracts.py` (shared core); `disco/` (discovery engine: etl, plus graph's boundary generator, nora-os's scraper, admin's field names); `integrations/` (Google Workspace: admin, sales) | Keep all in **_base** (2026-10-25). `disco/` can move to etl later, once graph and nora-os use etl's API instead of importing it |
 
 ## Published cross-Surface APIs (to add as contract entries)
 
