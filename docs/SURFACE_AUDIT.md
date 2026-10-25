@@ -140,7 +140,7 @@ Under the serving-vs-editing rule:
 |---|---|---|---|
 | 1, 2 | Category list and category detail (9 tabs) | `/categories`, `/categories/$gcid` | Keep in graph |
 | 3 | Control graph (health, control tree, entities, claims tab) | `/control-graph` | Control Tree and Entities stay in graph. **Claims tab → admin** (2026-10-25): shown as a second tab on `/claims`; its endpoints (`/graph/control/claims`, `entities-lite`, `users`, RPC `exp_claim_adjudicate`) move to admin. **Done**: `/admin/control-claims*` |
-| 4 | Long-form professional profile | `/:category/:city/:professional` | Page → **search** (2026-10-25, **done**). Its data API also → **search** (ruling 2026-10-25: profile data comes from search; only the expertise graph data comes from graph): `/graph/profile/*`, `/graph/profile-services`, `getCachedSchema`, `cacheSchema` → search (pending) |
+| 4 | Long-form professional profile | `/:category/:city/:professional` | Page → **search** (2026-10-25, **done**). Its data API also → **search** (ruling 2026-10-25: profile data comes from search; only the expertise graph data comes from graph): `/graph/profile/*`, `/graph/profile-services`, `getCachedSchema`, `cacheSchema` → search. **Done**: `/search/profile-page/{slug}`, `/search/profile-services`, `/search/fn/getCachedSchema|cacheSchema` |
 | 5 | Expertise graph pages | `/p|o|c/$slug/graph` | Page → **search** (public serving page, **done**); the API `/graph/expertise/*` stays in **graph** and is published for search |
 | 6 | Category brief (graph copy used by xmp; nora-os has its own copy) | — | Keep both for now |
 
@@ -148,10 +148,23 @@ Under the serving-vs-editing rule:
 
 | # | Area | UI URLs | Decision (2026-10-25) |
 |---|---|---|---|
-| A | Enterprise console | `/enterprise/$orgSlug/*` | Stays in **xmp**, except **review campaigns** (`/enterprise/$orgSlug/campaigns`, `/xmp/enterprise/orgs/{slug}/campaigns*`) → **campaigns** |
-| B | Seat (one pro or location) | `/seat/$kind/$id/*` | Move to **srp**, both `/seat/professional/*` and `/seat/location/*` (2026-10-25) |
-| C | Pro dashboard | `/dashboard/*` | Stays in **xmp** (2026-10-25). Note: empty for everyone today, no professional is linked to a login |
-| D | Demand engine | `/website/*`; API `/xmp/website/*`; `_base` nav-menus | Move to **marketing** |
+| A | Enterprise console | `/enterprise/$orgSlug/*` | Stays in **xmp**, except **review campaigns** (`/enterprise/$orgSlug/campaigns`, `/xmp/enterprise/orgs/{slug}/campaigns*`) → **campaigns**. **Done**: `/campaigns/enterprise/*` (first campaigns page) |
+| B | Seat (one pro or location) | `/seat/$kind/$id/*` | Move to **srp**, both `/seat/professional/*` and `/seat/location/*` (2026-10-25). **Done**: `/srp/seat/*`, `/srp/interview/*`, `/srp/rpc/exp_office_mode` |
+| C | Pro dashboard | `/dashboard/*` | Move to **srp** (2026-10-25; this dashboard only, not a rule). **Done**: `/srp/dashboard/*`. Note: empty for everyone today, no professional is linked to a login |
+| E | Team Central (`/xmp/team/*`, `lib/insurance-team.ts`; reads sales tables; no page uses it, only parity) | — | Open |
+| D | Demand engine | `/website/*` (incl. `/website/campaigns`, marketing campaigns); API `/xmp/website/*`; `_base` nav-menus | Move to **marketing** (confirmed for `/website/campaigns`, 2026-10-25). **Done**: `/marketing/website/*` |
+
+## 10. sales
+
+Everything under Growth Hub (`/sales/...`: Overview, Teams, Worklist, CPQ, Contracts, Compensation, Directory and their detail pages) is sales by rule.
+
+| # | Item | UI URL | Decision (2026-10-25) |
+|---|---|---|---|
+| 1 | Accounts list and detail (menu: Customers → Accounts) | `/accounts`, `/accounts/$accountId` | Move to **admin** |
+| 2 | Public e-sign page | `/sign/$token` | Keep in **sales** |
+| 3 | Directory (`/sales/directory`) | `/sales/directory` | **sales** (2026-10-25) |
+| 3a | Directory drill-downs (brand, location, professional), reached from Directory → Logos / Locations / Professionals | `/sales/brands/$orgId`, `/sales/locations/$orgId`, `/sales/professionals/$proId` | Pages stay in **sales** (2026-10-25). Their data API moves to the owners: professional and location (`/sales/nav/professionals/{id}`, `/sales/nav/organizations/{id}`) → **srp**; brand (`/sales/nav/organizations/{id}/brand-rollup`) → **xmp**; published for sales (pending) |
+| 4 | Printable contract | `/sales/contracts/$contractId/print` | sales (Growth Hub) |
 
 ## Published cross-Surface APIs (to add as contract entries)
 
@@ -163,12 +176,13 @@ Under the serving-vs-editing rule:
 | graph | `/graph/fn/getCategoryBoundary`, `regenerateCategoryBoundary` | etl `/discovery` |
 | marketing | `/marketing/fn/getHomeData` | search `/topics` |
 | search | `/search/fn/getPublicPage` | marketing CMS pages (`/platform/$slug`, `/product/$slug`, landing example) |
-| srp | `/srp/fn/draftReviewReply`, `checkReplyCompliance`, `saveReviewReply`, `flagReview` | xmp seat Reviews (`/seat/.../reviews`) |
 | graph | `/graph/expertise/{kind}/{slug}` | search expertise graph pages `/p|o|c/$slug/graph` |
-| graph | `/graph/fn/getCategoryBrief` | xmp |
-| nora-os | `/nora_os/fn/runSkill` | skills `/skills` sandbox, xmp seat interview |
+| graph | `/graph/fn/getCategoryBrief` | srp seat interview |
+| nora-os | `/nora_os/fn/runSkill` | skills `/skills` sandbox, srp seat interview |
 | nora-os | `/nora_os/fn/submitClaim`, `verifyClaimCode`, `releaseClaim` | srp `/claim/$professional` |
 | admin | `/admin/me/*` (who am I, grants, audit) | every console page |
+| srp | professional and location data (from `/sales/nav/professionals/{id}`, `/sales/nav/organizations/{id}`) | sales Directory drill-downs |
+| xmp | brand rollup (from `/sales/nav/organizations/{id}/brand-rollup`) | sales brand page |
 | sales | `/sales/catalog/billing` | admin `/billing` |
 | sales | `/sales/territories/slots/{id}/label` | admin `/professionals` (territory chip) |
 | sales | `/sales/alerts/*` | admin `/admin/integrations` ("run now") |

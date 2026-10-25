@@ -1,8 +1,11 @@
-"""Shared helpers for the xmp enterprise / seat / dashboard reads (PostgREST semantics).
+"""Shared helpers for the xmp enterprise reads (PostgREST semantics).
 
 Reads run on the caller's role connection, so RLS decides as it did for the browser. RPCs go
 through one allow-list (XMP_RPCS) with each parameter cast to its database type; all of them
 are SECURITY INVOKER reads.
+
+The seat / dashboard reads and exp_office_mode moved to srp (srp/queries/common.py has its own
+copy of these helpers), surface audit 2026-10-25.
 """
 from __future__ import annotations
 
@@ -12,7 +15,7 @@ from typing import Any
 import psycopg
 from sqlalchemy.sql import ClauseElement
 
-from _base.core.sql import MAX_ROWS, compile_sql, jsonish
+from _base.core.sql import MAX_ROWS, compile_sql, fetch_many, jsonish
 
 _log = logging.getLogger(__name__)
 
@@ -58,6 +61,12 @@ def soft(conn: psycopg.Connection, stmt: ClauseElement) -> bool:
         return False
 
 
+def soft_all(conn: psycopg.Connection, stmt: ClauseElement) -> list[dict[str, Any]]:
+    """A read whose error the page ignored (`res.data ?? []`): [] on a database error.
+    (Copied from the website queries when they moved to marketing, surface audit 2026-10-25.)"""
+    return fetch_many(conn, {"r": stmt}, tolerant=True)["r"]
+
+
 # --- RPCs --------------------------------------------------------------------------------------
 
 # name → ([(param, db type)], returns a set). Each is a SECURITY INVOKER read: RLS decides.
@@ -69,7 +78,6 @@ XMP_RPCS: dict[str, tuple[list[tuple[str, str]], bool]] = {
     "exp_xmp_top_pros_score": ([("p_brand", "uuid"), ("p_limit", "integer")], True),
     "exp_xmp_top_depth": ([("p_brand", "uuid"), ("p_limit", "integer")], True),
     "exp_xmp_top_reviews": ([("p_brand", "uuid"), ("p_limit", "integer")], True),
-    "exp_office_mode": ([("p_entity_type", "text"), ("p_entity_id", "uuid")], False),
 }
 
 

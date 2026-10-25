@@ -35,7 +35,7 @@ type TableName = keyof Database["public"]["Tables"];
 /** The columns a supabase-js select("a, b") returned from table T. */
 type Row<T extends TableName, K extends keyof Tables<T>> = Pick<Tables<T>, K>;
 
-/** GET /graph/profile/:slug — the rows loadProfile() read with supabase-js, under its names. */
+/** GET /search/profile-page/:slug (moved from /graph/profile, surface audit 2026-10-25) — the rows loadProfile() read with supabase-js, under its names. */
 type ProfileRows = {
   profile: Tables<"v_professional_profile"> | null;
   reviews: Row<"reviews", "id" | "rating" | "title" | "body" | "reviewer_name" | "review_date" | "reply_body" | "reply_date" | "source" | "is_verified">[];
@@ -55,7 +55,7 @@ async function loadProfile(params: {
   professional: string;
 }) {
   // One request: the view row, then (server-side, in one round trip) the side reads and the org.
-  const rows = await api.get<ProfileRows>(`/graph/profile/${encodeURIComponent(params.professional)}`);
+  const rows = await api.get<ProfileRows>(`/search/profile-page/${encodeURIComponent(params.professional)}`);
   const prof = rows.profile;
   if (!prof) throw notFound();
 
@@ -579,7 +579,7 @@ function ServicesSection({ gcid }: { gcid: string | null }) {
       queryKey: ["srp-services", gcid],
       queryFn: async () => {
         if (!gcid) return [];
-        return api.get<Row<"exp_taxonomy", "id" | "term" | "level">[]>("/graph/profile-services", {
+        return api.get<Row<"exp_taxonomy", "id" | "term" | "level">[]>("/search/profile-services", {
           params: { gcid },
         });
       },

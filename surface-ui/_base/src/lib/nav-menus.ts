@@ -117,9 +117,9 @@ export function navLinkCount(menu: NavMenu): number {
   return normalizeFooter(menu.items).columns.reduce((n, c) => n + c.links.length, 0);
 }
 
-/* ───────────── Reads (FastAPI, xmp: /xmp/website/nav-menus) ───────────── */
+/* ───────────── Reads (FastAPI, marketing: /marketing/website/nav-menus; moved from xmp, surface audit 2026-10-25) ───────────── */
 
-const NAV = "/xmp/website/nav-menus";
+const NAV = "/marketing/website/nav-menus";
 
 export async function loadNavMenus(): Promise<NavMenu[]> {
   return api.get<NavMenu[]>(NAV);

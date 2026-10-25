@@ -17,8 +17,7 @@ from sqlalchemy import func, nulls_last, select
 
 from _base.core.sql import fetch_many
 from _base.schema import tables as T
-from xmp.queries.common import cols, single
-from xmp.queries.website import soft_all
+from xmp.queries.common import cols, single, soft_all
 
 crm = T.t_crm_integrations
 oauth = T.t_oauth_connections

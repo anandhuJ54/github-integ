@@ -57,26 +57,6 @@ def test_control_nodes_by_name_capped():
     assert params(q.control_nodes_stmt())["param_1"] == 1000
 
 
-def test_profile_side_reads():
-    st = q.profile_side_stmts(PID, "gcid:insurance_agency")
-    assert "(public.graph_nodes.ring = " in sql(st["graphNodes"]) and \
-        "OR public.graph_nodes.schema_property = " in sql(st["graphNodes"])
-    assert "ORDER BY public.credentials.verified DESC" in sql(st["credentials"])
-    assert "ORDER BY public.reviews.review_date DESC" in sql(st["reviews"])
-    assert params(st["reviews"])["param_1"] == 5 and params(st["content"])["param_1"] == 3
-    assert "aggregate_ratings.source = " in sql(st["aggregateRating"])
-    # loadOrg(primary_org_id) keyed off the professional in SQL
-    assert "organizations.id = (SELECT public.professionals.primary_org_id" in sql(st["org"])
-    assert set(params(st["taxonomy"]).values()) >= set(q.TAX_LEVELS)
-    assert "taxonomy" not in q.profile_side_stmts(PID, None)
-
-
-def test_services_by_priority_20():
-    s = sql(q.services_stmt("gcid:x"))
-    assert "ORDER BY public.exp_taxonomy.priority ASC" in s
-    assert params(q.services_stmt("gcid:x"))["param_1"] == 20
-
-
 def test_expertise_edges_and_external_nodes_use_an_aliased_own_node_subquery():
     e = sql(q.edges_stmt("professional", PID))
     assert "graph_edges.from_node_id IN (SELECT own.id FROM public.graph_nodes AS own" in e
@@ -202,9 +182,9 @@ def client(user=CLAIMS) -> TestClient:
 
 @pytest.mark.parametrize("method,path", [
     ("get", "/graph/control/entities"), ("post", "/graph/control/rpc/exp_ctrl_create_node"),
-    ("get", "/graph/profile/x"), ("get", "/graph/control/validate"),
+    ("get", "/graph/control/validate"),
 ])
-def test_control_and_profile_need_a_signed_in_user(method, path):
+def test_control_needs_a_signed_in_user(method, path):
     app = FastAPI()
     app.include_router(router)
     assert getattr(TestClient(app), method)(path, **({"json": {}} if method == "post" else {})) \
@@ -276,33 +256,3 @@ def test_expertise_reads_are_uncapped_and_shaped(fake):
     assert r["ownRows"] == [{"id": "n1"}] and r["external"] == [{"id": "x1"}]
     uncapped = [s for s, _ in log if "graph_nodes" in s or "graph_edges" in s]
     assert len(uncapped) == 3 and not any("LIMIT" in s for s in uncapped)
-
-
-def test_profile_unknown_slug_is_null_and_skips_side_reads(fake):
-    log, _, _ = fake
-    assert client().get("/graph/profile/nobody").json() == {"profile": None}
-    assert len([s for s, _ in log if "savepoint" not in s]) == 1
-
-
-def test_profile_several_view_rows_is_an_error(fake):
-    _, _, state = fake
-    state["answer"] = lambda s, p: [{"id": PID}, {"id": OID}]
-    assert client().get("/graph/profile/dup").status_code == 400
-
-
-def test_profile_side_reads_by_name(fake):
-    _, _, state = fake
-
-    def answer(s, p):
-        if "v_professional_profile" in s:
-            return [{"id": PID, "gcid": "gcid:x"}]
-        if "FROM public.organizations" in s:
-            return [{"id": OID, "name": "Org"}]
-        if "FROM public.reviews" in s:
-            return [{"id": "r1"}]
-        return []
-
-    state["answer"] = answer
-    r = client().get("/graph/profile/a").json()
-    assert r["org"] == {"id": OID, "name": "Org"} and r["reviews"] == [{"id": "r1"}]
-    assert r["pro"] is None and r["aggregateRating"] is None and r["taxonomy"] == []

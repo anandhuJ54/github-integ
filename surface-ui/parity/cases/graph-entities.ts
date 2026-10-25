@@ -201,29 +201,30 @@ export const cases: ParityCase[] = [
     normalize: unordered,
   },
   // --- /:category/:city/:professional ---
+  // moved (surface audit 2026-10-25): /graph/profile/* → /search/profile-page/*, /graph/profile-services → /search/profile-services
   {
     name: "profile page sf-a9ee009780abff5cc27f (State Farm agent, office)",
     legacy: (sb: any) => legacyProfile(sb, "sf-a9ee009780abff5cc27f"),
-    api: { method: "GET", path: "/graph/profile/sf-a9ee009780abff5cc27f" },
+    api: { method: "GET", path: "/search/profile-page/sf-a9ee009780abff5cc27f" },
     normalize: profileNorm,
   },
   {
     name: "profile page amber-ernst (reviews, ratings, credentials)",
     legacy: (sb: any) => legacyProfile(sb, "amber-ernst"),
-    api: { method: "GET", path: "/graph/profile/amber-ernst" },
+    api: { method: "GET", path: "/search/profile-page/amber-ernst" },
     normalize: profileNorm,
   },
   {
     name: "profile page unknown slug → profile null",
     legacy: (sb: any) => legacyProfile(sb, "does-not-exist-parity"),
-    api: { method: "GET", path: "/graph/profile/does-not-exist-parity" },
+    api: { method: "GET", path: "/search/profile-page/does-not-exist-parity" },
   },
   {
     // ServicesSection
     name: "profile page services gcid:insurance_agency",
     legacy: async (sb: any) => (await sb.from("exp_taxonomy").select("id, term, level").eq("gcid", "gcid:insurance_agency")
       .in("level", ["product_service", "specialization"]).order("priority", { ascending: true }).limit(20)).data ?? [],
-    api: { method: "GET", path: "/graph/profile-services?gcid=gcid:insurance_agency" },
+    api: { method: "GET", path: "/search/profile-services?gcid=gcid:insurance_agency" },
   },
   // --- /p|o|c/:slug/graph (public) ---
   expertise("professional", "sf-a9ee009780abff5cc27f", "State Farm agent: office + brand, 35 nodes"),

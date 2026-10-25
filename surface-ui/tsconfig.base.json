@@ -50,6 +50,9 @@
       "@v3/xmp/*": [
         "./xmp/src/*"
       ],
+      "@v3/campaigns/*": [
+        "./campaigns/src/*"
+      ],
       "@v3/etl/*": [
         "./etl/src/*"
       ],

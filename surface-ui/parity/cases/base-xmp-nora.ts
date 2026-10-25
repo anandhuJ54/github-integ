@@ -6,12 +6,12 @@ import * as reg from "@v3/ui/lib/nora-registry";
 import * as sbx from "@v3/ui/lib/nora-sandbox";
 
 // Shared @v3/ui libs ported to their owner Surface's API (all signed in):
-//   lib/nav-menus.ts → xmp /xmp/website/nav-menus*, lib/enterprise-ops.ts → xmp /xmp/enterprise/ops/*,
+//   lib/nav-menus.ts → marketing /marketing/website/nav-menus* (moved (surface audit 2026-10-25): was xmp /xmp/website/nav-menus*), lib/enterprise-ops.ts → xmp /xmp/enterprise/ops/*,
 //   lib/nora-registry.ts + lib/nora-sandbox.ts → skills /skills/registry/*, /skills/sandbox/* (moved from nora-os, surface audit 2026-10-24).
 // The legacy lib (direct supabase-js, from PARITY_LEGACY_REF) against the current one (same lib,
 // rows from FastAPI). Reads only: the writes (nav menu create/update/assign/trash/restore/delete,
 // skill/capability/build-step/eval upserts, publish/yank version rows, weights, feedback) are
-// covered by compiled-SQL / fake-connection unit tests (xmp/queries/nav_menus_test.py,
+// covered by compiled-SQL / fake-connection unit tests (marketing/queries/nav_menus_test.py,
 // nora_os/queries/registry_test.py), never run. The signed-out (anon) read of the assigned nav is
 // not covered here (the runner signs in); see the unit test.
 // Rows at port time: nav menus 4 (2 assigned to main_site), skills 37, capabilities 44, build map
@@ -62,7 +62,7 @@ const navCases: ParityCase[] = [
       if (error) throw new Error(error.message);
       return data;
     },
-    api: { method: "GET", path: `/xmp/website/nav-menus/${MAIN_NAV}` },
+    api: { method: "GET", path: `/marketing/website/nav-menus/${MAIN_NAV}` },
   },
   {
     name: "nav menus: duplicate's read of an unknown id → both refuse (406)",
@@ -75,7 +75,7 @@ const navCases: ParityCase[] = [
       if (error) throw new Error(error.message);
       return data;
     },
-    api: { method: "GET", path: `/xmp/website/nav-menus/${NOBODY}` },
+    api: { method: "GET", path: `/marketing/website/nav-menus/${NOBODY}` },
     expectRefusal: true,
   },
 ];

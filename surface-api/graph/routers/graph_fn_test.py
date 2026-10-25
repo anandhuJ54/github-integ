@@ -15,7 +15,6 @@ from graph.routers import (
     category_boundary_fn,
     category_brief_fn,
     expertise_schema_fn,
-    schema_cache_fn,
 )
 
 CLAIMS = {"sub": "u-1", "role": "authenticated", "email": "a@x.com"}
@@ -89,27 +88,6 @@ def test_regenerate_boundary_runs_generator(client, fakedb, monkeypatch):
     res = client.post("/graph/fn/regenerateCategoryBoundary", json={"data": {"gcid": "gcid:x"}})
     assert res.json() == {"saved": True, "reason": "generated"}
     assert seen == {"model": "claude-sonnet-4-6", "gcid": "gcid:x", "regenerate": True}
-
-
-def test_schema_cache_roundtrip(client, fakedb):
-    db = fakedb(schema_cache_fn)
-    db.on("select schema_json", [{"schema_json": {"@type": "Thing", "n": 1},
-                                  "generated_at": "2026-10-01T00:00:00+00:00", "is_valid": True}])
-    key = {"entityType": "pro", "entityId": "1", "pageType": "profile"}
-    res = client.post("/graph/fn/getCachedSchema", json={"data": key})
-    assert res.json() == {"schemaJson": '{"@type":"Thing","n":1}',
-                          "generatedAt": "2026-10-01T00:00:00+00:00"}
-    put = client.post("/graph/fn/cacheSchema",
-                      json={"data": {**key, "schemaJson": '{"a":1}', "nodeCount": 3}})
-    assert put.json() == {"ok": True}
-    ins = db.sql("insert into schema_cache")[0]
-    assert ins[0] == "service_role" and ins[2][:3] == ("pro", "1", "profile")
-
-
-def test_schema_cache_miss_is_null(client, fakedb):
-    fakedb(schema_cache_fn)
-    key = {"entityType": "pro", "entityId": "1", "pageType": "profile"}
-    assert client.post("/graph/fn/getCachedSchema", json={"data": key}).json() is None
 
 
 # --- expertise schema: pure gates + stamping --------------------------------------------

@@ -15,6 +15,7 @@ const SURFACES = [
   "graph",
   "sales",
   "xmp",
+  "campaigns",
   "etl",
   "nora-os",
   "skills",

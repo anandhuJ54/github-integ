@@ -9,17 +9,87 @@ import psycopg
 import pytest
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
+from psycopg.types.json import Jsonb
 
 from _base.core import db as core_db
 from _base.core.auth import current_user
 from skills.routers.registry import router
-from xmp.queries.website_test import FakeConn, values, writes
 
 CLAIMS = {"sub": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa", "role": "authenticated"}
 RID = "11111111-1111-4111-8111-111111111111"
 ENT = "22222222-2222-4222-8222-222222222222"
 R = "/skills/registry"
 S = "/skills/sandbox"
+
+
+# the website tests' fake connection and helpers (copied when those moved from xmp to marketing,
+# surface audit 2026-10-25; no cross-Surface import)
+
+class Cur:
+    def __init__(self, rows, description=True):
+        self.rows = rows or []
+        self.description = description
+
+    def fetchall(self):
+        return self.rows
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *a):
+        return False
+
+
+class FakeConn:
+    def __init__(self, log, answer, write):
+        self.log, self.answer, self.write = log, answer, write
+
+    @contextmanager
+    def pipeline(self):
+        yield
+
+    @contextmanager
+    def transaction(self):
+        yield
+
+    def execute(self, sql, params=None):
+        self.log.append((self.write, sql, params or {}))
+        rows = [] if "savepoint" in sql else self.answer(sql, params or {})
+        if isinstance(rows, Exception):
+            raise rows
+        return Cur(rows)
+
+    def cursor(self):
+        conn = self
+
+        class C(Cur):
+            def __init__(self):
+                super().__init__([], None)
+
+            def execute(self, sql, params=None):
+                self.rows = conn.execute(sql, params).rows
+                # a write without RETURNING has no result set (psycopg: description None)
+                self.description = None if sql.startswith(("UPDATE", "INSERT", "DELETE")) \
+                    and "RETURNING" not in sql else True
+
+            def fetchall(self):
+                if self.description is None:
+                    raise AssertionError("fetchall on a statement with no result set")
+                return self.rows
+
+        return C()
+
+
+def writes(log):
+    return [x for x in log if x[1].startswith(("UPDATE", "INSERT", "DELETE"))]
+
+
+def unwrap(v):
+    return v.obj if isinstance(v, Jsonb) else v
+
+
+def values(params):
+    return {k: unwrap(v) for k, v in params.items()}
 
 
 @pytest.fixture
@@ -207,7 +277,6 @@ def test_capability_jsonb_columns_wrapped(dbfake):
     client().post(f"{R}/capabilities", json={"key": "c", "inputs": {"a": 1}, "outputs": None,
                                              "side_effects": ["x"]})
     (w,) = writes(log)
-    from psycopg.types.json import Jsonb
     assert isinstance(w[2]["inputs"], Jsonb) and w[2]["outputs"] is None
     assert w[2]["side_effects"] == ["x"]  # text[] stays an array
 

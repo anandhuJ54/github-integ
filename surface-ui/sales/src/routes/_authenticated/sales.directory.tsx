@@ -1,6 +1,6 @@
 import { growthHubStyles } from "@v3/sales/components/sales/growth-hub-styles";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQueries } from "@tanstack/react-query";
 import { Search } from "lucide-react";
 import { Input } from "@v3/ui/components/ui/input";
@@ -32,7 +32,13 @@ const nf = new Intl.NumberFormat("en-US");
 
 function SalesDirectory() {
   const [q, setQ] = useState("");
-  const term = q.trim();
+  // Search once typing pauses: five searches per keystroke queue up behind the API's small
+  // connection pool and time out ("database busy").
+  const [term, setTerm] = useState("");
+  useEffect(() => {
+    const t = setTimeout(() => setTerm(q.trim()), 300);
+    return () => clearTimeout(t);
+  }, [q]);
   const results = useQueries({
     queries: GROUPS.map((g) => ({
       queryKey: ["sales-directory-search", g.tab, term],
