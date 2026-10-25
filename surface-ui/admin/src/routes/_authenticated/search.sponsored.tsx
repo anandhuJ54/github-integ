@@ -36,7 +36,7 @@ import {
   volumeCharge,
   type SponsoredPricingRow,
   type SponsoredSlotRow,
-} from "@v3/search/lib/search-console";
+} from "@v3/admin/lib/search-console";
 
 export const Route = createFileRoute("/_authenticated/search/sponsored")({
   head: () => ({

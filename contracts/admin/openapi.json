@@ -1322,10 +1322,911 @@
           }
         ]
       }
+    },
+    "/admin/search-console/ads": {
+      "get": {
+        "tags": [
+          "admin"
+        ],
+        "summary": "Ads",
+        "operationId": "ads_admin_search_console_ads_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "additionalProperties": true,
+                    "type": "object"
+                  },
+                  "type": "array",
+                  "title": "Response Ads Admin Search Console Ads Get"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      },
+      "post": {
+        "tags": [
+          "admin"
+        ],
+        "summary": "Create Ad",
+        "operationId": "create_ad_admin_search_console_ads_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NewAd"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "type": "object",
+                  "title": "Response Create Ad Admin Search Console Ads Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/admin/search-console/ads/{ad_id}": {
+      "patch": {
+        "tags": [
+          "admin"
+        ],
+        "summary": "Update Ad",
+        "operationId": "update_ad_admin_search_console_ads__ad_id__patch",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "ad_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Ad Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true,
+                "title": "Patch"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Update Ad Admin Search Console Ads  Ad Id  Patch"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "admin"
+        ],
+        "summary": "Delete Ad",
+        "operationId": "delete_ad_admin_search_console_ads__ad_id__delete",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "ad_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Ad Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Delete Ad Admin Search Console Ads  Ad Id  Delete"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/search-console/category-labels": {
+      "get": {
+        "tags": [
+          "admin"
+        ],
+        "summary": "Category Labels",
+        "operationId": "category_labels_admin_search_console_category_labels_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "additionalProperties": true,
+                    "type": "object"
+                  },
+                  "type": "array",
+                  "title": "Response Category Labels Admin Search Console Category Labels Get"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/admin/search-console/index-agents/{agent_id}": {
+      "patch": {
+        "tags": [
+          "admin"
+        ],
+        "summary": "Set Agent Active",
+        "operationId": "set_agent_active_admin_search_console_index_agents__agent_id__patch",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "agent_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Agent Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Active"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Set Agent Active Admin Search Console Index Agents  Agent Id  Patch"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/search-console/index-config/{key}": {
+      "put": {
+        "tags": [
+          "admin"
+        ],
+        "summary": "Set Index Config",
+        "operationId": "set_index_config_admin_search_console_index_config__key__put",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "key",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Key"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ConfigValue"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Set Index Config Admin Search Console Index Config  Key  Put"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/search-console/index/submit-tick": {
+      "post": {
+        "tags": [
+          "admin"
+        ],
+        "summary": "Submit Tick",
+        "operationId": "submit_tick_admin_search_console_index_submit_tick_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Batch"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "title": "Response Submit Tick Admin Search Console Index Submit Tick Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/admin/search-console/index/sync": {
+      "post": {
+        "tags": [
+          "admin"
+        ],
+        "summary": "Sync Queue",
+        "operationId": "sync_queue_admin_search_console_index_sync_post",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "title": "Response Sync Queue Admin Search Console Index Sync Post"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/admin/search-console/indexing": {
+      "get": {
+        "tags": [
+          "admin"
+        ],
+        "summary": "Indexing",
+        "operationId": "indexing_admin_search_console_indexing_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "type": "object",
+                  "title": "Response Indexing Admin Search Console Indexing Get"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/admin/search-console/launched-categories": {
+      "get": {
+        "tags": [
+          "admin"
+        ],
+        "summary": "Launched Categories",
+        "operationId": "launched_categories_admin_search_console_launched_categories_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "additionalProperties": true,
+                    "type": "object"
+                  },
+                  "type": "array",
+                  "title": "Response Launched Categories Admin Search Console Launched Categories Get"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/admin/search-console/overview": {
+      "get": {
+        "tags": [
+          "admin"
+        ],
+        "summary": "Overview",
+        "operationId": "overview_admin_search_console_overview_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "additionalProperties": true,
+                    "type": "object"
+                  },
+                  "type": "array",
+                  "title": "Response Overview Admin Search Console Overview Get"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/admin/search-console/sitemap/rebuild": {
+      "post": {
+        "tags": [
+          "admin"
+        ],
+        "summary": "Rebuild Sitemap",
+        "operationId": "rebuild_sitemap_admin_search_console_sitemap_rebuild_post",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "title": "Response Rebuild Sitemap Admin Search Console Sitemap Rebuild Post"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/admin/search-console/sponsored": {
+      "get": {
+        "tags": [
+          "admin"
+        ],
+        "summary": "Sponsored",
+        "operationId": "sponsored_admin_search_console_sponsored_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "type": "object",
+                  "title": "Response Sponsored Admin Search Console Sponsored Get"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/admin/search-console/sponsored-pricing/{pricing_id}": {
+      "patch": {
+        "tags": [
+          "admin"
+        ],
+        "summary": "Update Pricing",
+        "operationId": "update_pricing_admin_search_console_sponsored_pricing__pricing_id__patch",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "pricing_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Pricing Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true,
+                "title": "Patch"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Update Pricing Admin Search Console Sponsored Pricing  Pricing Id  Patch"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/search-console/sponsored-slots": {
+      "post": {
+        "tags": [
+          "admin"
+        ],
+        "summary": "Create Slot",
+        "operationId": "create_slot_admin_search_console_sponsored_slots_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NewSlot"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "type": "object",
+                  "title": "Response Create Slot Admin Search Console Sponsored Slots Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/admin/search-console/sponsored-slots/{slot_id}/assign": {
+      "post": {
+        "tags": [
+          "admin"
+        ],
+        "summary": "Assign Slot",
+        "operationId": "assign_slot_admin_search_console_sponsored_slots__slot_id__assign_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "slot_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Slot Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Assign"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Assign Slot Admin Search Console Sponsored Slots  Slot Id  Assign Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/search-console/sponsored-slots/{slot_id}/lock": {
+      "post": {
+        "tags": [
+          "admin"
+        ],
+        "summary": "Lock Slot Rate",
+        "operationId": "lock_slot_rate_admin_search_console_sponsored_slots__slot_id__lock_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "slot_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Slot Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LockRate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Lock Slot Rate Admin Search Console Sponsored Slots  Slot Id  Lock Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/search-console/sponsored-slots/{slot_id}/release": {
+      "post": {
+        "tags": [
+          "admin"
+        ],
+        "summary": "Release Slot",
+        "operationId": "release_slot_admin_search_console_sponsored_slots__slot_id__release_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "slot_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Slot Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Release Slot Admin Search Console Sponsored Slots  Slot Id  Release Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/search-console/voce/articles/{article_id}": {
+      "patch": {
+        "tags": [
+          "admin"
+        ],
+        "summary": "Update Voce Boost",
+        "description": "updateBoost(): `update(patch).eq(\"id\", id)` with only the keys sent; RLS decides (a row\nthe policy hides is unchanged and not an error, as with PostgREST).",
+        "operationId": "update_voce_boost_admin_search_console_voce_articles__article_id__patch",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "article_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Article Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VoceBoostPatch"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "boolean"
+                  },
+                  "title": "Response Update Voce Boost Admin Search Console Voce Articles  Article Id  Patch"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
     "schemas": {
+      "Active": {
+        "properties": {
+          "active": {
+            "type": "boolean",
+            "title": "Active"
+          }
+        },
+        "type": "object",
+        "required": [
+          "active"
+        ],
+        "title": "Active"
+      },
       "ActiveIn": {
         "properties": {
           "is_active": {
@@ -1408,6 +2309,80 @@
           "action"
         ],
         "title": "AdminMeAuditIn"
+      },
+      "Assign": {
+        "properties": {
+          "advertiser_name": {
+            "type": "string",
+            "maxLength": 300,
+            "minLength": 1,
+            "title": "Advertiser Name"
+          },
+          "price": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Price"
+          },
+          "status": {
+            "type": "string",
+            "maxLength": 40,
+            "title": "Status"
+          },
+          "lock": {
+            "type": "boolean",
+            "title": "Lock",
+            "default": false
+          },
+          "pricing_mode": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Pricing Mode"
+          },
+          "per_1k": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Per 1K"
+          }
+        },
+        "type": "object",
+        "required": [
+          "advertiser_name",
+          "status"
+        ],
+        "title": "Assign"
+      },
+      "Batch": {
+        "properties": {
+          "batch": {
+            "type": "integer",
+            "maximum": 1000.0,
+            "minimum": 1.0,
+            "title": "Batch"
+          }
+        },
+        "type": "object",
+        "required": [
+          "batch"
+        ],
+        "title": "Batch"
       },
       "Claim": {
         "properties": {
@@ -1570,6 +2545,20 @@
         ],
         "title": "ClaimStats"
       },
+      "ConfigValue": {
+        "properties": {
+          "value": {
+            "type": "string",
+            "maxLength": 5000,
+            "title": "Value"
+          }
+        },
+        "type": "object",
+        "required": [
+          "value"
+        ],
+        "title": "ConfigValue"
+      },
       "EntitiesIn": {
         "properties": {
           "professionalIds": {
@@ -1703,6 +2692,143 @@
         },
         "type": "object",
         "title": "HTTPValidationError"
+      },
+      "LockRate": {
+        "properties": {
+          "price": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Price"
+          },
+          "per1k": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Per1K"
+          }
+        },
+        "type": "object",
+        "title": "LockRate"
+      },
+      "NewAd": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 300,
+            "minLength": 1,
+            "title": "Name"
+          },
+          "placement": {
+            "type": "string",
+            "title": "Placement"
+          },
+          "context": {
+            "type": "string",
+            "title": "Context"
+          },
+          "target_gcid": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Target Gcid"
+          },
+          "target_geo": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Target Geo"
+          },
+          "budget": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Budget"
+          },
+          "starts_on": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Starts On"
+          },
+          "ends_on": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ends On"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "placement",
+          "context"
+        ],
+        "title": "NewAd"
+      },
+      "NewSlot": {
+        "properties": {
+          "gcid": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Gcid"
+          },
+          "geo_value": {
+            "type": "string",
+            "maxLength": 20,
+            "minLength": 1,
+            "title": "Geo Value"
+          },
+          "position": {
+            "type": "integer",
+            "maximum": 10.0,
+            "minimum": 1.0,
+            "title": "Position"
+          }
+        },
+        "type": "object",
+        "required": [
+          "gcid",
+          "geo_value",
+          "position"
+        ],
+        "title": "NewSlot"
       },
       "ProExtrasIn": {
         "properties": {
@@ -2107,6 +3233,81 @@
           "type"
         ],
         "title": "ValidationError"
+      },
+      "VoceBoostPatch": {
+        "properties": {
+          "boosted": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Boosted"
+          },
+          "boost_placements": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string",
+                  "enum": [
+                    "profile",
+                    "category_hub",
+                    "topic_hub",
+                    "search",
+                    "syndication"
+                  ]
+                },
+                "type": "array",
+                "maxItems": 5
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Boost Placements"
+          },
+          "boost_starts_on": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Boost Starts On"
+          },
+          "boost_ends_on": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Boost Ends On"
+          },
+          "boost_spend": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Boost Spend"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "VoceBoostPatch"
       }
     }
   }

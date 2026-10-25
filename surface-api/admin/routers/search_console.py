@@ -1,19 +1,24 @@
 """Search control plane data — replaces the direct supabase-js reads/writes and RPCs in
-surface-ui/search/src/lib/search-console.ts. Runs as the signed-in user, so access is unchanged
-(see search/queries/console.py and docs/SECURITY_FINDINGS.md SF-1..SF-3)."""
+surface-ui/admin/src/lib/search-console.ts. Runs as the signed-in user, so access is unchanged
+(see admin/queries/search_console.py and docs/SECURITY_FINDINGS.md SF-1..SF-3).
+
+Moved from the search Surface (its console router), surface audit 2026-10-25; the VOCE boost
+write (was PATCH /search/voce/articles/{id}) moved with it. The UI URLs are unchanged."""
 from __future__ import annotations
 
-from typing import Any
+from datetime import date
+from typing import Any, Literal
 
 import psycopg
 from fastapi import APIRouter, Depends, HTTPException, status
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 from _base.core import db
 from _base.core.auth import current_user
-from search.queries import console as q
+from admin.queries import search_console as q
+from admin.queries import voce_boost
 
-router = APIRouter(prefix="/search/console", tags=["search"])
+router = APIRouter(prefix="/admin/search-console", tags=["admin"])
 
 
 def _read(claims: dict):
@@ -206,3 +211,40 @@ def delete_ad(ad_id: str, claims: dict = Depends(current_user)) -> dict:
     with _write(claims) as conn:
         _guard(q.delete_ad, conn, ad_id)
     return {"ok": True}
+
+
+# --- VOCE boost manager (/search/voce) -------------------------------------------------------
+
+def _voce_db_error(exc: psycopg.Error) -> HTTPException:
+    msg = (exc.diag.message_primary if exc.diag else None) or "Request failed"
+    refused = isinstance(exc, psycopg.errors.InsufficientPrivilege) or "row-level security" in msg
+    return HTTPException(status.HTTP_403_FORBIDDEN if refused else status.HTTP_400_BAD_REQUEST, msg)
+
+
+Placement = Literal["profile", "category_hub", "topic_hub", "search", "syndication"]
+
+
+class VoceBoostPatch(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    boosted: bool | None = None
+    boost_placements: list[Placement] | None = Field(default=None, max_length=5)
+    boost_starts_on: date | None = None
+    boost_ends_on: date | None = None
+    boost_spend: float | None = None
+
+
+@router.patch("/voce/articles/{article_id}")
+def update_voce_boost(article_id: str, patch: VoceBoostPatch,
+                      claims: dict = Depends(current_user)) -> dict[str, bool]:
+    """updateBoost(): `update(patch).eq("id", id)` with only the keys sent; RLS decides (a row
+    the policy hides is unchanged and not an error, as with PostgREST)."""
+    values = patch.model_dump(exclude_unset=True)
+    if not values:
+        return {"ok": True}
+    try:
+        with _write(claims) as conn:
+            voce_boost.update_boost(conn, article_id, values)
+        return {"ok": True}
+    except psycopg.Error as exc:
+        raise _voce_db_error(exc) from exc

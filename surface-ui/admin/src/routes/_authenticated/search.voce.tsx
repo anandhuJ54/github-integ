@@ -18,7 +18,7 @@ import { FieldRow, InstrumentNote, Pill } from "@v3/ui/components/website/bits";
 import { ReadOnlyLock } from "@v3/ui/components/model-lock";
 import { money, num } from "@v3/ui/lib/console-surfaces";
 import { useRole } from "@v3/ui/lib/roles";
-import { catLabel, loadLaunchedCategories } from "@v3/search/lib/search-console";
+import { catLabel, loadLaunchedCategories } from "@v3/admin/lib/search-console";
 import {
   BOOST_PLACEMENTS,
   PLACEMENT_LABEL,

@@ -1,5 +1,6 @@
 """Search control plane (/search, /search/indexing, /search/sponsored, /search/ads, /search/voce) —
-port of surface-ui/search/src/lib/search-console.ts.
+port of surface-ui/admin/src/lib/search-console.ts (moved from the search Surface, surface audit
+2026-10-25).
 
 Runs as the signed-in user (role `authenticated`), so access is exactly what the browser had.
 Several of these tables have RLS off with full grants (docs/SECURITY_FINDINGS.md SF-1/2/3); the

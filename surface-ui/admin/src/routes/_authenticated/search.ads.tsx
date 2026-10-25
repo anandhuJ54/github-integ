@@ -34,7 +34,7 @@ import {
   loadSearchAds,
   searchMutations,
   type SearchAdRow,
-} from "@v3/search/lib/search-console";
+} from "@v3/admin/lib/search-console";
 
 const NONE = "__none";
 

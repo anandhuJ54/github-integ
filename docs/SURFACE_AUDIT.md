@@ -71,10 +71,26 @@ migration (2026-10-23) by reading the old app's files.
 
 | # | Item | UI URL | API (today) | Decision |
 |---|---|---|---|---|
-| 1–5 | Search console: Overview (metrics), Indexing (incl. the site-indexing switch), Sponsored (rate card + slots), Ads, VOCE boosts | `/search`, `/search/indexing`, `/search/sponsored`, `/search/ads`, `/search/voce` | `/search/console/*`, `/search/fn/setSiteIndexing`, `PATCH /search/voce/articles` | Move to **admin** (admin-only tools) (2026-10-25). URLs stay the same for now; rename later. Menu unchanged for now |
+| 1–5 | Search console: Overview (metrics), Indexing (incl. the site-indexing switch), Sponsored (rate card + slots), Ads, VOCE boosts | `/search`, `/search/indexing`, `/search/sponsored`, `/search/ads`, `/search/voce` | `/search/console/*`, `/search/fn/setSiteIndexing`, `PATCH /search/voce/articles` | Move to **admin** (admin-only tools) (2026-10-25). **Done**: pages in `surface-ui/admin`, API `/admin/search-console/*`, `/admin/fn/setSiteIndexing`, `PATCH /admin/search-console/voce/articles/{id}`. URLs and menu unchanged; rename later. surface-ui/search is API-only now |
 | 6–9 | Public search (results, suggest), VOCE article reads, results presentation, site-indexing flag read | used on `/find`, `/voce`, every page | `/search/public/*`, `/search/voce/*` reads, `/search/fn/getSearchPresentation`, `getSiteIndexing` | Stay in **search** |
 | + | Card actions, compare, related searches (from conversion-agents) | `/`, profile pages | `/search/fn/*` | In **search** (done) |
-| 10 | Search assistant ("coming soon" placeholder) | the `/find` search box | `/search-assistant` | Open: keep or remove |
+| 10 | Search assistant ("coming soon" placeholder) | the `/find` search box | `/search-assistant` | Keep in **search** (online search) (2026-10-25) |
+
+## 4. admin
+
+| # | Item | UI URL | Decision |
+|---|---|---|---|
+| 1, 2 | Professionals and Organizations browsers | `/professionals`, `/organizations` | Keep in **admin** (staff-only lists) (2026-10-25) |
+| 3 | Compliance | `/compliance` | Keep in admin |
+| 4 | Users & Access | `/admin/users` | Keep in admin |
+| 5 | Integrations (incl. the "run alert engine now" button, which triggers sales tick functions, SF-10) | `/admin/integrations` | Keep in admin |
+| 6 | Billing (reads sales data) | `/billing` | Keep in **admin** (2026-10-25) |
+| 7 | Support | `/support` | Keep in admin |
+| 8 | `/products` (retired, redirects to `/sales/price-book`) | `/products` | Keep the redirect (2026-10-25) |
+| 9 | "Who am I" (`/admin/me/*`, used by every console page) | — | Keep in admin |
+| 10 | Google Workspace **Send email**, **Schedule meeting**, **Book demo** buttons (on the sales opportunity page; code in admin `google_workspace_fn.py`) | `/sales/opportunities/$oppId` | Move to **sales** (2026-10-25; Growth Hub). Only the opportunity functions move (send email, schedule meeting, and the delivery-status check the dialogs use); Google connect, domain verification and outbox stay with `/admin/integrations` |
+| 11 | Staging keys (used only by etl `/discovery` → Field Yield) | `/discovery` | Open: move to etl or keep |
+| + | Arriving: claims queue, PLG rules (done), search console pages (pending) | `/claims`, `/emp/plg-rules`, `/search/*` | — |
 
 ## Decisions noted ahead (to apply when that Surface is audited)
 

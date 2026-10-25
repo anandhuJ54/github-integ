@@ -1,6 +1,6 @@
 """search.ts + voce.ts ports (no live DB/auth): the SQL each call sends, the allow-list, the
-roles (anon when signed out), the error handling the TS had. The boost update is only checked
-for the SQL it would send."""
+roles (anon when signed out), the error handling the TS had. The boost update moved to admin
+(admin/queries/search_console_test.py, surface audit 2026-10-25)."""
 from __future__ import annotations
 
 from contextlib import contextmanager
@@ -86,14 +86,6 @@ def test_all_articles_nulls_last_capped():
     s = sql(v.all_stmt())
     assert "ORDER BY public.exp_voce_article.published_on DESC NULLS LAST LIMIT" in s
     assert compile_sql(capped(v.all_stmt()))[1]["param_1"] == 1000
-
-
-def test_boost_update_only_sent_keys():
-    s, p = compile_sql(v.update_boost_stmt(AID, {"boost_placements": ["search"],
-                                                 "boost_spend": None}))
-    assert s.startswith("UPDATE public.exp_voce_article SET boost_placements=")
-    assert "boost_spend=" in s and "boosted=" not in s and "WHERE public.exp_voce_article.id = " in s
-    assert p["boost_placements"].obj == ["search"] and p["boost_spend"] is None
 
 
 # --- endpoints (fake connection) ---------------------------------------------------------------
@@ -222,27 +214,3 @@ def test_voce_all_articles_anon_when_signed_out_and_surfaces_errors(fake):
     assert leases == [("anon", None, False)]
     state["answer"] = lambda s, p: psycopg.errors.InsufficientPrivilege("permission denied")
     assert client().get("/search/voce/articles").status_code == 403
-
-
-def test_voce_boost_update_needs_a_user():
-    app = FastAPI()
-    app.include_router(voce_router)
-    assert TestClient(app).patch(f"/search/voce/articles/{AID}", json={}).status_code == 403
-
-
-def test_voce_boost_update_runs_as_the_user_on_the_primary(fake):
-    log, leases, _ = fake
-    r = client().patch(f"/search/voce/articles/{AID}",
-                       json={"boost_starts_on": "2026-11-01", "boost_ends_on": None})
-    assert r.status_code == 200 and leases == [("authenticated", CLAIMS, True)]
-    s, _ = log[0]
-    assert s.startswith("UPDATE public.exp_voce_article SET boost_starts_on=")
-    assert "boost_ends_on=" in s and "boosted=" not in s
-
-
-def test_voce_boost_rejects_unknown_keys_and_placements(fake):
-    _, leases, _ = fake
-    assert client().patch(f"/search/voce/articles/{AID}", json={"title": "x"}).status_code == 422
-    assert client().patch(f"/search/voce/articles/{AID}",
-                          json={"boost_placements": ["homepage"]}).status_code == 422
-    assert leases == []

@@ -4,13 +4,13 @@ import { parseIndexingEnabled, SITE_INDEXING_KEY } from "@v3/ui/lib/index-floor"
 
 /* ────────────────────────────────────────────────────────────
    Search — control plane for the public growth engine.
-   Every number here is a live table read, through /search/console/*
-   (surface-api/search/queries/console.py) as the signed-in user.
+   Every number here is a live table read, through /admin/search-console/*
+   (surface-api/admin/queries/search_console.py) as the signed-in user.
    Nothing is fabricated: an empty table surfaces as an empty array
    and the UI renders an honest "instrument to activate" state.
    ──────────────────────────────────────────────────────────── */
 
-const C = "/search/console";
+const C = "/admin/search-console";
 const ok = (p: Promise<unknown>) => p.then(() => true as const);
 
 /* ───────────── Shared: friendly category labels ───────────── */

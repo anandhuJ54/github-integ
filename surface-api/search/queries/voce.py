@@ -1,19 +1,19 @@
-"""VOCE article reads and the boost update — port of the supabase-js calls in
+"""VOCE article reads — port of the supabase-js calls in
 surface-ui/_base/src/lib/voce.ts. The page logic (featured ordering, boost windows, matching)
 stays in TypeScript; these return the rows each query returned.
 
 RLS decides, as it did for the browser: published articles are readable by anon and
-authenticated, staff (super_admin/architect/analyst) read all, super_admin/architect write.
+authenticated, staff (super_admin/architect/analyst) read all. The boost update moved to
+admin/queries/voce_boost.py (surface audit 2026-10-25).
 """
 from __future__ import annotations
 
 from typing import Any
 
 import psycopg
-from psycopg.types.json import Jsonb
-from sqlalchemy import or_, select, update
+from sqlalchemy import or_, select
 
-from _base.core.sql import compile_sql, fetch_all, typed
+from _base.core.sql import fetch_all, typed
 from _base.schema.tables import t_exp_voce_article as voce_t
 
 COLS = ("id, title, slug, body_excerpt, author_entity_type, author_entity_id, author_name, gcid, "
@@ -62,17 +62,3 @@ def all_stmt() -> Any:
 def rows(conn: psycopg.Connection, stmt: Any) -> list[dict[str, Any]]:
     return fetch_all(conn, stmt)
 
-
-def update_boost_stmt(article_id: str, patch: dict[str, Any]) -> Any:
-    """updateBoost(): `update(patch).eq("id", id)` — only the keys the page sent."""
-    values = dict(patch)
-    if "boost_placements" in values and values["boost_placements"] is not None:
-        values["boost_placements"] = Jsonb(values["boost_placements"])
-    return update(voce_t).where(voce_t.c.id == typed(voce_t.c.id, article_id)).values(**values)
-
-
-def update_boost(conn: psycopg.Connection, article_id: str, patch: dict[str, Any]) -> None:
-    # Like PostgREST: an update the policy filters out changes nothing and is not an error.
-    sql, params = compile_sql(update_boost_stmt(article_id, patch))
-    with conn.cursor() as cur:
-        cur.execute(sql, params)

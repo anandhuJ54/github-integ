@@ -1,8 +1,10 @@
-"""The site-wide indexing switch as the search Surface reads and writes it.
+"""The site-wide indexing switch as the search Surface reads it.
 
 Port of `loadSiteIndexingEnabled` (legacy `lib/sitemap.server.ts`). The srp Surface keeps its
 own copy for robots.txt / sitemaps; Surfaces do not import each other's internals. Defaults
-OFF; any failure reads as OFF. Nothing here flips the switch on its own.
+OFF; any failure reads as OFF. Nothing here flips the switch on its own. The write
+(setSiteIndexing) is in the admin Surface; it emits SITE_INDEXING_CHANGED after commit and the
+handler registered below drops this process's cached value (surface audit 2026-10-25).
 """
 from __future__ import annotations
 
@@ -31,6 +33,7 @@ def parse_indexing_enabled(value: Any) -> bool:
 def reset_site_indexing_cache() -> None:
     global _cache
     _cache = None
+
 
 
 def load_site_indexing_enabled() -> bool:

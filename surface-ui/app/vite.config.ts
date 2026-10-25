@@ -11,7 +11,6 @@ const UI = path.resolve(__dirname, "..");
 const SURFACES = [
   "marketing",
   "srp",
-  "search",
   "graph",
   "sales",
   "xmp",
