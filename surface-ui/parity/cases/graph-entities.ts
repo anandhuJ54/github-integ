@@ -1,13 +1,16 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import type { ParityCase } from "./types";
 import { api } from "@v3/ui/lib/server-fn";
-import { loadExpertiseGraph, type GraphKind } from "@v3/graph/lib/expertise-graph";
+import { loadExpertiseGraph, type GraphKind } from "@v3/search/lib/expertise-graph";
 
 // graph entity pages: /control-graph (signed in, super_admin for the users list), the
 // /:category/:city/:professional page, and the public /p|o|c/:slug/graph expertise graph.
+// moved (surface audit 2026-10-25): the profile and expertise graph pages are search's now (API
+// still graph's); the claims tab (claims, entities-lite, users) is admin's /claims, under
+// /admin/control-claims.
 // Reads only: the governed writes (exp_claim_adjudicate, exp_ctrl_create_node,
 // exp_ctrl_update_node) are covered by compiled-SQL unit tests, never run here.
-const EXPERTISE = "surface-ui/graph/src/lib/expertise-graph.ts";
+const EXPERTISE = "surface-ui/graph/src/lib/expertise-graph.ts"; // legacy path at the parity ref (now in search)
 
 // Lists the page doesn't order (or whose ties come back in any order) are compared in one order.
 const key = (r: any) => JSON.stringify(r);
@@ -110,7 +113,8 @@ export const cases: ParityCase[] = [
       return data ?? [];
     },
     // claims-tab.tsx: the page turns a refusal (non-super_admin) into [], as the legacy code did
-    current: () => api.get("/graph/control/users").catch(() => []),
+    // moved (surface audit 2026-10-25): the claims tab and its endpoints are admin's now
+    current: () => api.get("/admin/control-claims/users").catch(() => []),
   },
   {
     // control-tree-tab.tsx
@@ -181,7 +185,8 @@ export const cases: ParityCase[] = [
       if (error) throw error;
       return data ?? [];
     },
-    api: { method: "GET", path: "/graph/control/claims" },
+    // moved (surface audit 2026-10-25): /graph/control/claims → admin
+    api: { method: "GET", path: "/admin/control-claims" },
   },
   {
     // claims-tab.tsx: .limit(2000) unordered → 1000 rows on both sides (gap 1g, kept)
@@ -191,33 +196,35 @@ export const cases: ParityCase[] = [
       if (error) throw error;
       return data ?? [];
     },
-    api: { method: "GET", path: "/graph/control/entities-lite" },
+    // moved (surface audit 2026-10-25): /graph/control/entities-lite → admin
+    api: { method: "GET", path: "/admin/control-claims/entities-lite" },
     normalize: unordered,
   },
   // --- /:category/:city/:professional ---
+  // moved (surface audit 2026-10-25): /graph/profile/* → /search/profile-page/*, /graph/profile-services → /search/profile-services
   {
     name: "profile page sf-a9ee009780abff5cc27f (State Farm agent, office)",
     legacy: (sb: any) => legacyProfile(sb, "sf-a9ee009780abff5cc27f"),
-    api: { method: "GET", path: "/graph/profile/sf-a9ee009780abff5cc27f" },
+    api: { method: "GET", path: "/search/profile-page/sf-a9ee009780abff5cc27f" },
     normalize: profileNorm,
   },
   {
     name: "profile page amber-ernst (reviews, ratings, credentials)",
     legacy: (sb: any) => legacyProfile(sb, "amber-ernst"),
-    api: { method: "GET", path: "/graph/profile/amber-ernst" },
+    api: { method: "GET", path: "/search/profile-page/amber-ernst" },
     normalize: profileNorm,
   },
   {
     name: "profile page unknown slug → profile null",
     legacy: (sb: any) => legacyProfile(sb, "does-not-exist-parity"),
-    api: { method: "GET", path: "/graph/profile/does-not-exist-parity" },
+    api: { method: "GET", path: "/search/profile-page/does-not-exist-parity" },
   },
   {
     // ServicesSection
     name: "profile page services gcid:insurance_agency",
     legacy: async (sb: any) => (await sb.from("exp_taxonomy").select("id, term, level").eq("gcid", "gcid:insurance_agency")
       .in("level", ["product_service", "specialization"]).order("priority", { ascending: true }).limit(20)).data ?? [],
-    api: { method: "GET", path: "/graph/profile-services?gcid=gcid:insurance_agency" },
+    api: { method: "GET", path: "/search/profile-services?gcid=gcid:insurance_agency" },
   },
   // --- /p|o|c/:slug/graph (public) ---
   expertise("professional", "sf-a9ee009780abff5cc27f", "State Farm agent: office + brand, 35 nodes"),

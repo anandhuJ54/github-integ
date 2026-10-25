@@ -1,4 +1,4 @@
-import { Button } from "@v3/ui/components/marketing/ui/button";
+import { Button } from "@v3/marketing/components/marketing/ui/button";
 import { ArrowRight, Play, Zap, Brain, Trophy, MessageSquare } from "lucide-react";
 import srpOverviewImg from "@v3/marketing/assets/srp-overview-video-thumb.png";
 import srpOverviewTabletImg from "@v3/marketing/assets/srp-intro-placeholder.png";

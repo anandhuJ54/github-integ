@@ -1,18 +1,21 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import type { ParityCase } from "./types";
 import * as sales from "@v3/sales/lib/sales";
-import * as accounts from "@v3/sales/lib/accounts";
+// moved (surface audit 2026-10-25): accounts.ts and its API are admin's now
+import * as accounts from "@v3/admin/lib/accounts";
 
 // sales S2 core: every read in surface-ui/sales/src/lib/sales.ts and accounts.ts. The legacy lib
 // (direct supabase-js, from PARITY_LEGACY_REF) against the current one (same lib, rows from
-// FastAPI /sales/core/* and /sales/accounts/*), plus the raw rows of the reads the lib reshapes
+// FastAPI /sales/core/* and /admin/accounts/*), plus the raw rows of the reads the lib reshapes
 // (price book, revenue) and of the capped hierarchy reads against their endpoint. Inline legacy
 // reads are verbatim copies from sales.ts / accounts.ts at PARITY_LEGACY_REF (line refs to that
 // file there).
 // Reads only: every write (price book, credit config, contracts, line items, signatures,
 // renewals, account tiers, entitlements, the login-as audit row) and exp_contract_provision are
 // covered by compiled-SQL / fake-connection unit tests (sales/queries/core_test.py,
-// accounts_test.py), never run.
+// admin/queries/accounts_test.py), never run.
+// moved (surface audit 2026-10-25): the Accounts pages, accounts.ts and /sales/accounts/* are
+// admin's now (surface-ui/admin/src/lib/accounts.ts, /admin/accounts/*); URLs unchanged.
 //
 // The 1000-row cap (follow-up 1j): organizations (38k rows) and professionals (116k) are read
 // with limit(5000) / limit(20000) and NO ORDER BY, so PostgREST returned an arbitrary 1000 of
@@ -23,9 +26,11 @@ import * as accounts from "@v3/sales/lib/accounts";
 // among the 1000 organizations the cap returns, so loadAccounts is [] on both sides today.
 
 const SALES = "surface-ui/sales/src/lib/sales.ts";
+// the legacy file at PARITY_LEGACY_REF (still under sales there)
 const ACCOUNTS = "surface-ui/sales/src/lib/accounts.ts";
 const C = "/sales/core";
-const A = "/sales/accounts";
+// moved (surface audit 2026-10-25): /sales/accounts → /admin/accounts
+const A = "/admin/accounts";
 
 const strict = async (q: PromiseLike<{ data: unknown; error: unknown }>) => {
   const { data, error } = await q;
@@ -177,9 +182,9 @@ const rowsCase = (name: string, path: string, contractCols: string): ParityCase 
 const DISCOVERED_NAMES = ["Keller", "Coldwell*Banker", "zz-no-such-entity"];
 
 const accountCases: ParityCase[] = [
-  rowsCase("accounts: loadAccounts rows → GET /sales/accounts/list-rows (orgs/pros count + shape)", `${A}/list-rows`, "account_id,org_id,status,mrr"),
+  rowsCase("accounts: loadAccounts rows → GET /admin/accounts/list-rows (orgs/pros count + shape)", `${A}/list-rows`, "account_id,org_id,status,mrr"),
   rowsCase(
-    "accounts: loadAccount rows → GET /sales/accounts/tree-rows (orgs/pros count + shape)",
+    "accounts: loadAccount rows → GET /admin/accounts/tree-rows (orgs/pros count + shape)",
     `${A}/tree-rows`,
     "id,name,account_id,org_id,status,mrr,token_package,start_date",
   ),
@@ -189,7 +194,7 @@ const accountCases: ParityCase[] = [
   }),
   {
     // accounts.ts:81 / :158, verbatim: one exact count per name
-    name: "accounts: discovered counts → POST /sales/accounts/discovered-counts",
+    name: "accounts: discovered counts → POST /admin/accounts/discovered-counts",
     legacy: async (sb: any) =>
       Promise.all(
         DISCOVERED_NAMES.map(async (name) => {

@@ -32,7 +32,7 @@ def report_metrics(claims: dict = Depends(current_user)) -> dict:
     return _read(claims, q.report_metrics)
 
 
-@router.get("/nora-os")
+@router.get("/pipeline-health")
 def nora_os(claims: dict = Depends(current_user)) -> dict:
     """loadNoraOs's reads: `{ jobs, counts: { proposals, llm, siteContracts, engineRequests,
     engineSnapshots, enginePrompts } }`. The page derives byStatus / byStep / lastTick."""

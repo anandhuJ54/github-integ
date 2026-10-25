@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import type { ParityCase } from "./types";
 import { api } from "@v3/ui/lib/server-fn";
+import { runMonitorCases } from "./etl-run-monitor";
 
 // ETL /discovery: the legacy queries (copied verbatim from surface-ui/etl/src/components/discovery
 // at migrate/from-experiencesrp-clone, where they were inline in components) against the
@@ -173,6 +174,8 @@ export const cases: ParityCase[] = [
     normalize: unordered,
   },
   {
+    // role-checked: for a super_admin / architect both return rows and they are compared; for
+    // anyone else both refuse
     name: "source stats: real_estate_agency (role-checked)",
     expectRefusal: true,
     legacy: async (sb: any) => { const { data, error } = await sb.rpc("exp_etl_source_stats", { p_gcid: "gcid:real_estate_agency", p_source: null }); if (error) throw error; return data ?? []; },
@@ -468,4 +471,5 @@ export const cases: ParityCase[] = [
       api: { method: "GET", path: `/etl/console/population/discover-running?gcid=${encodeURIComponent(g)}` },
     },
   ]),
+  ...runMonitorCases,
 ];

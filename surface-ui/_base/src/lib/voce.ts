@@ -201,7 +201,7 @@ export type BoostPatch = {
 };
 
 export async function updateBoost(id: string, patch: BoostPatch): Promise<void> {
-  await api.patch(`/search/voce/articles/${encodeURIComponent(id)}`, patch);
+  await api.patch(`/admin/search-console/voce/articles/${encodeURIComponent(id)}`, patch);
 }
 
 export function boostTotals(list: VoceArticle[]) {

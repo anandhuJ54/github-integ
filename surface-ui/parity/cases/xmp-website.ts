@@ -2,15 +2,16 @@
 import type { ParityCase } from "./types";
 
 // xmp /website/* CMS pages: every loader in surface-ui/xmp/src/lib/website.ts, run verbatim from
-// PARITY_LEGACY_REF (direct supabase-js, as the signed-in user) against GET /xmp/website/*.
+// PARITY_LEGACY_REF (direct supabase-js, as the signed-in user) against GET /marketing/website/*
+// (moved (surface audit 2026-10-25): was /xmp/website/*; the page and lib are in surface-ui/marketing now).
 // Reads only: the CMS writes (pages, templates, forms, leads, trust, consent, alerts, ads,
-// campaigns, media) are covered by compiled-SQL unit tests (xmp/queries/website_test.py), never
+// campaigns, media) are covered by compiled-SQL unit tests (marketing/queries/website_test.py), never
 // run. Row counts at port time: pages 36, templates 6, consent config 1, ads 3, sales reps 21;
 // forms, leads, trust items, consent events, alerts, campaigns and media are empty (still
 // compared: both sides must answer []).
 
-const WEBSITE = "surface-ui/xmp/src/lib/website.ts";
-const W = "/xmp/website";
+const WEBSITE = "surface-ui/xmp/src/lib/website.ts"; // the legacy module, where it lived at PARITY_LEGACY_REF
+const W = "/marketing/website";
 
 /**
  * Rows in the page's order, with rows that tie on the sort key put in id order (Postgres returns

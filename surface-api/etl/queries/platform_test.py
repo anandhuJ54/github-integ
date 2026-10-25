@@ -87,12 +87,12 @@ def test_report_metrics_fourteen_exact_counts_in_one_round_trip(dbfake):
     assert "FROM public.exp_web_pages" in sqls[13]
 
 
-def test_nora_os_jobs_and_counts(dbfake):
+def test_pipeline_health_jobs_and_counts(dbfake):
     log, state = dbfake
     job = {"job_id": 3, "category_slug": "plumber", "step": "run", "status": "awaiting_human",
            "note": None, "created_at": None, "updated_at": None}
     state["answer"] = lambda s: [job] if "disco_jobs" in s else [{"count": 2}]
-    r = client().get(f"{P}/nora-os")
+    r = client().get(f"{P}/pipeline-health")
     assert r.json() == {"jobs": [job], "counts": dict.fromkeys(
         ["proposals", "llm", "siteContracts", "engineRequests", "engineSnapshots",
          "enginePrompts"], 2)}
@@ -127,4 +127,4 @@ def test_a_failed_count_fails_the_loader(dbfake):
     assert r.status_code == 400 and "statement timeout" in r.json()["detail"]
     state["answer"] = lambda s: psycopg.errors.InsufficientPrivilege(
         "permission denied for table disco_proposals")
-    assert client().get(f"{P}/nora-os").status_code == 403
+    assert client().get(f"{P}/pipeline-health").status_code == 403

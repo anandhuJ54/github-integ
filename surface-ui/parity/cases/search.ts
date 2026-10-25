@@ -1,11 +1,13 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import type { ParityCase } from "./types";
-import * as now from "@v3/search/lib/search-console";
+import * as now from "@v3/admin/lib/search-console";
+
+// Moved to admin (surface audit 2026-10-25): the loaders now read /admin/search-console/*.
 
 // Search control plane loaders: legacy (git, direct supabase-js) vs current (rows from
-// /search/console/*), end to end, as the signed-in user. Reads only: the indexing / sponsored /
+// /admin/search-console/*), end to end, as the signed-in user. Reads only: the indexing / sponsored /
 // ads buttons write (and three are gated indexing actions), so they are never run here.
-const SC = "surface-ui/search/src/lib/search-console.ts";
+const SC = "surface-ui/search/src/lib/search-console.ts"; // legacy path at the parity ref
 
 const fn = (exportName: string, current: () => Promise<unknown>, name: string, extra: Partial<ParityCase> = {}): ParityCase => ({
   name,

@@ -1,11 +1,11 @@
-import { Button } from "@v3/ui/components/marketing/ui/button";
+import { Button } from "@v3/marketing/components/marketing/ui/button";
 import { ArrowRight } from "lucide-react";
 import facebookLogo from "@v3/marketing/assets/network-logos/facebook.svg";
 import instagramLogo from "@v3/marketing/assets/network-logos/instagram.svg";
 import linkedinLogo from "@v3/marketing/assets/network-logos/linkedin.svg";
 import xLogo from "@v3/marketing/assets/network-logos/x.svg";
 import socialHeroImg from "@v3/marketing/assets/social-hero.png";
-import { getSignUpUrl } from "@v3/ui/lib/marketing/envUrls";
+import { getSignUpUrl } from "@v3/marketing/lib/marketing/envUrls";
 
 const platforms = [
   { src: facebookLogo, alt: "Facebook" },

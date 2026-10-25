@@ -15,9 +15,10 @@ const SURFACES = [
   "graph",
   "sales",
   "xmp",
+  "campaigns",
   "etl",
   "nora-os",
-  "conversion-agents",
+  "skills",
   "admin",
   "ops",
 ];
@@ -52,6 +53,12 @@ export default defineConfig(({ mode }) => ({
   server: {
     port: 5173,
     proxy: {
+      // Crawlers fetch robots.txt from the site root; the API generates it (it follows the
+      // site-indexing switch). The sitemap it points to is under /api/public/sitemap*, below.
+      // In production the site's reverse proxy must do the same for /robots.txt and /api.
+      "/robots.txt": {
+        target: loadEnv(mode, __dirname, "").API_PROXY_TARGET || "http://localhost:8000",
+      },
       "/api": {
         // Where `bun dev` forwards /api: API_PROXY_TARGET in app/.env, default the local uvicorn.
         target: loadEnv(mode, __dirname, "").API_PROXY_TARGET || "http://localhost:8000",

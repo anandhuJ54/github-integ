@@ -1,5 +1,5 @@
 import { api } from "@v3/ui/lib/server-fn";
-import { currentPeriodStart, type TerritorySlot } from "@v3/ui/lib/territories";
+import { currentPeriodStart, type TerritorySlot } from "@v3/sales/lib/territories";
 
 /* ────────────────────────────────────────────────────────────
    Category-group territory + team reporting data layer.

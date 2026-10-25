@@ -102,8 +102,11 @@ def stats_sources(conn: psycopg.Connection) -> list[dict[str, Any]]:
 
 
 def source_stats(conn: psycopg.Connection, gcid: str, source: str | None) -> list[dict[str, Any]]:
-    return rpc_rows(conn, "select * from public.exp_etl_source_stats(p_gcid => %(g)s, "
-                    "p_source => %(s)s)", {"g": gcid, "s": source})
+    """exp_etl_source_stats returns one jsonb array (not a set of rows); PostgREST sent the array
+    itself, and the page read `data ?? []`."""
+    value = rpc_value(conn, "select public.exp_etl_source_stats(p_gcid => %(g)s, "
+                      "p_source => %(s)s)", {"g": gcid, "s": source})
+    return value if value is not None else []
 
 
 def add_companies_manual(conn: psycopg.Connection, category: str, entries: list[str]) -> Any:

@@ -1,0 +1,8 @@
+{
+  "extends": "../tsconfig.base.json",
+  "include": [
+    "src",
+    "../app/.generated/routeTree.gen.ts",
+    "../app/src/router.tsx"
+  ]
+}

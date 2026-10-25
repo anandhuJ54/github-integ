@@ -1,5 +1,7 @@
 import type { ParityCase } from "./types";
 
+// The endpoints moved (surface audit 2026-10-25): claims + PLG rules → /admin, claim profile → /srp.
+
 // Legacy queries copied verbatim from surface-ui/conversion-agents/src/routes/_authenticated/
 // at migrate/from-experiencesrp-clone (they were inline in components, so nothing to import).
 
@@ -33,7 +35,7 @@ export const cases: ParityCase[] = [
         conflict: counts[3].count ?? 0,
       };
     },
-    api: { method: "GET", path: "/conversion-agents/claims/stats" },
+    api: { method: "GET", path: "/admin/claims/stats" },
   },
   // claims.tsx:113-127, one case per tab
   ...TABS.map(
@@ -50,7 +52,7 @@ export const cases: ParityCase[] = [
         if (error) throw error;
         return data ?? [];
       },
-      api: { method: "GET", path: `/conversion-agents/claims?tab=${tabConfig.id}` },
+      api: { method: "GET", path: `/admin/claims?tab=${tabConfig.id}` },
     }),
   ),
   {
@@ -76,7 +78,7 @@ export const cases: ParityCase[] = [
     },
     api: {
       method: "POST",
-      path: "/conversion-agents/claims/entities",
+      path: "/admin/claims/entities",
       body: { professionalIds: [PRO_ID], organizationIds: [] },
     },
   },
@@ -113,7 +115,7 @@ export const cases: ParityCase[] = [
         stats: [...map.values()].sort((a, b) => (a.rule_id < b.rule_id ? -1 : a.rule_id > b.rule_id ? 1 : 0)),
       };
     },
-    api: { method: "GET", path: "/conversion-agents/plg-rules" },
+    api: { method: "GET", path: "/admin/plg-rules" },
   },
   {
     // claim.$professional.tsx:27-52
@@ -139,6 +141,6 @@ export const cases: ParityCase[] = [
       }
       return { prof, licenseLabel };
     },
-    api: { method: "GET", path: `/conversion-agents/claim-profile/${PRO_SLUG}` },
+    api: { method: "GET", path: `/srp/claim-profile/${PRO_SLUG}` },
   },
 ];

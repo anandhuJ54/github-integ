@@ -39,17 +39,11 @@ def test_brands_exclude_merged_and_deactivated_by_name_500():
     assert p["param_1"] == 500 and {"merged", "deactivated"} <= set(p.values())
 
 
-def test_entities_lite_keeps_the_1000_cap():
-    # claims-tab asked for 2000; PostgREST max-rows returned 1000 (gap 1g, kept)
-    assert params(q.entities_lite_stmt())["param_1"] == 1000
-    assert "ORDER BY" not in sql(q.entities_lite_stmt())
-
-
-def test_entities_and_claims_newest_first():
+def test_entities_newest_first():
+    # the claims and entities-lite reads moved to admin (surface audit 2026-10-25):
+    # admin/queries/control_claims_test.py
     assert "ORDER BY public.exp_entity.created_at DESC" in sql(q.entities_stmt())
     assert params(q.entities_stmt())["param_1"] == 1000
-    assert "ORDER BY public.exp_claim.created_at DESC" in sql(q.claims_stmt())
-    assert params(q.claims_stmt())["param_1"] == 500
 
 
 def test_relationships_of_one_subject_newest_200():
@@ -61,26 +55,6 @@ def test_relationships_of_one_subject_newest_200():
 def test_control_nodes_by_name_capped():
     assert "ORDER BY public.exp_control_nodes.name LIMIT" in sql(q.control_nodes_stmt())
     assert params(q.control_nodes_stmt())["param_1"] == 1000
-
-
-def test_profile_side_reads():
-    st = q.profile_side_stmts(PID, "gcid:insurance_agency")
-    assert "(public.graph_nodes.ring = " in sql(st["graphNodes"]) and \
-        "OR public.graph_nodes.schema_property = " in sql(st["graphNodes"])
-    assert "ORDER BY public.credentials.verified DESC" in sql(st["credentials"])
-    assert "ORDER BY public.reviews.review_date DESC" in sql(st["reviews"])
-    assert params(st["reviews"])["param_1"] == 5 and params(st["content"])["param_1"] == 3
-    assert "aggregate_ratings.source = " in sql(st["aggregateRating"])
-    # loadOrg(primary_org_id) keyed off the professional in SQL
-    assert "organizations.id = (SELECT public.professionals.primary_org_id" in sql(st["org"])
-    assert set(params(st["taxonomy"]).values()) >= set(q.TAX_LEVELS)
-    assert "taxonomy" not in q.profile_side_stmts(PID, None)
-
-
-def test_services_by_priority_20():
-    s = sql(q.services_stmt("gcid:x"))
-    assert "ORDER BY public.exp_taxonomy.priority ASC" in s
-    assert params(q.services_stmt("gcid:x"))["param_1"] == 20
 
 
 def test_expertise_edges_and_external_nodes_use_an_aliased_own_node_subquery():
@@ -107,9 +81,7 @@ def test_rpc_casts_given_arguments_and_omits_the_rest():
     assert p == {"p_id": PID, "p_move": True, "p_parent": OID}
 
 
-def test_rpc_adjudicate_and_create():
-    s, _ = q.rpc_sql("exp_claim_adjudicate", {"p_claim": PID, "p_approve": False})
-    assert "exp_claim_adjudicate(p_claim => %(p_claim)s::uuid, p_approve => %(p_approve)s::boolean)" in s
+def test_rpc_create():
     s, _ = q.rpc_sql("exp_ctrl_create_node", {"p_name": "x", "p_node_type": "brand",
                                               "p_billing": True})
     assert "p_billing => %(p_billing)s::boolean" in s and "p_parent" not in s
@@ -126,6 +98,7 @@ def test_rpc_set_expected_volume():
 
 @pytest.mark.parametrize("name,args", [
     ("exp_graph_upsert_nodes", {}),
+    ("exp_claim_adjudicate", {}),  # moved to admin (surface audit 2026-10-25)
     ("exp_ctrl_create_node", {"p_name": "x", "p_evil": 1}),
 ])
 def test_rpc_outside_the_allow_list_is_refused(name, args):
@@ -208,10 +181,10 @@ def client(user=CLAIMS) -> TestClient:
 
 
 @pytest.mark.parametrize("method,path", [
-    ("get", "/graph/control/claims"), ("post", "/graph/control/rpc/exp_claim_adjudicate"),
-    ("get", "/graph/profile/x"), ("get", "/graph/control/validate"),
+    ("get", "/graph/control/entities"), ("post", "/graph/control/rpc/exp_ctrl_create_node"),
+    ("get", "/graph/control/validate"),
 ])
-def test_control_and_profile_need_a_signed_in_user(method, path):
+def test_control_needs_a_signed_in_user(method, path):
     app = FastAPI()
     app.include_router(router)
     assert getattr(TestClient(app), method)(path, **({"json": {}} if method == "post" else {})) \
@@ -221,10 +194,10 @@ def test_control_and_profile_need_a_signed_in_user(method, path):
 def test_rpc_runs_as_the_user_on_the_primary(fake):
     log, leases, state = fake
     state["answer"] = lambda s, p: [{"v": None}]
-    r = client().post("/graph/control/rpc/exp_claim_adjudicate",
-                      json={"args": {"p_claim": PID, "p_approve": True}})
+    r = client().post("/graph/control/rpc/exp_ctrl_update_node",
+                      json={"args": {"p_id": PID, "p_name": "x"}})
     assert r.status_code == 200 and leases == [("authenticated", CLAIMS, True)]
-    assert "exp_claim_adjudicate(" in log[0][0]
+    assert "exp_ctrl_update_node(" in log[0][0]
 
 
 def test_unknown_rpc_is_400_without_a_connection(fake):
@@ -283,33 +256,3 @@ def test_expertise_reads_are_uncapped_and_shaped(fake):
     assert r["ownRows"] == [{"id": "n1"}] and r["external"] == [{"id": "x1"}]
     uncapped = [s for s, _ in log if "graph_nodes" in s or "graph_edges" in s]
     assert len(uncapped) == 3 and not any("LIMIT" in s for s in uncapped)
-
-
-def test_profile_unknown_slug_is_null_and_skips_side_reads(fake):
-    log, _, _ = fake
-    assert client().get("/graph/profile/nobody").json() == {"profile": None}
-    assert len([s for s, _ in log if "savepoint" not in s]) == 1
-
-
-def test_profile_several_view_rows_is_an_error(fake):
-    _, _, state = fake
-    state["answer"] = lambda s, p: [{"id": PID}, {"id": OID}]
-    assert client().get("/graph/profile/dup").status_code == 400
-
-
-def test_profile_side_reads_by_name(fake):
-    _, _, state = fake
-
-    def answer(s, p):
-        if "v_professional_profile" in s:
-            return [{"id": PID, "gcid": "gcid:x"}]
-        if "FROM public.organizations" in s:
-            return [{"id": OID, "name": "Org"}]
-        if "FROM public.reviews" in s:
-            return [{"id": "r1"}]
-        return []
-
-    state["answer"] = answer
-    r = client().get("/graph/profile/a").json()
-    assert r["org"] == {"id": OID, "name": "Org"} and r["reviews"] == [{"id": "r1"}]
-    assert r["pro"] is None and r["aggregateRating"] is None and r["taxonomy"] == []

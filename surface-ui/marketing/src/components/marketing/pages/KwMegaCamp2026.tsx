@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
-import { ogImageUrl } from "@v3/ui/lib/marketing/seo";
-import { Button } from "@v3/ui/components/marketing/ui/button";
+import { ogImageUrl } from "@v3/marketing/lib/marketing/seo";
+import { Button } from "@v3/marketing/components/marketing/ui/button";
 import { Input } from "@v3/marketing/components/marketing/ui/input";
 import {
   Accordion,
@@ -8,7 +8,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@v3/marketing/components/marketing/ui/accordion";
-import { getSignUpUrl } from "@v3/ui/lib/marketing/envUrls";
+import { getSignUpUrl } from "@v3/marketing/lib/marketing/envUrls";
 import { generateAssessment, type AssessmentLead } from "@v3/marketing/lib/marketing/assessment-store";
 import { KwMegaCampPageSchema } from "@v3/marketing/components/marketing/sections/kw-mega-camp/KwMegaCampPageSchema";
 import {

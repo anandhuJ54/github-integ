@@ -5,281 +5,6 @@
     "version": "1"
   },
   "paths": {
-    "/sales/accounts/discovered-counts": {
-      "post": {
-        "tags": [
-          "sales"
-        ],
-        "summary": "Discovered Counts",
-        "description": "The exp_entity display_name ilike %name% exact count for each name, in order (null when a\ncount failed). A read; POST so the list fits.",
-        "operationId": "discovered_counts_sales_accounts_discovered_counts_post",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/SalesAccountsNames"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "items": {},
-                  "type": "array",
-                  "title": "Response Discovered Counts Sales Accounts Discovered Counts Post"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "HTTPBearer": []
-          }
-        ]
-      }
-    },
-    "/sales/accounts/list-rows": {
-      "get": {
-        "tags": [
-          "sales"
-        ],
-        "summary": "List Rows",
-        "description": "loadAccounts' reads: `{ orgs, pros, contracts }` (orgs and pros cut to 1000 rows, as\nPostgREST cut the page's limit(5000); follow-up 1j).",
-        "operationId": "list_rows_sales_accounts_list_rows_get",
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "additionalProperties": true,
-                  "type": "object",
-                  "title": "Response List Rows Sales Accounts List Rows Get"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "HTTPBearer": []
-          }
-        ]
-      }
-    },
-    "/sales/accounts/login-as": {
-      "post": {
-        "tags": [
-          "sales"
-        ],
-        "summary": "Record Login As",
-        "description": "recordLoginAs: the audit_log row; actor_email is the signed-in user's, from the verified\ntoken (every caller passed the signed-in user's email). An insert error reaches the page,\nwhich threw it before.",
-        "operationId": "record_login_as_sales_accounts_login_as_post",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/SalesAccountsLoginAs"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "additionalProperties": true,
-                  "type": "object",
-                  "title": "Response Record Login As Sales Accounts Login As Post"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "HTTPBearer": []
-          }
-        ]
-      }
-    },
-    "/sales/accounts/tree-rows": {
-      "get": {
-        "tags": [
-          "sales"
-        ],
-        "summary": "Tree Rows",
-        "description": "loadAccount's reads: `{ orgs, pros, contracts }` (as above, more contract columns).",
-        "operationId": "tree_rows_sales_accounts_tree_rows_get",
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "additionalProperties": true,
-                  "type": "object",
-                  "title": "Response Tree Rows Sales Accounts Tree Rows Get"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "HTTPBearer": []
-          }
-        ]
-      }
-    },
-    "/sales/accounts/{account_id}/entitlements": {
-      "get": {
-        "tags": [
-          "sales"
-        ],
-        "summary": "Entitlements",
-        "description": "loadEntitlements' rows: `{ products, entitlements }` (one round trip).",
-        "operationId": "entitlements_sales_accounts__account_id__entitlements_get",
-        "security": [
-          {
-            "HTTPBearer": []
-          }
-        ],
-        "parameters": [
-          {
-            "name": "account_id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "title": "Account Id"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "additionalProperties": true,
-                  "title": "Response Entitlements Sales Accounts  Account Id  Entitlements Get"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/sales/accounts/{account_id}/entitlements/{product_key}": {
-      "put": {
-        "tags": [
-          "sales"
-        ],
-        "summary": "Set Entitlement",
-        "description": "setEntitlement: the organization's upsert, source \"console\".",
-        "operationId": "set_entitlement_sales_accounts__account_id__entitlements__product_key__put",
-        "security": [
-          {
-            "HTTPBearer": []
-          }
-        ],
-        "parameters": [
-          {
-            "name": "account_id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "title": "Account Id"
-            }
-          },
-          {
-            "name": "product_key",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "title": "Product Key"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/SalesAccountsEntitlement"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "additionalProperties": true,
-                  "title": "Response Set Entitlement Sales Accounts  Account Id  Entitlements  Product Key  Put"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "/sales/alerts/rpc/{name}": {
       "post": {
         "tags": [
@@ -4771,113 +4496,6 @@
         }
       }
     },
-    "/sales/nav/organizations/{org_id}": {
-      "get": {
-        "tags": [
-          "sales"
-        ],
-        "summary": "Load Org",
-        "description": "loadOrg: the organization row, or null.",
-        "operationId": "load_org_sales_nav_organizations__org_id__get",
-        "security": [
-          {
-            "HTTPBearer": []
-          }
-        ],
-        "parameters": [
-          {
-            "name": "org_id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "title": "Org Id"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "anyOf": [
-                    {
-                      "type": "object",
-                      "additionalProperties": true
-                    },
-                    {
-                      "type": "null"
-                    }
-                  ],
-                  "title": "Response Load Org Sales Nav Organizations  Org Id  Get"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/sales/nav/organizations/{org_id}/brand-rollup": {
-      "get": {
-        "tags": [
-          "sales"
-        ],
-        "summary": "Load Brand Rollup",
-        "description": "loadBrandRollup's rows: `{ locations, childCount, directCount, viaOfficesCount, claims }`\n(a failed count is null).",
-        "operationId": "load_brand_rollup_sales_nav_organizations__org_id__brand_rollup_get",
-        "security": [
-          {
-            "HTTPBearer": []
-          }
-        ],
-        "parameters": [
-          {
-            "name": "org_id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "title": "Org Id"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "additionalProperties": true,
-                  "title": "Response Load Brand Rollup Sales Nav Organizations  Org Id  Brand Rollup Get"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "/sales/nav/overview": {
       "get": {
         "tags": [
@@ -4922,63 +4540,6 @@
                   "type": "object",
                   "additionalProperties": true,
                   "title": "Response Load Overview Sales Nav Overview Get"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/sales/nav/professionals/{pro_id}": {
-      "get": {
-        "tags": [
-          "sales"
-        ],
-        "summary": "Load Professional",
-        "description": "loadProfessional: the professional row, or null.",
-        "operationId": "load_professional_sales_nav_professionals__pro_id__get",
-        "security": [
-          {
-            "HTTPBearer": []
-          }
-        ],
-        "parameters": [
-          {
-            "name": "pro_id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "title": "Pro Id"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "anyOf": [
-                    {
-                      "type": "object",
-                      "additionalProperties": true
-                    },
-                    {
-                      "type": "null"
-                    }
-                  ],
-                  "title": "Response Load Professional Sales Nav Professionals  Pro Id  Get"
                 }
               }
             }
@@ -7582,6 +7143,105 @@
             "HTTPBearer": []
           }
         ]
+      }
+    },
+    "/sales/team-central/family": {
+      "post": {
+        "tags": [
+          "sales"
+        ],
+        "summary": "Team Family",
+        "description": "The family-dependent reads (a read; POST carries the territory ids):\n{links, orgs, sellers, expansion, months}.",
+        "operationId": "team_family_sales_team_central_family_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SalesTeamFamilyIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "type": "object",
+                  "title": "Response Team Family Sales Team Central Family Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/sales/team-central/{group_key}": {
+      "get": {
+        "tags": [
+          "sales"
+        ],
+        "summary": "Team Base",
+        "description": "loadTeamCentral()'s first reads: {reps, territories, revenue, quotas, groups}.",
+        "operationId": "team_base_sales_team_central__group_key__get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "group_key",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Group Key"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Team Base Sales Team Central  Group Key  Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
       }
     },
     "/sales/teams/brand-links/{link_id}": {
@@ -10310,82 +9970,6 @@
         },
         "type": "object",
         "title": "HTTPValidationError"
-      },
-      "SalesAccountsEntitlement": {
-        "properties": {
-          "state": {
-            "type": "string",
-            "title": "State"
-          },
-          "tokens_included": {
-            "anyOf": [
-              {
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Tokens Included"
-          }
-        },
-        "additionalProperties": false,
-        "type": "object",
-        "required": [
-          "state"
-        ],
-        "title": "SalesAccountsEntitlement"
-      },
-      "SalesAccountsLoginAs": {
-        "properties": {
-          "node_type": {
-            "type": "string",
-            "enum": [
-              "organization",
-              "professional"
-            ],
-            "title": "Node Type"
-          },
-          "node_id": {
-            "type": "string",
-            "title": "Node Id"
-          },
-          "node_name": {
-            "type": "string",
-            "title": "Node Name"
-          },
-          "account_id": {
-            "type": "string",
-            "title": "Account Id"
-          }
-        },
-        "additionalProperties": false,
-        "type": "object",
-        "required": [
-          "node_type",
-          "node_id",
-          "node_name",
-          "account_id"
-        ],
-        "title": "SalesAccountsLoginAs"
-      },
-      "SalesAccountsNames": {
-        "properties": {
-          "names": {
-            "items": {
-              "type": "string"
-            },
-            "type": "array",
-            "maxItems": 1000,
-            "title": "Names"
-          }
-        },
-        "additionalProperties": false,
-        "type": "object",
-        "required": [
-          "names"
-        ],
-        "title": "SalesAccountsNames"
       },
       "SalesAlertsDismiss": {
         "properties": {
@@ -13842,6 +13426,39 @@
         "type": "object",
         "title": "SalesSreTrialExtension",
         "description": "extendTrial's insert. `days` is clamped to 1..7 by the page, as before."
+      },
+      "SalesTeamFamilyIn": {
+        "properties": {
+          "family_key": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Family Key"
+          },
+          "territory_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 1000,
+            "title": "Territory Ids"
+          },
+          "year": {
+            "type": "integer",
+            "title": "Year"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "year"
+        ],
+        "title": "SalesTeamFamilyIn"
       },
       "SalesTeamsMonthQuotaNew": {
         "properties": {

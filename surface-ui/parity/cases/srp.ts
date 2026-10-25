@@ -1,10 +1,12 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import type { ParityCase } from "./types";
-import { loadOrgBundle, loadProfessionalBundle } from "@v3/srp/lib/profile-render";
-import { loadAdUnits, loadSponsoredSlots } from "@v3/srp/lib/monetization";
+import { loadOrgBundle, loadProfessionalBundle } from "@v3/search/lib/profile-render";
+import { loadAdUnits, loadSponsoredSlots } from "@v3/search/lib/monetization";
 
 // End to end: the legacy bundle builders (git, direct supabase-js) against the current ones
-// (same page logic, rows from GET /srp/profile/*). Run signed out: these are public pages.
+// (same page logic, rows from GET /search/profile/*). Run signed out: these are public pages.
+// moved (surface audit 2026-10-25): the pages, libs and API are in the search Surface now
+// (/srp/... → /search/...). The legacy paths below stay: they are read from the legacy git ref.
 const PROFILE_RENDER = "surface-ui/srp/src/lib/profile-render.ts";
 const MONETIZATION = "surface-ui/srp/src/lib/monetization.ts";
 
@@ -64,6 +66,6 @@ export const cases: ParityCase[] = [
       const { data } = await supabase.from("gbp_categories").select("display_name, slug").eq("gcid", "gcid:insurance_agency").maybeSingle();
       return data;
     },
-    api: { method: "GET", path: "/srp/category-label/gcid:insurance_agency" },
+    api: { method: "GET", path: "/search/category-label/gcid:insurance_agency" },
   },
 ];

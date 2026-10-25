@@ -1,4 +1,4 @@
-import { Button } from "@v3/ui/components/marketing/ui/button";
+import { Button } from "@v3/marketing/components/marketing/ui/button";
 import { ArrowRight } from "lucide-react";
 
 export const CustomerStoriesFooterCTA = () => {

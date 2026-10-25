@@ -58,24 +58,12 @@ class FakeDB:
         return _cm()
 
 
-_MODULES = (
-    "srp.indexing",
-    "srp.sitemap",
-    "srp.geo",
-    "srp.routers.home_fn",
-    "srp.routers.city_home_fn",
-    "srp.routers.public_site_fn",
-    "srp.routers.reviews_fn",
-)
+_MODULES = ("srp.routers.reviews_fn",)
 
 
 @pytest.fixture
 def fake_db(monkeypatch):
     import importlib
-
-    from srp import indexing
-
-    indexing.reset_site_indexing_cache()
 
     def install(responder: Responder) -> FakeDB:
         db = FakeDB(responder)
@@ -84,7 +72,6 @@ def fake_db(monkeypatch):
         return db
 
     yield install
-    indexing.reset_site_indexing_cache()
 
 
 @pytest.fixture

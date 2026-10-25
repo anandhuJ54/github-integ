@@ -2,14 +2,16 @@
 import type { ParityCase } from "./types";
 import { supabase } from "@v3/ui/integrations/supabase/client";
 import * as ent from "@v3/xmp/lib/enterprise-xmp";
-import * as seat from "@v3/xmp/lib/seat";
-import { loadOfficeMode } from "@v3/xmp/lib/office-mode";
-import { loadClaimSource, loadInterviewSubject } from "@v3/xmp/lib/nora/interview-data";
-import { loadTeamCentral } from "@v3/xmp/lib/insurance-team";
+// moved (surface audit 2026-10-25): the seat, office-mode and interview libs are in srp now
+import * as seat from "@v3/srp/lib/seat";
+import { loadOfficeMode } from "@v3/srp/lib/office-mode";
+import { loadClaimSource, loadInterviewSubject } from "@v3/srp/lib/nora/interview-data";
+import { loadTeamCentral } from "@v3/sales/lib/insurance-team";
 
 // xmp enterprise, seat and dashboard pages (all signed in). Reads only: the writes
 // (review_campaigns insert/update, invitations insert, professionals update, audit_log inserts)
 // are covered by compiled-SQL / fake-connection unit tests, never run here.
+// Legacy module paths: where the files lived at PARITY_LEGACY_REF (before the surface audit moves).
 const ENT = "surface-ui/xmp/src/lib/enterprise-xmp.ts";
 const SEAT = "surface-ui/xmp/src/lib/seat.ts";
 const OFFICE_MODE = "surface-ui/xmp/src/lib/office-mode.ts";
@@ -293,32 +295,33 @@ async function legacyReviews(sb: any, proId?: string) {
   return { pro: proRow, reviews: rows ?? [] };
 }
 
+// moved (surface audit 2026-10-25): /xmp/dashboard/* → /srp/dashboard/*
 const dashboardCases: ParityCase[] = [
   { name: "dashboard home: signed-in user's professional (none → pro null)", legacy: (sb) => legacyHome(sb),
-    api: { method: "GET", path: "/xmp/dashboard/home" } },
+    api: { method: "GET", path: "/srp/dashboard/home" } },
   { name: "dashboard home: explicit professional amber-ernst", legacy: (sb) => legacyHome(sb, AMBER),
-    api: { method: "GET", path: `/xmp/dashboard/home?professional_id=${AMBER}` } },
+    api: { method: "GET", path: `/srp/dashboard/home?professional_id=${AMBER}` } },
   { name: "dashboard content: signed-in user", legacy: (sb) => legacyContent(sb),
-    api: { method: "GET", path: "/xmp/dashboard/content" } },
+    api: { method: "GET", path: "/srp/dashboard/content" } },
   { name: "dashboard content: explicit professional amber-ernst", legacy: (sb) => legacyContent(sb, AMBER),
-    api: { method: "GET", path: `/xmp/dashboard/content?professional_id=${AMBER}` },
+    api: { method: "GET", path: `/srp/dashboard/content?professional_id=${AMBER}` },
     // the term list is unordered; topics / questions tie on search volume
     normalize: (r: any) => (r.pro ? { ...r, topics: sortRows(r.topics), questions: sortRows(r.questions), terms: sortRows(r.terms) } : r) },
   { name: "dashboard listings: signed-in user's professional", legacy: async (sb) => ({ pro: await dashPro(sb, PRO_COLS) }),
-    api: { method: "GET", path: "/xmp/dashboard/me" } },
+    api: { method: "GET", path: "/srp/dashboard/me" } },
   { name: "dashboard listings: explicit professional", legacy: async (sb) => ({ pro: await dashPro(sb, PRO_COLS, PRO) }),
-    api: { method: "GET", path: `/xmp/dashboard/me?professional_id=${PRO}` } },
+    api: { method: "GET", path: `/srp/dashboard/me?professional_id=${PRO}` } },
   { name: "dashboard listings: rows for the single-pro location", legacy: (sb) =>
       legacyListingRows(sb, "organization", PRO_OFFICE, "gcid:insurance_agency"),
-    api: { method: "GET", path: `/xmp/dashboard/listings?entity_type=organization&entity_id=${PRO_OFFICE}&gcid=gcid:insurance_agency` },
+    api: { method: "GET", path: `/srp/dashboard/listings?entity_type=organization&entity_id=${PRO_OFFICE}&gcid=gcid:insurance_agency` },
     normalize: (r: any) => ({ ...r, listings: sortRows(r.listings) }) },
   { name: "dashboard listings: rows, no gcid", legacy: (sb) => legacyListingRows(sb, "professional", AMBER, null),
-    api: { method: "GET", path: `/xmp/dashboard/listings?entity_type=professional&entity_id=${AMBER}` },
+    api: { method: "GET", path: `/srp/dashboard/listings?entity_type=professional&entity_id=${AMBER}` },
     normalize: (r: any) => ({ ...r, listings: sortRows(r.listings) }) },
   { name: "dashboard reviews: signed-in user", legacy: (sb) => legacyReviews(sb),
-    api: { method: "GET", path: "/xmp/dashboard/reviews" } },
+    api: { method: "GET", path: "/srp/dashboard/reviews" } },
   { name: "dashboard reviews: explicit professional amber-ernst", legacy: (sb) => legacyReviews(sb, AMBER),
-    api: { method: "GET", path: `/xmp/dashboard/reviews?professional_id=${AMBER}` } },
+    api: { method: "GET", path: `/srp/dashboard/reviews?professional_id=${AMBER}` } },
 ];
 
 /* ─── routes/_authenticated/enterprise.$orgSlug.{campaigns,users}.tsx (inline reads, verbatim) ─── */
@@ -380,13 +383,14 @@ async function legacyUsers(sb: any, orgSlug: string) {
 }
 const usersNorm = (r: any) => (r.root ? { ...r, pros: sortRows(r.pros), roles: sortRows(r.roles), descendants: sortRows(r.descendants) } : r);
 
+// moved (surface audit 2026-10-25): /xmp/enterprise/orgs/{slug}/campaigns → /campaigns/enterprise/orgs/{slug}/campaigns
 const orgPageCases: ParityCase[] = [
   { name: "enterprise campaigns: state-farm", legacy: (sb) => legacyCampaigns(sb, "state-farm"),
-    api: { method: "GET", path: "/xmp/enterprise/orgs/state-farm/campaigns" }, normalize: (r: any) => (r.root ? { ...r, rules: sortRows(r.rules), descendants: sortRows(r.descendants) } : r) },
+    api: { method: "GET", path: "/campaigns/enterprise/orgs/state-farm/campaigns" }, normalize: (r: any) => (r.root ? { ...r, rules: sortRows(r.rules), descendants: sortRows(r.descendants) } : r) },
   { name: "enterprise campaigns: new-american-funding (has hierarchy_path)", legacy: (sb) => legacyCampaigns(sb, "new-american-funding"),
-    api: { method: "GET", path: "/xmp/enterprise/orgs/new-american-funding/campaigns" }, normalize: (r: any) => (r.root ? { ...r, rules: sortRows(r.rules), descendants: sortRows(r.descendants) } : r) },
+    api: { method: "GET", path: "/campaigns/enterprise/orgs/new-american-funding/campaigns" }, normalize: (r: any) => (r.root ? { ...r, rules: sortRows(r.rules), descendants: sortRows(r.descendants) } : r) },
   { name: "enterprise campaigns: unknown slug → root null", legacy: (sb) => legacyCampaigns(sb, "does-not-exist-parity"),
-    api: { method: "GET", path: "/xmp/enterprise/orgs/does-not-exist-parity/campaigns" } },
+    api: { method: "GET", path: "/campaigns/enterprise/orgs/does-not-exist-parity/campaigns" } },
   { name: "enterprise users: state-farm", legacy: (sb) => legacyUsers(sb, "state-farm"),
     api: { method: "GET", path: "/xmp/enterprise/orgs/state-farm/users" }, normalize: usersNorm },
   { name: "enterprise users: compass-fort-worth-tx (150 pros)", legacy: (sb) => legacyUsers(sb, "compass-fort-worth-tx"),

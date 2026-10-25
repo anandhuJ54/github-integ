@@ -23,7 +23,7 @@ import { Route as ConvertAgentsRouteImport } from './../../marketing/src/routes/
 import { Route as CustomerStoriesRouteImport } from './../../marketing/src/routes/customer-stories'
 import { Route as DemoRouteImport } from './../../marketing/src/routes/demo'
 import { Route as EnterpriseXmpRouteImport } from './../../marketing/src/routes/enterprise-xmp'
-import { Route as FindRouteImport } from './../../srp/src/routes/find'
+import { Route as FindRouteImport } from './../../search/src/routes/find'
 import { Route as GuidesRouteImport } from './../../marketing/src/routes/guides'
 import { Route as InsightsRouteImport } from './../../marketing/src/routes/insights'
 import { Route as KwMegaCamp2026RouteImport } from './../../marketing/src/routes/kw-mega-camp-2026'
@@ -39,41 +39,43 @@ import { Route as ReviewsManagementRouteImport } from './../../marketing/src/rou
 import { Route as SearchRankPlatformRouteImport } from './../../marketing/src/routes/search-rank-platform'
 import { Route as SearchRankingRouteImport } from './../../marketing/src/routes/search-ranking'
 import { Route as SocialRouteImport } from './../../marketing/src/routes/social'
-import { Route as TopicsRouteImport } from './../../srp/src/routes/topics'
+import { Route as TopicsRouteImport } from './../../search/src/routes/topics'
 import { Route as VoceRouteImport } from './../../marketing/src/routes/voce'
 import { Route as VoceArticlesRouteImport } from './../../marketing/src/routes/voce-articles'
 import { Route as WebsiteMarketingRouteImport } from './../../marketing/src/routes/website-marketing'
-import { Route as AuthenticatedAccountsRouteImport } from './../../sales/src/routes/_authenticated/accounts'
+import { Route as AuthenticatedAccountsRouteImport } from './../../admin/src/routes/_authenticated/accounts'
 import { Route as AuthenticatedBillingRouteImport } from './../../admin/src/routes/_authenticated/billing'
 import { Route as AuthenticatedBuildRouteImport } from './../../ops/src/routes/_authenticated/build'
 import { Route as AuthenticatedCategoriesRouteImport } from './../../graph/src/routes/_authenticated/categories'
-import { Route as AuthenticatedClaimsRouteImport } from './../../conversion-agents/src/routes/_authenticated/claims'
+import { Route as AuthenticatedClaimsRouteImport } from './../../admin/src/routes/_authenticated/claims'
 import { Route as AuthenticatedComplianceRouteImport } from './../../admin/src/routes/_authenticated/compliance'
-import { Route as AuthenticatedConsoleRouteImport } from './../../ops/src/routes/_authenticated/console'
+import { Route as AuthenticatedConsoleRouteImport } from './../../admin/src/routes/_authenticated/console'
 import { Route as AuthenticatedControlGraphRouteImport } from './../../graph/src/routes/_authenticated/control-graph'
-import { Route as AuthenticatedDashboardRouteImport } from './../../xmp/src/routes/_authenticated/dashboard'
+import { Route as AuthenticatedDashboardRouteImport } from './../../srp/src/routes/_authenticated/dashboard'
 import { Route as AuthenticatedDevRouteImport } from './../../ops/src/routes/_authenticated/dev'
 import { Route as AuthenticatedDiscoveryRouteImport } from './../../etl/src/routes/_authenticated/discovery'
 import { Route as AuthenticatedNoraOsRouteImport } from './../../nora-os/src/routes/_authenticated/nora-os'
 import { Route as AuthenticatedOrganizationsRouteImport } from './../../admin/src/routes/_authenticated/organizations'
 import { Route as AuthenticatedProductsRouteImport } from './../../admin/src/routes/_authenticated/products'
 import { Route as AuthenticatedProfessionalsRouteImport } from './../../admin/src/routes/_authenticated/professionals'
-import { Route as AuthenticatedReportsRouteImport } from './../../ops/src/routes/_authenticated/reports'
+import { Route as AuthenticatedReportsRouteImport } from './../../admin/src/routes/_authenticated/reports'
+import { Route as AuthenticatedRunHealthRouteImport } from './../../etl/src/routes/_authenticated/run-health'
 import { Route as AuthenticatedSalesRouteImport } from './../../sales/src/routes/_authenticated/sales'
-import { Route as AuthenticatedSearchRouteImport } from './../../search/src/routes/_authenticated/search'
+import { Route as AuthenticatedSearchRouteImport } from './../../admin/src/routes/_authenticated/search'
+import { Route as AuthenticatedSkillsRouteImport } from './../../skills/src/routes/_authenticated/skills'
 import { Route as AuthenticatedSupportRouteImport } from './../../admin/src/routes/_authenticated/support'
-import { Route as AuthenticatedWebsiteRouteImport } from './../../xmp/src/routes/_authenticated/website'
-import { Route as CDotslugRouteImport } from './../../srp/src/routes/c.$slug'
-import { Route as ODotslugRouteImport } from './../../srp/src/routes/o.$slug'
-import { Route as PDotslugRouteImport } from './../../srp/src/routes/p.$slug'
+import { Route as AuthenticatedWebsiteRouteImport } from './../../marketing/src/routes/_authenticated/website'
+import { Route as CDotslugRouteImport } from './../../search/src/routes/c.$slug'
+import { Route as ODotslugRouteImport } from './../../search/src/routes/o.$slug'
+import { Route as PDotslugRouteImport } from './../../search/src/routes/p.$slug'
 import { Route as PlatformDotslugRouteImport } from './../../marketing/src/routes/platform.$slug'
 import { Route as ProductDotslugRouteImport } from './../../marketing/src/routes/product.$slug'
 import { Route as SignDottokenRouteImport } from './../../sales/src/routes/sign.$token'
-import { Route as TopicDotgcidRouteImport } from './../../srp/src/routes/topic.$gcid'
-import { Route as TrustDotindexRouteImport } from './../../srp/src/routes/trust.index'
-import { Route as TrustDotslugRouteImport } from './../../srp/src/routes/trust.$slug'
-import { Route as AuthenticatedAccountsDotindexRouteImport } from './../../sales/src/routes/_authenticated/accounts.index'
-import { Route as AuthenticatedAccountsDotaccountIdRouteImport } from './../../sales/src/routes/_authenticated/accounts.$accountId'
+import { Route as TopicDotgcidRouteImport } from './../../search/src/routes/topic.$gcid'
+import { Route as TrustDotindexRouteImport } from './../../search/src/routes/trust.index'
+import { Route as TrustDotslugRouteImport } from './../../search/src/routes/trust.$slug'
+import { Route as AuthenticatedAccountsDotindexRouteImport } from './../../admin/src/routes/_authenticated/accounts.index'
+import { Route as AuthenticatedAccountsDotaccountIdRouteImport } from './../../admin/src/routes/_authenticated/accounts.$accountId'
 import { Route as AuthenticatedAdminDotintegrationsRouteImport } from './../../admin/src/routes/_authenticated/admin.integrations'
 import { Route as AuthenticatedAdminDotusersRouteImport } from './../../admin/src/routes/_authenticated/admin.users'
 import { Route as AuthenticatedBuildDotindexRouteImport } from './../../ops/src/routes/_authenticated/build.index'
@@ -82,16 +84,16 @@ import { Route as AuthenticatedBuildDotteamsRouteImport } from './../../ops/src/
 import { Route as AuthenticatedBuildDotweeklyRouteImport } from './../../ops/src/routes/_authenticated/build.weekly'
 import { Route as AuthenticatedCategoriesDotindexRouteImport } from './../../graph/src/routes/_authenticated/categories.index'
 import { Route as AuthenticatedCategoriesDotgcidRouteImport } from './../../graph/src/routes/_authenticated/categories.$gcid'
-import { Route as AuthenticatedClaimDotprofessionalRouteImport } from './../../conversion-agents/src/routes/_authenticated/claim.$professional'
-import { Route as AuthenticatedDashboardDotindexRouteImport } from './../../xmp/src/routes/_authenticated/dashboard.index'
-import { Route as AuthenticatedDashboardDotcontentRouteImport } from './../../xmp/src/routes/_authenticated/dashboard.content'
-import { Route as AuthenticatedDashboardDotlistingsRouteImport } from './../../xmp/src/routes/_authenticated/dashboard.listings'
-import { Route as AuthenticatedDashboardDotreviewsRouteImport } from './../../xmp/src/routes/_authenticated/dashboard.reviews'
+import { Route as AuthenticatedClaimDotprofessionalRouteImport } from './../../srp/src/routes/_authenticated/claim.$professional'
+import { Route as AuthenticatedDashboardDotindexRouteImport } from './../../srp/src/routes/_authenticated/dashboard.index'
+import { Route as AuthenticatedDashboardDotcontentRouteImport } from './../../srp/src/routes/_authenticated/dashboard.content'
+import { Route as AuthenticatedDashboardDotlistingsRouteImport } from './../../srp/src/routes/_authenticated/dashboard.listings'
+import { Route as AuthenticatedDashboardDotreviewsRouteImport } from './../../srp/src/routes/_authenticated/dashboard.reviews'
 import { Route as AuthenticatedDevDotindexRouteImport } from './../../ops/src/routes/_authenticated/dev.index'
 import { Route as AuthenticatedDevDotboardRouteImport } from './../../ops/src/routes/_authenticated/dev.board'
 import { Route as AuthenticatedDevDotprioritiesRouteImport } from './../../ops/src/routes/_authenticated/dev.priorities'
 import { Route as AuthenticatedDevDotweeklyRouteImport } from './../../ops/src/routes/_authenticated/dev.weekly'
-import { Route as AuthenticatedEmpDotplgRulesRouteImport } from './../../conversion-agents/src/routes/_authenticated/emp.plg-rules'
+import { Route as AuthenticatedEmpDotplgRulesRouteImport } from './../../admin/src/routes/_authenticated/emp.plg-rules'
 import { Route as AuthenticatedEnterpriseDotindexRouteImport } from './../../xmp/src/routes/_authenticated/enterprise.index'
 import { Route as AuthenticatedEnterpriseDotorgSlugRouteImport } from './../../xmp/src/routes/_authenticated/enterprise.$orgSlug'
 import { Route as AuthenticatedSalesDotindexRouteImport } from './../../sales/src/routes/_authenticated/sales.index'
@@ -101,31 +103,31 @@ import { Route as AuthenticatedSalesDotpriceBookRouteImport } from './../../sale
 import { Route as AuthenticatedSalesDotpricingRouteImport } from './../../sales/src/routes/_authenticated/sales.pricing'
 import { Route as AuthenticatedSalesDotpromosRouteImport } from './../../sales/src/routes/_authenticated/sales.promos'
 import { Route as AuthenticatedSalesDotworklistRouteImport } from './../../sales/src/routes/_authenticated/sales.worklist'
-import { Route as AuthenticatedSearchDotindexRouteImport } from './../../search/src/routes/_authenticated/search.index'
-import { Route as AuthenticatedSearchDotadsRouteImport } from './../../search/src/routes/_authenticated/search.ads'
-import { Route as AuthenticatedSearchDotindexingRouteImport } from './../../search/src/routes/_authenticated/search.indexing'
-import { Route as AuthenticatedSearchDotsponsoredRouteImport } from './../../search/src/routes/_authenticated/search.sponsored'
-import { Route as AuthenticatedSearchDotvoceRouteImport } from './../../search/src/routes/_authenticated/search.voce'
-import { Route as AuthenticatedWebsiteDotindexRouteImport } from './../../xmp/src/routes/_authenticated/website.index'
-import { Route as AuthenticatedWebsiteDotadsRouteImport } from './../../xmp/src/routes/_authenticated/website.ads'
-import { Route as AuthenticatedWebsiteDotalertsRouteImport } from './../../xmp/src/routes/_authenticated/website.alerts'
-import { Route as AuthenticatedWebsiteDotcampaignsRouteImport } from './../../xmp/src/routes/_authenticated/website.campaigns'
-import { Route as AuthenticatedWebsiteDotcmsRouteImport } from './../../xmp/src/routes/_authenticated/website.cms'
-import { Route as AuthenticatedWebsiteDotconsentRouteImport } from './../../xmp/src/routes/_authenticated/website.consent'
-import { Route as AuthenticatedWebsiteDotdemoCenterRouteImport } from './../../xmp/src/routes/_authenticated/website.demo-center'
-import { Route as AuthenticatedWebsiteDotdevelopersRouteImport } from './../../xmp/src/routes/_authenticated/website.developers'
-import { Route as AuthenticatedWebsiteDotleadsRouteImport } from './../../xmp/src/routes/_authenticated/website.leads'
-import { Route as AuthenticatedWebsiteDottrustRouteImport } from './../../xmp/src/routes/_authenticated/website.trust'
-import { Route as C_DotslugDotgraphRouteImport } from './../../graph/src/routes/c_.$slug.graph'
-import { Route as O_DotslugDotgraphRouteImport } from './../../graph/src/routes/o_.$slug.graph'
-import { Route as P_DotslugDotgraphRouteImport } from './../../graph/src/routes/p_.$slug.graph'
-import { Route as TopicDotgcidDottopicRouteImport } from './../../srp/src/routes/topic.$gcid.$topic'
-import { Route as AuthenticatedCategoryDotcityDotprofessionalRouteImport } from './../../graph/src/routes/_authenticated/$category.$city.$professional'
+import { Route as AuthenticatedSearchDotindexRouteImport } from './../../admin/src/routes/_authenticated/search.index'
+import { Route as AuthenticatedSearchDotadsRouteImport } from './../../admin/src/routes/_authenticated/search.ads'
+import { Route as AuthenticatedSearchDotindexingRouteImport } from './../../admin/src/routes/_authenticated/search.indexing'
+import { Route as AuthenticatedSearchDotsponsoredRouteImport } from './../../admin/src/routes/_authenticated/search.sponsored'
+import { Route as AuthenticatedSearchDotvoceRouteImport } from './../../admin/src/routes/_authenticated/search.voce'
+import { Route as AuthenticatedWebsiteDotindexRouteImport } from './../../marketing/src/routes/_authenticated/website.index'
+import { Route as AuthenticatedWebsiteDotadsRouteImport } from './../../marketing/src/routes/_authenticated/website.ads'
+import { Route as AuthenticatedWebsiteDotalertsRouteImport } from './../../marketing/src/routes/_authenticated/website.alerts'
+import { Route as AuthenticatedWebsiteDotcampaignsRouteImport } from './../../marketing/src/routes/_authenticated/website.campaigns'
+import { Route as AuthenticatedWebsiteDotcmsRouteImport } from './../../marketing/src/routes/_authenticated/website.cms'
+import { Route as AuthenticatedWebsiteDotconsentRouteImport } from './../../marketing/src/routes/_authenticated/website.consent'
+import { Route as AuthenticatedWebsiteDotdemoCenterRouteImport } from './../../marketing/src/routes/_authenticated/website.demo-center'
+import { Route as AuthenticatedWebsiteDotdevelopersRouteImport } from './../../marketing/src/routes/_authenticated/website.developers'
+import { Route as AuthenticatedWebsiteDotleadsRouteImport } from './../../marketing/src/routes/_authenticated/website.leads'
+import { Route as AuthenticatedWebsiteDottrustRouteImport } from './../../marketing/src/routes/_authenticated/website.trust'
+import { Route as C_DotslugDotgraphRouteImport } from './../../search/src/routes/c_.$slug.graph'
+import { Route as O_DotslugDotgraphRouteImport } from './../../search/src/routes/o_.$slug.graph'
+import { Route as P_DotslugDotgraphRouteImport } from './../../search/src/routes/p_.$slug.graph'
+import { Route as TopicDotgcidDottopicRouteImport } from './../../search/src/routes/topic.$gcid.$topic'
+import { Route as AuthenticatedCategoryDotcityDotprofessionalRouteImport } from './../../search/src/routes/_authenticated/$category.$city.$professional'
 import { Route as AuthenticatedBuildDotspacesDotindexRouteImport } from './../../ops/src/routes/_authenticated/build.spaces.index'
 import { Route as AuthenticatedBuildDotspacesDotspaceKeyRouteImport } from './../../ops/src/routes/_authenticated/build.spaces.$spaceKey'
 import { Route as AuthenticatedDevDotteamsDotteamIdRouteImport } from './../../ops/src/routes/_authenticated/dev.teams.$teamId'
 import { Route as AuthenticatedEnterpriseDotorgSlugDotindexRouteImport } from './../../xmp/src/routes/_authenticated/enterprise.$orgSlug.index'
-import { Route as AuthenticatedEnterpriseDotorgSlugDotcampaignsRouteImport } from './../../xmp/src/routes/_authenticated/enterprise.$orgSlug.campaigns'
+import { Route as AuthenticatedEnterpriseDotorgSlugDotcampaignsRouteImport } from './../../campaigns/src/routes/_authenticated/enterprise.$orgSlug.campaigns'
 import { Route as AuthenticatedEnterpriseDotorgSlugDotcontentRouteImport } from './../../xmp/src/routes/_authenticated/enterprise.$orgSlug.content'
 import { Route as AuthenticatedEnterpriseDotorgSlugDothierarchyRouteImport } from './../../xmp/src/routes/_authenticated/enterprise.$orgSlug.hierarchy'
 import { Route as AuthenticatedEnterpriseDotorgSlugDotleaderboardsRouteImport } from './../../xmp/src/routes/_authenticated/enterprise.$orgSlug.leaderboards'
@@ -154,20 +156,20 @@ import { Route as AuthenticatedSalesDotteamsDotgroupKeyRouteImport } from './../
 import { Route as AuthenticatedSalesDotterritoriesDotindexRouteImport } from './../../sales/src/routes/_authenticated/sales.territories.index'
 import { Route as AuthenticatedSalesDotterritoriesDotgroupKeyRouteImport } from './../../sales/src/routes/_authenticated/sales.territories.$groupKey'
 import { Route as AuthenticatedSalesDotterritoryDotterritoryIdRouteImport } from './../../sales/src/routes/_authenticated/sales.territory.$territoryId'
-import { Route as AuthenticatedSeatDotkindDotidRouteImport } from './../../xmp/src/routes/_authenticated/seat.$kind.$id'
+import { Route as AuthenticatedSeatDotkindDotidRouteImport } from './../../srp/src/routes/_authenticated/seat.$kind.$id'
 import { Route as AuthenticatedBuildDotspacesDotspaceKeyDotindexRouteImport } from './../../ops/src/routes/_authenticated/build.spaces.$spaceKey.index'
 import { Route as AuthenticatedBuildDotspacesDotspaceKeyDotslugRouteImport } from './../../ops/src/routes/_authenticated/build.spaces.$spaceKey.$slug'
 import { Route as AuthenticatedSalesDotteams_DotgroupKeyDotteamRouteImport } from './../../sales/src/routes/_authenticated/sales.teams_.$groupKey.team'
 import { Route as AuthenticatedSales_DotcontractsDotcontractId_DotprintRouteImport } from './../../sales/src/routes/_authenticated/sales_.contracts.$contractId_.print'
-import { Route as AuthenticatedSeatDotkindDotidDotindexRouteImport } from './../../xmp/src/routes/_authenticated/seat.$kind.$id.index'
-import { Route as AuthenticatedSeatDotkindDotidDotgraphRouteImport } from './../../xmp/src/routes/_authenticated/seat.$kind.$id.graph'
-import { Route as AuthenticatedSeatDotkindDotidDotinterviewRouteImport } from './../../xmp/src/routes/_authenticated/seat.$kind.$id.interview'
-import { Route as AuthenticatedSeatDotkindDotidDotlistingsRouteImport } from './../../xmp/src/routes/_authenticated/seat.$kind.$id.listings'
-import { Route as AuthenticatedSeatDotkindDotidDotmultiPostRouteImport } from './../../xmp/src/routes/_authenticated/seat.$kind.$id.multi-post'
-import { Route as AuthenticatedSeatDotkindDotidDotnoraRouteImport } from './../../xmp/src/routes/_authenticated/seat.$kind.$id.nora'
-import { Route as AuthenticatedSeatDotkindDotidDotreportingRouteImport } from './../../xmp/src/routes/_authenticated/seat.$kind.$id.reporting'
-import { Route as AuthenticatedSeatDotkindDotidDotreviewsRouteImport } from './../../xmp/src/routes/_authenticated/seat.$kind.$id.reviews'
-import { Route as AuthenticatedSeatDotkindDotidDotteamRouteImport } from './../../xmp/src/routes/_authenticated/seat.$kind.$id.team'
+import { Route as AuthenticatedSeatDotkindDotidDotindexRouteImport } from './../../srp/src/routes/_authenticated/seat.$kind.$id.index'
+import { Route as AuthenticatedSeatDotkindDotidDotgraphRouteImport } from './../../srp/src/routes/_authenticated/seat.$kind.$id.graph'
+import { Route as AuthenticatedSeatDotkindDotidDotinterviewRouteImport } from './../../srp/src/routes/_authenticated/seat.$kind.$id.interview'
+import { Route as AuthenticatedSeatDotkindDotidDotlistingsRouteImport } from './../../srp/src/routes/_authenticated/seat.$kind.$id.listings'
+import { Route as AuthenticatedSeatDotkindDotidDotmultiPostRouteImport } from './../../srp/src/routes/_authenticated/seat.$kind.$id.multi-post'
+import { Route as AuthenticatedSeatDotkindDotidDotnoraRouteImport } from './../../srp/src/routes/_authenticated/seat.$kind.$id.nora'
+import { Route as AuthenticatedSeatDotkindDotidDotreportingRouteImport } from './../../srp/src/routes/_authenticated/seat.$kind.$id.reporting'
+import { Route as AuthenticatedSeatDotkindDotidDotreviewsRouteImport } from './../../srp/src/routes/_authenticated/seat.$kind.$id.reviews'
+import { Route as AuthenticatedSeatDotkindDotidDotteamRouteImport } from './../../srp/src/routes/_authenticated/seat.$kind.$id.team'
 import { Route as AuthenticatedEnterpriseDotorgSlugDotviewDotkindDotidRouteImport } from './../../xmp/src/routes/_authenticated/enterprise.$orgSlug.view.$kind.$id'
 
 const IndexRoute = IndexRouteImport.update({
@@ -423,6 +425,11 @@ const AuthenticatedReportsRoute = AuthenticatedReportsRouteImport.update({
   path: '/reports',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedRunHealthRoute = AuthenticatedRunHealthRouteImport.update({
+  id: '/run-health',
+  path: '/run-health',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedSalesRoute = AuthenticatedSalesRouteImport.update({
   id: '/sales',
   path: '/sales',
@@ -431,6 +438,11 @@ const AuthenticatedSalesRoute = AuthenticatedSalesRouteImport.update({
 const AuthenticatedSearchRoute = AuthenticatedSearchRouteImport.update({
   id: '/search',
   path: '/search',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedSkillsRoute = AuthenticatedSkillsRouteImport.update({
+  id: '/skills',
+  path: '/skills',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedSupportRoute = AuthenticatedSupportRouteImport.update({
@@ -1117,8 +1129,10 @@ export interface FileRoutesByFullPath {
   '/products': typeof AuthenticatedProductsRoute
   '/professionals': typeof AuthenticatedProfessionalsRoute
   '/reports': typeof AuthenticatedReportsRoute
+  '/run-health': typeof AuthenticatedRunHealthRoute
   '/sales': typeof AuthenticatedSalesRouteWithChildren
   '/search': typeof AuthenticatedSearchRouteWithChildren
+  '/skills': typeof AuthenticatedSkillsRoute
   '/support': typeof AuthenticatedSupportRoute
   '/website': typeof AuthenticatedWebsiteRouteWithChildren
   '/c/$slug': typeof CDotslugRoute
@@ -1273,6 +1287,8 @@ export interface FileRoutesByTo {
   '/products': typeof AuthenticatedProductsRoute
   '/professionals': typeof AuthenticatedProfessionalsRoute
   '/reports': typeof AuthenticatedReportsRoute
+  '/run-health': typeof AuthenticatedRunHealthRoute
+  '/skills': typeof AuthenticatedSkillsRoute
   '/support': typeof AuthenticatedSupportRoute
   '/c/$slug': typeof CDotslugRoute
   '/o/$slug': typeof ODotslugRoute
@@ -1430,8 +1446,10 @@ export interface FileRoutesById {
   '/_authenticated/products': typeof AuthenticatedProductsRoute
   '/_authenticated/professionals': typeof AuthenticatedProfessionalsRoute
   '/_authenticated/reports': typeof AuthenticatedReportsRoute
+  '/_authenticated/run-health': typeof AuthenticatedRunHealthRoute
   '/_authenticated/sales': typeof AuthenticatedSalesRouteWithChildren
   '/_authenticated/search': typeof AuthenticatedSearchRouteWithChildren
+  '/_authenticated/skills': typeof AuthenticatedSkillsRoute
   '/_authenticated/support': typeof AuthenticatedSupportRoute
   '/_authenticated/website': typeof AuthenticatedWebsiteRouteWithChildren
   '/c/$slug': typeof CDotslugRoute
@@ -1593,8 +1611,10 @@ export interface FileRouteTypes {
     | '/products'
     | '/professionals'
     | '/reports'
+    | '/run-health'
     | '/sales'
     | '/search'
+    | '/skills'
     | '/support'
     | '/website'
     | '/c/$slug'
@@ -1749,6 +1769,8 @@ export interface FileRouteTypes {
     | '/products'
     | '/professionals'
     | '/reports'
+    | '/run-health'
+    | '/skills'
     | '/support'
     | '/c/$slug'
     | '/o/$slug'
@@ -1905,8 +1927,10 @@ export interface FileRouteTypes {
     | '/_authenticated/products'
     | '/_authenticated/professionals'
     | '/_authenticated/reports'
+    | '/_authenticated/run-health'
     | '/_authenticated/sales'
     | '/_authenticated/search'
+    | '/_authenticated/skills'
     | '/_authenticated/support'
     | '/_authenticated/website'
     | '/c/$slug'
@@ -2418,6 +2442,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedReportsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/run-health': {
+      id: '/_authenticated/run-health'
+      path: '/run-health'
+      fullPath: '/run-health'
+      preLoaderRoute: typeof AuthenticatedRunHealthRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/sales': {
       id: '/_authenticated/sales'
       path: '/sales'
@@ -2430,6 +2461,13 @@ declare module '@tanstack/react-router' {
       path: '/search'
       fullPath: '/search'
       preLoaderRoute: typeof AuthenticatedSearchRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/skills': {
+      id: '/_authenticated/skills'
+      path: '/skills'
+      fullPath: '/skills'
+      preLoaderRoute: typeof AuthenticatedSkillsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/support': {
@@ -3544,8 +3582,10 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedProductsRoute: typeof AuthenticatedProductsRoute
   AuthenticatedProfessionalsRoute: typeof AuthenticatedProfessionalsRoute
   AuthenticatedReportsRoute: typeof AuthenticatedReportsRoute
+  AuthenticatedRunHealthRoute: typeof AuthenticatedRunHealthRoute
   AuthenticatedSalesRoute: typeof AuthenticatedSalesRouteWithChildren
   AuthenticatedSearchRoute: typeof AuthenticatedSearchRouteWithChildren
+  AuthenticatedSkillsRoute: typeof AuthenticatedSkillsRoute
   AuthenticatedSupportRoute: typeof AuthenticatedSupportRoute
   AuthenticatedWebsiteRoute: typeof AuthenticatedWebsiteRouteWithChildren
   AuthenticatedAdminDotintegrationsRoute: typeof AuthenticatedAdminDotintegrationsRoute
@@ -3576,8 +3616,10 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedProductsRoute: AuthenticatedProductsRoute,
   AuthenticatedProfessionalsRoute: AuthenticatedProfessionalsRoute,
   AuthenticatedReportsRoute: AuthenticatedReportsRoute,
+  AuthenticatedRunHealthRoute: AuthenticatedRunHealthRoute,
   AuthenticatedSalesRoute: AuthenticatedSalesRouteWithChildren,
   AuthenticatedSearchRoute: AuthenticatedSearchRouteWithChildren,
+  AuthenticatedSkillsRoute: AuthenticatedSkillsRoute,
   AuthenticatedSupportRoute: AuthenticatedSupportRoute,
   AuthenticatedWebsiteRoute: AuthenticatedWebsiteRouteWithChildren,
   AuthenticatedAdminDotintegrationsRoute:

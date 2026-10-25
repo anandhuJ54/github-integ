@@ -1,7 +1,7 @@
-import { ogImageUrl } from "@v3/ui/lib/marketing/seo";
+import { ogImageUrl } from "@v3/marketing/lib/marketing/seo";
 import { ArrowRight, Building2, Home, Scale, ShieldCheck, TrendingUp } from "lucide-react";
 import { SearchNavbar } from "@v3/app/components/marketing/SearchNavbar";
-import { Button } from "@v3/ui/components/marketing/ui/button";
+import { Button } from "@v3/marketing/components/marketing/ui/button";
 import officeCat from "@v3/app/assets/office-cat.png";
 
 const VERTICALS = [

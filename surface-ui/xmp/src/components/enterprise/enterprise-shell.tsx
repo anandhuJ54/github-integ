@@ -8,13 +8,11 @@ import {
   Database,
   FileText,
   Gauge,
-  LayoutGrid,
   Megaphone,
   Network,
   Search,
   Send,
   Settings,
-  Sparkles,
   ShieldAlert,
   Star,
   Trophy,
@@ -219,85 +217,8 @@ export function EnterpriseShell({
   );
 }
 
-const LOCATION_NAV: NavGroup[] = [
-  { label: null, items: [{ label: "Overview", suffix: "", icon: LayoutGrid }] },
-  {
-    label: "This location",
-    items: [
-      { label: "Team", suffix: "/team", icon: Users },
-      { label: "Reviews", suffix: "/reviews", icon: Star },
-      { label: "Listings", suffix: "/listings", icon: Network },
-      { label: "Multi-Post", suffix: "/multi-post", icon: Send },
-    ],
-  },
-  {
-    label: null,
-    items: [
-      { label: "Reporting", suffix: "/reporting", icon: BarChart3 },
-      { label: "NORA interview", suffix: "/interview", icon: Sparkles },
-    ],
-  },
-];
-const PRO_NAV: NavGroup[] = [
-  { label: null, items: [{ label: "My Profile", suffix: "", icon: User }] },
-  {
-    label: "My presence",
-    items: [
-      { label: "Expertise Graph", suffix: "/graph", icon: Network },
-      { label: "Reviews", suffix: "/reviews", icon: Star },
-    ],
-  },
-  {
-    label: null,
-    items: [
-      { label: "Nora", suffix: "/nora", icon: Gauge },
-      { label: "NORA interview", suffix: "/interview", icon: Sparkles },
-    ],
-  },
-];
-
-export const LOCATION_NAV_LABELS = LOCATION_NAV.flatMap((g) => g.items.map((i) => i.label));
-export const PROFESSIONAL_NAV_LABELS = PRO_NAV.flatMap((g) => g.items.map((i) => i.label));
-
-
-/**
- * Location / Professional seat. Scoped to a single office or professional —
- * the enterprise nav is replaced by that entity's own (scaffold) nav.
- */
-export function ScopedShell({
-  kind,
-  name,
-  subtitle,
-  photoUrl,
-  base,
-  children,
-}: {
-  kind: "office" | "professional";
-  name: string;
-  subtitle?: string | null;
-  photoUrl?: string | null;
-  base: string;
-  children: ReactNode;
-}) {
-  return (
-    <ShellFrame
-      eyebrow={kind === "office" ? "Location workspace" : "Professional workspace"}
-      title={name}
-      subtitle={subtitle ?? null}
-      avatar={
-        kind === "office" ? (
-          <BrandAvatar name={name} logoUrl={photoUrl ?? null} size="md" />
-        ) : (
-          <PersonAvatar name={name} photoUrl={photoUrl ?? null} size="md" />
-        )
-      }
-      nav={kind === "office" ? LOCATION_NAV : PRO_NAV}
-      base={base}
-    >
-      {children}
-    </ShellFrame>
-  );
-}
+/* The Location / Professional seat shell (ScopedShell, LOCATION_NAV, PRO_NAV) moved to srp with the
+ * seat pages (surface-ui/srp/src/components/seat/scoped-shell.tsx), surface audit 2026-10-25. */
 
 /* ─────────── View As tree: Brand → State → Location → Professional ─────────── */
 

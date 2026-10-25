@@ -1,4 +1,4 @@
-import { ogImageUrl } from "@v3/ui/lib/marketing/seo";
+import { ogImageUrl } from "@v3/marketing/lib/marketing/seo";
 import {
   ReviewsHeroSection,
   ReviewsStrategicBanner,
@@ -13,7 +13,7 @@ import { SRPOverviewSection } from "@v3/marketing/components/marketing/sections/
 import { PageBreadcrumb } from "@v3/marketing/components/marketing/PageBreadcrumb";
 import { Star, Share2, TrendingUp } from "lucide-react";
 import reviewsEcosystemImg from "@v3/marketing/assets/reviews-ecosystem-hero.png";
-import { getSignUpUrl } from "@v3/ui/lib/marketing/envUrls";
+import { getSignUpUrl } from "@v3/marketing/lib/marketing/envUrls";
 
 const pageTitle = "Review Management - Improve Reputation & AI Search | Experience.com";
 const pageDescription =

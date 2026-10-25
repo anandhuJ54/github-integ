@@ -31,10 +31,10 @@ export async function withCoordinates<T extends SearchDoc>(docs: T[]): Promise<M
   ).slice(0, 200);
   if (cities.length === 0) return docs as MappedDoc<T>[];
 
-  // POST /srp/geo/city-centroids (a read): every state's city of those names. A failed read
+  // POST /search/geo/city-centroids (a read): every state's city of those names. A failed read
   // means no centroids, as before.
   const data = await api
-    .post<CityRow[]>("/srp/geo/city-centroids", { cities })
+    .post<CityRow[]>("/search/geo/city-centroids", { cities })
     .catch(() => [] as CityRow[]);
 
   const centroids = new Map<string, { lat: number; lng: number }>();

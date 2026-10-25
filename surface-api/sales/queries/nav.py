@@ -1,9 +1,8 @@
 """sales navigation (S4) — port of the supabase-js calls in surface-ui/sales/src/lib/sales-nav.ts:
 the overview (exp_sales_reps, exp_sales_quotas, exp_contracts, gbp_categories, professionals,
 organizations, exp_activity_events, exp_sales_assignments), the universal browse and the
-drill-downs (search_rank_scores, organizations, professionals, exp_claim_events,
-exp_activity_events, exp_sales_reps, exp_sales_quotas, exp_sales_assignments, exp_contracts,
-gbp_categories, exp_account_tier).
+drill-downs (search_rank_scores, exp_activity_events, exp_sales_reps, exp_sales_quotas,
+exp_sales_assignments, exp_contracts, gbp_categories, exp_account_tier).
 
 Runs as the signed-in user, so RLS decides exactly as it did for the browser. Reads are the
 browser's statements, PostgREST-shaped and raw: the browser keeps the attribution, sold-by and
@@ -18,6 +17,9 @@ PostgREST's 416 (supabase-js threw it). `ilike` patterns turn `*` into `%`, as P
 The 1000-row cap: the overview's activity events are `.limit(5000)` with no ORDER BY, cut to an
 arbitrary 1000 by PostgREST, and the same here (138 rows in all at port time). The brand
 rollup's claim events are `.limit(10000)` with no ORDER BY (950 at port time).
+
+loadProfessional / loadOrg moved to srp (srp/queries/directory.py) and loadBrandRollup to xmp
+(xmp/queries/directory.py), surface audit 2026-10-25.
 """
 from __future__ import annotations
 
@@ -25,7 +27,7 @@ import datetime as dt
 from typing import Any
 
 import psycopg
-from sqlalchemy import func, select
+from sqlalchemy import select
 
 from _base.core.sql import fetch_all, fetch_many, typed
 from _base.schema import tables as T
@@ -41,7 +43,6 @@ orgs = T.t_organizations
 activity = T.t_exp_activity_events
 assignments = T.t_exp_sales_assignments
 scores = T.t_search_rank_scores
-claims = T.t_exp_claim_events
 tiers = T.t_exp_account_tier
 
 QUOTA_COLS = "id,rep_id,group_key,period_type,period_start,target,actual,is_demo"
@@ -161,51 +162,6 @@ def score_stmt(entity_id: str) -> Any:
 
 def load_score(conn: psycopg.Connection, entity_id: str) -> dict[str, Any] | None:
     return maybe_single(fetch_all(conn, score_stmt(entity_id)))
-
-
-def load_org(conn: psycopg.Connection, org_id: str) -> dict[str, Any] | None:
-    """loadOrg: select("*").eq("id").maybeSingle() (threw; 406 for two)."""
-    return maybe_single(fetch_all(conn, select(orgs).where(orgs.c.id == org_id).limit(2)))
-
-
-def load_professional(conn: psycopg.Connection, pro_id: str) -> dict[str, Any] | None:
-    """loadProfessional: select("*").eq("id").maybeSingle() (threw; 406 for two)."""
-    return maybe_single(fetch_all(conn, select(pros).where(pros.c.id == pro_id).limit(2)))
-
-
-def brand_locations_stmt(org_id: str) -> Any:
-    return (select(*cols(orgs, "id,name,entity_type,address_city,address_state,claimed,is_demo,"
-                               "search_rank_score"))
-            .where(orgs.c.parent_org_id == org_id).order_by(orgs.c.name.asc()).limit(500))
-
-
-def brand_rollup_stmts(org_id: str) -> dict[str, Any]:
-    """loadBrandRollup's ignored-error reads. viaOffices: professionals embedding their primary
-    organization `!inner` filtered on its parent_org_id — the count of professionals whose
-    primary org's parent is the brand."""
-    via = pros.join(orgs, pros.c.primary_org_id == orgs.c.id)
-    return {
-        "childCount": count_stmt(orgs, orgs.c.parent_org_id == org_id),
-        "directCount": count_stmt(pros, pros.c.primary_org_id == org_id),
-        "viaOfficesCount": (select(func.count().label("n")).select_from(via)
-                            .where(orgs.c.parent_org_id == org_id)),
-        # .limit(10000), no ORDER BY: cut to 1000 by the cap, as PostgREST did
-        "claims": (select(*cols(claims, "entity_id,entity_type,event_type"))
-                   .where(claims.c.logo_org_id == org_id,
-                          claims.c.event_type.in_(["claimed", "engaged", "upgraded"]))
-                   .limit(10000)),
-    }
-
-
-def load_brand_rollup(conn: psycopg.Connection, org_id: str) -> dict[str, Any]:
-    """`{ locations, childCount, directCount, viaOfficesCount, claims }`: the locations threw;
-    the counts (null when failed) and the claim events were tolerant."""
-    out: dict[str, Any] = {"locations": fetch_all(conn, brand_locations_stmt(org_id))}
-    got = fetch_many(conn, brand_rollup_stmts(org_id), tolerant=True)
-    for k in ("childCount", "directCount", "viaOfficesCount"):
-        out[k] = count_of(got[k])
-    out["claims"] = got["claims"]
-    return out
 
 
 def events_for_stmt(subject_id: str | None, account_id: str | None, logo: str | None,

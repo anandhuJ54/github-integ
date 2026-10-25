@@ -1,6 +1,6 @@
 """Platform counters for the console surfaces — port of the platform part of
 surface-ui/_base/src/lib/console-surfaces.ts (loadReportMetrics, loadNoraOs, loadOrgStats), used by
-ops /reports, admin /organizations, the search pages and nora-os.
+ops /reports, admin /organizations, the search pages and the etl /discovery pipeline-health tab.
 
 Runs as the signed-in user, so RLS decides what is counted, as it did for the browser. Each
 `countOf(table, filter)` was `select("*", { count: "exact", head: true })`: an exact

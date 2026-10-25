@@ -65,6 +65,11 @@ class Settings:
     # DB-touching requests on a worker can't exceed its leasable connections.
     http_threadpool: int = 0  # 0 → derive from db_pool_max at startup
 
+    # --- Public site -----------------------------------------------------
+    # The public site's address (e.g. https://experience.com). robots.txt and the sitemap list
+    # URLs on this origin; unset, they use the address the request came in on.
+    site_origin: str = ""
+
     # --- CORS ------------------------------------------------------------
     cors_origins: list[str] = field(default_factory=lambda: ["*"])
     # The wildcard + credentials combination is rejected by browsers, so credentials are
@@ -109,4 +114,5 @@ def get_settings() -> Settings:
         db_pool_max_idle=_float("DB_POOL_MAX_IDLE", 300.0),
         http_threadpool=_int("HTTP_THREADPOOL", 0),
         cors_origins=_csv("CORS_ALLOW_ORIGINS", ["*"]),
+        site_origin=(os.environ.get("SITE_ORIGIN") or "").strip().rstrip("/"),
     ).validate()

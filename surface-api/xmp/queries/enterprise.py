@@ -1,11 +1,12 @@
 """xmp enterprise pages: lib/enterprise-xmp.ts (brand, hierarchy explorer, leaderboards, view-as,
-moderation queue) and routes/_authenticated/enterprise.$orgSlug.{campaigns,users}.tsx — the rows
-each supabase-js query returned, under the names the page used.
+moderation queue) and routes/_authenticated/enterprise.$orgSlug.users.tsx — the rows each
+supabase-js query returned, under the names the page used. The review campaigns page's reads and
+writes moved to campaigns (campaigns/queries/review_campaigns.py), surface audit 2026-10-25.
 
 The page logic stays in TypeScript. Reads run as the signed-in user (RLS unchanged) and keep the
 1000-row PostgREST cap, including the users page's `.limit(2000)` and the hierarchy reads (1i).
 The writes are the page's own statements, ported as they are: same table, columns and filter, as
-the signed-in user, so RLS decides as before (review_campaigns and invitations have no policy:
+the signed-in user, so RLS decides as before (invitations has no policy:
 inserts fail; professionals has no update policy: 0 rows; audit_log inserts are allowed).
 """
 from __future__ import annotations
@@ -21,8 +22,8 @@ from _base.schema import tables as T
 from xmp.queries.common import call_rpc, cols, execute, single, soft
 
 org_t, pro_t, nodes_t = T.t_organizations, T.t_professionals, T.t_graph_nodes
-camp_t, rules_t, roles_t, inv_t, acct_t, audit_t = T.t_review_campaigns, \
-    T.t_content_compliance_rules, T.t_user_roles, T.t_invitations, T.t_user_accounts, T.t_audit_log
+roles_t, inv_t, acct_t, audit_t = T.t_user_roles, T.t_invitations, T.t_user_accounts, \
+    T.t_audit_log
 
 BRAND_COLS = "id,name,slug,logo_url,entity_type,address_city,address_state,search_rank_score"
 OFFICE_PRO_COLS = ("id,display_name,first_name,last_name,slug,photo_url,bio,address_city,"
@@ -94,13 +95,9 @@ def moderation_reviews(conn: psycopg.Connection, brand_id: str, limit: int) -> l
     return []
 
 
-# --- enterprise.$orgSlug.campaigns.tsx / users.tsx: the org and its hierarchy -------------------
+# --- enterprise.$orgSlug.users.tsx: the org and its hierarchy -------------------
 
-CAMPAIGN_ORG_COLS = "id,name,slug,entity_type,gcid,hierarchy_path"
 USERS_ORG_COLS = "id,name,slug,entity_type,parent_org_id,hierarchy_path,hierarchy_depth"
-CAMPAIGN_COLS = ("id,entity_type,entity_id,name,campaign_type,status,subject,message_body,"
-                 "target_platform,sent_count,opened_count,clicked_count,completed_count,"
-                 "compliance_approved,includes_required_disclosures,created_at")
 USERS_PRO_COLS = ("id,display_name,first_name,last_name,photo_url,email,user_id,primary_org_id,"
                   "search_rank_score,claimed,is_active")
 
@@ -118,26 +115,6 @@ def _org_tree(conn: psycopg.Connection, slug: str, names: str):
                       tolerant=True)["d"]
     ids = [root["id"], *[o["id"] for o in desc if o["id"] != root["id"]]]
     return root, desc, ids
-
-
-def campaigns_page(conn: psycopg.Connection, slug: str) -> dict[str, Any]:
-    """CampaignsPage load(): `root` null when the slug is unknown. Errors were ignored."""
-    root, desc, ids = _org_tree(conn, slug, CAMPAIGN_ORG_COLS)
-    if root is None:
-        return {"root": None}
-    c = camp_t.c
-    stmts: dict[str, Any] = {
-        "campaigns": select(*cols(camp_t, CAMPAIGN_COLS))
-        .where(c.entity_type == "organization", c.entity_id.in_(ids))
-        .order_by(c.created_at.desc()),
-    }
-    if root.get("gcid"):
-        stmts["rules"] = select(*cols(rules_t, "id,rule_name,rule_type,rule_value,applies_to,"
-                                               "severity")) \
-            .where(rules_t.c.gcid == root["gcid"], rules_t.c.is_active.is_(True))
-    rows = fetch_many(conn, stmts, tolerant=True)
-    return {"root": root, "descendants": desc, "campaigns": rows["campaigns"],
-            "rules": rows.get("rules", [])}
 
 
 def users_page(conn: psycopg.Connection, slug: str, user_id: str) -> dict[str, Any]:
@@ -174,17 +151,6 @@ def users_page(conn: psycopg.Connection, slug: str, user_id: str) -> dict[str, A
 
 
 # --- writes (as they are) ----------------------------------------------------------------------
-
-def update_campaign_status(conn: psycopg.Connection, campaign_id: str, status: str) -> None:
-    """updateStatus(): `review_campaigns.update({status}).eq("id", id)` (no policy: 0 rows)."""
-    execute(conn, camp_t.update().where(camp_t.c.id == campaign_id).values(status=status))
-
-
-def insert_campaign(conn: psycopg.Connection, values: dict[str, Any]) -> None:
-    """duplicate() / launch(): `review_campaigns.insert({...})` with the keys the page sent
-    (no policy: the insert fails with an RLS error, as before)."""
-    execute(conn, camp_t.insert().inline().values(**values))
-
 
 def insert_invitations(conn: psycopg.Connection, records: list[dict[str, Any]]) -> None:
     """submitSingleInvite() / submitBulkInvite(): `invitations.insert(record | records)`."""

@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import type { ParityCase } from "./types";
 import * as sre from "@v3/sales/lib/sre-console";
-import * as alerts from "@v3/ui/lib/sales-alerts";
+import * as alerts from "@v3/sales/lib/sales-alerts";
 
 // sales S3: every read in surface-ui/sales/src/lib/sre-console.ts and
 // surface-ui/_base/src/lib/sales-alerts.ts. The legacy lib (direct supabase-js, from

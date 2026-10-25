@@ -71,7 +71,7 @@ function withQuery(path: string, params?: Query): string {
 
 /**
  * Typed client for a Surface's own FastAPI endpoints (the browser-to-API migration).
- * `path` is the API path without the /api prefix, e.g. `api.get<EtlMonitor>("/nora-os/etl-monitor")`.
+ * `path` is the API path without the /api prefix, e.g. `api.get<EtlMonitor>("/etl/run-monitor")`.
  */
 export const api = {
   get: <Out>(path: string, opts: { params?: Query; signal?: AbortSignal } = {}) =>

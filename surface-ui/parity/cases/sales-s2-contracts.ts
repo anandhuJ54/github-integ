@@ -9,7 +9,9 @@ import {
   loadSkus,
   loadUsage,
 } from "@v3/sales/lib/contracts";
-import { getAccountCsm, listActiveCsms, listCsmCandidates } from "@v3/sales/lib/csm";
+// moved (surface audit 2026-10-25): csm.ts went to admin with the Accounts pages (API still
+// /sales/csm/*); the legacy file below is still under sales at PARITY_LEGACY_REF
+import { getAccountCsm, listActiveCsms, listCsmCandidates } from "@v3/admin/lib/csm";
 
 // sales S2 contracts: every read in surface-ui/sales/src/lib/contracts.ts and lib/csm.ts (the
 // legacy modules from PARITY_LEGACY_REF, direct supabase-js as the signed-in user) against the

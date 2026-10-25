@@ -10,12 +10,69 @@ from fastapi.testclient import TestClient
 
 from _base.core import db as core_db
 from _base.core.auth import current_user
-from xmp.queries.website_test import FakeConn
-from xmp.routers.seat_data import router
+from xmp.routers.enterprise_data import router
 
 CLAIMS = {"sub": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa", "role": "authenticated"}
 ORG = "11111111-1111-4111-8111-111111111111"
 CRM = "22222222-2222-4222-8222-222222222222"
+
+
+# the website tests' fake connection (copied when those moved to marketing, surface audit
+# 2026-10-25)
+
+class Cur:
+    def __init__(self, rows, description=True):
+        self.rows = rows or []
+        self.description = description
+
+    def fetchall(self):
+        return self.rows
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *a):
+        return False
+
+
+class FakeConn:
+    def __init__(self, log, answer, write):
+        self.log, self.answer, self.write = log, answer, write
+
+    @contextmanager
+    def pipeline(self):
+        yield
+
+    @contextmanager
+    def transaction(self):
+        yield
+
+    def execute(self, sql, params=None):
+        self.log.append((self.write, sql, params or {}))
+        rows = [] if "savepoint" in sql else self.answer(sql, params or {})
+        if isinstance(rows, Exception):
+            raise rows
+        return Cur(rows)
+
+    def cursor(self):
+        conn = self
+
+        class C(Cur):
+            def __init__(self):
+                super().__init__([], None)
+
+            def execute(self, sql, params=None):
+                self.rows = conn.execute(sql, params).rows
+                # a write without RETURNING has no result set (psycopg: description None)
+                self.description = None if sql.startswith(("UPDATE", "INSERT", "DELETE")) \
+                    and "RETURNING" not in sql else True
+
+            def fetchall(self):
+                if self.description is None:
+                    raise AssertionError("fetchall on a statement with no result set")
+                return self.rows
+
+        return C()
 
 
 @pytest.fixture

@@ -14,7 +14,7 @@ import {
   SelectValue,
 } from "@v3/ui/components/ui/select";
 import { Avatar, AvatarFallback, AvatarImage } from "@v3/ui/components/ui/avatar";
-import { TerritoryChip } from "@v3/ui/components/sales/territory-chip";
+import { TerritoryChip } from "@v3/admin/components/territory-chip";
 import { cn } from "@v3/ui/lib/utils";
 
 function DepthBadges({

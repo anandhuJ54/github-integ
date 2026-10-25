@@ -1,7 +1,6 @@
-"""Search presentation, the site-indexing functions and the search-assistant route."""
+"""Search presentation, the site-indexing read and the search-assistant route (setSiteIndexing
+moved to admin, surface audit 2026-10-25)."""
 from __future__ import annotations
-
-import json
 
 import psycopg
 
@@ -98,27 +97,6 @@ def test_get_site_indexing_defaults_off(fake_db, anon_client):
     site_indexing.reset_site_indexing_cache()
     fake_db(lambda sql, p: [{"enabled": True}])
     assert anon_client.post("/search/fn/getSiteIndexing", json={}).json() == {"enabled": True}
-
-
-def test_set_site_indexing_requires_super_admin(fake_db, client, anon_client):
-    assert anon_client.post("/search/fn/setSiteIndexing", json={"data": {"enabled": False}}).status_code in (401, 403)
-    db = fake_db(lambda sql, p: [{"ok": False}] if "exp_ctrl_has_role" in sql else [])
-    res = client.post("/search/fn/setSiteIndexing", json={"data": {"enabled": False}})
-    assert res.status_code == 403 and res.json()["detail"] == "Super admin required"
-    assert not db.find("exp_index_config")
-    assert client.post("/search/fn/setSiteIndexing", json={"data": {"enabled": "no"}}).status_code == 400
-
-
-def test_set_site_indexing_writes_key_and_audits(fake_db, client):
-    db = fake_db(lambda sql, p: [{"ok": True}] if "exp_ctrl_has_role" in sql else [])
-    res = client.post("/search/fn/setSiteIndexing", json={"data": {"enabled": False}})
-    assert res.json() == {"enabled": False}
-    role, write, sql, params = db.find("exp_index_config")[0]
-    assert role == "authenticated" and write and "on conflict (key)" in sql
-    assert params[:2] == ["site_indexing_enabled", "false"]
-    audit = db.find("insert into audit_log")[0][3]
-    assert audit[:2] == ["user-1", "site_indexing_disabled"]
-    assert json.loads(audit[2]) == {"site_indexing_enabled": False}
 
 
 def test_search_assistant(anon_client):

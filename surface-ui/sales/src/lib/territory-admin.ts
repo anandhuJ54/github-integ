@@ -5,7 +5,7 @@ import {
   packLogos,
   type LogoProfiles,
   type TerritoryProposal,
-} from "@v3/ui/lib/territories";
+} from "@v3/sales/lib/territories";
 
 // Territory & team admin ("run it" controls). Sizing reads real profile counts only.
 // FastAPI: surface-api/sales/routers/territories_data.py and category_groups_data.py (signed-in user).

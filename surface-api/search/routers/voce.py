@@ -1,22 +1,20 @@
 """VOCE articles — replaces the direct supabase-js calls in surface-ui/_base/src/lib/voce.ts.
 
 The profile, topic-hub and /find reads are public pages: they run as the visitor (`anon` when
-signed out, the user otherwise), and so does the boost manager's list; its update needs a user.
-RLS decides, as it did for the browser. Where the TS ignored an error (the public reads) the
-endpoint returns no rows; the boost manager's errors reach the page.
+signed out, the user otherwise), and so does the boost manager's list. RLS decides, as it did for
+the browser. Where the TS ignored an error (the public reads) the endpoint returns no rows; the
+boost manager's errors reach the page. The boost update moved to the admin Surface
+(PATCH /admin/search-console/voce/articles/{id}, surface audit 2026-10-25).
 """
 from __future__ import annotations
 
 import logging
-from datetime import date
-from typing import Any, Literal
+from typing import Any
 
 import psycopg
 from fastapi import APIRouter, Depends, HTTPException, Query, status
-from pydantic import BaseModel, ConfigDict, Field
 
 from _base.core import db
-from _base.core.auth import current_user
 from _base.core.server_fn import optional_user
 from search.queries import voce as q
 
@@ -80,31 +78,3 @@ def all_articles(claims: dict | None = Depends(optional_user)) -> list[dict[str,
     except psycopg.Error as exc:
         raise _db_error(exc) from exc
 
-
-Placement = Literal["profile", "category_hub", "topic_hub", "search", "syndication"]
-
-
-class VoceBoostPatch(BaseModel):
-    model_config = ConfigDict(extra="forbid")
-
-    boosted: bool | None = None
-    boost_placements: list[Placement] | None = Field(default=None, max_length=5)
-    boost_starts_on: date | None = None
-    boost_ends_on: date | None = None
-    boost_spend: float | None = None
-
-
-@router.patch("/articles/{article_id}")
-def update_boost(article_id: str, patch: VoceBoostPatch,
-                 claims: dict = Depends(current_user)) -> dict[str, bool]:
-    """updateBoost(): `update(patch).eq("id", id)` with only the keys sent; RLS decides (a row
-    the policy hides is unchanged and not an error, as with PostgREST)."""
-    values = patch.model_dump(exclude_unset=True)
-    if not values:
-        return {"ok": True}
-    try:
-        with db.role_connection("authenticated", claims, write=True) as conn:
-            q.update_boost(conn, article_id, values)
-        return {"ok": True}
-    except psycopg.Error as exc:
-        raise _db_error(exc) from exc

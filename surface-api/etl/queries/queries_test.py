@@ -242,3 +242,21 @@ def test_source_states_count_queues_only_for_open_runs(dbfake):
         {"source_id": SID, "source_domain": "a.com"},
         {"source_id": "22222222-2222-4222-8222-222222222222", "source_domain": "b.com"}]}).json()
     assert body["queuedByDomain"] == {"a.com": 4}
+
+
+# --- source stats: one jsonb value, sent as the array itself ----------------------------------
+
+def test_source_stats_returns_the_jsonb_array_not_a_wrapped_row(dbfake):
+    log, state = dbfake
+    stats = [{"source": "bhhs.com", "queued": 38612}]
+    state["answer"] = lambda s, p: [{"exp_etl_source_stats": stats}]
+    r = client().get("/etl/console/source-stats?gcid=gcid%3Areal_estate_agency")
+    assert r.json() == stats
+    (_, sql, params), = sqls(log, "exp_etl_source_stats")
+    assert sql.startswith("select public.exp_etl_source_stats(") and params["g"] == "gcid:real_estate_agency"
+
+
+def test_source_stats_null_is_an_empty_list(dbfake):
+    _, state = dbfake
+    state["answer"] = lambda s, p: [{"exp_etl_source_stats": None}]
+    assert client().get("/etl/console/source-stats?gcid=gcid%3Ax").json() == []
