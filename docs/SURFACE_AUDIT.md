@@ -14,6 +14,9 @@ generated read-only from the code (pages, endpoints, tables, cross-Surface calls
   "SRP — Locations & Professionals" Surface (AGENTS.md §7), wherever it lives today.
   This is a guide, not an automatic move: each case is put to the user during that Surface's
   audit and moves only when confirmed.
+- **Serving vs editing** (ruling 2026-10-25): every public page a visitor sees and reads (the
+  serving pages) belongs to **search**; editing, updating and creating (a professional or location
+  managing its own data) belongs to **srp**.
 - **Everything under Growth Hub (`/sales/...`) belongs to sales** (ruling 2026-10-25).
 - **Demand engine (`/website/...`: CMS, Leads, Campaigns, Ads, Demo Center, Trust Center, Cookie
   Consent, Alerts, Developers) goes to marketing** (ruling 2026-10-25); it lives in xmp today.
@@ -91,6 +94,22 @@ migration (2026-10-23) by reading the old app's files.
 | 10 | Google Workspace **Send email**, **Schedule meeting**, **Book demo** buttons (on the sales opportunity page; code in admin `google_workspace_fn.py`) | `/sales/opportunities/$oppId` | Move to **sales** (2026-10-25; Growth Hub). Only the opportunity functions move (send email, schedule meeting, and the delivery-status check the dialogs use); Google connect, domain verification and the outbox ("Send queued") stay with `/admin/integrations` (outbox confirmed admin, 2026-10-25). **Done**: `/sales/fn/getGoogleDeliveryStatus`, `sendOpportunityEmail`, `scheduleOpportunityMeeting` |
 | 11 | Staging keys (used only by etl `/discovery` → Field Yield) | `/discovery` | Keep in **admin** (2026-10-25) |
 | + | Arriving: claims queue, PLG rules (done), search console pages (pending) | `/claims`, `/emp/plg-rules`, `/search/*` | — |
+
+## 5. srp
+
+Under the serving-vs-editing rule:
+
+| # | Item | UI URL / API | Decision (2026-10-25) |
+|---|---|---|---|
+| 1, 2 | Professional, office and company profiles | `/p/$slug`, `/o/$slug`, `/c/$slug`; `/srp/profile/*`, `/srp/category-label/*`, `/srp/sponsored-slots`, `/srp/ad-units`, `/srp/page-view` | Move to **search** (serving) |
+| 3 | Consumer search results | `/find` | Move to **search** |
+| 4, 5 | Topic index and topic hubs | `/topics`, `/topic/$gcid`, `/topic/$gcid/$topic` | Move to **search** (serving) |
+| 6 | Trust Center (public) | `/trust`, `/trust/$slug`; `/srp/fn/getPublicTrustDocs`, `getPublicPage` | Move to **search** (serving) |
+| 7 | Claim page | `/claim/$professional`; `/srp/claim-profile/{slug}` | Stays in **srp** (creating/updating) |
+| 8, 9 | City home data and map pins; CMS page reads for marketing pages | `/srp/fn/getCityHome`, `getCityMapPins`, `getHomeData`, `getPublicPageBySlug`, `getPublicHome` | Move to **marketing** (marketing gets its own API) |
+| 10 | Review reply: draft (AI), compliance check, save, flag | `/srp/fn/draftReviewReply`, `checkReplyCompliance`, `saveReviewReply`, `flagReview` (used by xmp seat Reviews) | Stays in **srp** (editing) |
+| 11 | Sitemap and robots.txt | `/public/sitemap.xml`, `/public/sitemap/{partition}`, `/robots.txt` | Move to **search** (serving) |
+| 12 | Area detection, nearby areas, city centroids | `/srp/fn/getDetectedArea`, `getNearbyAreas`, `resolveAreaFromCoords`, `/srp/geo/city-centroids` | Move to **search** (serving) |
 
 ## Decisions noted ahead (to apply when that Surface is audited)
 
