@@ -177,6 +177,10 @@ Moving a file out of `_base` changes nothing on screen; it only sets which Surfa
 | 2b | public header/menu data | `lib/nav-menus.ts`, `home.functions.ts` | Keep in **_base** (every public page's header uses them) |
 | 3 | public site pages and VOCE (shared by search, marketing, admin) | `lib/public-site.ts`, `public-site.functions.ts`, `voce.ts` | Keep in **_base** |
 | 4 | skills and NORA code (registry, sandbox, runner client, registry tabs, run list) | `lib/nora-registry.ts`, `nora-sandbox.ts`, `nora-runner.ts`, `nora-runner.functions.ts`, `components/nora/*` | Move to **skills** (2026-10-25; pending). srp's seat interview gets its own copy of what it uses |
+| 5 | sales code (territories, sales alerts, territory chip) | `lib/territories.ts`, `sales-alerts.ts`, `components/sales/territory-chip.tsx` | Move to **sales** (2026-10-25; pending). Admin (territory chip on `/professionals`, "Run now" on `/admin/integrations`) calls the sales API with its own small client, through the published contract |
+| 6 | admin code (Google Workspace, site-indexing switch) | `lib/google-workspace.functions.ts` → **admin** (only `/admin/integrations` uses it). `lib/site-indexing.functions.ts`: the **read** (every page load, search API) stays in **_base**; the **write** (the indexing switch) → **admin** (2026-10-25; pending) |
+| 7a | enterprise code | `lib/enterprise-ops.ts` (Enterprise Settings and Transactions) | Move to **xmp** (2026-10-25; pending) |
+| 7b | metrics loaders + number formatting | `lib/console-surfaces.ts` | Split (2026-10-25; pending): formatting helpers (`money`, `num`, `pct`) stay in **_base**; `loadPipelineHealth` → **etl** (Run health); `loadBilling`, `loadProductCatalog`, `loadReportMetrics`, `loadOrgStats` → **admin** (Billing, Reports, Organizations, Support), still calling etl/sales APIs through their contracts |
 
 ## Published cross-Surface APIs (to add as contract entries)
 
