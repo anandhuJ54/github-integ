@@ -5,7 +5,7 @@ import { Button } from "@v3/ui/components/ui/button";
 import { useArea } from "@v3/ui/components/public/area-picker";
 import { HomeHero } from "@v3/ui/components/public/home-hero";
 import { MapPanel, ResultCard } from "@v3/ui/components/search/serp-parts";
-import { CuratedCollections } from "@v3/srp/components/search/consumer-search-experience";
+import { CuratedCollections } from "@v3/search/components/search/consumer-search-experience";
 import type { HomeData } from "@v3/ui/lib/home.functions";
 import { DEFAULT_QUERY, runSearch, type SearchDoc } from "@v3/ui/lib/search";
 import { getSearchPresentation, type SearchPresentationData } from "@v3/ui/lib/search-presentation.functions";

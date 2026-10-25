@@ -7,7 +7,7 @@ import {
   TRUST_CATEGORIES,
   formatTrustDate,
   trustMeta,
-} from "@v3/srp/lib/trust";
+} from "@v3/search/lib/trust";
 
 const TITLE = "Trust Center — Experience.com";
 const DESCRIPTION =

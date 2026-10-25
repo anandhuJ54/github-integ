@@ -6,10 +6,10 @@ import math
 from fastapi import Request
 
 from _base.core.server_fn import FnCall, fn_router
-from srp import geo
-from srp.pg import js_number
+from search import geo
+from search.pg import js_number
 
-router = fn_router("srp")
+router = fn_router("search")
 
 
 @router.post("/getDetectedArea")

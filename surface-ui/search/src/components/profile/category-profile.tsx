@@ -16,7 +16,7 @@ import { useOptionalRole } from "@v3/ui/lib/roles";
 import { cn } from "@v3/ui/lib/utils";
 import { hubPath, prettyTopic, servesIn } from "@v3/ui/lib/voce";
 import { EntityAvatar, displayPhone } from "@v3/ui/components/public/visual";
-import { ProfileExpertise } from "@v3/srp/components/profile/profile-expertise";
+import { ProfileExpertise } from "@v3/search/components/profile/profile-expertise";
 import { ScoreExplainer } from "@v3/ui/components/public/score-explainer";
 import { useRecordView } from "@v3/ui/lib/visitor-lists";
 import {
@@ -32,20 +32,20 @@ import {
   SocialLinks,
   Stars,
   UnclaimedBadge,
-} from "@v3/srp/components/profile/profile-parts";
+} from "@v3/search/components/profile/profile-parts";
 import {
   AdvertiseHereUnit,
   ClaimConversionUnit,
   useUnclaimedAdUnits,
-} from "@v3/srp/components/profile/claim-conversion";
-import { usePageViewPing } from "@v3/srp/lib/monetization";
+} from "@v3/search/components/profile/claim-conversion";
+import { usePageViewPing } from "@v3/search/lib/monetization";
 import {
   breadcrumbs,
   buildJsonLd,
   completeness,
   renderableSections,
   type ProfileBundle,
-} from "@v3/srp/lib/profile-render";
+} from "@v3/search/lib/profile-render";
 
 /* ------------------------------- pieces ------------------------------- */
 

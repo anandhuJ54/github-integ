@@ -5,7 +5,8 @@ import { DEFAULT_QUERY, runSearch, suggest, type SearchDoc, type SearchQuery } f
 import { loadAllArticles, loadAuthorArticles, loadFeaturedArticle, loadHubArticles } from "@v3/ui/lib/voce";
 import { withCoordinates } from "@v3/ui/lib/geo-coords";
 
-// _base libs served by admin (roles.tsx), search (search.ts, voce.ts) and srp (geo-coords.ts).
+// _base libs served by admin (roles.tsx) and search (search.ts, voce.ts, geo-coords.ts).
+// moved (surface audit 2026-10-25): geo-coords.ts now calls /search/geo/city-centroids (was /srp/...).
 // Reads only: bootstrap_control_super_admin, the exp_admin_audit insert and the voce boost update
 // are covered by compiled-SQL unit tests, never run here. The voce boost update moved to admin
 // (surface audit 2026-10-25).

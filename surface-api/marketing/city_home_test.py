@@ -4,7 +4,7 @@ from __future__ import annotations
 from datetime import UTC, datetime
 from decimal import Decimal
 
-from srp.routers.city_home_fn import (
+from marketing.routers.city_home_fn import (
     build_collections,
     pick_sponsored,
     split_area,
@@ -98,7 +98,7 @@ def _responder(own_count=5):
 def test_city_home_wiring(fake_db, anon_client):
     db = fake_db(_responder())
     res = anon_client.post(
-        "/srp/fn/getCityHome",
+        "/marketing/fn/getCityHome",
         json={"data": {"area": "Austin, TX", "page": 2, "rating": 4.5, "claimed": "yes"}},
     )
     assert res.status_code == 200
@@ -123,7 +123,7 @@ def test_city_home_wiring(fake_db, anon_client):
 
 def test_city_home_falls_back_to_nearest_inventory(fake_db, anon_client):
     fake_db(_responder(own_count=0))
-    body = anon_client.post("/srp/fn/getCityHome", json={"data": {"area": "Camino Tassajara, CA"}}).json()
+    body = anon_client.post("/marketing/fn/getCityHome", json={"data": {"area": "Camino Tassajara, CA"}}).json()
     assert body["context"]["label"] == "Camino Tassajara, CA"
     assert body["context"]["scopeCity"] == "Round Rock"
     assert body["context"]["scopeLabel"] == "Round Rock, TX"
@@ -133,7 +133,7 @@ def test_city_home_survives_db_errors(fake_db, anon_client):
     import psycopg
 
     fake_db(lambda sql, p: psycopg.errors.UndefinedTable("nope"))
-    res = anon_client.post("/srp/fn/getCityHome", json={"data": None})
+    res = anon_client.post("/marketing/fn/getCityHome", json={"data": None})
     assert res.status_code == 200
     body = res.json()
     assert body["results"] == [] and body["total"] == 0
@@ -154,7 +154,7 @@ def test_map_pins_keep_only_located(fake_db, anon_client):
         return []
 
     fake_db(responder)
-    body = anon_client.post("/srp/fn/getCityMapPins", json={"data": {"area": "Austin, TX"}}).json()
+    body = anon_client.post("/marketing/fn/getCityMapPins", json={"data": {"area": "Austin, TX"}}).json()
     assert body == {
         "pins": [
             {"id": "a", "gcid": "gcid:park", "name": "P", "lat": 1.0, "lng": 2.0, "city": None,

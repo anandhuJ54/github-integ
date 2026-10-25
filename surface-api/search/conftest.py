@@ -58,7 +58,13 @@ class FakeDB:
         return _cm()
 
 
-_MODULES = ("search.site_indexing", "search.presentation")
+_MODULES = (
+    "search.site_indexing",
+    "search.presentation",
+    "search.geo",
+    "search.sitemap",
+    "search.routers.public_site_fn",
+)
 
 
 @pytest.fixture

@@ -14,11 +14,11 @@ from pydantic import BaseModel, Field
 
 from _base.core import db
 from _base.core.server_fn import optional_user
-from srp.queries import monetization, profile
+from search.queries import monetization, profile
 
 log = logging.getLogger(__name__)
 
-router = APIRouter(prefix="/srp", tags=["srp"])
+router = APIRouter(prefix="/search", tags=["search"])
 
 
 def _visitor(claims: dict | None, *, write: bool = False):

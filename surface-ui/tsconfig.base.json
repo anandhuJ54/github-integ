@@ -38,6 +38,9 @@
       "@v3/srp/*": [
         "./srp/src/*"
       ],
+      "@v3/search/*": [
+        "./search/src/*"
+      ],
       "@v3/graph/*": [
         "./graph/src/*"
       ],

@@ -10,7 +10,7 @@ from fastapi.testclient import TestClient
 
 from _base.core import db as core_db
 from _base.core.server_fn import optional_user
-from srp.router import router
+from search.router import router
 
 USER = {"sub": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa", "role": "authenticated"}
 
@@ -108,15 +108,15 @@ def pro_answer(sql, params):
 def test_profile_runs_as_anon_when_signed_out_and_as_the_user_when_signed_in(dbfake):
     _, state = dbfake
     state["answer"] = pro_answer
-    assert client().get("/srp/profile/p/s").status_code == 200
-    assert client(USER).get("/srp/profile/p/s").status_code == 200
+    assert client().get("/search/profile/p/s").status_code == 200
+    assert client(USER).get("/search/profile/p/s").status_code == 200
     assert [r[:2] for r in state["roles"]] == [("anon", None), ("authenticated", USER)]
 
 
 def test_professional_profile_in_two_round_trips(dbfake):
     log, state = dbfake
     state["answer"] = pro_answer
-    body = client().get("/srp/profile/p/s").json()
+    body = client().get("/search/profile/p/s").json()
     assert body["pro"] == PRO and body["office"]["name"] == "Office"
     assert body["company"]["name"] == "Company" and body["category"]["display_name"] == "X"
     assert len(body["graphNodes"]) == 1 and body["expertise"]["edges"] == []
@@ -129,9 +129,9 @@ def test_professional_profile_in_two_round_trips(dbfake):
 def test_unknown_or_ambiguous_slug_is_404(dbfake):
     _, state = dbfake
     state["answer"] = lambda s, p: []
-    assert client().get("/srp/profile/p/nope").status_code == 404
+    assert client().get("/search/profile/p/nope").status_code == 404
     state["answer"] = lambda s, p: [PRO, PRO] if "professionals.slug" in s else []
-    assert client().get("/srp/profile/p/twice").status_code == 404  # .maybeSingle() on 2 rows
+    assert client().get("/search/profile/p/twice").status_code == 404  # .maybeSingle() on 2 rows
 
 
 def test_failed_side_read_is_empty_not_an_error(dbfake):
@@ -143,7 +143,7 @@ def test_failed_side_read_is_empty_not_an_error(dbfake):
         return pro_answer(sql, params)
 
     state["answer"] = answer
-    body = client().get("/srp/profile/p/s").json()
+    body = client().get("/search/profile/p/s").json()
     assert body["reviews"] == [] and body["office"]["name"] == "Office"
 
 
@@ -160,18 +160,18 @@ def test_org_template_lane_follows_kind_and_entity_type(dbfake):
     for entity_type, kind in (("office", "o"), ("company", "o"), ("office", "c")):
         org = {"id": "g1", "slug": "b", "gcid": None, "entity_type": entity_type,
                "parent_org_id": None}
-        assert client().get(f"/srp/profile/{kind}/b").json()["org"] == org
+        assert client().get(f"/search/profile/{kind}/b").json()["org"] == org
     assert lanes == ["location", "brand", "brand"]  # orgLane(); /c is always the brand lane
 
 
 def test_rpcs_are_tolerant_and_page_view_never_fails(dbfake):
     _, state = dbfake
     state["answer"] = lambda s, p: [{"slot_id": "s1"}] if "public_sponsored_slots" in s else []
-    assert client().get("/srp/sponsored-slots", params={"gcid": "g", "geo": "94301"}).json() == [
+    assert client().get("/search/sponsored-slots", params={"gcid": "g", "geo": "94301"}).json() == [
         {"slot_id": "s1"}]
     state["answer"] = lambda s, p: psycopg.errors.UndefinedFunction("no such function")
-    assert client().get("/srp/ad-units", params={"context": "serp"}).json() == []
-    r = client().post("/srp/page-view", json={"gcid": "g", "zip": "94301", "claimCta": True})
+    assert client().get("/search/ad-units", params={"context": "serp"}).json() == []
+    r = client().post("/search/page-view", json={"gcid": "g", "zip": "94301", "claimCta": True})
     assert r.status_code == 200
     assert state["roles"][-1] == ("anon", None, True)  # the ping is a write
 

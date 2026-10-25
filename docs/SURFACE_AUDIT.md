@@ -101,15 +101,15 @@ Under the serving-vs-editing rule:
 
 | # | Item | UI URL / API | Decision (2026-10-25) |
 |---|---|---|---|
-| 1, 2 | Professional, office and company profiles | `/p/$slug`, `/o/$slug`, `/c/$slug`; `/srp/profile/*`, `/srp/category-label/*`, `/srp/sponsored-slots`, `/srp/ad-units`, `/srp/page-view` | Move to **search** (serving) |
-| 3 | Consumer search results | `/find` | Move to **search** |
-| 4, 5 | Topic index and topic hubs | `/topics`, `/topic/$gcid`, `/topic/$gcid/$topic` | Move to **search** (serving) |
-| 6 | Trust Center (public) | `/trust`, `/trust/$slug`; `/srp/fn/getPublicTrustDocs`, `getPublicPage` | Move to **search** (serving) |
+| 1, 2 | Professional, office and company profiles | `/p/$slug`, `/o/$slug`, `/c/$slug`; `/srp/profile/*`, `/srp/category-label/*`, `/srp/sponsored-slots`, `/srp/ad-units`, `/srp/page-view` | Move to **search** (serving). **Done**: pages in `surface-ui/search`; API `/search/profile/*`, `/search/category-label/*`, `/search/sponsored-slots`, `/search/ad-units`, `/search/page-view` |
+| 3 | Consumer search results | `/find` | Move to **search**. **Done** |
+| 4, 5 | Topic index and topic hubs | `/topics`, `/topic/$gcid`, `/topic/$gcid/$topic` | Move to **search** (serving). **Done**; `/topics` reads `/marketing/fn/getHomeData` |
+| 6 | Trust Center (public) | `/trust`, `/trust/$slug`; `/srp/fn/getPublicTrustDocs`, `getPublicPage` | Move to **search** (serving). **Done**: `/search/fn/getPublicTrustDocs`, `getPublicPage` (also read by three marketing pages) |
 | 7 | Claim page | `/claim/$professional`; `/srp/claim-profile/{slug}` | Stays in **srp** (creating/updating) |
-| 8, 9 | City home data and map pins; CMS page reads for marketing pages | `/srp/fn/getCityHome`, `getCityMapPins`, `getHomeData`, `getPublicPageBySlug`, `getPublicHome` | Move to **marketing** (marketing gets its own API) |
+| 8, 9 | City home data and map pins; CMS page reads for marketing pages | `/srp/fn/getCityHome`, `getCityMapPins`, `getHomeData`, `getPublicPageBySlug`, `getPublicHome` | Move to **marketing** (marketing gets its own API). **Done**: `/marketing/fn/*` |
 | 10 | Review reply: draft (AI), compliance check, save, flag | `/srp/fn/draftReviewReply`, `checkReplyCompliance`, `saveReviewReply`, `flagReview` (used by xmp seat Reviews) | Stays in **srp** (editing) |
-| 11 | Sitemap and robots.txt | `/public/sitemap.xml`, `/public/sitemap/{partition}`, `/robots.txt` | Move to **search** (serving) |
-| 12 | Area detection, nearby areas, city centroids | `/srp/fn/getDetectedArea`, `getNearbyAreas`, `resolveAreaFromCoords`, `/srp/geo/city-centroids` | Move to **search** (serving) |
+| 11 | Sitemap and robots.txt | `/public/sitemap.xml`, `/public/sitemap/{partition}`, `/robots.txt` | Move to **search** (serving). **Done**: same paths; uses search's site-indexing flag reader |
+| 12 | Area detection, nearby areas, city centroids | `/srp/fn/getDetectedArea`, `getNearbyAreas`, `resolveAreaFromCoords`, `/srp/geo/city-centroids` | Move to **search** (serving). **Done**: `/search/fn/*`, `/search/geo/city-centroids` |
 
 ## 6. ops
 
@@ -120,6 +120,15 @@ Under the serving-vs-editing rule:
 | 3 | SRP Dev Progress (tracker: overview, board, priorities, teams, weekly) | `/dev/*` | Keep in **ops** |
 | 4 | Build (the same pages again, plus teams) and the Build wiki | `/build/*`, `/build/spaces/*` | Keep in **ops**; keep both `/dev` and `/build` for now |
 | 5 | Weekly-update reminder and digest emails (Resend; not scheduled) | — | Keep in ops |
+
+## 7. etl
+
+| # | Item | UI URL / API | Decision (2026-10-25) |
+|---|---|---|---|
+| 1 | Discovery console (9 tabs; metrics and job actions) | `/discovery`; `/etl/console/*` | Keep in **etl** |
+| 2 | Background workers | `/public/disco-*`, `/public/etl-deep-hydrate`, `/public/export-prompt-bundles` | Keep in etl |
+| 3 | Metrics behind admin pages and Run health | `/etl/platform/report-metrics`, `org-stats`, `pipeline-health`, `/etl/run-monitor` | Proposed: keep in **etl** (data owner); admin/NORA OS pages use them through a published `contracts/etl` capability. Awaiting confirmation |
+| 4 | Category boundary panel on `/discovery` | `/graph/fn/getCategoryBoundary`, `regenerateCategoryBoundary` | API stays in **graph**; etl uses it (via a published `contracts/graph` capability, if the rule above is adopted) |
 
 ## Decisions noted ahead (to apply when that Surface is audited)
 

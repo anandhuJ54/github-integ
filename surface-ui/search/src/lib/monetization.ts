@@ -42,7 +42,7 @@ export async function loadSponsoredSlots(gcid: string, loc: string): Promise<Spo
   if (!key) return [];
   // As with supabase-js (`data ?? []`), a failed lookup shows no slots rather than an error.
   const data = await api
-    .get<SponsoredSlot[]>("/srp/sponsored-slots", { params: { gcid: key.gcid, geo: key.zip } })
+    .get<SponsoredSlot[]>("/search/sponsored-slots", { params: { gcid: key.gcid, geo: key.zip } })
     .catch(() => [] as SponsoredSlot[]);
   return data
     .slice(0, SPONSORED_CAP)
@@ -80,7 +80,7 @@ export async function loadAdUnits(
   geo: string | null,
 ): Promise<AdUnit[]> {
   return api
-    .get<AdUnit[]>("/srp/ad-units", { params: { context, gcid: gcid ?? "default", geo: geo ?? "" } })
+    .get<AdUnit[]>("/search/ad-units", { params: { context, gcid: gcid ?? "default", geo: geo ?? "" } })
     .catch(() => [] as AdUnit[]);
 }
 
@@ -102,7 +102,7 @@ export async function pingPageView(opts: {
   if (!opts.gcid || !opts.zip) return;
   // Impression accounting never breaks the page, as before.
   await api
-    .post("/srp/page-view", { gcid: opts.gcid, zip: opts.zip, claimCta: opts.claimCta })
+    .post("/search/page-view", { gcid: opts.gcid, zip: opts.zip, claimCta: opts.claimCta })
     .catch(() => undefined);
 }
 

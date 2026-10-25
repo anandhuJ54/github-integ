@@ -14,7 +14,7 @@ export type HubData = {
 
 async function labelFor(gcid: string): Promise<string> {
   const row = await api.get<{ display_name?: string | null; slug?: string | null } | null>(
-    `/srp/category-label/${encodeURIComponent(gcid)}`,
+    `/search/category-label/${encodeURIComponent(gcid)}`,
   );
   return decodeName(row?.display_name ?? row?.slug ?? gcid);
 }

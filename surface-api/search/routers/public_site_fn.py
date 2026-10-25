@@ -1,4 +1,6 @@
-"""Server functions from legacy `lib/public-site.functions.ts`: public CMS reads.
+"""Server functions from legacy `lib/public-site.functions.ts`: the Trust Center reads.
+
+getPublicHome and getPublicPageBySlug are in the marketing Surface (surface audit 2026-10-25).
 
 Anon role + the `published pages public` SELECT policy on exp_web_pages. DB errors surface
 as 500 (the legacy code threw on them).
@@ -9,9 +11,9 @@ from typing import Any
 
 from _base.core.db import role_connection
 from _base.core.server_fn import FnCall, fn_router
-from srp.pg import rows
+from search.pg import rows
 
-router = fn_router("srp")
+router = fn_router("search")
 
 COLUMNS = (
     "id, slug, title, page_type, status, body, seo_title, seo_desc, published_at, updated_at, "
@@ -55,17 +57,6 @@ def _query(sql: str, params: list[Any]) -> list[dict]:
         return rows(conn, sql, params)
 
 
-@router.post("/getPublicHome")
-def get_public_home(call: FnCall) -> dict | None:
-    """Home page = the newest published page with page_type='home'."""
-    found = _query(
-        f"select {COLUMNS} from exp_web_pages where page_type = 'home' and status = 'published' "
-        "order by published_at desc limit 1",
-        [],
-    )
-    return normalize(found[0] if found else None)
-
-
 @router.post("/getPublicPage")
 def get_public_page(call: FnCall) -> dict | None:
     data = call.data if isinstance(call.data, dict) else {}
@@ -88,15 +79,3 @@ def get_public_trust_docs(call: FnCall) -> list[dict]:
         [],
     )
     return [normalize(r) for r in found]  # type: ignore[misc]
-
-
-@router.post("/getPublicPageBySlug")
-def get_public_page_by_slug(call: FnCall) -> dict | None:
-    """Published CMS page by slug (canonical marketing routes)."""
-    data = call.data if isinstance(call.data, dict) else {}
-    slug = _js_string(data.get("slug"))[:200] if "slug" in data else "undefined"
-    found = _query(
-        f"select {COLUMNS} from exp_web_pages where slug = %s and status = 'published' limit 1",
-        [slug],
-    )
-    return normalize(found[0] if found else None)

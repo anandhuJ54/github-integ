@@ -1,5 +1,5 @@
 """Public profile pages (/p, /o, /c): the rows behind loadProfessionalBundle / loadOrgBundle in
-surface-ui/srp/src/lib/profile-render.ts, fetched in one request.
+surface-ui/search/src/lib/profile-render.ts, fetched in one request.
 
 The page logic (fallbacks, merging, JSON-LD) stays in TypeScript; this returns what each of its
 supabase-js queries returned, under the same names. Runs as the visitor (`anon`, or the signed-in

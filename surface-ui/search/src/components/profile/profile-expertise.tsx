@@ -1,10 +1,10 @@
 import { BadgeCheck, ExternalLink, Network, Orbit } from "lucide-react";
-import { Card, Empty, Section } from "@v3/srp/components/profile/profile-parts";
+import { Card, Empty, Section } from "@v3/search/components/profile/profile-parts";
 import type {
   ProfileBundle,
   ProofNode,
   ProofRing,
-} from "@v3/srp/lib/profile-render";
+} from "@v3/search/lib/profile-render";
 
 const SOFT_TARGET = 10;
 const NEUTRAL_RING = "var(--color-ink-3)";

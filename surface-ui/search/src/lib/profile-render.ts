@@ -6,7 +6,7 @@ import {
   type ProfileConfig,
   type RatingRow,
   type ReviewRow,
-} from "@v3/srp/lib/public-profile";
+} from "@v3/search/lib/public-profile";
 import { articleNode, loadAuthorArticles, type VoceArticle } from "@v3/ui/lib/voce";
 import { schemaPhone } from "@v3/ui/lib/us-phone";
 
@@ -510,7 +510,7 @@ function categoryLabelFrom(row: { display_name?: string | null; slug?: string | 
 }
 
 /* ------------------------------------------------------------------ *
- * Rows from GET /srp/profile/{p|o|c}/{slug} (surface-api/srp/queries/ *
+ * Rows from GET /search/profile/{p|o|c}/{slug} (surface-api/search/queries/ *
  * profile.py): what each of the old supabase-js queries returned.     *
  * ------------------------------------------------------------------ */
 
@@ -605,7 +605,7 @@ export function orgLane(entityType: string | null | undefined): Lane {
  * ------------------------------------------------------------------ */
 
 export async function loadProfessionalBundle(slug: string): Promise<ProfileBundle | null> {
-  const raw = await loadRaw<RawProfessional>(`/srp/profile/p/${encodeURIComponent(slug)}`);
+  const raw = await loadRaw<RawProfessional>(`/search/profile/p/${encodeURIComponent(slug)}`);
   if (!raw) return null;
   const p = raw.pro;
   const gcid = (p.gcid as string | null) ?? null;
@@ -723,7 +723,7 @@ export async function loadProfessionalBundle(slug: string): Promise<ProfileBundl
 }
 
 export async function loadOrgBundle(kind: "o" | "c", slug: string): Promise<ProfileBundle | null> {
-  const raw = await loadRaw<RawOrg>(`/srp/profile/${kind}/${encodeURIComponent(slug)}`);
+  const raw = await loadRaw<RawOrg>(`/search/profile/${kind}/${encodeURIComponent(slug)}`);
   if (!raw) return null;
   const o = raw.org;
   const gcid = (o.gcid as string | null) ?? null;

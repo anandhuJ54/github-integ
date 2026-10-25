@@ -12,7 +12,7 @@ from decimal import ROUND_HALF_UP, Decimal
 from typing import Any
 
 from _base.core.db import role_connection
-from srp.pg import safe
+from search.pg import safe
 
 # Held-below-floor pages are never emitted into an indexable sitemap.
 INDEXABLE_PARTITIONS: tuple[str, ...] = ("priority-high", "priority-mid", "priority-low")

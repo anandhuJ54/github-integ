@@ -9,13 +9,13 @@ import {
   MapPanel,
   ResultCard,
 } from "@v3/ui/components/search/serp-parts";
-import { NativeAdUnit, SponsoredCard } from "@v3/srp/components/search/sponsored-parts";
+import { NativeAdUnit, SponsoredCard } from "@v3/search/components/search/sponsored-parts";
 import {
   loadAdUnits,
   loadSponsoredSlots,
   sponsoredKey,
   usePageViewPing,
-} from "@v3/srp/lib/monetization";
+} from "@v3/search/lib/monetization";
 import {
   DEFAULT_QUERY,
   EMPTY_FACETS,
@@ -28,13 +28,13 @@ import { cn } from "@v3/ui/lib/utils";
 import { loadFeaturedArticle } from "@v3/ui/lib/voce";
 import { getDetectedArea } from "@v3/ui/lib/geo.functions";
 import { useArea } from "@v3/ui/components/public/area-picker";
-import { FeaturedArticleUnit } from "@v3/srp/components/voce/featured-article";
+import { FeaturedArticleUnit } from "@v3/search/components/voce/featured-article";
 import {
   AiAssistantCard,
   ConsumerSearchHero,
   CuratedCollections,
   RelatedSearches,
-} from "@v3/srp/components/search/consumer-search-experience";
+} from "@v3/search/components/search/consumer-search-experience";
 import { getSearchPresentation } from "@v3/ui/lib/search-presentation.functions";
 
 const SORTS = SORT_OPTIONS.map((s) => s.value) as string[];

@@ -15,9 +15,9 @@ from fastapi import Request
 
 from _base.core.db import role_connection
 from _base.core.server_fn import FnCall, fn_router
-from srp import geo
-from srp.pg import as_int_if_whole, js_number, num, safe
-from srp.search_docs import (
+from marketing import geo
+from marketing.pg import as_int_if_whole, js_number, num, safe
+from marketing.search_docs import (
     decode_name,
     empty_facets,
     search_docs,
@@ -26,7 +26,7 @@ from srp.search_docs import (
     with_coordinates,
 )
 
-router = fn_router("srp")
+router = fn_router("marketing")
 
 CITY_PAGE_SIZE = 10
 

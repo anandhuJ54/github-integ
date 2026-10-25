@@ -8,14 +8,14 @@ from fastapi import FastAPI
 from fastapi.responses import Response
 from fastapi.testclient import TestClient
 
-from srp import indexing, sitemap
-from srp.indexing import (
+from search import robots, site_indexing, sitemap
+from search.robots import (
     CONSOLE_PATH_PREFIXES,
-    parse_indexing_enabled,
     robots_txt,
     site_robots_header,
     site_robots_meta,
 )
+from search.site_indexing import parse_indexing_enabled
 
 PARTS = [
     {"partition_key": "priority-high", "min_score": 650},
@@ -122,18 +122,18 @@ def test_js_iso_and_fixed():
 def test_site_robots_header_reads_switch_and_fails_closed(fake_db):
     fake_db(switch(False))
     assert site_robots_header() == "noindex, nofollow"
-    indexing.reset_site_indexing_cache()
+    site_indexing.reset_site_indexing_cache()
     fake_db(lambda sql, p: psycopg.OperationalError("down"))
     assert site_robots_header() == "noindex, nofollow"
-    resp = indexing.apply_site_robots_header(Response("x"), enabled=False)
+    resp = robots.apply_site_robots_header(Response("x"), enabled=False)
     assert resp.headers["X-Robots-Tag"] == "noindex, nofollow"
-    assert "X-Robots-Tag" not in indexing.apply_site_robots_header(Response("x"), True).headers
+    assert "X-Robots-Tag" not in robots.apply_site_robots_header(Response("x"), True).headers
 
 
 def test_switch_is_cached(fake_db):
     db = fake_db(switch(True))
-    assert indexing.load_site_indexing_enabled() is True
-    assert indexing.load_site_indexing_enabled() is True
+    assert site_indexing.load_site_indexing_enabled() is True
+    assert site_indexing.load_site_indexing_enabled() is True
     assert len(db.find("exp_index_enabled")) == 1
     assert db.log[0][0] == "anon"
 
@@ -142,7 +142,7 @@ def test_switch_is_cached(fake_db):
 
 
 def _client():
-    from srp.routers.sitemap import router
+    from search.routers.sitemap import router
 
     app = FastAPI()
     app.include_router(router)

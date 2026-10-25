@@ -11,8 +11,8 @@ from fastapi.testclient import TestClient
 from _base.core import db as core_db
 from _base.core.server_fn import optional_user
 from _base.core.sql import capped, compile_sql
-from srp.queries import geo as q
-from srp.routers.geo import router
+from search.queries import geo as q
+from search.routers.geo import router
 
 CLAIMS = {"sub": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa", "role": "authenticated"}
 
@@ -75,26 +75,26 @@ def test_signed_out_runs_as_anon(fake):
     leases, state = fake
     row = {"city": "Springfield", "state_abbr": "IL", "lat": 39.8, "lng": -89.6}
     state["answer"] = lambda s, p: [row]
-    r = client(user=None).post("/srp/geo/city-centroids", json={"cities": ["Springfield"]})
+    r = client(user=None).post("/search/geo/city-centroids", json={"cities": ["Springfield"]})
     assert r.json() == [row] and leases == [("anon", None, False)]
 
 
 def test_signed_in_runs_as_the_user(fake):
     leases, _ = fake
-    client().post("/srp/geo/city-centroids", json={"cities": ["Austin"]})
+    client().post("/search/geo/city-centroids", json={"cities": ["Austin"]})
     assert leases == [("authenticated", CLAIMS, False)]
 
 
 def test_empty_list_needs_no_connection_and_errors_are_no_rows(fake):
     leases, state = fake
-    assert client().post("/srp/geo/city-centroids", json={"cities": []}).json() == []
+    assert client().post("/search/geo/city-centroids", json={"cities": []}).json() == []
     assert leases == []
     state["answer"] = lambda s, p: psycopg.errors.QueryCanceled("x")
-    assert client().post("/srp/geo/city-centroids", json={"cities": ["A"]}).json() == []
+    assert client().post("/search/geo/city-centroids", json={"cities": ["A"]}).json() == []
 
 
 def test_more_than_200_cities_or_extra_keys_is_422(fake):
-    assert client().post("/srp/geo/city-centroids",
+    assert client().post("/search/geo/city-centroids",
                          json={"cities": ["c"] * 201}).status_code == 422
-    assert client().post("/srp/geo/city-centroids",
+    assert client().post("/search/geo/city-centroids",
                          json={"cities": [], "state": "IL"}).status_code == 422

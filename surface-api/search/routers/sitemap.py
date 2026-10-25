@@ -10,9 +10,10 @@ import re
 from fastapi import APIRouter, Request
 from fastapi.responses import PlainTextResponse, Response
 
-from srp import indexing, sitemap
+from search import site_indexing, sitemap
+from search.robots import robots_txt
 
-router = APIRouter(tags=["srp:public"])
+router = APIRouter(tags=["search:public"])
 
 _XML_HEADERS = {"cache-control": "public, max-age=900"}
 _XML_TYPE = "application/xml; charset=utf-8"
@@ -29,7 +30,7 @@ def _xml(xml: str) -> Response:
 @router.get("/public/sitemap.xml")
 def sitemap_index(request: Request) -> Response:
     """Sitemap index; empty while the indexing switch is OFF."""
-    enabled = indexing.load_site_indexing_enabled()
+    enabled = site_indexing.load_site_indexing_enabled()
     partitions = sitemap.load_partitions() if enabled else []
     return _xml(sitemap.sitemap_index_xml(_origin(request), partitions, enabled))
 
@@ -41,7 +42,7 @@ def sitemap_partition(partition: str, request: Request) -> Response:
     if key not in sitemap.INDEXABLE_PARTITIONS:
         return PlainTextResponse("Not found", status_code=404)
     origin = _origin(request)
-    if not indexing.load_site_indexing_enabled():
+    if not site_indexing.load_site_indexing_enabled():
         empty = {
             "partition_key": key,
             "min_score": None,
@@ -63,9 +64,9 @@ def sitemap_partition(partition: str, request: Request) -> Response:
 @router.get("/robots.txt")
 def robots(request: Request) -> Response:
     """OFF (default): "Disallow: /" and no Sitemap line. ON: points at the sitemap index."""
-    enabled = indexing.load_site_indexing_enabled()
+    enabled = site_indexing.load_site_indexing_enabled()
     return Response(
-        content=indexing.robots_txt(_origin(request), enabled),
+        content=robots_txt(_origin(request), enabled),
         media_type="text/plain; charset=utf-8",
         headers={"cache-control": "public, max-age=3600" if enabled else "public, max-age=300"},
     )

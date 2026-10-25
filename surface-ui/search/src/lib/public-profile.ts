@@ -43,7 +43,7 @@ export const FALLBACK_PROFILE_CONFIG: ProfileConfig = {
 
 /**
  * Row for the entity's gcid, else the 'default' row, else a neutral fallback.
- * `rows`: exp_category_profile_config for [gcid, 'default'] (GET /srp/profile/*: configRows).
+ * `rows`: exp_category_profile_config for [gcid, 'default'] (GET /search/profile/*: configRows).
  */
 export function profileConfigFrom(
   rows: Partial<ProfileConfig>[],

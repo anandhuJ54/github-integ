@@ -3,7 +3,7 @@ import { getPublicPage } from "@v3/ui/lib/public-site.functions";
 import { marketingHead } from "@v3/ui/components/public/marketing-page";
 import { BlockRenderer } from "@v3/ui/components/public/blocks";
 import { SiteShell } from "@v3/ui/components/public/site-chrome";
-import { DATA_REQUEST_URL, formatTrustDate, trustBlocks, trustMeta } from "@v3/srp/lib/trust";
+import { DATA_REQUEST_URL, formatTrustDate, trustBlocks, trustMeta } from "@v3/search/lib/trust";
 
 export const Route = createFileRoute("/trust/$slug")({
   loader: ({ params }) => getPublicPage({ data: { slug: params.slug, pageType: "trust" } }),

@@ -15,11 +15,11 @@ from pydantic import BaseModel, ConfigDict, Field
 
 from _base.core import db
 from _base.core.server_fn import optional_user
-from srp.queries import geo as q
+from search.queries import geo as q
 
 log = logging.getLogger(__name__)
 
-router = APIRouter(prefix="/srp/geo", tags=["srp"])
+router = APIRouter(prefix="/search/geo", tags=["search"])
 
 
 class SrpGeoCentroidsIn(BaseModel):

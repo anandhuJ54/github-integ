@@ -1,6 +1,6 @@
 import { createFileRoute, notFound } from "@tanstack/react-router";
-import { loadProfessionalBundle } from "@v3/srp/lib/profile-render";
-import { CategoryProfile, profileHead } from "@v3/srp/components/profile/category-profile";
+import { loadProfessionalBundle } from "@v3/search/lib/profile-render";
+import { CategoryProfile, profileHead } from "@v3/search/components/profile/category-profile";
 
 export const Route = createFileRoute("/p/$slug")({
   loader: async ({ params }) => {

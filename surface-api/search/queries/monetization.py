@@ -1,4 +1,4 @@
-"""Public monetization RPCs from surface-ui/srp/src/lib/monetization.ts. All three are governed
+"""Public monetization RPCs from surface-ui/search/src/lib/monetization.ts. All three are governed
 SECURITY DEFINER functions with a pinned search_path; anon may execute them."""
 from __future__ import annotations
 

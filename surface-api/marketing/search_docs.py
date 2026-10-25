@@ -1,4 +1,4 @@
-"""Shared search-document helpers for the srp public reads.
+"""Shared search-document helpers for the marketing public reads.
 
 Ports `decodeName` / `EMPTY_FACETS` (legacy `lib/search.ts`), `withCoordinates`
 (`lib/geo-coords.ts`) and the `search_docs*` RPC calls. Arguments the legacy code left
@@ -11,7 +11,7 @@ import re
 from decimal import Decimal
 from typing import Any
 
-from srp.pg import rpc_args, safe, safe_scalar
+from marketing.pg import rpc_args, safe, safe_scalar
 
 EMPTY_FACETS: dict = {
     "categories": [],
