@@ -7,6 +7,12 @@ records the decisions only. The moves are done after the audit, as separate comm
 Started 2026-10-24 on `migrate/browser-to-api`. The per-Surface inventories it is based on were
 generated read-only from the code (pages, endpoints, tables, cross-Surface calls).
 
+## Standing rules (apply to every Surface)
+
+- **Locations and professionals belong to srp** (ruling 2026-10-25). Anything about a location
+  (office) or a professional (its pages, its data, its console views) goes to srp, the
+  "SRP — Locations & Professionals" Surface (AGENTS.md §7), wherever it lives today.
+
 ## 1. nora-os
 
 What it holds today: one page `/nora-os` with six tabs (Skills, Capabilities, Build map, Evals,
@@ -40,4 +46,4 @@ check (SF-9).
 
 | Surface | Item | UI URL | Decision |
 |---|---|---|---|
-| xmp | NORA interview page (`xmp/src/routes/_authenticated/seat.$kind.$id.interview.tsx`, `xmp/src/lib/nora/interview*.ts`) | `/seat/$kind/$id/interview` | Move to **srp** (ruling 2026-10-25). Open: only the interview page, or the whole `/seat/...` area? |
+| xmp | The whole seat area: a professional's or location's own pages (My Profile, Expertise Graph, Reviews, Nora, Team, Listings, Multi-Post, Reporting, NORA interview), `xmp/src/routes/_authenticated/seat.*` and their libs and API (`/xmp/...` seat endpoints) | `/seat/$kind/$id/...` | Move to **srp** (standing rule, 2026-10-25) |
