@@ -9,9 +9,9 @@ from pydantic import BaseModel, Field
 
 from _base.core import db
 from _base.core.auth import current_user
-from conversion_agents.queries import plg_rules as q
+from admin.queries import plg_rules as q
 
-router = APIRouter(prefix="/conversion-agents/plg-rules", tags=["conversion-agents"])
+router = APIRouter(prefix="/admin/plg-rules", tags=["admin"])
 
 
 class Rule(BaseModel):

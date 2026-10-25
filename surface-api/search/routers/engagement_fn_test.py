@@ -1,9 +1,17 @@
 """Tests for the engagement function port (DB faked)."""
 from __future__ import annotations
 
+from collections.abc import Callable
+from contextlib import contextmanager
 from decimal import Decimal
+from typing import Any
 
-from conversion_agents.routers.engagement_fn import (
+import pytest
+from fastapi import FastAPI
+from fastapi.testclient import TestClient
+
+from _base.core.auth import current_user
+from search.routers.engagement_fn import (
     address_of,
     build_compare,
     merge_card_actions,
@@ -12,6 +20,69 @@ from conversion_agents.routers.engagement_fn import (
 )
 
 UID = "11111111-1111-1111-1111-111111111111"
+
+
+class FakeDB:
+    """Records (role, claims, write, sql, params) and answers each query from a responder."""
+
+    def __init__(self, responder: Callable[[str, Any], list[dict]]):
+        self.responder = responder
+        self.log: list[tuple[str, dict | None, bool, str, Any]] = []
+
+    def role_connection(self, role, jwt_claims=None, *, write=False, fresh=False):
+        db = self
+
+        class _Cur:
+            def __init__(self):
+                self.rows: list[dict] = []
+
+            def execute(self, sql, params=None):
+                db.log.append((role, jwt_claims, write, sql, params))
+                self.rows = list(db.responder(sql, params))
+
+            def fetchall(self):
+                return self.rows
+
+            def fetchone(self):
+                return self.rows[0] if self.rows else None
+
+            def __enter__(self):
+                return self
+
+            def __exit__(self, *a):
+                return False
+
+        class _Conn:
+            def cursor(self):
+                return _Cur()
+
+        @contextmanager
+        def _cm():
+            yield _Conn()
+
+        return _cm()
+
+
+@pytest.fixture
+def fake_db(monkeypatch):
+    def install(responder: Callable[[str, Any], list[dict]]) -> FakeDB:
+        db = FakeDB(responder)
+        from search.routers import _sql
+
+        monkeypatch.setattr(_sql, "role_connection", db.role_connection)
+        return db
+
+    return install
+
+
+@pytest.fixture
+def client():
+    from search.router import router
+
+    app = FastAPI()
+    app.include_router(router)
+    app.dependency_overrides[current_user] = lambda: {"sub": "user-1", "role": "authenticated"}
+    return TestClient(app)
 
 
 def test_trim_and_address():
@@ -48,7 +119,7 @@ def test_get_card_actions_route(client, fake_db):
 
     db = fake_db(responder)
     res = client.post(
-        "/conversion_agents/fn/getCardActions", json={"data": {"entityIds": [UID, "", None]}}
+        "/search/fn/getCardActions", json={"data": {"entityIds": [UID, "", None]}}
     )
     assert res.status_code == 200
     assert res.json() == {UID: {"phone": "1", "website": None, "email": None, "address": None}}
@@ -60,9 +131,9 @@ def test_get_card_actions_route(client, fake_db):
 
 def test_get_card_actions_empty_and_cap(client, fake_db):
     db = fake_db(lambda sql, params: [])
-    assert client.post("/conversion_agents/fn/getCardActions", json={"data": None}).json() == {}
+    assert client.post("/search/fn/getCardActions", json={"data": None}).json() == {}
     ids = [f"id{i}" for i in range(50)]
-    client.post("/conversion_agents/fn/getCardActions", json={"data": {"entityIds": ids}})
+    client.post("/search/fn/getCardActions", json={"data": {"entityIds": ids}})
     assert len(db.log[0][4][0]) == 40
 
 
@@ -111,7 +182,7 @@ def test_get_compare_entities_route(client, fake_db):
 
     db = fake_db(responder)
     res = client.post(
-        "/conversion_agents/fn/getCompareEntities", json={"data": {"docIds": ["d1", "d2", "d3", "d4"]}}
+        "/search/fn/getCompareEntities", json={"data": {"docIds": ["d1", "d2", "d3", "d4"]}}
     )
     body = res.json()
     assert res.status_code == 200 and len(body) == 1
@@ -131,9 +202,9 @@ def test_related_terms_and_route(client, fake_db):
     assert len(related_terms(rows)) == 10
 
     db = fake_db(lambda sql, params: rows)
-    assert client.post("/conversion_agents/fn/getRelatedSearches", json={}).json() == {"terms": []}
+    assert client.post("/search/fn/getRelatedSearches", json={}).json() == {"terms": []}
     res = client.post(
-        "/conversion_agents/fn/getRelatedSearches", json={"data": {"gcid": "gcid:plumber"}}
+        "/search/fn/getRelatedSearches", json={"data": {"gcid": "gcid:plumber"}}
     )
     assert len(res.json()["terms"]) == 10
     assert db.log[0][4] == ("gcid:plumber",)

@@ -24,6 +24,7 @@ from etl.routers.export_prompt_bundles import router as export_prompt_bundles_ro
 from etl.routers.health import router as health_router
 from etl.routers.platform import router as platform_router
 from etl.routers.run_monitor import router as run_monitor_router
+from etl.routers.site_proposal_fn import router as site_proposal_fn_router
 
 router = APIRouter()
 router.include_router(health_router)
@@ -40,3 +41,4 @@ router.include_router(export_prompt_bundles_router)
 router.include_router(console_data_router)
 router.include_router(platform_router)
 router.include_router(run_monitor_router)
+router.include_router(site_proposal_fn_router)

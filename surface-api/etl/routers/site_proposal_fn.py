@@ -26,11 +26,11 @@ from fastapi import Depends
 from _base.core.auth import current_user
 from _base.core.db import role_connection
 from _base.core.server_fn import FnCall, bad_input, fn_router, forbidden
-from conversion_agents.routers._sql import maybe_single
+from etl.routers._sql import maybe_single
 
 log = logging.getLogger(__name__)
 
-router = fn_router("conversion_agents")
+router = fn_router("etl")
 
 # The fetch tier decides first, exactly as exp_etl_fetch_tick does (proxy_render -> rendered,
 # proxy -> server_crawl, direct -> direct); the crawl method only when no tier is set.

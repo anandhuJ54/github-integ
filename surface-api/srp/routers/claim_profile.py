@@ -1,4 +1,4 @@
-"""GET /conversion-agents/claim-profile/{slug} — the claim page's profile + license label."""
+"""GET /srp/claim-profile/{slug} — the claim page's profile + license label."""
 from __future__ import annotations
 
 from typing import Any
@@ -8,9 +8,9 @@ from pydantic import BaseModel
 
 from _base.core import db
 from _base.core.auth import current_user
-from conversion_agents.queries.claim_profile import MultipleRows, claim_profile
+from srp.queries.claim_profile import MultipleRows, claim_profile
 
-router = APIRouter(prefix="/conversion-agents", tags=["conversion-agents"])
+router = APIRouter(prefix="/srp", tags=["srp"])
 
 
 class ClaimProfile(BaseModel):

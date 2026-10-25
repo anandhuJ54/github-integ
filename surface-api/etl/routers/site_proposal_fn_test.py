@@ -4,11 +4,16 @@ from __future__ import annotations
 import math
 import sys
 import types
+from collections.abc import Callable
+from contextlib import contextmanager
+from typing import Any
 
 import pytest
-from fastapi import HTTPException
+from fastapi import FastAPI, HTTPException
+from fastapi.testclient import TestClient
 
-from conversion_agents.routers.site_proposal_fn import (
+from _base.core.auth import current_user
+from etl.routers.site_proposal_fn import (
     crawl_method_for,
     given_url_problem,
     js_number,
@@ -24,6 +29,70 @@ SC_V3 = {
     "firm_signatures": ["acme"],
     "own_page_key": "own_page",
 }
+
+
+class FakeDB:
+    """Records (role, claims, write, sql, params) and answers each query from a responder."""
+
+    def __init__(self, responder: Callable[[str, Any], list[dict]]):
+        self.responder = responder
+        self.log: list[tuple[str, dict | None, bool, str, Any]] = []
+
+    def role_connection(self, role, jwt_claims=None, *, write=False, fresh=False):
+        db = self
+
+        class _Cur:
+            def __init__(self):
+                self.rows: list[dict] = []
+
+            def execute(self, sql, params=None):
+                db.log.append((role, jwt_claims, write, sql, params))
+                self.rows = list(db.responder(sql, params))
+
+            def fetchall(self):
+                return self.rows
+
+            def fetchone(self):
+                return self.rows[0] if self.rows else None
+
+            def __enter__(self):
+                return self
+
+            def __exit__(self, *a):
+                return False
+
+        class _Conn:
+            def cursor(self):
+                return _Cur()
+
+        @contextmanager
+        def _cm():
+            yield _Conn()
+
+        return _cm()
+
+
+@pytest.fixture
+def fake_db(monkeypatch):
+    def install(responder: Callable[[str, Any], list[dict]]) -> FakeDB:
+        db = FakeDB(responder)
+        from etl.routers import _sql, site_proposal_fn
+
+        monkeypatch.setattr(_sql, "role_connection", db.role_connection)
+        monkeypatch.setattr(site_proposal_fn, "role_connection", db.role_connection)
+        return db
+
+    return install
+
+
+@pytest.fixture
+def client():
+    from etl.router import router
+
+    app = FastAPI()
+    app.include_router(router)
+    app.dependency_overrides[current_user] = lambda: {"sub": "user-1", "role": "authenticated"}
+    return TestClient(app)
 
 
 def test_js_number():
@@ -150,13 +219,13 @@ def _responder(contract, allowed=True, src=None):
 
 def test_preview_requires_admin(client, fake_db, fake_disco):
     fake_db(_responder(SC_V3, allowed=False))
-    res = client.post("/conversion_agents/fn/previewSiteProposal", json={"data": {"proposalId": 7}})
+    res = client.post("/etl/fn/previewSiteProposal", json={"data": {"proposalId": 7}})
     assert res.status_code == 403 and res.json()["detail"] == "insufficient_privilege"
 
 
 def test_preview_samples_page_mode(client, fake_db, fake_disco):
     db = fake_db(_responder(SC_V3, src={"fetch_tier": "proxy", "source_type": "brand_site"}))
-    res = client.post("/conversion_agents/fn/previewSiteProposal", json={"data": {"proposalId": 7}})
+    res = client.post("/etl/fn/previewSiteProposal", json={"data": {"proposalId": 7}})
     body = res.json()
     assert res.status_code == 200
     assert body["domain"] == "acme.com" and body["target"] == "proposal #7"
@@ -179,7 +248,7 @@ def test_preview_given_urls_and_api_merge(client, fake_db, fake_disco):
                                           "json_fields": {"phone": "$.phone"}}}
     fake_db(_responder(contract))
     res = client.post(
-        "/conversion_agents/fn/previewSiteProposal",
+        "/etl/fn/previewSiteProposal",
         json={"data": {"domain": "acme.com", "gcid": "gcid:agent",
                        "urls": ["https://acme.com/agents/jane", "https://other.com/agents/x",
                                 "https://acme.com/agents/down"]}},
@@ -200,14 +269,14 @@ def test_preview_given_urls_and_api_merge(client, fake_db, fake_disco):
 
 def test_preview_no_contract(client, fake_db, fake_disco):
     fake_db(_responder({"version": 2}))
-    res = client.post("/conversion_agents/fn/previewSiteProposal", json={"data": {"proposalId": 7}})
+    res = client.post("/etl/fn/previewSiteProposal", json={"data": {"proposalId": 7}})
     assert res.status_code == 400 and res.json()["detail"] == "no site contract to preview"
 
 
 def test_preview_page_failure_reason(client, fake_db, fake_disco):
     fake_db(_responder(SC_V3))
     res = client.post(
-        "/conversion_agents/fn/previewSiteProposal",
+        "/etl/fn/previewSiteProposal",
         json={"data": {"proposalId": 7, "urls": ["https://acme.com/agents/down"]}},
     )
     assert res.json()["records"] == [
@@ -218,7 +287,7 @@ def test_preview_page_failure_reason(client, fake_db, fake_disco):
 def test_accept(client, fake_db, fake_disco):
     contract = {**SC_V3, "extra_fields": {"hobby": {"label": "Hobby"}}}
     db = fake_db(_responder(contract))
-    res = client.post("/conversion_agents/fn/acceptSiteProposal", json={"data": {"proposalId": 7}})
+    res = client.post("/etl/fn/acceptSiteProposal", json={"data": {"proposalId": 7}})
     assert res.status_code == 200
     assert res.json() == {"ok": True, "domain": "acme.com", "extra_keys_refreshed": True}
     first = db.log[0]
@@ -233,12 +302,12 @@ def test_accept_refresh_failure_is_reported(client, fake_db, fake_disco):
         raise RuntimeError("refresh down")
 
     sys.modules["_base.disco.extra_keys"].refresh_extra_keys = boom
-    res = client.post("/conversion_agents/fn/acceptSiteProposal", json={"data": {"proposalId": 7}})
+    res = client.post("/etl/fn/acceptSiteProposal", json={"data": {"proposalId": 7}})
     assert res.json()["extra_keys_refreshed"] is False
     assert res.json()["extra_keys_error"] == "refresh down"
 
 
 def test_accept_bad_input(client, fake_db, fake_disco):
     fake_db(_responder(SC_V3))
-    res = client.post("/conversion_agents/fn/acceptSiteProposal", json={"data": {}})
+    res = client.post("/etl/fn/acceptSiteProposal", json={"data": {}})
     assert res.status_code == 400 and res.json()["detail"] == "proposalId required"

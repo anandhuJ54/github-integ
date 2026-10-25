@@ -18,7 +18,6 @@ const SURFACES = [
   "etl",
   "nora-os",
   "skills",
-  "conversion-agents",
   "admin",
   "ops",
 ];

@@ -98,7 +98,7 @@ function PlgRulesPage() {
 
   const load = async () => {
     try {
-      const res = await api.get<{ rules: Rule[]; stats: EventStat[] }>("/conversion-agents/plg-rules");
+      const res = await api.get<{ rules: Rule[]; stats: EventStat[] }>("/admin/plg-rules");
       setRules(res.rules);
       setStats(new Map(res.stats.map((st) => [st.rule_id, st])));
     } catch (e) {
@@ -146,7 +146,7 @@ function PlgRulesPage() {
 
   const toggleActive = async (r: Rule, value: boolean) => {
     try {
-      await api.patch(`/conversion-agents/plg-rules/${r.id}/active`, { is_active: value });
+      await api.patch(`/admin/plg-rules/${r.id}/active`, { is_active: value });
     } catch (e) {
       return toast.error("Failed to update", { description: errorMessage(e) });
     }
@@ -155,7 +155,7 @@ function PlgRulesPage() {
 
   const duplicate = async (r: Rule) => {
     try {
-      await api.post(`/conversion-agents/plg-rules/${r.id}/duplicate`);
+      await api.post(`/admin/plg-rules/${r.id}/duplicate`);
     } catch (e) {
       return toast.error("Duplicate failed", { description: errorMessage(e) });
     }
@@ -166,7 +166,7 @@ function PlgRulesPage() {
   const remove = async (r: Rule) => {
     if (!confirm(`Delete rule "${r.rule_name}"?`)) return;
     try {
-      await api.delete(`/conversion-agents/plg-rules/${r.id}`);
+      await api.delete(`/admin/plg-rules/${r.id}`);
     } catch (e) {
       return toast.error("Delete failed", { description: errorMessage(e) });
     }
@@ -477,8 +477,8 @@ function RuleEditor({
       is_active: form.is_active ?? true,
     };
     try {
-      if (isEdit) await api.put(`/conversion-agents/plg-rules/${form.id!}`, payload);
-      else await api.post("/conversion-agents/plg-rules", payload);
+      if (isEdit) await api.put(`/admin/plg-rules/${form.id!}`, payload);
+      else await api.post("/admin/plg-rules", payload);
     } catch (e) {
       setSubmitting(false);
       return toast.error("Save failed", { description: errorMessage(e) });

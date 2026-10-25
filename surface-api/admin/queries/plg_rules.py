@@ -1,5 +1,5 @@
 """PLG rules admin — port of the supabase-js calls in
-surface-ui/conversion-agents/src/routes/_authenticated/emp.plg-rules.tsx.
+surface-ui/admin/src/routes/_authenticated/emp.plg-rules.tsx.
 
 Reads and writes run as the signed-in user (role `authenticated`), so plg_rules / plg_events /
 audit_log RLS decides what is allowed, as it did for the browser. Each change and its audit_log

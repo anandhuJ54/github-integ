@@ -1,5 +1,5 @@
 """Claims queue reads + adjudication — port of the supabase-js calls in
-surface-ui/conversion-agents/src/routes/_authenticated/claims.tsx.
+surface-ui/admin/src/routes/_authenticated/claims.tsx.
 
 Every call runs as the signed-in user (role `authenticated`), so claim_queue / professionals /
 organizations RLS decides what is visible, as it did for the browser.

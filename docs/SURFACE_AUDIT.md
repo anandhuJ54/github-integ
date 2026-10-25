@@ -14,6 +14,10 @@ generated read-only from the code (pages, endpoints, tables, cross-Surface calls
   "SRP — Locations & Professionals" Surface (AGENTS.md §7), wherever it lives today.
   This is a guide, not an automatic move: each case is put to the user during that Surface's
   audit and moves only when confirmed.
+- **Everything under Growth Hub (`/sales/...`) belongs to sales** (ruling 2026-10-25).
+- **Demand engine (`/website/...`: CMS, Leads, Campaigns, Ads, Demo Center, Trust Center, Cookie
+  Consent, Alerts, Developers) goes to marketing** (ruling 2026-10-25); it lives in xmp today.
+  Same as above: confirmed case by case during the audit.
 
 ## 1. nora-os
 
@@ -53,13 +57,15 @@ migration (2026-10-23) by reading the old app's files.
 |---|---|---|---|---|
 | 1 | Claim page (a professional claims their profile) | `/claim/$professional` | `/conversion-agents/claim-profile/{slug}` (submit and verify go to nora-os) | Move to **srp** (2026-10-25) |
 | 2 | Claims queue (staff approve/reject) | `/claims` | `/conversion-agents/claims/*` | Move to **admin**, an admin view (2026-10-25) |
-| 3 | PLG rules (upgrade nudges per category; shown on the professional's `/dashboard`) | `/emp/plg-rules`, not in any menu | `/conversion-agents/plg-rules/*` | Open: admin, sales or srp? |
+| 3 | PLG rules (upgrade nudges per category; shown on the professional's `/dashboard`) | `/emp/plg-rules`, not in any menu | `/conversion-agents/plg-rules/*` | Move to **admin** (2026-10-25); menu link Admin → "PLG rules" |
 | 4a | Card actions + related searches (city results on the site home) | `/` | `/conversion_agents/fn/getCardActions`, `getRelatedSearches` | Move to **search** (online search) (2026-10-25) |
 | 4b | Compare (the compare tray on public pages) | profile pages, e.g. `/p/$slug` | `/conversion_agents/fn/getCompareEntities` | Move to **search** (online search) (2026-10-25) |
-| 5 | Site proposal preview/accept | `/discovery` (Source Registry and Category Population tabs), not in any menu | `/conversion_agents/fn/previewSiteProposal`, `acceptSiteProposal` | Proposed **etl** (its root page is etl's `/discovery`); awaiting confirmation |
+| 5 | Site proposal preview/accept | `/discovery` (Source Registry and Category Population tabs), not in any menu | `/conversion_agents/fn/previewSiteProposal`, `acceptSiteProposal` | Move to **etl** (its root page is etl's `/discovery`) (2026-10-25) |
 | 6 | "Sign in with Lovable" helper | the claim page | — | Goes with the claim page: **srp** |
 
-Noted: `/emp/plg-rules` and `/discovery` have no side-menu link (reachable by URL only).
+**Done 2026-10-25.** New API paths: `/srp/claim-profile/{slug}`, `/admin/claims/*`, `/admin/plg-rules/*`, `/search/fn/getCardActions|getCompareEntities|getRelatedSearches`, `/etl/fn/previewSiteProposal|acceptSiteProposal`. conversion-agents now holds only its health router (empty, pending a decision, O10/O13); its UI app is out of the composed app.
+
+`/emp/plg-rules` and `/discovery` had no link anywhere (also not in the original app); both, plus `/claims`, get links in the **Admin** menu for now (2026-10-25; can move later). All UI URLs stay the same; only code location and API paths change.
 
 ## Decisions noted ahead (to apply when that Surface is audited)
 

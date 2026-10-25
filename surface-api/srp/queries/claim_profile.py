@@ -1,5 +1,5 @@
 """Claim page profile read — port of `profileQuery` in
-surface-ui/conversion-agents/src/routes/_authenticated/claim.$professional.tsx."""
+surface-ui/srp/src/routes/_authenticated/claim.$professional.tsx."""
 from __future__ import annotations
 
 from typing import Any

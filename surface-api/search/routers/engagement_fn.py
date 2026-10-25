@@ -11,9 +11,9 @@ from decimal import Decimal
 from typing import Any
 
 from _base.core.server_fn import FnCall, bad_input, fn_router
-from conversion_agents.routers._sql import safe_rows
+from search.routers._sql import safe_rows
 
-router = fn_router("conversion_agents")
+router = fn_router("search")
 
 ROLE = "anon"
 CARD_NODE_TYPES = ["contact_phone", "website", "contact_email", "address"]

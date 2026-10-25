@@ -1,22 +1,16 @@
 """Aggregate router for the conversion_agents Surface.
 
 The app mounts only this. Include new conversion_agents sub-routers here, not in app.py.
+
+Surface audit 2026-10-25: the claim page moved to srp, the claims queue and PLG rules to admin,
+the engagement functions to search and the site-proposal functions to etl. Only the health
+router is left, pending a decision on this Surface.
 """
 from __future__ import annotations
 
 from fastapi import APIRouter
 
-from conversion_agents.routers.claim_profile import router as claim_profile_router
-from conversion_agents.routers.claims import router as claims_router
-from conversion_agents.routers.engagement_fn import router as engagement_fn_router
 from conversion_agents.routers.health import router as health_router
-from conversion_agents.routers.plg_rules import router as plg_rules_router
-from conversion_agents.routers.site_proposal_fn import router as site_proposal_fn_router
 
 router = APIRouter()
 router.include_router(health_router)
-router.include_router(engagement_fn_router)
-router.include_router(site_proposal_fn_router)
-router.include_router(claims_router)
-router.include_router(plg_rules_router)
-router.include_router(claim_profile_router)

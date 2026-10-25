@@ -3,8 +3,8 @@ import { useSuspenseQuery, queryOptions } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { api, ServerFnError, useServerFn } from "@v3/ui/lib/server-fn";
 import { supabase } from "@v3/ui/integrations/supabase/client";
-import { lovable } from "@v3/conversion-agents/integrations/lovable";
-import { submitClaim, verifyClaimCode } from "@v3/conversion-agents/lib/claim.functions";
+import { lovable } from "@v3/srp/integrations/lovable";
+import { submitClaim, verifyClaimCode } from "@v3/srp/lib/claim.functions";
 import { Button } from "@v3/ui/components/ui/button";
 import { Card, CardContent } from "@v3/ui/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@v3/ui/components/ui/avatar";
@@ -50,7 +50,7 @@ function profileQuery(slug: string) {
     queryFn: async () => {
       try {
         return await api.get<{ prof: ClaimProf; licenseLabel: string }>(
-          `/conversion-agents/claim-profile/${encodeURIComponent(slug)}`,
+          `/srp/claim-profile/${encodeURIComponent(slug)}`,
         );
       } catch (e) {
         if (e instanceof ServerFnError && e.status === 404) throw notFound();

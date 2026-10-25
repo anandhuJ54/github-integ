@@ -7,6 +7,7 @@ from __future__ import annotations
 from fastapi import APIRouter
 
 from srp.routers.city_home_fn import router as city_home_fn_router
+from srp.routers.claim_profile import router as claim_profile_router
 from srp.routers.geo import router as geo_router
 from srp.routers.geo_fn import router as geo_fn_router
 from srp.routers.health import router as health_router
@@ -26,3 +27,4 @@ router.include_router(geo_fn_router)
 router.include_router(sitemap_router)
 router.include_router(public_profile_router)
 router.include_router(geo_router)
+router.include_router(claim_profile_router)

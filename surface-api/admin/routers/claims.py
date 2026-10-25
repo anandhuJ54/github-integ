@@ -9,9 +9,9 @@ from pydantic import BaseModel, Field
 
 from _base.core import db
 from _base.core.auth import current_user
-from conversion_agents.queries import claims as q
+from admin.queries import claims as q
 
-router = APIRouter(prefix="/conversion-agents/claims", tags=["conversion-agents"])
+router = APIRouter(prefix="/admin/claims", tags=["admin"])
 
 Tab = Literal["pending", "manual_review", "auto_approved", "conflict", "all"]
 

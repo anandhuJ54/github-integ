@@ -96,14 +96,14 @@ function ClaimsPage() {
     queryKey: ["claim-stats"],
     queryFn: () =>
       api.get<{ pending: number; approved: number; manual: number; conflict: number }>(
-        "/conversion-agents/claims/stats",
+        "/admin/claims/stats",
       ),
   });
 
   const tabConfig = TABS.find((t) => t.id === tab)!;
   const { data: claims, isLoading } = useQuery({
     queryKey: ["claims", tab],
-    queryFn: () => api.get<Claim[]>("/conversion-agents/claims", { params: { tab: tabConfig.id } }),
+    queryFn: () => api.get<Claim[]>("/admin/claims", { params: { tab: tabConfig.id } }),
   });
 
   const profIds = useMemo(() => Array.from(new Set((claims ?? []).filter(c => c.entity_type === "professional").map(c => c.entity_id))), [claims]);
@@ -115,7 +115,7 @@ function ClaimsPage() {
     queryFn: () =>
       api.post<
         Record<string, { name: string; gcid: string | null; imageUrl: string | null; kind: "professional" | "organization" }>
-      >("/conversion-agents/claims/entities", { professionalIds: profIds, organizationIds: orgIds }),
+      >("/admin/claims/entities", { professionalIds: profIds, organizationIds: orgIds }),
 
   });
 
@@ -123,7 +123,7 @@ function ClaimsPage() {
     mutationFn: async ({ id, status, review_notes }: { id: string; status: string; review_notes: string }) => {
       // Governed adjudication: approve binds both sides (exp_claim + professionals.claimed +
       // owner grant) at T2; reject closes the claim. Audit is written by the function.
-      await api.post(`/conversion-agents/claims/${encodeURIComponent(id)}/adjudicate`, {
+      await api.post(`/admin/claims/${encodeURIComponent(id)}/adjudicate`, {
         approve: status === "approved",
         note: review_notes || null,
       });

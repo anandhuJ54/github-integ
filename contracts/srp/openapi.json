@@ -136,6 +136,53 @@
         }
       }
     },
+    "/srp/claim-profile/{slug}": {
+      "get": {
+        "tags": [
+          "srp"
+        ],
+        "summary": "Get Claim Profile",
+        "operationId": "get_claim_profile_srp_claim_profile__slug__get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "slug",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Slug"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClaimProfile"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/srp/geo/city-centroids": {
       "post": {
         "tags": [
@@ -466,6 +513,25 @@
   },
   "components": {
     "schemas": {
+      "ClaimProfile": {
+        "properties": {
+          "prof": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Prof"
+          },
+          "licenseLabel": {
+            "type": "string",
+            "title": "Licenselabel"
+          }
+        },
+        "type": "object",
+        "required": [
+          "prof",
+          "licenseLabel"
+        ],
+        "title": "ClaimProfile"
+      },
       "HTTPValidationError": {
         "properties": {
           "detail": {

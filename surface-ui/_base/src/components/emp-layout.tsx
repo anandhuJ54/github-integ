@@ -2,6 +2,7 @@ import { BrandIcon } from "@v3/ui/components/brand/logo";
 import { Link, useRouterState } from "@tanstack/react-router";
 import {
   Activity,
+  BadgeCheck,
   BarChart3,
   Bell,
   Bot,
@@ -17,6 +18,7 @@ import {
   LogOut,
   Network,
   PanelLeft,
+  Radar,
   Globe2,
   Rocket,
 
@@ -25,6 +27,7 @@ import {
   TrendingUp,
   UserCog,
   Plug,
+  Zap,
 } from "lucide-react";
 import { useEffect, useState, type ComponentType, type ReactNode } from "react";
 import { Avatar, AvatarFallback } from "@v3/ui/components/ui/avatar";
@@ -92,6 +95,9 @@ const NAV: NavGroup[] = [
       { to: "/admin/integrations", label: "Integrations", icon: Plug },
       { to: "/compliance", label: "Compliance", icon: ShieldCheck },
       { to: "/reports", label: "Reports", icon: BarChart3 },
+      { to: "/claims", label: "Claims", icon: BadgeCheck },
+      { to: "/emp/plg-rules", label: "PLG rules", icon: Zap },
+      { to: "/discovery", label: "Discovery", icon: Radar },
     ],
   },
 ];

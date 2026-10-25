@@ -59,9 +59,6 @@
       "@v3/nora-os/*": [
         "./nora-os/src/*"
       ],
-      "@v3/conversion-agents/*": [
-        "./conversion-agents/src/*"
-      ],
       "@v3/admin/*": [
         "./admin/src/*"
       ],
