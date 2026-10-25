@@ -12,6 +12,8 @@ generated read-only from the code (pages, endpoints, tables, cross-Surface calls
 - **Locations and professionals belong to srp** (ruling 2026-10-25). Anything about a location
   (office) or a professional (its pages, its data, its console views) goes to srp, the
   "SRP — Locations & Professionals" Surface (AGENTS.md §7), wherever it lives today.
+  This is a guide, not an automatic move: each case is put to the user during that Surface's
+  audit and moves only when confirmed.
 
 ## 1. nora-os
 
