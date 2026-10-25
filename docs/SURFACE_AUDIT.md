@@ -35,3 +35,9 @@ How the UI was kept simple and unbroken:
 Not moves, but noted: `surface-api/etl/queries/run_monitor.py:22,53` (was nora_os `queries/etl_monitor.py`) hard-codes two insurance gcids and a
 statefarm.com URL match (no per-category code, AGENTS.md §3); the registry router has no role
 check (SF-9).
+
+## Decisions noted ahead (to apply when that Surface is audited)
+
+| Surface | Item | UI URL | Decision |
+|---|---|---|---|
+| xmp | NORA interview page (`xmp/src/routes/_authenticated/seat.$kind.$id.interview.tsx`, `xmp/src/lib/nora/interview*.ts`) | `/seat/$kind/$id/interview` | Move to **srp** (ruling 2026-10-25). Open: only the interview page, or the whole `/seat/...` area? |
