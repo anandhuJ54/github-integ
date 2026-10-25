@@ -44,6 +44,23 @@ Not moves, but noted: `surface-api/etl/queries/run_monitor.py:22,53` (was nora_o
 statefarm.com URL match (no per-category code, AGENTS.md §3); the registry router has no role
 check (SF-9).
 
+## 2. conversion-agents
+
+Nothing in the original app was "conversion agents": everything here was placed by the clone
+migration (2026-10-23) by reading the old app's files.
+
+| # | Item | UI URL | API | Decision |
+|---|---|---|---|---|
+| 1 | Claim page (a professional claims their profile) | `/claim/$professional` | `/conversion-agents/claim-profile/{slug}` (submit and verify go to nora-os) | Move to **srp** (2026-10-25) |
+| 2 | Claims queue (staff approve/reject) | `/claims` | `/conversion-agents/claims/*` | Move to **admin**, an admin view (2026-10-25) |
+| 3 | PLG rules (upgrade nudges per category; shown on the professional's `/dashboard`) | `/emp/plg-rules`, not in any menu | `/conversion-agents/plg-rules/*` | Open: admin, sales or srp? |
+| 4a | Card actions + related searches (city results on the site home) | `/` | `/conversion_agents/fn/getCardActions`, `getRelatedSearches` | Move to **search** (online search) (2026-10-25) |
+| 4b | Compare (the compare tray on public pages) | profile pages, e.g. `/p/$slug` | `/conversion_agents/fn/getCompareEntities` | Move to **search** (online search) (2026-10-25) |
+| 5 | Site proposal preview/accept | `/discovery` (Source Registry and Category Population tabs), not in any menu | `/conversion_agents/fn/previewSiteProposal`, `acceptSiteProposal` | Proposed **etl** (its root page is etl's `/discovery`); awaiting confirmation |
+| 6 | "Sign in with Lovable" helper | the claim page | — | Goes with the claim page: **srp** |
+
+Noted: `/emp/plg-rules` and `/discovery` have no side-menu link (reachable by URL only).
+
 ## Decisions noted ahead (to apply when that Surface is audited)
 
 | Surface | Item | UI URL | Decision |
