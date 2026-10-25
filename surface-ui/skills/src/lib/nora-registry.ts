@@ -1,5 +1,5 @@
 import { api } from "@v3/ui/lib/server-fn";
-import type { SkillRun } from "@v3/ui/lib/nora-runner";
+import type { SkillRun } from "@v3/skills/lib/nora-runner";
 
 /* NORA build & registry — exp_skill_registry, exp_capability_registry, exp_build_map.
    Reads and writes go through FastAPI (skills: /skills/registry/*), as the signed-in user. */

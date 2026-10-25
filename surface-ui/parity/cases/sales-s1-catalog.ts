@@ -4,7 +4,8 @@ import * as admin from "@v3/sales/lib/catalog-admin";
 import * as cpq from "@v3/sales/lib/cpq-catalog";
 import * as depth from "@v3/sales/lib/cpq-depth";
 import * as comp from "@v3/sales/lib/comp";
-import * as cs from "@v3/ui/lib/console-surfaces";
+import * as cs from "@v3/admin/lib/console-surfaces";
+import * as ph from "@v3/etl/lib/pipeline-health";
 
 // sales S1 catalog & pricing: catalog-admin.ts, cpq-catalog.ts, cpq-depth.ts, comp.ts (sales) and
 // @v3/ui console-surfaces.ts (money loaders → sales /sales/catalog/*, platform counts → etl
@@ -120,7 +121,7 @@ const csCases: ParityCase[] = [
   lib(CS, "console: product catalog (sales)", "loadProductCatalog", () => cs.loadProductCatalog(), { normalize: productCatalogOrder }),
   lib(CS, "console: billing (sales)", "loadBilling", () => cs.loadBilling(), { normalize: billingOrder }),
   lib(CS, "console: report metrics, 14 exact counts (etl)", "loadReportMetrics", () => cs.loadReportMetrics()),
-  lib(CS, "console: pipeline health, disco jobs + counts (etl)", "loadNoraOs", () => cs.loadPipelineHealth(), { normalize: noraOrder }),
+  lib(CS, "console: pipeline health, disco jobs + counts (etl)", "loadNoraOs", () => ph.loadPipelineHealth(), { normalize: noraOrder }),
   lib(CS, "console: organization stats (etl)", "loadOrgStats", () => cs.loadOrgStats()),
 ];
 

@@ -1,9 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import type { ParityCase } from "./types";
 import * as nav from "@v3/ui/lib/nav-menus";
-import * as ops from "@v3/ui/lib/enterprise-ops";
-import * as reg from "@v3/ui/lib/nora-registry";
-import * as sbx from "@v3/ui/lib/nora-sandbox";
+import * as ops from "@v3/xmp/lib/enterprise-ops";
+import * as reg from "@v3/skills/lib/nora-registry";
+import * as sbx from "@v3/skills/lib/nora-sandbox";
 
 // Shared @v3/ui libs ported to their owner Surface's API (all signed in):
 //   lib/nav-menus.ts → marketing /marketing/website/nav-menus* (moved (surface audit 2026-10-25): was xmp /xmp/website/nav-menus*), lib/enterprise-ops.ts → xmp /xmp/enterprise/ops/*,

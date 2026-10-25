@@ -1,4 +1,4 @@
-import { ogImageUrl } from "@v3/ui/lib/marketing/seo";
+import { ogImageUrl } from "@v3/marketing/lib/marketing/seo";
 import { PageBreadcrumb } from "@v3/marketing/components/marketing/PageBreadcrumb";
 import {
   WebsitesHeroSection,
@@ -11,7 +11,7 @@ import {
 import { SRPOverviewSection } from "@v3/marketing/components/marketing/sections/parent/SRPOverviewSection";
 import { Zap, BarChart3, TrendingUp } from "lucide-react";
 import srpWebAnalytics from "@v3/marketing/assets/websites/srp-web-analytics.png";
-import { getSignUpUrl } from "@v3/ui/lib/marketing/envUrls";
+import { getSignUpUrl } from "@v3/marketing/lib/marketing/envUrls";
 
 const Websites = () => {
   return (

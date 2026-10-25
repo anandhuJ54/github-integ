@@ -1,6 +1,7 @@
 import { api } from "@v3/ui/lib/server-fn";
 // Territories module: CRUD, dual-lane owners, quotas, ramps, proposals — see bottom of file.
-// Shared lib (sales pages, the territory chip); its tables are sales tables, so it calls the sales API.
+// Sales lib (moved from _base, surface audit §11 row 5, 2026-10-25). Admin has its own territory chip
+// calling the label endpoint (surface-ui/admin/src/components/territory-chip.tsx).
 // FastAPI: surface-api/sales/routers/territories_data.py (runs as the signed-in user).
 
 /* ────────────────────────────────────────────────────────────

@@ -1,4 +1,4 @@
-import { Button } from "@v3/ui/components/marketing/ui/button";
+import { Button } from "@v3/marketing/components/marketing/ui/button";
 import { ArrowRight, Layers, Monitor, CalendarClock, Zap, SlidersHorizontal, Palette } from "lucide-react";
 import socialSchedulePost from "@v3/marketing/assets/social-schedule-post.png";
 import socialReviewsPost from "@v3/marketing/assets/social-reviews-post.png";

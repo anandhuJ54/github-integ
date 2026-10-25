@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { GlobalFinalCTA } from "@v3/ui/components/marketing/sections/shared/GlobalFinalCTA";
+import { GlobalFinalCTA } from "@v3/marketing/components/marketing/sections/shared/GlobalFinalCTA";
 import { SiteFooter, SiteHeader } from "@v3/ui/components/public/site-chrome";
 
 /**

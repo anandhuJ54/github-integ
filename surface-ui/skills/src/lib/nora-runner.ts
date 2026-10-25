@@ -1,5 +1,5 @@
-import { estimateTelemetry, modelLabel, type TraceLevel } from "@v3/ui/lib/nora-sandbox";
-import type { Capability, Skill } from "@v3/ui/lib/nora-registry";
+import { estimateTelemetry, modelLabel, type TraceLevel } from "@v3/skills/lib/nora-sandbox";
+import type { Capability, Skill } from "@v3/skills/lib/nora-registry";
 import type { Json } from "@v3/ui/integrations/supabase/types";
 
 /*

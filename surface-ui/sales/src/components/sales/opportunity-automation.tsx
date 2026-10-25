@@ -10,7 +10,7 @@ import { Input } from "@v3/ui/components/ui/input";
 import { Label } from "@v3/ui/components/ui/label";
 import { Textarea } from "@v3/ui/components/ui/textarea";
 import { EmptyState, Panel } from "@v3/ui/components/console/primitives";
-import { acceptAlert, dismissAlert, loadAlerts, type SalesAlert } from "@v3/ui/lib/sales-alerts";
+import { acceptAlert, dismissAlert, loadAlerts, type SalesAlert } from "@v3/sales/lib/sales-alerts";
 import { getGoogleDeliveryStatus, sendOpportunityEmail } from "@v3/sales/lib/google-workspace.functions";
 import { loadOpportunityAuditTrail, type OpportunityFile } from "@v3/sales/lib/opportunity-file";
 

@@ -10,7 +10,8 @@ import {
   EmptyState,
   ConsoleTabs,
 } from "@v3/ui/components/console/primitives";
-import { loadOrgStats, num } from "@v3/ui/lib/console-surfaces";
+import { num } from "@v3/ui/lib/console-surfaces";
+import { loadOrgStats } from "@v3/admin/lib/console-surfaces";
 
 export const Route = createFileRoute("/_authenticated/support")({
   head: () => ({

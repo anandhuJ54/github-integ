@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import type { ParityCase } from "./types";
-import * as terr from "@v3/ui/lib/territories";
+import * as terr from "@v3/sales/lib/territories";
 import * as admin from "@v3/sales/lib/territory-admin";
 import * as cg from "@v3/sales/lib/category-groups";
 

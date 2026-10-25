@@ -35,7 +35,7 @@ import {
   type BuildStep,
   type Capability,
   type Skill,
-} from "@v3/ui/lib/nora-registry";
+} from "@v3/skills/lib/nora-registry";
 import { cn } from "@v3/ui/lib/utils";
 
 const STATUS_TONE: Record<string, string> = {

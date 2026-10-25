@@ -7,7 +7,7 @@ import { Button } from "@v3/ui/components/ui/button";
 import { Input } from "@v3/ui/components/ui/input";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@v3/ui/components/ui/sheet";
 import { EmptyState, Panel } from "@v3/ui/components/console/primitives";
-import { listCapabilities, listSkills, type Skill } from "@v3/ui/lib/nora-registry";
+import { listCapabilities, listSkills, type Skill } from "@v3/skills/lib/nora-registry";
 import {
   WEIGHT_KEYS,
   buildTrace,
@@ -25,11 +25,11 @@ import {
   whyLine,
   type Ranked,
   type Weights,
-} from "@v3/ui/lib/nora-sandbox";
-import { Chip } from "@v3/ui/components/nora/registry-tabs";
-import { LEVEL_TONE, SkillRunDetail } from "@v3/ui/components/nora/skill-runs";
-import { runSkill } from "@v3/ui/lib/nora-runner.functions";
-import type { SkillRun } from "@v3/ui/lib/nora-runner";
+} from "@v3/skills/lib/nora-sandbox";
+import { Chip } from "@v3/skills/components/nora/registry-tabs";
+import { LEVEL_TONE, SkillRunDetail } from "@v3/skills/components/nora/skill-runs";
+import { runSkill } from "@v3/skills/lib/nora-runner.functions";
+import type { SkillRun } from "@v3/skills/lib/nora-runner";
 import { cn } from "@v3/ui/lib/utils";
 
 const label = "text-[11px] font-bold uppercase tracking-wider text-[color:var(--color-ink-3)]";

@@ -45,7 +45,7 @@ import {
   type TerritoryListRow,
   type TerritoryProposal,
   type TerritoryRep,
-} from "@v3/ui/lib/territories";
+} from "@v3/sales/lib/territories";
 
 const nf = new Intl.NumberFormat("en-US");
 const cf = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 });

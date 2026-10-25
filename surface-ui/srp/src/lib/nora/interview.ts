@@ -4,7 +4,7 @@ import {
   type CategoryBrief,
   type EntityBrief,
 } from "@v3/srp/lib/category-brief";
-import type { SkillRun, Verdict } from "@v3/ui/lib/nora-runner";
+import type { SkillRun, Verdict } from "@v3/srp/lib/nora/skill-run";
 import type {
   CandidateFacts,
   Conflict,

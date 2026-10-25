@@ -210,13 +210,6 @@ def test_users_page_keys_off_the_tree_and_the_caller(fake):
     assert [v for k, v in acct.items() if k.startswith("supabase_user_id")] == [UID]
 
 
-def test_team_family_skips_reads_without_territories_or_family(fake):
-    log, _, _ = fake
-    r = client().post("/xmp/team/family", json={"family_key": None, "territory_ids": [], "year": 2026})
-    assert r.json() == {k: [] for k in ("links", "orgs", "sellers", "expansion", "months")}
-    assert sent(log) == []
-
-
 # --- writes ------------------------------------------------------------------------------------
 
 def test_writes_run_as_the_user_on_the_primary(fake):

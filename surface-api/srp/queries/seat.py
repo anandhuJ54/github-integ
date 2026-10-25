@@ -3,7 +3,7 @@ lib/nora/interview-data.ts (interview subject, claim source) — the rows each s
 returned, under the names the page used.
 
 Moved from xmp (xmp/queries/seat.py), surface audit 2026-10-25 (the seat area belongs to srp).
-Same SQL. lib/insurance-team.ts (Team Central) stayed in xmp (xmp/queries/team.py).
+Same SQL. lib/insurance-team.ts (Team Central) stayed in xmp, then moved to sales (sales/queries/team_central.py).
 
 The page logic (merging, filtering, the listings subject, periods and pace) stays in TypeScript.
 Reads run as the signed-in user (RLS unchanged) and keep the 1000-row PostgREST cap. Reads whose

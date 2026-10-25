@@ -6,7 +6,7 @@ import * as ent from "@v3/xmp/lib/enterprise-xmp";
 import * as seat from "@v3/srp/lib/seat";
 import { loadOfficeMode } from "@v3/srp/lib/office-mode";
 import { loadClaimSource, loadInterviewSubject } from "@v3/srp/lib/nora/interview-data";
-import { loadTeamCentral } from "@v3/xmp/lib/insurance-team";
+import { loadTeamCentral } from "@v3/sales/lib/insurance-team";
 
 // xmp enterprise, seat and dashboard pages (all signed in). Reads only: the writes
 // (review_campaigns insert/update, invitations insert, professionals update, audit_log inserts)

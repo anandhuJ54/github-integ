@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { ogImageUrl } from "@v3/ui/lib/marketing/seo";
+import { ogImageUrl } from "@v3/marketing/lib/marketing/seo";
 
 import { LogoSliderBar } from "@v3/marketing/components/marketing/sections/xmp/LogoSliderBar";
 import { XMPTestimonialsSection } from "@v3/marketing/components/marketing/sections/xmp/XMPTestimonialsSection";

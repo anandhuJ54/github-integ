@@ -1,7 +1,7 @@
-import { MarketingPage } from "@v3/ui/components/marketing/layouts/marketing-page";
+import { MarketingPage } from "@v3/marketing/components/marketing/layouts/marketing-page";
 import { PageBreadcrumb } from "@v3/marketing/components/marketing/PageBreadcrumb";
 import { MarketingSections } from "@v3/ui/components/marketing/sections/premium/MarketingSections";
-import { ogImageUrl } from "@v3/ui/lib/marketing/seo";
+import { ogImageUrl } from "@v3/marketing/lib/marketing/seo";
 import type { PublicPage } from "@v3/ui/lib/public-site";
 
 /**

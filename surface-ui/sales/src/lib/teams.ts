@@ -1,5 +1,5 @@
 import { api } from "@v3/ui/lib/server-fn";
-import { TIER_LABEL, type TerritorySlot } from "@v3/ui/lib/territories";
+import { TIER_LABEL, type TerritorySlot } from "@v3/sales/lib/territories";
 import { loadCategoryGroups, loadGroupMembers, type CategoryGroup } from "@v3/sales/lib/category-groups";
 
 /* ────────────────────────────────────────────────────────────

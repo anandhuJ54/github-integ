@@ -1,6 +1,6 @@
-"""xmp Team Central: lib/insurance-team.ts — the rows each supabase-js query returned, under the
-names the page used. Split out of the seat queries when those moved to srp, surface audit
-2026-10-25 (same SQL).
+"""sales Team Central: lib/insurance-team.ts — the rows each supabase-js query returned, under the
+names the page used. Split out of the seat queries when those moved to srp, then moved from xmp
+(xmp/queries/team.py, /xmp/team/*) to sales, surface audit 2026-10-25 (§9 row E; same SQL).
 
 Reads run as the signed-in user (RLS unchanged); any error is thrown, as the page did. The
 commercial tables (exp_revenue_components etc.) are only read here.
@@ -14,7 +14,7 @@ from sqlalchemy import select
 
 from _base.core.sql import fetch_many
 from _base.schema import tables as T
-from xmp.queries.common import cols
+from sales.queries.catalog import cols
 
 org_t = T.t_organizations
 

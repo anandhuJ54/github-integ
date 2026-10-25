@@ -28,7 +28,7 @@ import {
   type FeedRow,
   type SyncJobRow,
   type VolumeAuditRow,
-} from "@v3/ui/lib/enterprise-ops";
+} from "@v3/xmp/lib/enterprise-ops";
 import { cn } from "@v3/ui/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/enterprise/$orgSlug/transactions")({

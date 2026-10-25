@@ -7145,6 +7145,105 @@
         ]
       }
     },
+    "/sales/team-central/family": {
+      "post": {
+        "tags": [
+          "sales"
+        ],
+        "summary": "Team Family",
+        "description": "The family-dependent reads (a read; POST carries the territory ids):\n{links, orgs, sellers, expansion, months}.",
+        "operationId": "team_family_sales_team_central_family_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SalesTeamFamilyIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "type": "object",
+                  "title": "Response Team Family Sales Team Central Family Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/sales/team-central/{group_key}": {
+      "get": {
+        "tags": [
+          "sales"
+        ],
+        "summary": "Team Base",
+        "description": "loadTeamCentral()'s first reads: {reps, territories, revenue, quotas, groups}.",
+        "operationId": "team_base_sales_team_central__group_key__get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "group_key",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Group Key"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Team Base Sales Team Central  Group Key  Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/sales/teams/brand-links/{link_id}": {
       "patch": {
         "tags": [
@@ -13327,6 +13426,39 @@
         "type": "object",
         "title": "SalesSreTrialExtension",
         "description": "extendTrial's insert. `days` is clamped to 1..7 by the page, as before."
+      },
+      "SalesTeamFamilyIn": {
+        "properties": {
+          "family_key": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Family Key"
+          },
+          "territory_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 1000,
+            "title": "Territory Ids"
+          },
+          "year": {
+            "type": "integer",
+            "title": "Year"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "year"
+        ],
+        "title": "SalesTeamFamilyIn"
       },
       "SalesTeamsMonthQuotaNew": {
         "properties": {

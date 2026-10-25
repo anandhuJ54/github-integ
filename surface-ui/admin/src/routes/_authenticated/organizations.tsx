@@ -23,7 +23,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@v3/ui/components/ui/select";
-import { loadOrgStats, num, ORG_COLUMNS, type OrgRow } from "@v3/ui/lib/console-surfaces";
+import { num } from "@v3/ui/lib/console-surfaces";
+import { loadOrgStats, ORG_COLUMNS, type OrgRow } from "@v3/admin/lib/console-surfaces";
 import { cn } from "@v3/ui/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/organizations")({

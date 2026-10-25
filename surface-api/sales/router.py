@@ -2,7 +2,8 @@
 
 Accounts (/sales/accounts/*) moved to admin (/admin/accounts/*); the Directory drill-down data
 moved to the owners: professional and organization rows to srp (/srp/directory/*), the brand
-rollup to xmp (/xmp/directory/brands/*), surface audit 2026-10-25.
+rollup to xmp (/xmp/directory/brands/*), surface audit 2026-10-25. Team Central moved in from xmp
+(/xmp/team/* → /sales/team-central/*), same audit.
 
 The app mounts only this. Include new sales sub-routers here, not in app.py.
 """
@@ -26,6 +27,7 @@ from sales.routers.seller_setup_data import router as seller_setup_data_router
 from sales.routers.sign_public import router as sign_public_router
 from sales.routers.spine_data import router as spine_data_router
 from sales.routers.sre_data import router as sre_data_router
+from sales.routers.team_central_data import router as team_central_data_router
 from sales.routers.teams_data import router as teams_data_router
 from sales.routers.territories_data import router as territories_data_router
 from sales.routers.worklist_data import router as worklist_data_router
@@ -43,6 +45,7 @@ router.include_router(sre_data_router)
 router.include_router(alerts_data_router)
 router.include_router(opportunity_data_router)
 router.include_router(teams_data_router)
+router.include_router(team_central_data_router)
 router.include_router(seller_setup_data_router)
 router.include_router(territories_data_router)
 router.include_router(category_groups_data_router)

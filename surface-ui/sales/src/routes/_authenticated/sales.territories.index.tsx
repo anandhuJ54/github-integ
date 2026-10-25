@@ -13,7 +13,7 @@ import {
   StatTile,
 } from "@v3/ui/components/console/primitives";
 import { loadGroupsOverview, type GroupOverview } from "@v3/sales/lib/category-groups";
-import { loadTerritoryRules, routingExplainer } from "@v3/ui/lib/territories";
+import { loadTerritoryRules, routingExplainer } from "@v3/sales/lib/territories";
 
 export const Route = createFileRoute("/_authenticated/sales/territories/")({
   head: () => ({

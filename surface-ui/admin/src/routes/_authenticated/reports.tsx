@@ -19,7 +19,8 @@ import {
   StatTile,
   EmptyState,
 } from "@v3/ui/components/console/primitives";
-import { loadReportMetrics, num } from "@v3/ui/lib/console-surfaces";
+import { num } from "@v3/ui/lib/console-surfaces";
+import { loadReportMetrics } from "@v3/admin/lib/console-surfaces";
 
 export const Route = createFileRoute("/_authenticated/reports")({
   head: () => ({

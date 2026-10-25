@@ -7,7 +7,7 @@ import { Checkbox } from "@v3/ui/components/ui/checkbox";
 import { Input } from "@v3/ui/components/ui/input";
 import { Switch } from "@v3/ui/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@v3/ui/components/ui/select";
-import { loadProposals, loadAllTerritories, rejectProposal } from "@v3/ui/lib/territories";
+import { loadProposals, loadAllTerritories, rejectProposal } from "@v3/sales/lib/territories";
 import { loadReps } from "@v3/sales/lib/teams";
 import {
   HYDRATION_GATE_PCT,

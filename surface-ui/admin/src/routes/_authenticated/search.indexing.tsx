@@ -31,7 +31,7 @@ import {
   type SitemapPartitionRow,
   type SubmissionLogRow,
 } from "@v3/admin/lib/search-console";
-import { setSiteIndexing } from "@v3/ui/lib/site-indexing.functions";
+import { setSiteIndexing } from "@v3/admin/lib/site-indexing.functions";
 
 
 export const Route = createFileRoute("/_authenticated/search/indexing")({

@@ -24,7 +24,7 @@ import { XmpShell } from "@v3/xmp/components/enterprise/xmp-chrome";
 import { EmptyState, PageHeader, Panel } from "@v3/ui/components/console/primitives";
 import { BrandAvatar } from "@v3/ui/components/sales/entity-avatar";
 import { loadBrand, loadOverview } from "@v3/xmp/lib/enterprise-xmp";
-import { loadEnterpriseSettings } from "@v3/ui/lib/enterprise-ops";
+import { loadEnterpriseSettings } from "@v3/xmp/lib/enterprise-ops";
 import { cn } from "@v3/ui/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/enterprise/$orgSlug/settings")({

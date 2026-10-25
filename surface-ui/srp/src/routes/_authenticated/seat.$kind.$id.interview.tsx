@@ -17,16 +17,15 @@ import { CheckCircle2, Globe, Loader2, ShieldCheck, Sparkles } from "lucide-reac
 import { toast } from "sonner";
 import { EmptyState, PageHeader, Panel, StatTile } from "@v3/ui/components/console/primitives";
 import { SeatLoading } from "@v3/srp/components/seat/pieces";
-import { Chip } from "@v3/ui/components/nora/registry-tabs";
-import { SkillRunDetail } from "@v3/ui/components/nora/skill-runs";
+import { Chip, SkillRunDetail } from "@v3/srp/components/nora/skill-run-detail";
 import { Badge } from "@v3/ui/components/ui/badge";
 import { Button } from "@v3/ui/components/ui/button";
 import { Checkbox } from "@v3/ui/components/ui/checkbox";
 import { RadioGroup, RadioGroupItem } from "@v3/srp/components/ui/radio-group";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@v3/ui/components/ui/sheet";
 import { getCategoryBrief } from "@v3/srp/lib/category-brief.functions";
-import { runSkill } from "@v3/ui/lib/nora-runner.functions";
-import type { RunMode, SkillRun } from "@v3/ui/lib/nora-runner";
+import { runSkill } from "@v3/srp/lib/nora/skill-run";
+import type { RunMode, SkillRun } from "@v3/srp/lib/nora/skill-run";
 import type { ExtractResult } from "@v3/srp/lib/nora/extract/types";
 import {
   ORGANIZE_SKILLS,

@@ -1,9 +1,10 @@
-"""xmp enterprise data — replaces the direct supabase-js calls in surface-ui/xmp (enterprise-xmp,
-insurance-team and the enterprise route files).
+"""xmp enterprise data — replaces the direct supabase-js calls in surface-ui/xmp (enterprise-xmp
+and the enterprise route files).
 
 Surface audit 2026-10-25: the seat, interview, dashboard and office-mode endpoints moved to srp
 (srp/routers/seat_data.py, /srp/...); the review campaigns endpoints moved to campaigns
-(campaigns/routers/review_campaigns.py, /campaigns/enterprise/...).
+(campaigns/routers/review_campaigns.py, /campaigns/enterprise/...); Team Central (/xmp/team/*,
+lib/insurance-team.ts) moved to sales (sales/routers/team_central_data.py, /sales/team-central/*).
 
 Everything runs as the signed-in user (these pages are all under `_authenticated`), so RLS and
 the SECURITY INVOKER functions decide as they did for the browser. Reads keep the 1000-row
@@ -21,7 +22,7 @@ from pydantic import BaseModel, ConfigDict, Field
 from _base.core import db
 from _base.core.auth import current_user
 from _base.core.sql import fetch_all
-from xmp.queries import common, enterprise, enterprise_ops, team
+from xmp.queries import common, enterprise, enterprise_ops
 
 router = APIRouter(prefix="/xmp", tags=["xmp"])
 
@@ -178,25 +179,6 @@ def deactivate(pro_id: str, claims: dict = Depends(current_user)) -> dict:
     """deactivate(): the professionals update (no update policy: 0 rows), then the audit_log
     insert whose error the page ignored."""
     return _write_with(claims, enterprise.deactivate, _uid(claims), pro_id)
-
-
-# --- Team Central (lib/insurance-team.ts) ------------------------------------------------------
-
-@router.get("/team/{group_key}")
-def team_base(group_key: str, claims: dict = Depends(current_user)) -> dict:
-    return _read_with(claims, team.team_base, group_key)
-
-
-class XmpTeamFamilyIn(_XmpBody):
-    family_key: str | None = None
-    territory_ids: list[str] = Field(default_factory=list, max_length=1000)
-    year: int
-
-
-@router.post("/team/family")
-def team_family(body: XmpTeamFamilyIn, claims: dict = Depends(current_user)) -> dict:
-    """The family-dependent reads (a read; POST carries the territory ids)."""
-    return _read_with(claims, team.team_family, body.family_key, body.territory_ids, body.year)
 
 
 # --- enterprise operations (surface-ui/_base/src/lib/enterprise-ops.ts) ------------------------

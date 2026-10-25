@@ -1,6 +1,6 @@
 import { ArrowRight, Play, Star, CheckCircle } from "lucide-react";
 import demoHeroBg from "@v3/marketing/assets/demo-hero-bg.jpg";
-import { Button } from "@v3/ui/components/marketing/ui/button";
+import { Button } from "@v3/marketing/components/marketing/ui/button";
 
 const Demo = () => {
   return (

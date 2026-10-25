@@ -8,7 +8,8 @@ import {
   type Column,
 } from "@v3/ui/components/console/primitives";
 import { EtlRunMonitor } from "@v3/etl/components/discovery/etl-run-monitor";
-import { loadPipelineHealth, num, type DiscoJob } from "@v3/ui/lib/console-surfaces";
+import { num } from "@v3/ui/lib/console-surfaces";
+import { loadPipelineHealth, type DiscoJob } from "@v3/etl/lib/pipeline-health";
 import { cn } from "@v3/ui/lib/utils";
 
 /* Run health (the old /nora-os Runs tab, surface audit 2026-10-24), shown at /run-health under

@@ -151,7 +151,7 @@ Under the serving-vs-editing rule:
 | A | Enterprise console | `/enterprise/$orgSlug/*` | Stays in **xmp**, except **review campaigns** (`/enterprise/$orgSlug/campaigns`, `/xmp/enterprise/orgs/{slug}/campaigns*`) → **campaigns**. **Done**: `/campaigns/enterprise/*` (first campaigns page) |
 | B | Seat (one pro or location) | `/seat/$kind/$id/*` | Move to **srp**, both `/seat/professional/*` and `/seat/location/*` (2026-10-25). **Done**: `/srp/seat/*`, `/srp/interview/*`, `/srp/rpc/exp_office_mode` |
 | C | Pro dashboard | `/dashboard/*` | Move to **srp** (2026-10-25; this dashboard only, not a rule). **Done**: `/srp/dashboard/*`. Note: empty for everyone today, no professional is linked to a login |
-| E | Team Central (`/xmp/team/*`, `lib/insurance-team.ts`; reads sales tables; no page uses it, only parity) | — | Move to **sales** (2026-10-25; pending) |
+| E | Team Central (`/xmp/team/*`, `lib/insurance-team.ts`; reads sales tables; no page uses it, only parity) | — | Move to **sales** (2026-10-25). **Done**: `/sales/team-central/*`, `sales/src/lib/insurance-team.ts` |
 | D | Demand engine | `/website/*` (incl. `/website/campaigns`, marketing campaigns); API `/xmp/website/*`; `_base` nav-menus | Move to **marketing** (confirmed for `/website/campaigns`, 2026-10-25). **Done**: `/marketing/website/*` |
 
 ## 10. sales
@@ -173,15 +173,22 @@ Moving a file out of `_base` changes nothing on screen; it only sets which Surfa
 | # | Group | Files | Decision (2026-10-25) |
 |---|---|---|---|
 | 1 | search code (public search, facets, city detection, card actions, visitor lists, phone format) | `lib/search.ts`, `search-presentation.functions.ts`, `geo.functions.ts`, `geo-coords.ts`, `engagement.functions.ts`, `visitor-lists.ts`, `us-phone.ts` | Keep in **_base** |
-| 2a | marketing settings and components (site address, meta tags, demo links, section images, marketing layouts/sections) | `lib/marketing/seo.ts`, `envUrls.ts`, `section-images.ts`, `components/marketing/*` | Move to **marketing** (pending). The app shell's 404 page imports from marketing |
+| 2a | marketing settings and components (site address, meta tags, demo links, section images, marketing layouts/sections) | `lib/marketing/seo.ts`, `envUrls.ts`, `section-images.ts`, `components/marketing/*` | Move to **marketing**. The app shell's 404 page imports from marketing. **Done** except `section-images.ts` and `components/marketing/sections/premium/*` (`MarketingSections`, `icon`): `_base`'s `components/public/blocks.tsx` (the CMS block renderer, also used by search's `/trust/$slug`) renders them, so they stay in `_base` until that is decided |
 | 2b | public header/menu data | `lib/nav-menus.ts`, `home.functions.ts` | Keep in **_base** (every public page's header uses them) |
 | 3 | public site pages and VOCE (shared by search, marketing, admin) | `lib/public-site.ts`, `public-site.functions.ts`, `voce.ts` | Keep in **_base** |
-| 4 | skills and NORA code (registry, sandbox, runner client, registry tabs, run list) | `lib/nora-registry.ts`, `nora-sandbox.ts`, `nora-runner.ts`, `nora-runner.functions.ts`, `components/nora/*` | Move to **skills** (2026-10-25; pending). srp's seat interview gets its own copy of what it uses |
-| 5 | sales code (territories, sales alerts, territory chip) | `lib/territories.ts`, `sales-alerts.ts`, `components/sales/territory-chip.tsx` | Move to **sales** (2026-10-25; pending). Admin (territory chip on `/professionals`, "Run now" on `/admin/integrations`) calls the sales API with its own small client, through the published contract |
-| 6 | admin code (Google Workspace, site-indexing switch) | `lib/google-workspace.functions.ts` → **admin** (only `/admin/integrations` uses it). `lib/site-indexing.functions.ts`: the **read** (every page load, search API) stays in **_base**; the **write** (the indexing switch) → **admin** (2026-10-25; pending) |
-| 7a | enterprise code | `lib/enterprise-ops.ts` (Enterprise Settings and Transactions) | Move to **xmp** (2026-10-25; pending) |
-| 7b | metrics loaders + number formatting | `lib/console-surfaces.ts` | Split (2026-10-25; pending): formatting helpers (`money`, `num`, `pct`) stay in **_base**; `loadPipelineHealth` → **etl** (Run health); `loadBilling`, `loadProductCatalog`, `loadReportMetrics`, `loadOrgStats` → **admin** (Billing, Reports, Organizations, Support), still calling etl/sales APIs through their contracts |
+| 4 | skills and NORA code (registry, sandbox, runner client, registry tabs, run list) | `lib/nora-registry.ts`, `nora-sandbox.ts`, `nora-runner.ts`, `nora-runner.functions.ts`, `components/nora/*` | Move to **skills** (2026-10-25). srp's seat interview gets its own copy of what it uses. **Done** (srp copy: `lib/nora/skill-run.ts`, `components/nora/skill-run-detail.tsx`) |
+| 5 | sales code (territories, sales alerts, territory chip) | `lib/territories.ts`, `sales-alerts.ts`, `components/sales/territory-chip.tsx` | Move to **sales** (2026-10-25; **done**). Admin (territory chip on `/professionals`, "Run now" on `/admin/integrations`) calls the sales API with its own small client, through the published contract |
+| 6 | admin code (Google Workspace, site-indexing switch) | `lib/google-workspace.functions.ts` → **admin** (only `/admin/integrations` uses it). `lib/site-indexing.functions.ts`: the **read** (every page load, search API) stays in **_base**; the **write** (the indexing switch) → **admin** (2026-10-25; **done**) |
+| 7a | enterprise code | `lib/enterprise-ops.ts` (Enterprise Settings and Transactions) | Move to **xmp** (2026-10-25; **done**; etl's discovery contract preview has its own `csvExport` copy) |
+| 7b | metrics loaders + number formatting | `lib/console-surfaces.ts` | Split (2026-10-25; **done**: `etl/src/lib/pipeline-health.ts`, `admin/src/lib/console-surfaces.ts`): formatting helpers (`money`, `num`, `pct`) stay in **_base**; `loadPipelineHealth` → **etl** (Run health); `loadBilling`, `loadProductCatalog`, `loadReportMetrics`, `loadOrgStats` → **admin** (Billing, Reports, Organizations, Support), still calling etl/sales APIs through their contracts |
 | API | `surface-api/_base`: `core/`, `schema/`, `app_factory.py`, `contracts.py` (shared core); `disco/` (discovery engine: etl, plus graph's boundary generator, nora-os's scraper, admin's field names); `integrations/` (Google Workspace: admin, sales) | Keep all in **_base** (2026-10-25). `disco/` can move to etl later, once graph and nora-os use etl's API instead of importing it |
+
+## 12–14. marketing, campaigns, skills
+
+Contents after the moves, confirmed as right (2026-10-25):
+- **marketing:** the public company website (30 pages: `/`, `/reviews`, `/social`, `/listings`, `/voce`, `/voce-articles`, `/guides`, `/nora`, `/campaigns`, `/request-a-demo`, …), the Demand engine (`/website/*`), API `/marketing/fn/*` and `/marketing/website/*`. The marketing pages `/reviews`, `/social`, `/voce`, `/voce-articles`, `/guides` stay in **marketing** (2026-10-25): they are CMS pages written in Demand engine (or fixed content), not search data; a page that only has a search box is not a search page.
+- **campaigns:** review campaigns `/enterprise/$orgSlug/campaigns`; API `/campaigns/enterprise/*`.
+- **skills:** `/skills` (NORA OS → Skills); API `/skills/registry/*`, `/skills/sandbox/*`.
 
 ## Published cross-Surface APIs (to add as contract entries)
 

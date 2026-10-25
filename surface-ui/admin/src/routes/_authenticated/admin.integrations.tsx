@@ -9,10 +9,10 @@ import { Button } from "@v3/ui/components/ui/button";
 import { Badge } from "@v3/ui/components/ui/badge";
 import { Input } from "@v3/ui/components/ui/input";
 import { useRole } from "@v3/ui/lib/roles";
-import { checkDomainVerification, dispatchGoogleOutbox, getGoogleIntegration, startDomainVerification, startGoogleConnect } from "@v3/ui/lib/google-workspace.functions";
+import { checkDomainVerification, dispatchGoogleOutbox, getGoogleIntegration, startDomainVerification, startGoogleConnect } from "@v3/admin/lib/google-workspace.functions";
 import { getNoraIntegrations, updateNoraIntegration } from "@v3/admin/lib/integrations.functions";
 import { INTEGRATION_STATUS_LABEL, INTEGRATIONS, type IntegrationStatus } from "@v3/admin/lib/integrations";
-import { ALERT_RULES, ALERT_TIER_LABEL, runAlertEngineNow } from "@v3/ui/lib/sales-alerts";
+import { ALERT_RULES, ALERT_TIER_LABEL, runAlertEngineNow } from "@v3/admin/lib/sales-alerts";
 
 export const Route = createFileRoute("/_authenticated/admin/integrations")({
   head: () => ({

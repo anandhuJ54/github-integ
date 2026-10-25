@@ -5,6 +5,8 @@ import { api } from "@v3/ui/lib/server-fn";
    tables only (reps, quotas, revenue components, territories,
    territory→brand links, organizations, expansion views).
    No graph / taxonomy / registry / scoring / compliance reads.
+   Moved from xmp (was /xmp/team/*) to sales, surface audit 2026-10-25
+   (§9 row E): sales API /sales/team-central/*. No page uses it yet.
    ──────────────────────────────────────────────────────────── */
 
 export type PeriodKey = "month" | "quarter" | "year";
@@ -129,7 +131,7 @@ export async function loadTeamCentral(groupKey: string, now = new Date()): Promi
 
   // reps, territories, revenue components, quotas and category groups (server side, read-only)
   const base = await api.get<Record<"reps" | "territories" | "revenue" | "quotas" | "groups", any[]>>(
-    `/xmp/team/${encodeURIComponent(groupKey)}`,
+    `/sales/team-central/${encodeURIComponent(groupKey)}`,
   );
   const repsQ = { data: base.reps };
   const terrQ = { data: base.territories };
@@ -150,7 +152,7 @@ export async function loadTeamCentral(groupKey: string, now = new Date()): Promi
   // territory→brand links, the linked organizations, the expansion views and the territory
   // sellers' names (server side, read-only)
   const fam = await api.post<Record<"links" | "orgs" | "sellers" | "expansion" | "months", any[]>>(
-    "/xmp/team/family",
+    "/sales/team-central/family",
     { family_key: familyKey, territory_ids: terrIds, year: now.getUTCFullYear() },
   );
   const linkQ = { data: fam.links };

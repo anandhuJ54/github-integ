@@ -1,6 +1,7 @@
 import { api } from "@v3/ui/lib/server-fn";
 
-// Shared lib (sales pages, admin integrations); its tables are sales tables, so it calls the sales API.
+// Sales lib (moved from _base, surface audit §11 row 5, 2026-10-25). Admin's integrations page has its own
+// small client for the alert-engine "Run now" (surface-ui/admin/src/lib/sales-alerts.ts).
 // FastAPI: surface-api/sales/routers/alerts_data.py (runs as the signed-in user).
 const A = "/sales/alerts";
 const rpc = <T>(fn: string, args: Record<string, unknown> = {}): Promise<T> => api.post<T>(`${A}/rpc/${fn}`, { args });

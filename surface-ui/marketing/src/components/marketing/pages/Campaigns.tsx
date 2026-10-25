@@ -1,4 +1,4 @@
-import { ogImageUrl } from "@v3/ui/lib/marketing/seo";
+import { ogImageUrl } from "@v3/marketing/lib/marketing/seo";
 import {
   CampaignsHeroSection,
   CampaignsStrategicBanner,

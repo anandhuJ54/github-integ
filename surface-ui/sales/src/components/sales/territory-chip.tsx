@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { loadTerritoryLabel } from "@v3/ui/lib/territories";
+import { loadTerritoryLabel } from "@v3/sales/lib/territories";
 
 /** Small designator chip: "Territory: Insurance_Agency_SRE_1". Renders nothing when unassigned. */
 export function TerritoryChip({ territoryId }: { territoryId: string | null | undefined }) {
