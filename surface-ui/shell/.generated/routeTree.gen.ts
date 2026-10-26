@@ -162,14 +162,21 @@ import { Route as AuthenticatedBuildDotspacesDotspaceKeyDotslugRouteImport } fro
 import { Route as AuthenticatedSalesDotteams_DotgroupKeyDotteamRouteImport } from './../../sales/src/routes/_authenticated/sales.teams_.$groupKey.team'
 import { Route as AuthenticatedSales_DotcontractsDotcontractId_DotprintRouteImport } from './../../sales/src/routes/_authenticated/sales_.contracts.$contractId_.print'
 import { Route as AuthenticatedSeatDotkindDotidDotindexRouteImport } from './../../srp/src/routes/_authenticated/seat.$kind.$id.index'
+import { Route as AuthenticatedSeatDotkindDotidDotconnectionsRouteImport } from './../../srp/src/routes/_authenticated/seat.$kind.$id.connections'
+import { Route as AuthenticatedSeatDotkindDotidDotfindRouteImport } from './../../srp/src/routes/_authenticated/seat.$kind.$id.find'
 import { Route as AuthenticatedSeatDotkindDotidDotgraphRouteImport } from './../../srp/src/routes/_authenticated/seat.$kind.$id.graph'
+import { Route as AuthenticatedSeatDotkindDotidDotinsightsRouteImport } from './../../srp/src/routes/_authenticated/seat.$kind.$id.insights'
 import { Route as AuthenticatedSeatDotkindDotidDotinterviewRouteImport } from './../../srp/src/routes/_authenticated/seat.$kind.$id.interview'
 import { Route as AuthenticatedSeatDotkindDotidDotlistingsRouteImport } from './../../srp/src/routes/_authenticated/seat.$kind.$id.listings'
 import { Route as AuthenticatedSeatDotkindDotidDotmultiPostRouteImport } from './../../srp/src/routes/_authenticated/seat.$kind.$id.multi-post'
+import { Route as AuthenticatedSeatDotkindDotidDotnetworkRouteImport } from './../../srp/src/routes/_authenticated/seat.$kind.$id.network'
 import { Route as AuthenticatedSeatDotkindDotidDotnoraRouteImport } from './../../srp/src/routes/_authenticated/seat.$kind.$id.nora'
+import { Route as AuthenticatedSeatDotkindDotidDotprofileRouteImport } from './../../srp/src/routes/_authenticated/seat.$kind.$id.profile'
 import { Route as AuthenticatedSeatDotkindDotidDotreportingRouteImport } from './../../srp/src/routes/_authenticated/seat.$kind.$id.reporting'
 import { Route as AuthenticatedSeatDotkindDotidDotreviewsRouteImport } from './../../srp/src/routes/_authenticated/seat.$kind.$id.reviews'
+import { Route as AuthenticatedSeatDotkindDotidDotsettingsRouteImport } from './../../srp/src/routes/_authenticated/seat.$kind.$id.settings'
 import { Route as AuthenticatedSeatDotkindDotidDotteamRouteImport } from './../../srp/src/routes/_authenticated/seat.$kind.$id.team'
+import { Route as AuthenticatedSeatDotkindDotidDotwebsiteRouteImport } from './../../srp/src/routes/_authenticated/seat.$kind.$id.website'
 import { Route as AuthenticatedEnterpriseDotorgSlugDotviewDotkindDotidRouteImport } from './../../xmp/src/routes/_authenticated/enterprise.$orgSlug.view.$kind.$id'
 
 const IndexRoute = IndexRouteImport.update({
@@ -1024,10 +1031,28 @@ const AuthenticatedSeatDotkindDotidDotindexRoute =
     path: '/',
     getParentRoute: () => AuthenticatedSeatDotkindDotidRoute,
   } as any)
+const AuthenticatedSeatDotkindDotidDotconnectionsRoute =
+  AuthenticatedSeatDotkindDotidDotconnectionsRouteImport.update({
+    id: '/connections',
+    path: '/connections',
+    getParentRoute: () => AuthenticatedSeatDotkindDotidRoute,
+  } as any)
+const AuthenticatedSeatDotkindDotidDotfindRoute =
+  AuthenticatedSeatDotkindDotidDotfindRouteImport.update({
+    id: '/find',
+    path: '/find',
+    getParentRoute: () => AuthenticatedSeatDotkindDotidRoute,
+  } as any)
 const AuthenticatedSeatDotkindDotidDotgraphRoute =
   AuthenticatedSeatDotkindDotidDotgraphRouteImport.update({
     id: '/graph',
     path: '/graph',
+    getParentRoute: () => AuthenticatedSeatDotkindDotidRoute,
+  } as any)
+const AuthenticatedSeatDotkindDotidDotinsightsRoute =
+  AuthenticatedSeatDotkindDotidDotinsightsRouteImport.update({
+    id: '/insights',
+    path: '/insights',
     getParentRoute: () => AuthenticatedSeatDotkindDotidRoute,
   } as any)
 const AuthenticatedSeatDotkindDotidDotinterviewRoute =
@@ -1048,10 +1073,22 @@ const AuthenticatedSeatDotkindDotidDotmultiPostRoute =
     path: '/multi-post',
     getParentRoute: () => AuthenticatedSeatDotkindDotidRoute,
   } as any)
+const AuthenticatedSeatDotkindDotidDotnetworkRoute =
+  AuthenticatedSeatDotkindDotidDotnetworkRouteImport.update({
+    id: '/network',
+    path: '/network',
+    getParentRoute: () => AuthenticatedSeatDotkindDotidRoute,
+  } as any)
 const AuthenticatedSeatDotkindDotidDotnoraRoute =
   AuthenticatedSeatDotkindDotidDotnoraRouteImport.update({
     id: '/nora',
     path: '/nora',
+    getParentRoute: () => AuthenticatedSeatDotkindDotidRoute,
+  } as any)
+const AuthenticatedSeatDotkindDotidDotprofileRoute =
+  AuthenticatedSeatDotkindDotidDotprofileRouteImport.update({
+    id: '/profile',
+    path: '/profile',
     getParentRoute: () => AuthenticatedSeatDotkindDotidRoute,
   } as any)
 const AuthenticatedSeatDotkindDotidDotreportingRoute =
@@ -1066,10 +1103,22 @@ const AuthenticatedSeatDotkindDotidDotreviewsRoute =
     path: '/reviews',
     getParentRoute: () => AuthenticatedSeatDotkindDotidRoute,
   } as any)
+const AuthenticatedSeatDotkindDotidDotsettingsRoute =
+  AuthenticatedSeatDotkindDotidDotsettingsRouteImport.update({
+    id: '/settings',
+    path: '/settings',
+    getParentRoute: () => AuthenticatedSeatDotkindDotidRoute,
+  } as any)
 const AuthenticatedSeatDotkindDotidDotteamRoute =
   AuthenticatedSeatDotkindDotidDotteamRouteImport.update({
     id: '/team',
     path: '/team',
+    getParentRoute: () => AuthenticatedSeatDotkindDotidRoute,
+  } as any)
+const AuthenticatedSeatDotkindDotidDotwebsiteRoute =
+  AuthenticatedSeatDotkindDotidDotwebsiteRouteImport.update({
+    id: '/website',
+    path: '/website',
     getParentRoute: () => AuthenticatedSeatDotkindDotidRoute,
   } as any)
 const AuthenticatedEnterpriseDotorgSlugDotviewDotkindDotidRoute =
@@ -1230,14 +1279,21 @@ export interface FileRoutesByFullPath {
   '/build/spaces/$spaceKey/$slug': typeof AuthenticatedBuildDotspacesDotspaceKeyDotslugRoute
   '/sales/teams/$groupKey/team': typeof AuthenticatedSalesDotteams_DotgroupKeyDotteamRoute
   '/sales/contracts/$contractId/print': typeof AuthenticatedSales_DotcontractsDotcontractId_DotprintRoute
+  '/seat/$kind/$id/connections': typeof AuthenticatedSeatDotkindDotidDotconnectionsRoute
+  '/seat/$kind/$id/find': typeof AuthenticatedSeatDotkindDotidDotfindRoute
   '/seat/$kind/$id/graph': typeof AuthenticatedSeatDotkindDotidDotgraphRoute
+  '/seat/$kind/$id/insights': typeof AuthenticatedSeatDotkindDotidDotinsightsRoute
   '/seat/$kind/$id/interview': typeof AuthenticatedSeatDotkindDotidDotinterviewRoute
   '/seat/$kind/$id/listings': typeof AuthenticatedSeatDotkindDotidDotlistingsRoute
   '/seat/$kind/$id/multi-post': typeof AuthenticatedSeatDotkindDotidDotmultiPostRoute
+  '/seat/$kind/$id/network': typeof AuthenticatedSeatDotkindDotidDotnetworkRoute
   '/seat/$kind/$id/nora': typeof AuthenticatedSeatDotkindDotidDotnoraRoute
+  '/seat/$kind/$id/profile': typeof AuthenticatedSeatDotkindDotidDotprofileRoute
   '/seat/$kind/$id/reporting': typeof AuthenticatedSeatDotkindDotidDotreportingRoute
   '/seat/$kind/$id/reviews': typeof AuthenticatedSeatDotkindDotidDotreviewsRoute
+  '/seat/$kind/$id/settings': typeof AuthenticatedSeatDotkindDotidDotsettingsRoute
   '/seat/$kind/$id/team': typeof AuthenticatedSeatDotkindDotidDotteamRoute
+  '/seat/$kind/$id/website': typeof AuthenticatedSeatDotkindDotidDotwebsiteRoute
   '/build/spaces/$spaceKey/': typeof AuthenticatedBuildDotspacesDotspaceKeyDotindexRoute
   '/seat/$kind/$id/': typeof AuthenticatedSeatDotkindDotidDotindexRoute
   '/enterprise/$orgSlug/view/$kind/$id': typeof AuthenticatedEnterpriseDotorgSlugDotviewDotkindDotidRoute
@@ -1382,14 +1438,21 @@ export interface FileRoutesByTo {
   '/build/spaces/$spaceKey/$slug': typeof AuthenticatedBuildDotspacesDotspaceKeyDotslugRoute
   '/sales/teams/$groupKey/team': typeof AuthenticatedSalesDotteams_DotgroupKeyDotteamRoute
   '/sales/contracts/$contractId/print': typeof AuthenticatedSales_DotcontractsDotcontractId_DotprintRoute
+  '/seat/$kind/$id/connections': typeof AuthenticatedSeatDotkindDotidDotconnectionsRoute
+  '/seat/$kind/$id/find': typeof AuthenticatedSeatDotkindDotidDotfindRoute
   '/seat/$kind/$id/graph': typeof AuthenticatedSeatDotkindDotidDotgraphRoute
+  '/seat/$kind/$id/insights': typeof AuthenticatedSeatDotkindDotidDotinsightsRoute
   '/seat/$kind/$id/interview': typeof AuthenticatedSeatDotkindDotidDotinterviewRoute
   '/seat/$kind/$id/listings': typeof AuthenticatedSeatDotkindDotidDotlistingsRoute
   '/seat/$kind/$id/multi-post': typeof AuthenticatedSeatDotkindDotidDotmultiPostRoute
+  '/seat/$kind/$id/network': typeof AuthenticatedSeatDotkindDotidDotnetworkRoute
   '/seat/$kind/$id/nora': typeof AuthenticatedSeatDotkindDotidDotnoraRoute
+  '/seat/$kind/$id/profile': typeof AuthenticatedSeatDotkindDotidDotprofileRoute
   '/seat/$kind/$id/reporting': typeof AuthenticatedSeatDotkindDotidDotreportingRoute
   '/seat/$kind/$id/reviews': typeof AuthenticatedSeatDotkindDotidDotreviewsRoute
+  '/seat/$kind/$id/settings': typeof AuthenticatedSeatDotkindDotidDotsettingsRoute
   '/seat/$kind/$id/team': typeof AuthenticatedSeatDotkindDotidDotteamRoute
+  '/seat/$kind/$id/website': typeof AuthenticatedSeatDotkindDotidDotwebsiteRoute
   '/build/spaces/$spaceKey': typeof AuthenticatedBuildDotspacesDotspaceKeyDotindexRoute
   '/seat/$kind/$id': typeof AuthenticatedSeatDotkindDotidDotindexRoute
   '/enterprise/$orgSlug/view/$kind/$id': typeof AuthenticatedEnterpriseDotorgSlugDotviewDotkindDotidRoute
@@ -1547,14 +1610,21 @@ export interface FileRoutesById {
   '/_authenticated/build/spaces/$spaceKey/$slug': typeof AuthenticatedBuildDotspacesDotspaceKeyDotslugRoute
   '/_authenticated/sales/teams_/$groupKey/team': typeof AuthenticatedSalesDotteams_DotgroupKeyDotteamRoute
   '/_authenticated/sales_/contracts/$contractId_/print': typeof AuthenticatedSales_DotcontractsDotcontractId_DotprintRoute
+  '/_authenticated/seat/$kind/$id/connections': typeof AuthenticatedSeatDotkindDotidDotconnectionsRoute
+  '/_authenticated/seat/$kind/$id/find': typeof AuthenticatedSeatDotkindDotidDotfindRoute
   '/_authenticated/seat/$kind/$id/graph': typeof AuthenticatedSeatDotkindDotidDotgraphRoute
+  '/_authenticated/seat/$kind/$id/insights': typeof AuthenticatedSeatDotkindDotidDotinsightsRoute
   '/_authenticated/seat/$kind/$id/interview': typeof AuthenticatedSeatDotkindDotidDotinterviewRoute
   '/_authenticated/seat/$kind/$id/listings': typeof AuthenticatedSeatDotkindDotidDotlistingsRoute
   '/_authenticated/seat/$kind/$id/multi-post': typeof AuthenticatedSeatDotkindDotidDotmultiPostRoute
+  '/_authenticated/seat/$kind/$id/network': typeof AuthenticatedSeatDotkindDotidDotnetworkRoute
   '/_authenticated/seat/$kind/$id/nora': typeof AuthenticatedSeatDotkindDotidDotnoraRoute
+  '/_authenticated/seat/$kind/$id/profile': typeof AuthenticatedSeatDotkindDotidDotprofileRoute
   '/_authenticated/seat/$kind/$id/reporting': typeof AuthenticatedSeatDotkindDotidDotreportingRoute
   '/_authenticated/seat/$kind/$id/reviews': typeof AuthenticatedSeatDotkindDotidDotreviewsRoute
+  '/_authenticated/seat/$kind/$id/settings': typeof AuthenticatedSeatDotkindDotidDotsettingsRoute
   '/_authenticated/seat/$kind/$id/team': typeof AuthenticatedSeatDotkindDotidDotteamRoute
+  '/_authenticated/seat/$kind/$id/website': typeof AuthenticatedSeatDotkindDotidDotwebsiteRoute
   '/_authenticated/build/spaces/$spaceKey/': typeof AuthenticatedBuildDotspacesDotspaceKeyDotindexRoute
   '/_authenticated/seat/$kind/$id/': typeof AuthenticatedSeatDotkindDotidDotindexRoute
   '/_authenticated/enterprise/$orgSlug/view/$kind/$id': typeof AuthenticatedEnterpriseDotorgSlugDotviewDotkindDotidRoute
@@ -1712,14 +1782,21 @@ export interface FileRouteTypes {
     | '/build/spaces/$spaceKey/$slug'
     | '/sales/teams/$groupKey/team'
     | '/sales/contracts/$contractId/print'
+    | '/seat/$kind/$id/connections'
+    | '/seat/$kind/$id/find'
     | '/seat/$kind/$id/graph'
+    | '/seat/$kind/$id/insights'
     | '/seat/$kind/$id/interview'
     | '/seat/$kind/$id/listings'
     | '/seat/$kind/$id/multi-post'
+    | '/seat/$kind/$id/network'
     | '/seat/$kind/$id/nora'
+    | '/seat/$kind/$id/profile'
     | '/seat/$kind/$id/reporting'
     | '/seat/$kind/$id/reviews'
+    | '/seat/$kind/$id/settings'
     | '/seat/$kind/$id/team'
+    | '/seat/$kind/$id/website'
     | '/build/spaces/$spaceKey/'
     | '/seat/$kind/$id/'
     | '/enterprise/$orgSlug/view/$kind/$id'
@@ -1864,14 +1941,21 @@ export interface FileRouteTypes {
     | '/build/spaces/$spaceKey/$slug'
     | '/sales/teams/$groupKey/team'
     | '/sales/contracts/$contractId/print'
+    | '/seat/$kind/$id/connections'
+    | '/seat/$kind/$id/find'
     | '/seat/$kind/$id/graph'
+    | '/seat/$kind/$id/insights'
     | '/seat/$kind/$id/interview'
     | '/seat/$kind/$id/listings'
     | '/seat/$kind/$id/multi-post'
+    | '/seat/$kind/$id/network'
     | '/seat/$kind/$id/nora'
+    | '/seat/$kind/$id/profile'
     | '/seat/$kind/$id/reporting'
     | '/seat/$kind/$id/reviews'
+    | '/seat/$kind/$id/settings'
     | '/seat/$kind/$id/team'
+    | '/seat/$kind/$id/website'
     | '/build/spaces/$spaceKey'
     | '/seat/$kind/$id'
     | '/enterprise/$orgSlug/view/$kind/$id'
@@ -2028,14 +2112,21 @@ export interface FileRouteTypes {
     | '/_authenticated/build/spaces/$spaceKey/$slug'
     | '/_authenticated/sales/teams_/$groupKey/team'
     | '/_authenticated/sales_/contracts/$contractId_/print'
+    | '/_authenticated/seat/$kind/$id/connections'
+    | '/_authenticated/seat/$kind/$id/find'
     | '/_authenticated/seat/$kind/$id/graph'
+    | '/_authenticated/seat/$kind/$id/insights'
     | '/_authenticated/seat/$kind/$id/interview'
     | '/_authenticated/seat/$kind/$id/listings'
     | '/_authenticated/seat/$kind/$id/multi-post'
+    | '/_authenticated/seat/$kind/$id/network'
     | '/_authenticated/seat/$kind/$id/nora'
+    | '/_authenticated/seat/$kind/$id/profile'
     | '/_authenticated/seat/$kind/$id/reporting'
     | '/_authenticated/seat/$kind/$id/reviews'
+    | '/_authenticated/seat/$kind/$id/settings'
     | '/_authenticated/seat/$kind/$id/team'
+    | '/_authenticated/seat/$kind/$id/website'
     | '/_authenticated/build/spaces/$spaceKey/'
     | '/_authenticated/seat/$kind/$id/'
     | '/_authenticated/enterprise/$orgSlug/view/$kind/$id'
@@ -3163,11 +3254,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedSeatDotkindDotidDotindexRouteImport
       parentRoute: typeof AuthenticatedSeatDotkindDotidRoute
     }
+    '/_authenticated/seat/$kind/$id/connections': {
+      id: '/_authenticated/seat/$kind/$id/connections'
+      path: '/connections'
+      fullPath: '/seat/$kind/$id/connections'
+      preLoaderRoute: typeof AuthenticatedSeatDotkindDotidDotconnectionsRouteImport
+      parentRoute: typeof AuthenticatedSeatDotkindDotidRoute
+    }
+    '/_authenticated/seat/$kind/$id/find': {
+      id: '/_authenticated/seat/$kind/$id/find'
+      path: '/find'
+      fullPath: '/seat/$kind/$id/find'
+      preLoaderRoute: typeof AuthenticatedSeatDotkindDotidDotfindRouteImport
+      parentRoute: typeof AuthenticatedSeatDotkindDotidRoute
+    }
     '/_authenticated/seat/$kind/$id/graph': {
       id: '/_authenticated/seat/$kind/$id/graph'
       path: '/graph'
       fullPath: '/seat/$kind/$id/graph'
       preLoaderRoute: typeof AuthenticatedSeatDotkindDotidDotgraphRouteImport
+      parentRoute: typeof AuthenticatedSeatDotkindDotidRoute
+    }
+    '/_authenticated/seat/$kind/$id/insights': {
+      id: '/_authenticated/seat/$kind/$id/insights'
+      path: '/insights'
+      fullPath: '/seat/$kind/$id/insights'
+      preLoaderRoute: typeof AuthenticatedSeatDotkindDotidDotinsightsRouteImport
       parentRoute: typeof AuthenticatedSeatDotkindDotidRoute
     }
     '/_authenticated/seat/$kind/$id/interview': {
@@ -3191,11 +3303,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedSeatDotkindDotidDotmultiPostRouteImport
       parentRoute: typeof AuthenticatedSeatDotkindDotidRoute
     }
+    '/_authenticated/seat/$kind/$id/network': {
+      id: '/_authenticated/seat/$kind/$id/network'
+      path: '/network'
+      fullPath: '/seat/$kind/$id/network'
+      preLoaderRoute: typeof AuthenticatedSeatDotkindDotidDotnetworkRouteImport
+      parentRoute: typeof AuthenticatedSeatDotkindDotidRoute
+    }
     '/_authenticated/seat/$kind/$id/nora': {
       id: '/_authenticated/seat/$kind/$id/nora'
       path: '/nora'
       fullPath: '/seat/$kind/$id/nora'
       preLoaderRoute: typeof AuthenticatedSeatDotkindDotidDotnoraRouteImport
+      parentRoute: typeof AuthenticatedSeatDotkindDotidRoute
+    }
+    '/_authenticated/seat/$kind/$id/profile': {
+      id: '/_authenticated/seat/$kind/$id/profile'
+      path: '/profile'
+      fullPath: '/seat/$kind/$id/profile'
+      preLoaderRoute: typeof AuthenticatedSeatDotkindDotidDotprofileRouteImport
       parentRoute: typeof AuthenticatedSeatDotkindDotidRoute
     }
     '/_authenticated/seat/$kind/$id/reporting': {
@@ -3212,11 +3338,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedSeatDotkindDotidDotreviewsRouteImport
       parentRoute: typeof AuthenticatedSeatDotkindDotidRoute
     }
+    '/_authenticated/seat/$kind/$id/settings': {
+      id: '/_authenticated/seat/$kind/$id/settings'
+      path: '/settings'
+      fullPath: '/seat/$kind/$id/settings'
+      preLoaderRoute: typeof AuthenticatedSeatDotkindDotidDotsettingsRouteImport
+      parentRoute: typeof AuthenticatedSeatDotkindDotidRoute
+    }
     '/_authenticated/seat/$kind/$id/team': {
       id: '/_authenticated/seat/$kind/$id/team'
       path: '/team'
       fullPath: '/seat/$kind/$id/team'
       preLoaderRoute: typeof AuthenticatedSeatDotkindDotidDotteamRouteImport
+      parentRoute: typeof AuthenticatedSeatDotkindDotidRoute
+    }
+    '/_authenticated/seat/$kind/$id/website': {
+      id: '/_authenticated/seat/$kind/$id/website'
+      path: '/website'
+      fullPath: '/seat/$kind/$id/website'
+      preLoaderRoute: typeof AuthenticatedSeatDotkindDotidDotwebsiteRouteImport
       parentRoute: typeof AuthenticatedSeatDotkindDotidRoute
     }
     '/_authenticated/enterprise/$orgSlug/view/$kind/$id': {
@@ -3527,35 +3667,56 @@ const AuthenticatedEnterpriseDotorgSlugRouteWithChildren =
   )
 
 interface AuthenticatedSeatDotkindDotidRouteChildren {
+  AuthenticatedSeatDotkindDotidDotconnectionsRoute: typeof AuthenticatedSeatDotkindDotidDotconnectionsRoute
+  AuthenticatedSeatDotkindDotidDotfindRoute: typeof AuthenticatedSeatDotkindDotidDotfindRoute
   AuthenticatedSeatDotkindDotidDotgraphRoute: typeof AuthenticatedSeatDotkindDotidDotgraphRoute
+  AuthenticatedSeatDotkindDotidDotinsightsRoute: typeof AuthenticatedSeatDotkindDotidDotinsightsRoute
   AuthenticatedSeatDotkindDotidDotinterviewRoute: typeof AuthenticatedSeatDotkindDotidDotinterviewRoute
   AuthenticatedSeatDotkindDotidDotlistingsRoute: typeof AuthenticatedSeatDotkindDotidDotlistingsRoute
   AuthenticatedSeatDotkindDotidDotmultiPostRoute: typeof AuthenticatedSeatDotkindDotidDotmultiPostRoute
+  AuthenticatedSeatDotkindDotidDotnetworkRoute: typeof AuthenticatedSeatDotkindDotidDotnetworkRoute
   AuthenticatedSeatDotkindDotidDotnoraRoute: typeof AuthenticatedSeatDotkindDotidDotnoraRoute
+  AuthenticatedSeatDotkindDotidDotprofileRoute: typeof AuthenticatedSeatDotkindDotidDotprofileRoute
   AuthenticatedSeatDotkindDotidDotreportingRoute: typeof AuthenticatedSeatDotkindDotidDotreportingRoute
   AuthenticatedSeatDotkindDotidDotreviewsRoute: typeof AuthenticatedSeatDotkindDotidDotreviewsRoute
+  AuthenticatedSeatDotkindDotidDotsettingsRoute: typeof AuthenticatedSeatDotkindDotidDotsettingsRoute
   AuthenticatedSeatDotkindDotidDotteamRoute: typeof AuthenticatedSeatDotkindDotidDotteamRoute
+  AuthenticatedSeatDotkindDotidDotwebsiteRoute: typeof AuthenticatedSeatDotkindDotidDotwebsiteRoute
   AuthenticatedSeatDotkindDotidDotindexRoute: typeof AuthenticatedSeatDotkindDotidDotindexRoute
 }
 
 const AuthenticatedSeatDotkindDotidRouteChildren: AuthenticatedSeatDotkindDotidRouteChildren =
   {
+    AuthenticatedSeatDotkindDotidDotconnectionsRoute:
+      AuthenticatedSeatDotkindDotidDotconnectionsRoute,
+    AuthenticatedSeatDotkindDotidDotfindRoute:
+      AuthenticatedSeatDotkindDotidDotfindRoute,
     AuthenticatedSeatDotkindDotidDotgraphRoute:
       AuthenticatedSeatDotkindDotidDotgraphRoute,
+    AuthenticatedSeatDotkindDotidDotinsightsRoute:
+      AuthenticatedSeatDotkindDotidDotinsightsRoute,
     AuthenticatedSeatDotkindDotidDotinterviewRoute:
       AuthenticatedSeatDotkindDotidDotinterviewRoute,
     AuthenticatedSeatDotkindDotidDotlistingsRoute:
       AuthenticatedSeatDotkindDotidDotlistingsRoute,
     AuthenticatedSeatDotkindDotidDotmultiPostRoute:
       AuthenticatedSeatDotkindDotidDotmultiPostRoute,
+    AuthenticatedSeatDotkindDotidDotnetworkRoute:
+      AuthenticatedSeatDotkindDotidDotnetworkRoute,
     AuthenticatedSeatDotkindDotidDotnoraRoute:
       AuthenticatedSeatDotkindDotidDotnoraRoute,
+    AuthenticatedSeatDotkindDotidDotprofileRoute:
+      AuthenticatedSeatDotkindDotidDotprofileRoute,
     AuthenticatedSeatDotkindDotidDotreportingRoute:
       AuthenticatedSeatDotkindDotidDotreportingRoute,
     AuthenticatedSeatDotkindDotidDotreviewsRoute:
       AuthenticatedSeatDotkindDotidDotreviewsRoute,
+    AuthenticatedSeatDotkindDotidDotsettingsRoute:
+      AuthenticatedSeatDotkindDotidDotsettingsRoute,
     AuthenticatedSeatDotkindDotidDotteamRoute:
       AuthenticatedSeatDotkindDotidDotteamRoute,
+    AuthenticatedSeatDotkindDotidDotwebsiteRoute:
+      AuthenticatedSeatDotkindDotidDotwebsiteRoute,
     AuthenticatedSeatDotkindDotidDotindexRoute:
       AuthenticatedSeatDotkindDotidDotindexRoute,
   }
