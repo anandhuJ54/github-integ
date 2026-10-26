@@ -1,0 +1,16 @@
+{
+ "oil_change_service": "unparseable",
+ "bicycle_repair_shop": "band 11 not in [13, 17] for lineage ['Store']",
+ "tire_repair_shop": "band 11 not in [13, 17] for lineage ['Store']",
+ "motorcycle_insurance_agency": "unparseable",
+ "catering_service": "unparseable",
+ "currency_exchange_service": "unparseable",
+ "dry_cleaner": "unparseable",
+ "glass_repair_service": "unparseable",
+ "central_bank": "unparseable",
+ "renters_insurance_agency": "unparseable",
+ "geological_research_company": "unparseable",
+ "laundry": "unparseable",
+ "vehicle_wrapping_service": "unparseable",
+ "junk_removal_service": "unparseable"
+}

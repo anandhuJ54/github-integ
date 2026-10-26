@@ -1,0 +1,412 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://experience.com/srp/taxonomy/judge-output.schema.json",
+  "title": "Relevance judge output (judge-vocab.v1)",
+  "type": "array",
+  "items": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+      "term",
+      "decision",
+      "reason_code",
+      "family",
+      "to_lane",
+      "note"
+    ],
+    "properties": {
+      "term": {
+        "type": "string",
+        "minLength": 1,
+        "description": "The candidate, copied verbatim from the input."
+      },
+      "decision": {
+        "enum": [
+          "keep",
+          "exclude",
+          "move"
+        ]
+      },
+      "reason_code": {
+        "enum": [
+          "keep",
+          "brand_or_business_name",
+          "other_category",
+          "different_audience",
+          "informational",
+          "geo_specific",
+          "ambiguous_meaning",
+          "portal_owned",
+          "navigational_brand",
+          "amenity_attribute",
+          "compliance_conflict",
+          "off_intent",
+          "duplicate_meaning"
+        ]
+      },
+      "family": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "pattern": "^[a-z][a-z0-9_]*:[a-z][a-z0-9_]*$",
+        "description": "<domain>:<slug> drawn from the category's own products/services/specializations/profession titles. Required for keep in family-bearing lanes, else null. Never a modifier."
+      },
+      "to_lane": {
+        "enum": [
+          "topic",
+          "question",
+          "content_title",
+          null
+        ],
+        "description": "Only when decision=move."
+      },
+      "note": {
+        "type": "string",
+        "maxLength": 240
+      }
+    },
+    "allOf": [
+      {
+        "if": {
+          "properties": {
+            "reason_code": {
+              "const": "keep"
+            }
+          },
+          "required": [
+            "reason_code"
+          ]
+        },
+        "then": {
+          "properties": {
+            "decision": {
+              "enum": [
+                "keep"
+              ]
+            }
+          }
+        }
+      },
+      {
+        "if": {
+          "properties": {
+            "reason_code": {
+              "const": "brand_or_business_name"
+            }
+          },
+          "required": [
+            "reason_code"
+          ]
+        },
+        "then": {
+          "properties": {
+            "decision": {
+              "enum": [
+                "exclude"
+              ]
+            }
+          }
+        }
+      },
+      {
+        "if": {
+          "properties": {
+            "reason_code": {
+              "const": "other_category"
+            }
+          },
+          "required": [
+            "reason_code"
+          ]
+        },
+        "then": {
+          "properties": {
+            "decision": {
+              "enum": [
+                "exclude"
+              ]
+            }
+          }
+        }
+      },
+      {
+        "if": {
+          "properties": {
+            "reason_code": {
+              "const": "different_audience"
+            }
+          },
+          "required": [
+            "reason_code"
+          ]
+        },
+        "then": {
+          "properties": {
+            "decision": {
+              "enum": [
+                "exclude"
+              ]
+            }
+          }
+        }
+      },
+      {
+        "if": {
+          "properties": {
+            "reason_code": {
+              "const": "informational"
+            }
+          },
+          "required": [
+            "reason_code"
+          ]
+        },
+        "then": {
+          "properties": {
+            "decision": {
+              "enum": [
+                "move"
+              ]
+            }
+          }
+        }
+      },
+      {
+        "if": {
+          "properties": {
+            "reason_code": {
+              "const": "geo_specific"
+            }
+          },
+          "required": [
+            "reason_code"
+          ]
+        },
+        "then": {
+          "properties": {
+            "decision": {
+              "enum": [
+                "exclude"
+              ]
+            }
+          }
+        }
+      },
+      {
+        "if": {
+          "properties": {
+            "reason_code": {
+              "const": "ambiguous_meaning"
+            }
+          },
+          "required": [
+            "reason_code"
+          ]
+        },
+        "then": {
+          "properties": {
+            "decision": {
+              "enum": [
+                "exclude"
+              ]
+            }
+          }
+        }
+      },
+      {
+        "if": {
+          "properties": {
+            "reason_code": {
+              "const": "portal_owned"
+            }
+          },
+          "required": [
+            "reason_code"
+          ]
+        },
+        "then": {
+          "properties": {
+            "decision": {
+              "enum": [
+                "exclude"
+              ]
+            }
+          }
+        }
+      },
+      {
+        "if": {
+          "properties": {
+            "reason_code": {
+              "const": "navigational_brand"
+            }
+          },
+          "required": [
+            "reason_code"
+          ]
+        },
+        "then": {
+          "properties": {
+            "decision": {
+              "enum": [
+                "keep"
+              ]
+            }
+          }
+        }
+      },
+      {
+        "if": {
+          "properties": {
+            "reason_code": {
+              "const": "amenity_attribute"
+            }
+          },
+          "required": [
+            "reason_code"
+          ]
+        },
+        "then": {
+          "properties": {
+            "decision": {
+              "enum": [
+                "exclude"
+              ]
+            }
+          }
+        }
+      },
+      {
+        "if": {
+          "properties": {
+            "reason_code": {
+              "const": "compliance_conflict"
+            }
+          },
+          "required": [
+            "reason_code"
+          ]
+        },
+        "then": {
+          "properties": {
+            "decision": {
+              "enum": [
+                "exclude"
+              ]
+            }
+          }
+        }
+      },
+      {
+        "if": {
+          "properties": {
+            "reason_code": {
+              "const": "off_intent"
+            }
+          },
+          "required": [
+            "reason_code"
+          ]
+        },
+        "then": {
+          "properties": {
+            "decision": {
+              "enum": [
+                "exclude"
+              ]
+            }
+          }
+        }
+      },
+      {
+        "if": {
+          "properties": {
+            "reason_code": {
+              "const": "duplicate_meaning"
+            }
+          },
+          "required": [
+            "reason_code"
+          ]
+        },
+        "then": {
+          "properties": {
+            "decision": {
+              "enum": [
+                "exclude"
+              ]
+            }
+          }
+        }
+      },
+      {
+        "if": {
+          "properties": {
+            "decision": {
+              "const": "move"
+            }
+          },
+          "required": [
+            "decision"
+          ]
+        },
+        "then": {
+          "properties": {
+            "to_lane": {
+              "type": "string"
+            }
+          }
+        },
+        "else": {
+          "properties": {
+            "to_lane": {
+              "type": "null"
+            }
+          }
+        }
+      },
+      {
+        "if": {
+          "properties": {
+            "decision": {
+              "const": "keep"
+            }
+          },
+          "required": [
+            "decision"
+          ]
+        },
+        "else": {
+          "properties": {
+            "family": {
+              "type": "null"
+            }
+          }
+        }
+      },
+      {
+        "if": {
+          "properties": {
+            "decision": {
+              "enum": [
+                "exclude",
+                "move"
+              ]
+            }
+          },
+          "required": [
+            "decision"
+          ]
+        },
+        "then": {
+          "properties": {
+            "note": {
+              "minLength": 1
+            }
+          }
+        }
+      }
+    ]
+  }
+}

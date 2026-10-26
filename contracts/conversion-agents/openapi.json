@@ -1,0 +1,65 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "conversion-agents API",
+    "version": "1"
+  },
+  "paths": {
+    "/conversion-agents/hello": {
+      "get": {
+        "tags": [
+          "conversion-agents"
+        ],
+        "summary": "Hello",
+        "description": "Public endpoint \u2014 no auth/DB. Proves the FE\u2194BE wiring end to end.",
+        "operationId": "hello_conversion_agents_hello_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "type": "object",
+                  "title": "Response Hello Conversion Agents Hello Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/conversion-agents/me": {
+      "get": {
+        "tags": [
+          "conversion-agents"
+        ],
+        "summary": "Whoami",
+        "description": "Trivial authed endpoint proving the JWT + routing path works.",
+        "operationId": "whoami_conversion_agents_me_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "type": "object",
+                  "title": "Response Whoami Conversion Agents Me Get"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    }
+  },
+  "components": {
+    "schemas": {}
+  }
+}

@@ -1,0 +1,32 @@
+<!--
+DRAFT for docs/ETL-Enhancements.md (append-only; paste at the end, do not edit earlier entries).
+Written 2026-10-15 BEFORE the migration was applied. Lines marked [FILL] must be completed by whoever
+applies 0029 (live verification, ledger numbers). Remove this comment when pasting.
+-->
+
+## Taxonomy enrichment scorecard: read-only quality measure per category and lane (2026-10-15)
+- **What triggered this:** the taxonomy enrichment pilot (migration 0028 adds `concept_slug`, `volume_source`, `volume_as_of`, `evidence` to `exp_taxonomy`). The existing validator `exp_validate_category_full(gcid)` checks structure (about 81 checks) but not whether the terms are any good, so there was no way to measure a category before enrichment, after enrichment, or to gate the pilot.
+- **What was wrong (verified on live data, 2026-10-15):**
+  - `exp_taxonomy` has about 1.1M rows over 4,041 categories and 14 lanes. 1,054,227 rows are `batch_generated`; no row has a `search_volume_monthly` (0 non-null). Nothing in the table says where a term came from beyond that label.
+  - Typed local templates (`{city}`, `{state}`, `{zip}`, `{neighborhood}` ...) and unresolved tokens (`{breed}`, `{professional_name}`, `{abbey}`, ...) are mixed in the same column: 3,893 rows contain `{city}`, 518 `{neighborhood}`, 359 `{state}`, 257 `{zip}`, and over 100 rows carry other tokens.
+  - Engine-internal wording leaked into live terms, for example tags `gbp presence verified fishing store`, `compliance-row-new-verified-entry`, and the keyword `cctv compliance row verified root {city}` (279 active rows contain `gbp`, 600 contain `verified`).
+  - Scope: in location-only categories (3,637 of 4,041 categories are `location_first` in `exp_category_shape`; both pilot examples allow only brand and location) the `specialization` and `profession_title` lanes are scoped `professional`. `gcid:cannabis_store` has 17 of 17 specialization rows and 6 of 6 profession_title rows in that state; `gcid:mexican_restaurant` has 21 of 21 and 4 of 4 (including the title "Mexican Restaurant").
+  - Near-duplicates with different wording exist inside a lane, for example the cannabis questions "How do I store cannabis to keep it fresh?" and "How should I store cannabis to keep it fresh?".
+  - The bare category name is often missing as a keyword: `Cannabis store` and `Mexican restaurant` are not keywords of their own categories.
+  - All five `use_*` flags are true on 100% of the rows of most lanes of the two location-first categories, so the flags route nothing.
+- **Changes shipped (migration `0029_taxonomy_scorecard.sql`, journal idx 29; no table, column or row is touched):**
+  - Database, new function `exp_taxonomy_scorecard(p_gcid text)` returning `(lane, metric, value, target, passed, detail)`. LANGUAGE sql, STABLE, SECURITY INVOKER, `search_path = public, pg_temp`; no writes. 145 metric rows per category: 14 lanes plus `_all`. Metrics: `active_count` (target range per lane; `product_service` 50-100, or 20-60 for concept-only food/retail types read from `exp_category_schema_type`; `profession_title` 0-15 when the category does not allow professionals), `evidence_coverage`, `volume_provenance`, `volume_freshness`, `exact_dup_share`, `near_dup_share`, `placeholder_unresolved_share`, `local_template_share`, `junk_suspect_share`, `scope_violation_share`, `use_flags_all_true_share`, `bare_head_term`, `bare_head_alias`, `concept_slug_share`, `concept_link_share`, and the `_all` checks `category_in_master`, `shape_row_present`, `unknown_lane_rows`. Every metric has a stated rule; the full list, thresholds and definitions are in the header comment of the migration.
+  - Database, new function `exp_taxonomy_scorecard_summary(p_gcids text[])`: one row per gcid with pass counts, `gate_passed` (every metric passed; the pilot exit gate) and the list of failed `lane/metric`.
+  - Works before and after 0028: the four 0028 columns are read as `to_jsonb(row) ->> 'name'`, so the function compiles on both schemas and scores the concept, provenance and freshness metrics as 0 (with "0028 not applied" in `detail`) until 0028 and the enrichment exist.
+  - Execute is granted to `authenticated` and `service_role` only (revoked from PUBLIC and anon).
+  - Test: `drizzle/migrations/tests/0029_taxonomy_scorecard.test.sql` (a DO block that creates the functions, asserts, and always rolls back through `RAISE EXCEPTION`).
+- **Verified:**
+  - The function body was run as a plain SELECT (parameter replaced by a literal gcid list) against live data for the four pilot categories; it executes and returns 145 rows per category. Baseline (before any enrichment, 0028 not applied): cannabis_store 112 of 145 passed (33 failed), mexican_restaurant 110 (35 failed), mortgage_lender 125 (20 failed), real_estate_agents 123 (22 failed); none passes the gate. Failures common to all four: `evidence_coverage` in every lane (no volumes), concept metrics, product_service count outside 50-100 for the two professional-first categories, content_title count below 25. The two location-first categories additionally fail `scope_violation_share` (specialization, profession_title), `use_flags_all_true_share` in most lanes, `bare_head_term` and `bare_head_alias`.
+  - The post-0028 column reads (`date` and `timestamptz` flavours of `volume_as_of`, jsonb `evidence` null / object) were exercised on live rows through a subquery that adds the columns.
+  - [FILL] Result of the rolled-back test file after applying: first line, and the baseline block pasted from the message.
+  - [FILL] Result after 0028 applied: re-run the test with `v_simulate := false` and confirm the concept metrics still score 0 before enrichment.
+- **Not yet done / open:**
+  - The thresholds are a proposal for the pilot (listed in the migration header); they need Scott's or Abdul's confirmation before the scorecard is used as the exit gate.
+  - "Top alias" is the alias with the lowest `priority` number, then highest volume, then oldest row, then alphabetical; today every alias has priority 5, so the choice is by creation order. It should become a deliberate field in the enrichment design.
+  - Brand names cannot be detected without a brand list; `junk_suspect_share` detects leakage of internal wording only.
+  - Single-category runs are cheap; running the summary over thousands of categories calls the scorecard once per category (not benchmarked at scale).

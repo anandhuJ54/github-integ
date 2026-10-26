@@ -1,4 +1,7 @@
-"""Migration runner for the one shared database.
+"""Migration runner for the closed SQL stream (`migrations/`).
+
+Closed 2026-10-26: new migrations are Alembic revisions in each Surface's `db/migrations/`
+(alembic.ini). This runner stays for status/apply of the files already here.
 
 One Postgres ⇒ one linear history, in `migrations/NNNN_*.sql` with a single
 `meta/_journal.json`. This applies pending files in order and records them. It is a
@@ -34,7 +37,7 @@ def _pending(conn) -> list[Path]:
 
 
 def status() -> None:
-    from _base.core.db import connection
+    from _base.db.session import connection
 
     with connection() as conn:
         pending = _pending(conn)
@@ -47,7 +50,7 @@ def status() -> None:
 
 
 def apply() -> None:
-    from _base.core.db import connection
+    from _base.db.session import connection
 
     with connection() as conn:
         for f in _pending(conn):

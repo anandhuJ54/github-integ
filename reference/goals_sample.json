@@ -1,0 +1,429 @@
+[
+  {
+    "gcid": "gcid:day_care_center",
+    "conversion_actions": [
+      {
+        "key": "schedule_tour",
+        "lane": "location",
+        "label": "Schedule a Center Tour",
+        "agent_goal": "Capture parent contact details and preferred tour date/time to book an in-person or virtual facility tour",
+        "schema_action": "ScheduleAction",
+        "profile_button": "Schedule a Tour"
+      },
+      {
+        "key": "start_enrollment_application",
+        "lane": "location",
+        "label": "Begin Enrollment Application",
+        "agent_goal": "Guide prospective families through the enrollment application form and confirm waitlist or open-seat placement",
+        "schema_action": "ReserveAction",
+        "profile_button": "Apply for Enrollment"
+      },
+      {
+        "key": "join_waitlist",
+        "lane": "location",
+        "label": "Join the Waitlist",
+        "agent_goal": "Collect child age, desired start date, and program type to place family on the center's waitlist and send confirmation",
+        "schema_action": "ReserveAction",
+        "profile_button": "Join Our Waitlist"
+      },
+      {
+        "key": "request_program_info",
+        "lane": "location",
+        "label": "Request Program & Pricing Information",
+        "agent_goal": "Deliver program offerings, tuition rates, hours of operation, and meal plan details to the inquiring parent",
+        "schema_action": "CommunicateAction",
+        "profile_button": "Get Program Details"
+      },
+      {
+        "key": "view_curriculum_overview",
+        "lane": "location",
+        "label": "View Curriculum & Milestone Framework",
+        "agent_goal": "Showcase the center's developmentally appropriate curriculum, milestone tracking approach, and daily schedule to build trust",
+        "schema_action": "ViewAction",
+        "profile_button": "Explore Our Curriculum"
+      },
+      {
+        "key": "subscribe_parent_updates",
+        "lane": "location",
+        "label": "Subscribe to Parent Newsletter & Updates",
+        "agent_goal": "Enroll parents in the center's communication channel for program news, event announcements, and enrollment opening alerts",
+        "schema_action": "SubscribeAction",
+        "profile_button": "Stay Connected"
+      }
+    ]
+  },
+  {
+    "gcid": "gcid:funeral_home",
+    "conversion_actions": [
+      {
+        "key": "contact_at_need",
+        "lane": "location",
+        "label": "Contact Us Now",
+        "agent_goal": "Connect a grieving family with a funeral director immediately for at-need arrangement support, body transport coordination, and next-step guidance",
+        "schema_action": "CommunicateAction",
+        "profile_button": "Call Us Now"
+      },
+      {
+        "key": "schedule_arrangement_consultation",
+        "lane": "location",
+        "label": "Schedule an Arrangement Consultation",
+        "agent_goal": "Help a family or pre-planner schedule an in-person or virtual arrangement conference to select service type, chapel or viewing room options, and tribute details",
+        "schema_action": "ScheduleAction",
+        "profile_button": "Book a Consultation"
+      },
+      {
+        "key": "schedule_facility_tour",
+        "lane": "location",
+        "label": "Tour Our Facilities",
+        "agent_goal": "Invite prospective families to tour the chapel, viewing rooms, and columbarium so they can make confident, informed service selections",
+        "schema_action": "ScheduleAction",
+        "profile_button": "Schedule a Tour"
+      },
+      {
+        "key": "create_online_memorial",
+        "lane": "location",
+        "label": "Create an Online Memorial",
+        "agent_goal": "Guide families to create and share a personalized online memorial page featuring photos, tributes, and livestream access for remote loved ones",
+        "schema_action": "ViewAction",
+        "profile_button": "Start a Memorial"
+      },
+      {
+        "key": "request_preplanning_info",
+        "lane": "location",
+        "label": "Request Pre-Planning Information",
+        "agent_goal": "Capture contact details from individuals interested in pre-arranging their own services to reduce family burden and lock in pricing",
+        "schema_action": "SubscribeAction",
+        "profile_button": "Plan Ahead Today"
+      },
+      {
+        "key": "view_service_pricing",
+        "lane": "location",
+        "label": "View Service & Pricing Options",
+        "agent_goal": "Direct families to transparent pricing for direct cremation, traditional funeral services, green burial, and chapel rental so they can compare options confidently",
+        "schema_action": "ViewAction",
+        "profile_button": "See Our Pricing"
+      }
+    ]
+  },
+  {
+    "gcid": "gcid:hotel",
+    "conversion_actions": [
+      {
+        "key": "book_room",
+        "lane": "location",
+        "label": "Book a Room",
+        "agent_goal": "Capture direct booking by surfacing availability, room types, and ADR; prompt guest to complete reservation and bypass OTA fees",
+        "schema_action": "ReserveAction",
+        "profile_button": "Book Your Stay"
+      },
+      {
+        "key": "request_event_space",
+        "lane": "location",
+        "label": "Inquire About Event & Meeting Space",
+        "agent_goal": "Qualify group or corporate inquiry by collecting event date, expected attendance, and room block needs, then connect with sales team",
+        "schema_action": "CommunicateAction",
+        "profile_button": "Plan Your Event"
+      },
+      {
+        "key": "join_loyalty_program",
+        "lane": "location",
+        "label": "Enroll in Loyalty Rewards Program",
+        "agent_goal": "Guide prospective member through loyalty program enrollment, highlight point accrual per room night and exclusive member rate benefits",
+        "schema_action": "SubscribeAction",
+        "profile_button": "Join Rewards Program"
+      },
+      {
+        "key": "book_spa",
+        "lane": "location",
+        "label": "Reserve a Spa & Wellness Appointment",
+        "agent_goal": "Capture spa service reservation by surfacing available treatments, timing, and any in-stay or standalone booking options",
+        "schema_action": "ScheduleAction",
+        "profile_button": "Book Spa Visit"
+      },
+      {
+        "key": "view_amenities",
+        "lane": "location",
+        "label": "Explore Hotel Amenities & Services",
+        "agent_goal": "Present full-service property offerings including dining, concierge, business center, and parking to build pre-booking confidence",
+        "schema_action": "ViewAction",
+        "profile_button": "View Amenities"
+      },
+      {
+        "key": "contact_concierge",
+        "lane": "location",
+        "label": "Contact Concierge for Guest Services",
+        "agent_goal": "Connect in-planning or in-stay guests with concierge services to address special requests, local recommendations, and transportation needs including airport shuttle",
+        "schema_action": "CommunicateAction",
+        "profile_button": "Ask Concierge"
+      }
+    ]
+  },
+  {
+    "gcid": "gcid:hvac_contractor",
+    "conversion_actions": [
+      {
+        "key": "schedule_estimate",
+        "lane": "location",
+        "label": "Schedule In-Home Estimate",
+        "agent_goal": "Capture lead by booking an in-home HVAC assessment and Manual J load calculation appointment",
+        "schema_action": "ScheduleAction",
+        "profile_button": "Get Free Estimate"
+      },
+      {
+        "key": "request_emergency_repair",
+        "lane": "location",
+        "label": "Request Emergency Repair",
+        "agent_goal": "Connect urgent heating or cooling failure customers directly with dispatch for same-day service",
+        "schema_action": "CommunicateAction",
+        "profile_button": "Call for Emergency Repair"
+      },
+      {
+        "key": "schedule_maintenance_plan",
+        "lane": "location",
+        "label": "Sign Up for Maintenance Plan",
+        "agent_goal": "Enroll customers in recurring HVAC tune-up and inspection plan to build long-term service relationship",
+        "schema_action": "SubscribeAction",
+        "profile_button": "Join Maintenance Plan"
+      },
+      {
+        "key": "view_system_options",
+        "lane": "location",
+        "label": "View HVAC System Options",
+        "agent_goal": "Help customers compare AC, furnace, heat pump, and zoning system options including SEER ratings and tonnage recommendations",
+        "schema_action": "ViewAction",
+        "profile_button": "Explore Systems"
+      },
+      {
+        "key": "book_duct_assessment",
+        "lane": "location",
+        "label": "Book Ductwork Assessment",
+        "agent_goal": "Schedule a ductwork static pressure and leakage diagnostic to identify efficiency losses and seal or redesign as needed",
+        "schema_action": "ScheduleAction",
+        "profile_button": "Schedule Duct Inspection"
+      },
+      {
+        "key": "contact_commercial_hvac",
+        "lane": "location",
+        "label": "Contact for Commercial HVAC Service",
+        "agent_goal": "Qualify and connect commercial property managers or business owners for ongoing HVAC service contracts and system maintenance",
+        "schema_action": "CommunicateAction",
+        "profile_button": "Get Commercial Quote"
+      }
+    ]
+  },
+  {
+    "gcid": "gcid:jewelry_store",
+    "conversion_actions": [
+      {
+        "key": "book_consultation",
+        "lane": "location",
+        "label": "Book a Jewelry Consultation",
+        "agent_goal": "Capture appointment requests for bridal, engagement, custom design, or appraisal consultations, collecting preferred date, time, and service type",
+        "schema_action": "ScheduleAction",
+        "profile_button": "Book Consultation"
+      },
+      {
+        "key": "request_appraisal",
+        "lane": "location",
+        "label": "Request a Jewelry Appraisal",
+        "agent_goal": "Collect details about the jewelry piece(s) to be appraised, intended use (insurance, resale, estate), and schedule a drop-off or in-store appointment",
+        "schema_action": "ReserveAction",
+        "profile_button": "Get an Appraisal"
+      },
+      {
+        "key": "get_repair_quote",
+        "lane": "location",
+        "label": "Get a Repair or Resizing Quote",
+        "agent_goal": "Gather description of repair needed (resizing, rhodium plating, clasp repair, pearl restringing, etc.), estimated timeline needs, and contact information for follow-up",
+        "schema_action": "CommunicateAction",
+        "profile_button": "Request Repair Quote"
+      },
+      {
+        "key": "start_custom_design",
+        "lane": "location",
+        "label": "Start Your Custom Jewelry Design",
+        "agent_goal": "Capture inspiration details, metal preference (karat weight, gold, platinum), gemstone preferences, budget range, and occasion to prepare a design consultation",
+        "schema_action": "ScheduleAction",
+        "profile_button": "Design Your Piece"
+      },
+      {
+        "key": "sell_estate_jewelry",
+        "lane": "location",
+        "label": "Sell or Trade Estate Jewelry",
+        "agent_goal": "Collect information about estate or heirloom pieces the customer wants to sell or trade, including type, condition, and any known hallmarking or gemstone grading details",
+        "schema_action": "CommunicateAction",
+        "profile_button": "Sell Your Jewelry"
+      },
+      {
+        "key": "view_store_info",
+        "lane": "location",
+        "label": "View Store Hours and Location",
+        "agent_goal": "Provide store address, hours of operation, parking information, and link to directions to drive foot traffic for walk-in services like watch battery replacement and engraving",
+        "schema_action": "ViewAction",
+        "profile_button": "See Store Details"
+      }
+    ]
+  },
+  {
+    "gcid": "gcid:plumber",
+    "conversion_actions": [
+      {
+        "key": "book_plumber_appointment",
+        "lane": "professional",
+        "label": "Book a Plumber",
+        "agent_goal": "Capture the customer's plumbing issue, preferred time, and contact details to schedule a confirmed service visit with the plumber.",
+        "schema_action": "ScheduleAction",
+        "profile_button": "Book Appointment"
+      },
+      {
+        "key": "request_emergency_service",
+        "lane": "professional",
+        "label": "Request Emergency Plumbing Service",
+        "agent_goal": "Connect the customer immediately with the plumber for urgent issues like burst pipes, major leaks, or sewer backups requiring same-day response.",
+        "schema_action": "CommunicateAction",
+        "profile_button": "Get Emergency Help"
+      },
+      {
+        "key": "get_plumber_quote",
+        "lane": "professional",
+        "label": "Get a Free Estimate",
+        "agent_goal": "Collect the job description and property details so the plumber can provide an accurate upfront cost estimate before scheduling.",
+        "schema_action": "CommunicateAction",
+        "profile_button": "Get Free Estimate"
+      },
+      {
+        "key": "view_plumber_profile",
+        "lane": "professional",
+        "label": "View Plumber Profile and Reviews",
+        "agent_goal": "Direct the customer to the plumber's full profile including license info, service list, and verified customer reviews to build trust.",
+        "schema_action": "ViewAction",
+        "profile_button": "View Profile"
+      },
+      {
+        "key": "contact_plumber_directly",
+        "lane": "professional",
+        "label": "Call or Message Plumber",
+        "agent_goal": "Enable the customer to call or send a direct message to the plumber to confirm availability, pricing, or ask service-specific questions.",
+        "schema_action": "CommunicateAction",
+        "profile_button": "Contact Plumber"
+      },
+      {
+        "key": "schedule_location_service_visit",
+        "lane": "location",
+        "label": "Schedule a Service Visit",
+        "agent_goal": "Allow the customer to book a technician dispatch from the plumbing company location for a specific job type and time window.",
+        "schema_action": "ScheduleAction",
+        "profile_button": "Schedule Service"
+      },
+      {
+        "key": "request_emergency_dispatch",
+        "lane": "location",
+        "label": "Request Emergency Dispatch",
+        "agent_goal": "Route the customer to the plumbing company's emergency line so a technician can be dispatched immediately for urgent plumbing failures.",
+        "schema_action": "CommunicateAction",
+        "profile_button": "Call for Emergencies"
+      },
+      {
+        "key": "get_company_quote",
+        "lane": "location",
+        "label": "Get a Project Estimate",
+        "agent_goal": "Collect job scope and location details so the plumbing company can generate a written estimate for larger projects like repiping or remodels.",
+        "schema_action": "CommunicateAction",
+        "profile_button": "Get an Estimate"
+      },
+      {
+        "key": "view_company_services",
+        "lane": "location",
+        "label": "View All Plumbing Services",
+        "agent_goal": "Show the customer the full range of services offered by the plumbing company to match their specific need and encourage conversion.",
+        "schema_action": "ViewAction",
+        "profile_button": "See Our Services"
+      },
+      {
+        "key": "reserve_maintenance_plan",
+        "lane": "location",
+        "label": "Reserve a Plumbing Maintenance Plan",
+        "agent_goal": "Enroll the customer in a recurring plumbing maintenance agreement with the company for annual inspections, drain cleaning, and priority service.",
+        "schema_action": "ReserveAction",
+        "profile_button": "Reserve Maintenance Plan"
+      }
+    ]
+  },
+  {
+    "gcid": "gcid:tattoo_shop",
+    "conversion_actions": [
+      {
+        "key": "book_tattoo_consultation",
+        "lane": "professional",
+        "label": "Book a Consultation",
+        "agent_goal": "Capture lead for a custom tattoo design consultation; collect style inspiration, placement, size, and preferred artist to prepare for design collaboration and stencil approval.",
+        "schema_action": "ScheduleAction",
+        "profile_button": "Book Consultation"
+      },
+      {
+        "key": "schedule_tattoo_session",
+        "lane": "professional",
+        "label": "Schedule a Tattoo Session",
+        "agent_goal": "Convert consultation-ready or returning clients into a booked tattoo appointment; confirm design approval, session length estimate, and deposit requirements.",
+        "schema_action": "ScheduleAction",
+        "profile_button": "Schedule My Session"
+      },
+      {
+        "key": "request_cover_up_assessment",
+        "lane": "professional",
+        "label": "Request a Cover-Up Assessment",
+        "agent_goal": "Collect photo and description of existing tattoo for artist assessment; qualify cover-up feasibility and route to appropriate artist specializing in blackwork or color packing.",
+        "schema_action": "CommunicateAction",
+        "profile_button": "Get Cover-Up Quote"
+      },
+      {
+        "key": "view_artist_portfolio",
+        "lane": "professional",
+        "label": "View Artist Portfolio",
+        "agent_goal": "Surface artist-specific portfolio galleries organized by style \u2014 fine line, traditional, watercolor, realism \u2014 to accelerate style-match decision and drive consultation booking.",
+        "schema_action": "ViewAction",
+        "profile_button": "See My Portfolio"
+      },
+      {
+        "key": "schedule_touch_up",
+        "lane": "professional",
+        "label": "Schedule a Touch-Up",
+        "agent_goal": "Re-engage past clients to book a touch-up session; confirm healing status and collect reference photos of the healed tattoo to prepare artist for the appointment.",
+        "schema_action": "ScheduleAction",
+        "profile_button": "Book Touch-Up"
+      },
+      {
+        "key": "walk_in_flash_visit",
+        "lane": "location",
+        "label": "Walk In for a Flash Tattoo",
+        "agent_goal": "Capture intent for same-day or next-available walk-in flash tattoo; communicate shop hours, current flash sheet availability, and estimated wait or slot times.",
+        "schema_action": "ReserveAction",
+        "profile_button": "Reserve Walk-In Spot"
+      },
+      {
+        "key": "book_piercing_appointment",
+        "lane": "location",
+        "label": "Book a Piercing Appointment",
+        "agent_goal": "Schedule a body piercing service appointment; capture placement preference, jewelry style, and any relevant health considerations to prepare the piercing artist.",
+        "schema_action": "ScheduleAction",
+        "profile_button": "Book Piercing"
+      },
+      {
+        "key": "contact_shop",
+        "lane": "location",
+        "label": "Contact the Shop",
+        "agent_goal": "Handle general inquiries about shop hours, artist availability, pricing ranges, and aftercare product stock; route complex design questions to a consultation booking.",
+        "schema_action": "CommunicateAction",
+        "profile_button": "Contact Us"
+      },
+      {
+        "key": "order_aftercare_products",
+        "lane": "location",
+        "label": "Order Aftercare Products",
+        "agent_goal": "Facilitate purchase or reservation of recommended tattoo aftercare products in-shop or for pickup; reinforce healing best practices and drive repeat client engagement.",
+        "schema_action": "OrderAction",
+        "profile_button": "Order Aftercare"
+      }
+    ]
+  }
+]

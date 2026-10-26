@@ -66,12 +66,23 @@ owning its own build config. Names: the backend tree (`surface-api/`) uses `snak
 AGENTS.md  CLAUDE.md  templates/  .claude/  .github/
 contracts/<surface>/   events/ + capabilities/*.json (+ OpenAPI) each Surface publishes (versioned, code-consumed)
 surface-api/           self-contained Python/FastAPI project (its own pyproject.toml)
-  _base/               shared FastAPI: app_factory.py + core (auth.py, db.py, compliance.py)
-  app.py               mounts Surface routers (cd surface-api && uvicorn app:app)
-  migrate.py           migration runner (cd surface-api && python -m migrate status|apply)
-  migrations/          the ONE shared migration history: NNNN_*.sql + meta/_journal.json
-  <surface>/           one top-level Python package per Surface (snake_case), private to it
-    routers/           one module per capability
+  app/                 app shell: main.py (create_app + the app), routes.py (mounts each Surface router),
+                       surfaces.py (registry), contracts.py (cd surface-api && uvicorn app:app)
+  _base/               shared runtime: auth.py, config.py, server_fn.py, compliance.py,
+                       db/ (session.py, sql.py, tables.py), disco/, integrations/, tests/
+  tests/               cross-cutting guards: Surface boundaries, routes, app wiring
+  alembic.ini          one Alembic branch per Surface (+ _base); env in alembic_env/ (uv run alembic upgrade heads)
+  migrate.py           runner for the closed SQL stream (python -m migrate status|apply)
+  migrations/          closed SQL stream NNNN_*.sql + meta/_journal.json (no new files)
+  <surface>/           one folder per Surface (snake_case), private to it
+    src/               Python package `surfaces.<surface>`
+      router.py        aggregate router: includes each resource router, no endpoints
+      exports.py       the ONLY module another Surface may import (lint + tests/test_boundaries.py)
+      internal.py      helpers shared by two or more of its resource folders
+      models/          tables this Surface owns (empty; still in _base/db/tables.py until the team moves them)
+      <resource>/      router.py (endpoints) · schemas.py (request/response) · services.py (queries, logic)
+    tests/             test_*.py + conftest.py
+    db/migrations/     this Surface's Alembic branch (hand-written SQL revisions)
 surface-ui/            self-contained React SPA workspace (its own package.json, bun workspaces)
   _base/               shared design system (@v3/ui)
   <surface>/           one React app per Surface (kebab-case), private to it
@@ -86,7 +97,7 @@ tools/                 enforcement (lint, ci, hooks) — plain stdlib Python, ru
 - **A Surface owns** its three homes (`surface-api/<surface>`, `surface-ui/<surface>`, `surface-spec/<surface>`), its `contracts/<surface>`, and the tables it logically owns (the physical migration stream is shared — see §4). Ownership is mapped in `.github/CODEOWNERS`.
 - **A Surface never edits** another Surface's internals or tables. Reads go through governed views/queries; writes go through capabilities; reactions go through events.
 - **One app, one login — composed, not shared internals (§4).** A frontend app bundles a chosen set of `surface-ui/<surface>` apps; a backend service mounts a chosen set of `surface-api/<surface>` routers. `surface-ui/<surface>` calls **only** its own `surface-api/<surface>`, via a client generated from `contracts/<surface>`. Cross-Surface reaction goes through the events/capabilities in `contracts/`, never a direct import or call (lint: `boundary/*`). Hiding UI is not security: permissions are checked server-side in FastAPI (or the DB). A new or changed cross-Surface interface is a PR to `contracts/<surface>`, reviewed by the owning Surface.
-- **Shared core:** `AGENTS.md`, `templates/`, `surface-api/_base/`, `surface-ui/_base/`, `.claude/`, `tools/`. Changes need a PR reviewed for all Surfaces.
+- **Shared core:** `AGENTS.md`, `templates/`, `surface-api/_base/`, `surface-api/app/`, `surface-api/tests/`, `surface-ui/_base/`, `.claude/`, `tools/`. Changes need a PR reviewed for all Surfaces.
 
 ## 3. Hard rules
 
@@ -151,11 +162,13 @@ tools/                 enforcement (lint, ci, hooks) — plain stdlib Python, ru
 - **Frontend:** React 19 SPA · Vite · Tailwind v4 · shadcn/Radix in `surface-ui/<surface>/`; shared design
   system in `surface-ui/_base/` (`@v3/ui`). `surface-ui/` is a self-contained bun workspace
   (`cd surface-ui && bun install`). No server-side rendering runtime; the SPA is static-hostable.
-- **Backend:** **Python · FastAPI** in `surface-api/<surface>/` (top-level package `<surface>`); shared app
-  factory, auth (Supabase JWT verification + RLS context), DB access and the compliance gate in
-  `surface-api/_base/`. `surface-api/` is a self-contained uv project; `app.py` mounts Surface routers
-  (`cd surface-api && uvicorn app:app`). Imports are internal and top-level: `from _base.core.auth import ...`,
-  `from sales.routers.health import ...`. Deployed as FastAPI services (containers), **not** edge functions.
+- **Backend:** **Python · FastAPI** in `surface-api/<surface>/src/` (package `surfaces.<surface>`, grouped by
+  resource: `<resource>/router.py`, `schemas.py`, `services.py`); shared auth (Supabase JWT verification + RLS
+  context), DB access and the compliance gate in `surface-api/_base/`; the app shell in `surface-api/app/`.
+  `surface-api/` is a self-contained uv project (`uv sync` installs it editable, which maps `surfaces.<surface>`
+  to `<surface>/src`); `app/routes.py` mounts Surface routers (`cd surface-api && uvicorn app:app`). Imports:
+  `from _base.auth import ...`, `from surfaces.sales.health.router import ...`; another Surface only through
+  `surfaces.<surface>.exports`. Deployed as FastAPI services (containers), **not** edge functions.
   Batch/ETL/ML stays in `tools/*.py`.
 - **The FE↔BE seam is the contract — its own top-level tree, not under `surface-spec/`.** Each Surface publishes
   versioned events + capabilities (+ OpenAPI) under `contracts/<surface>/`; the React client is generated from
@@ -174,9 +187,14 @@ tools/                 enforcement (lint, ci, hooks) — plain stdlib Python, ru
   (e.g. graph, sales, marketing) can ship separately while sharing `surface-api/_base`, `surface-ui/_base` and
   one database.
 - **Migrations:**
-  - **One shared database ⇒ one migration history:** write them in `surface-api/migrations/NNNN_*.sql` with a
-    `meta/_journal.json` entry; apply with `cd surface-api && python -m migrate`. A Surface logically owns its
-    tables (naming + `rls-grant-review`), but the physical migration stream is singular and common.
+  - **One shared database, one Alembic branch per Surface:** a Surface writes its migrations as Alembic
+    revisions in `surface-api/<surface>/db/migrations/` (branch label = Surface name; shared core uses
+    `_base/db/migrations/`). Revisions are hand-written SQL (`op.execute`), and declare `depends_on` for any
+    table another branch creates. Each branch starts from the `_base` baseline revision. Apply with
+    `cd surface-api && uv run alembic upgrade heads` (`--sql` to review first). `surface-api/tests/test_migrations.py`
+    checks folders, branches and heads.
+  - The older numbered SQL stream `surface-api/migrations/NNNN_*.sql` (+ `meta/_journal.json`, `migrate.py`) is
+    **closed**: no new files. The `_base` baseline refuses to run until all of it is applied.
     `supabase/migrations/` is historical.
   - Never edit an applied migration.
   - Merged migrations are **not** applied automatically. Apply them through a human-approved step: backup (`zz_backup_*`), apply, verify by JOIN, then log.
@@ -196,7 +214,7 @@ tools/                 enforcement (lint, ci, hooks) — plain stdlib Python, ru
   ```
   cd surface-api && uv run ruff check .    # Python lint (backend project)
   cd surface-api && uv run pytest          # Python tests (backend project)
-  cd surface-ui && bun install && for d in */; do [ "$d" = _base/ ] || bunx tsc --noEmit -p "$d"; done
+  cd surface-ui && bun install && for d in */; do [ -f "$d/tsconfig.json" ] && [ "$d" != _base/ ] && bunx tsc --noEmit -p "$d"; done
                                            # TS typecheck per frontend app
   python3 tools/lint/lint_all.py           # security / canon / migration / boundary lint (ratchet)
   ```

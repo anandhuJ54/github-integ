@@ -1,0 +1,9 @@
+{
+  "name": "@v3/parity",
+  "private": true,
+  "description": "Browser-to-API parity check: the legacy supabase-js function vs its FastAPI endpoint, same login.",
+  "type": "module",
+  "scripts": {
+    "parity": "bun run.ts"
+  }
+}

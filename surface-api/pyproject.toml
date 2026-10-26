@@ -12,14 +12,61 @@ dependencies = [
     "psycopg[binary]>=3.2",
     # Connection pooling for the read/write split (primary + optional read replica).
     "psycopg-pool>=3.2",
-    "pyjwt>=2.9",
+    "pyjwt[crypto]>=2.9",
+    "httpx>=0.27",
+    "beautifulsoup4>=4.12",
+    "websockets>=13",
+    "sqlalchemy>=2.0,<2.1",
+    # Migrations per Surface: one Alembic branch per `<name>/db/migrations/` (alembic.ini).
+    "alembic>=1.13",
 ]
+
+[build-system]
+requires = ["setuptools>=75"]
+build-backend = "setuptools.build_meta"
+
+# Each Surface folder `<name>/` keeps its code in `<name>/src`, imported as `surfaces.<name>`.
+# `uv sync` installs the project editable, so the mapping below is what makes those imports work.
+# `_base` and `app` import from the project root (pytest `pythonpath`, uvicorn and `python -m`
+# run from surface-api/).
+[tool.setuptools]
+packages = [
+    "surfaces.sales",
+    "surfaces.marketing",
+    "surfaces.search",
+    "surfaces.srp",
+    "surfaces.xmp",
+    "surfaces.campaigns",
+    "surfaces.etl",
+    "surfaces.graph",
+    "surfaces.nora_os",
+    "surfaces.skills",
+    "surfaces.conversion_agents",
+    "surfaces.admin",
+    "surfaces.ops",
+]
+
+[tool.setuptools.package-dir]
+"surfaces.sales" = "sales/src"
+"surfaces.marketing" = "marketing/src"
+"surfaces.search" = "search/src"
+"surfaces.srp" = "srp/src"
+"surfaces.xmp" = "xmp/src"
+"surfaces.campaigns" = "campaigns/src"
+"surfaces.etl" = "etl/src"
+"surfaces.graph" = "graph/src"
+"surfaces.nora_os" = "nora_os/src"
+"surfaces.skills" = "skills/src"
+"surfaces.conversion_agents" = "conversion_agents/src"
+"surfaces.admin" = "admin/src"
+"surfaces.ops" = "ops/src"
 
 [dependency-groups]
 # Dev/CI tooling. `uv sync` installs these by default, so core-gates' `ruff`/`pytest` resolve.
 dev = [
     "ruff>=0.8",
     "pytest>=8.3",
+    "sqlacodegen>=3.0",
 ]
 
 [tool.ruff]
@@ -34,6 +81,13 @@ line-length = 100
 # module; the importable top-level packages (`_base`, `sales`, …) are all valid names.
 ignore = ["B008", "N999"]
 
+[tool.ruff.lint.isort]
+# Project code: shared core, the app shell and every Surface (`surfaces.<name>`).
+known-first-party = ["_base", "app", "surfaces"]
+
 [tool.pytest.ini_options]
 testpaths = ["."]
 python_files = ["*_test.py", "test_*.py"]
+# Same-named test files live in many `<name>/tests/` folders; importlib mode keeps them apart.
+addopts = ["--import-mode=importlib"]
+pythonpath = ["."]

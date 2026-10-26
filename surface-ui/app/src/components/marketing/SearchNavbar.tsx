@@ -1,0 +1,1 @@
+export const SearchNavbar = () => null;

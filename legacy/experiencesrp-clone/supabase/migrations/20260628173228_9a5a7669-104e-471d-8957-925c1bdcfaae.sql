@@ -1,0 +1,2 @@
+-- Loading from /tmp/dm_final.sql - see actual content via subsequent file
+-- (placeholder to be replaced)

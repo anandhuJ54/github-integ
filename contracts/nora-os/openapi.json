@@ -1,0 +1,65 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "nora-os API",
+    "version": "1"
+  },
+  "paths": {
+    "/nora-os/hello": {
+      "get": {
+        "tags": [
+          "nora-os"
+        ],
+        "summary": "Hello",
+        "description": "Public endpoint \u2014 no auth/DB. Proves the FE\u2194BE wiring end to end.",
+        "operationId": "hello_nora_os_hello_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "type": "object",
+                  "title": "Response Hello Nora Os Hello Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/nora-os/me": {
+      "get": {
+        "tags": [
+          "nora-os"
+        ],
+        "summary": "Whoami",
+        "description": "Trivial authed endpoint proving the JWT + routing path works.",
+        "operationId": "whoami_nora_os_me_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "type": "object",
+                  "title": "Response Whoami Nora Os Me Get"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    }
+  },
+  "components": {
+    "schemas": {}
+  }
+}

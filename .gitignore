@@ -1,5 +1,6 @@
 # Python
 __pycache__/
+*.egg-info/
 *.py[cod]
 .venv/
 venv/
@@ -16,3 +17,6 @@ dist/
 .env
 .env.*
 !.env.example
+
+# local scratch — never commit
+todo.md

@@ -1,0 +1,1 @@
+REVOKE INSERT ON public.exp_listings_publishers, public.exp_listings_crosswalk, public.exp_listings_overlays FROM sandbox_exec;

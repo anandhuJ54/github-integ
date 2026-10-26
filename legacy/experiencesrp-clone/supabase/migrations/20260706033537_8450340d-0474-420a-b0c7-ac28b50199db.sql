@@ -1,0 +1,1 @@
+REVOKE UPDATE ON public.exp_category_schema FROM sandbox_exec;

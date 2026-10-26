@@ -1,0 +1,1 @@
+GRANT UPDATE ON public.exp_listings_category_status TO sandbox_exec;

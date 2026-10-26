@@ -1,0 +1,73 @@
+// Shared by every surface-ui project. Each Surface has its own alias (@v3/<surface>/*);
+// _base is @v3/ui. One alias map means one program can typecheck the composed app.
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": [
+      "ES2022",
+      "DOM",
+      "DOM.Iterable"
+    ],
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "jsx": "react-jsx",
+    "types": [
+      "vite/client",
+      "node"
+    ],
+    "allowImportingTsExtensions": true,
+    "noEmit": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
+    "noFallthroughCasesInSwitch": true,
+    "paths": {
+      "@v3/ui": [
+        "./_base/index.ts"
+      ],
+      "@v3/ui/*": [
+        "./_base/src/*"
+      ],
+      "@v3/app/*": [
+        "./app/src/*"
+      ],
+      "@v3/marketing/*": [
+        "./marketing/src/*"
+      ],
+      "@v3/srp/*": [
+        "./srp/src/*"
+      ],
+      "@v3/search/*": [
+        "./search/src/*"
+      ],
+      "@v3/graph/*": [
+        "./graph/src/*"
+      ],
+      "@v3/sales/*": [
+        "./sales/src/*"
+      ],
+      "@v3/xmp/*": [
+        "./xmp/src/*"
+      ],
+      "@v3/campaigns/*": [
+        "./campaigns/src/*"
+      ],
+      "@v3/etl/*": [
+        "./etl/src/*"
+      ],
+      "@v3/skills/*": [
+        "./skills/src/*"
+      ],
+      "@v3/nora-os/*": [
+        "./nora-os/src/*"
+      ],
+      "@v3/admin/*": [
+        "./admin/src/*"
+      ],
+      "@v3/ops/*": [
+        "./ops/src/*"
+      ]
+    }
+  }
+}

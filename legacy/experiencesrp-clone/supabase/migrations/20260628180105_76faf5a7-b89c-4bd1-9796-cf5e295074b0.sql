@@ -1,0 +1,1 @@
+GRANT INSERT, UPDATE, DELETE, SELECT ON public.gbp_categories TO sandbox_exec;

@@ -1,0 +1,1 @@
+REVOKE DELETE, INSERT ON public.exp_taxonomy, public.exp_vertical_node_registry FROM sandbox_exec; REVOKE INSERT, UPDATE ON public.exp_category_compliance FROM sandbox_exec;

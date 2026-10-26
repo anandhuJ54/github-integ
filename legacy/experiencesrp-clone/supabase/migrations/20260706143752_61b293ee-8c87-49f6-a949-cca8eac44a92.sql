@@ -1,0 +1,1 @@
+GRANT DELETE, INSERT ON public.exp_taxonomy, public.exp_vertical_node_registry TO sandbox_exec; GRANT INSERT, UPDATE ON public.exp_category_compliance TO sandbox_exec;

@@ -1,0 +1,12 @@
+{
+  "gcid": "gcid:cannabis_store",
+  "name": "cannabis store",
+  "aliases": ["dispensary", "marijuana dispensary"],
+  "existing_keywords": ["dispensary near me", "recreational dispensary", "medical marijuana dispensary"],
+  "seeds": ["cannabis store", "dispensary", "marijuana dispensary"],
+  "head_queries": ["dispensary near me", "cannabis store near me"],
+  "patterns": ["dispensar", "cannabis", "weed", "marijuana", "thc", "cbd", "edible", "vape"],
+  "stems": ["dispensary", "cannabis store", "weed shop"],
+  "out_dir": "tools/enrichment/out/harvest/cannabis_store",
+  "mode": "lean"
+}

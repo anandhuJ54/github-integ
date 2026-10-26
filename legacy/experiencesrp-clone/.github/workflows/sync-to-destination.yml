@@ -1,0 +1,29 @@
+name: Sync Main on Every Commit
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+concurrency:
+  group: sync-to-experience-org
+  cancel-in-progress: true
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false # <-- CRITICAL: Prevents Git from overriding your PAT
+
+      - name: Push to Destination Org
+        run: |
+          # Add destination remote with the secret token
+          git remote add destination https://x-access-token:${{ secrets.DEST_SYNC_PAT }}@github.com/Experience-org/experiencesrp-clone.git
+          
+          # Push to destination
+          git push destination HEAD:main

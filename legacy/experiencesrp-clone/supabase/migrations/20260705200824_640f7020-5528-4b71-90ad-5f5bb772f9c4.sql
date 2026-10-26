@@ -1,0 +1,1 @@
+ALTER TABLE exp_vertical_node_registry ALTER COLUMN schema_type DROP NOT NULL;
