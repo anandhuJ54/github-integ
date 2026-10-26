@@ -98,7 +98,7 @@ docs/  reference/  scripts/
 tools/                 enforcement (lint, ci, hooks) — plain stdlib Python, run with python3
 ```
 
-- **A Surface owns** its three homes (`surface-api/<surface>`, `surface-ui/<surface>`, `surface-spec/<surface>`), its `contracts/<surface>`, and the tables it logically owns (the physical migration stream is shared — see §4). Ownership is mapped in `.github/CODEOWNERS`.
+- **A Surface owns** its three homes (`surface-api/<surface>`, `surface-ui/<surface>`, `surface-spec/<surface>`), its `contracts/<surface>`, and the tables it owns (one shared database; each Surface's migrations are its own Alembic branch — see §4). Ownership is mapped in `.github/CODEOWNERS`.
 - **A Surface never edits** another Surface's internals or tables. Reads go through governed views/queries; writes go through capabilities; reactions go through events.
 - **One app, one login — composed, not shared internals (§4).** A frontend app bundles a chosen set of `surface-ui/<surface>` apps; a backend service mounts a chosen set of `surface-api/<surface>` routers. `surface-ui/<surface>` calls **only** its own `surface-api/<surface>`, via a client generated from `contracts/<surface>`. Cross-Surface reaction goes through the events/capabilities in `contracts/`, never a direct import or call (lint: `boundary/*`). Hiding UI is not security: permissions are checked server-side in FastAPI (or the DB). A new or changed cross-Surface interface is a PR to `contracts/<surface>`, reviewed by the owning Surface.
 - **Shared core:** `AGENTS.md`, `templates/`, `surface-api/_base/`, `surface-api/app/`, `surface-api/tests/`, `surface-ui/shell/`, `surface-ui/state/`, `surface-ui/shared/`, `surface-ui/theme/`, `.claude/`, `tools/`. Changes need a PR reviewed for all Surfaces.
@@ -270,6 +270,9 @@ Each Surface lives in three homes: `surface-api/<snake>`, `surface-ui/<kebab>`,
 | 11 | Conversion Agents | `surface-api/conversion_agents` | `surface-ui/conversion-agents` | `surface-spec/conversion-agents` |
 | 12 | Admin | `surface-api/admin` | `surface-ui/admin` | `surface-spec/admin` |
 | 13 | Ops | `surface-api/ops` | `surface-ui/ops` | `surface-spec/ops` |
+| 14 | Integrations | `surface-api/integrations` | `surface-ui/integrations` | `surface-spec/integrations` |
+| 15 | Reports | `surface-api/reports` | `surface-ui/reports` | `surface-spec/reports` |
+| 16 | Listings (reviews, listings, social posts) | `surface-api/listings` | `surface-ui/listings` | `surface-spec/listings` |
 
 ## 8. Control status — what is actually enforced
 
@@ -288,6 +291,7 @@ Read this before relying on a control. **Enforced** = blocks a merge or an edit 
 | Agent edit guard (applied migrations, `.env`, always-true policies, anon/PUBLIC grants, secrets) | `.claude/settings.json` → `tools/hooks/guard.py` | **Partial** — blocks the Edit/Write/MultiEdit tools in Claude Code sessions using this repo's settings. Shell commands (e.g. `sed`, `>`), other tools and humans are not covered; CI lint is the backstop |
 | Deny force-push, push to `main`, reading `.env` | `.claude/settings.json` | **Partial** — matches the listed command patterns only; other spellings (e.g. `git push origin HEAD:main`, `cat .env`) are not caught. Branch protection is the real control |
 | Cross-Surface interaction only through `contracts/<surface>` (no `surface-ui/<surface>` → another Surface's `surface-api`/`surface-ui` internals; `surface-ui/<surface>` calls only its own `surface-api/<surface>`) | lint `boundary/cross-surface-import` in `core-gates` | Implemented — as above |
+| Backend structure: Surfaces import each other only via `exports`; `_base` imports no Surface; every Surface has the standard files, is registered and mounted once; no duplicate routes; each migration on its own Surface's Alembic branch | `surface-api/tests/` (`test_boundaries.py`, `test_routes.py`, `test_migrations.py`), run by `uv run pytest` in `core-gates` | Implemented — as above |
 | Surface ownership and review routing | `.github/CODEOWNERS` | **Placeholder** — team handles must be created in GitHub |
 | Required checks, required reviews, no self-merge, no force-push to `main` | GitHub branch protection | **Placeholder** — not stored in this repo; open decision O8 |
 | Second approval for schema, security, money and identity changes | §4 | Documentation, until CODEOWNERS teams and branch protection exist |

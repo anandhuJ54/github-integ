@@ -21,6 +21,9 @@ const SURFACES = [
   "skills",
   "admin",
   "ops",
+  "integrations",
+  "reports",
+  "listings",
 ];
 
 const aliases = [

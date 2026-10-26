@@ -103,3 +103,21 @@
 /surface-ui/ops/              @BuyersRoad/surface-ops
 /contracts/ops/               @BuyersRoad/surface-ops
 /surface-spec/ops/            @BuyersRoad/surface-ops
+
+# 14 Integrations
+/surface-api/integrations/    @BuyersRoad/surface-integrations
+/surface-ui/integrations/     @BuyersRoad/surface-integrations
+/contracts/integrations/      @BuyersRoad/surface-integrations
+/surface-spec/integrations/   @BuyersRoad/surface-integrations
+
+# 15 Reports
+/surface-api/reports/         @BuyersRoad/surface-reports
+/surface-ui/reports/          @BuyersRoad/surface-reports
+/contracts/reports/           @BuyersRoad/surface-reports
+/surface-spec/reports/        @BuyersRoad/surface-reports
+
+# 16 Listings (reviews, listings, social posts)
+/surface-api/listings/        @BuyersRoad/surface-listings
+/surface-ui/listings/         @BuyersRoad/surface-listings
+/contracts/listings/          @BuyersRoad/surface-listings
+/surface-spec/listings/       @BuyersRoad/surface-listings
