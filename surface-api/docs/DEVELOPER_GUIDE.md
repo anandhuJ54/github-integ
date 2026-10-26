@@ -159,8 +159,8 @@ uv run alembic upgrade heads --sql        # review the SQL; no DB needed
 uv run pytest tests/test_migrations.py
 ```
 
-- Write SQL in `upgrade()` with `op.execute("""...""")`. New tables: `ENABLE` and `FORCE ROW LEVEL
-  SECURITY`, no grants to `anon`/`PUBLIC`, never `USING (true)` except for `service_role`.
+- Write SQL in `upgrade()` with `op.execute("""...""")`. New tables: no row-level security;
+  access by grants only (`REVOKE ALL ... FROM anon, authenticated, PUBLIC`, then grant what each role needs).
 - `depends_on` any revision of another branch whose table you use.
 - Additive only on protected tables; never edit a revision once applied anywhere shared.
 - **Applying is a human-approved step** (backup, `uv run --env-file .env alembic upgrade heads`, verify by JOIN, log

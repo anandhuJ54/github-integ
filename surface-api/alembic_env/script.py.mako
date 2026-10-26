@@ -4,8 +4,8 @@ Revision ID: ${up_revision}
 Revises: ${down_revision | comma,n}
 Create Date: ${create_date}
 
-Owner: this folder's Surface. Hand-written: SQL through op.execute(...). New tables ENABLE and
-FORCE ROW LEVEL SECURITY; no grants to anon or PUBLIC (AGENTS.md §3). Declare `depends_on` for
+Owner: this folder's Surface. Hand-written: SQL through op.execute(...). New tables: no row-level
+security, access by grants only; nothing granted to anon or PUBLIC (AGENTS.md §3). Declare `depends_on` for
 any table another branch creates. Never edit this file once it has been applied anywhere shared.
 """
 from __future__ import annotations

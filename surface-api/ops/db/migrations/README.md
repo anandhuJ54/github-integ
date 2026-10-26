@@ -1,7 +1,9 @@
 # Migrations: the `ops` Surface
 
 Alembic branch `ops` (`surface-api/alembic.ini`). Revisions here are hand-written SQL in
-`upgrade()` (`op.execute("""...""")`), follow the security baseline in root `AGENTS.md` §3, and declare
+`upgrade()` (`op.execute("""...""")`), create tables only in this Surface's schema `ops`
+(`ops.<table>`; the first revision runs `CREATE SCHEMA IF NOT EXISTS ops`), follow the
+security baseline in root `AGENTS.md` §3, and declare
 `depends_on` for any table another branch creates. Empty until this Surface writes its first migration.
 
 From `surface-api/`:

@@ -1,8 +1,9 @@
 """Alembic environment shared by every Surface branch and `_base` (see alembic.ini).
 
 Revisions are written by hand: SQL through `op.execute(...)` (functions, RLS, policies, grants) or
-plain `op` operations. There is no autogenerate (`target_metadata = None`): every table is in the
-one `public` schema, and Alembic can't see functions, policies or grants anyway.
+plain `op` operations. There is no autogenerate (`target_metadata = None`): Alembic can't see
+functions, policies or grants. A Surface's tables live in its own schema (`<surface>.<table>`,
+created by its first revision); shared-core and not-yet-moved tables stay in `public` (AGENTS.md §4).
 
 Connects to the primary (`DATABASE_URL`), like migrate.py. `alembic upgrade heads --sql` prints
 the SQL without connecting, for review before the human-approved apply.

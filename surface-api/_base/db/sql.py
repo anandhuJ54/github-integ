@@ -1,7 +1,8 @@
 """Run SQLAlchemy Core statements on the psycopg connections from `_base.db.session`.
 
-Queries are built with the Core query builder against `_base.db.tables` (no ORM: no
-mapped classes, no session). They compile to psycopg's `%(name)s` paramstyle and run on a
+Queries are built with the Core query builder against `_base.db.tables`, or from a Surface's ORM
+classes (`<surface>/src/models/`, e.g. `select(SurveyTemplate.id)`), which compile the same way.
+There is no ORM Session: rows come back as dicts, not instances. They compile to psycopg's `%(name)s` paramstyle and run on a
 leased `role_connection` / `read_connection`, so the RLS context and role set there apply.
 Rows come back JSON-shaped (`surfaces.nora_os.db.jsonish` semantics), as PostgREST returned them.
 
