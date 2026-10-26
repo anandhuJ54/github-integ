@@ -79,6 +79,7 @@ surface-api/           self-contained Python/FastAPI project (its own pyproject.
       router.py        aggregate router: includes each resource router, no endpoints
       exports.py       the ONLY module another Surface may import (lint + tests/test_boundaries.py)
       internal.py      helpers shared by two or more of its resource folders
+      models/          tables this Surface owns (empty; still in _base/db/tables.py until the team moves them)
       <resource>/      router.py (endpoints) · schemas.py (request/response) · services.py (queries, logic)
     tests/             test_*.py + conftest.py
     db/migrations/     this Surface's Alembic branch (hand-written SQL revisions)

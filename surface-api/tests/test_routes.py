@@ -10,7 +10,13 @@ from app.routes import ROUTERS
 from app.surfaces import NAME_PATTERN, ROOT, SURFACES
 
 # `internal` may be a module or, when large, a package (`internal/__init__.py`).
-SHAPE = ("__init__.py", "router.py", "exports.py", ("internal.py", "internal/__init__.py"))
+SHAPE = (
+    "__init__.py",
+    "router.py",
+    "exports.py",
+    ("internal.py", "internal/__init__.py"),
+    "models/__init__.py",
+)
 
 
 def test_surface_names_are_lowercase_and_underscores():

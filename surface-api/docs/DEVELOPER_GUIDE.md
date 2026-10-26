@@ -77,6 +77,7 @@ srp/
 │   ├── router.py         aggregate: include_router once per resource; no endpoints
 │   ├── exports.py        the ONLY module another Surface may import
 │   ├── internal.py       helpers shared by two or more of its resource folders
+│   ├── models/           tables it owns (empty for now; still in _base/db/tables.py)
 │   ├── claim_profile/    one folder per resource
 │   │   ├── router.py     GET /srp/claim-profile/{slug}
 │   │   ├── schemas.py    ClaimProfile
