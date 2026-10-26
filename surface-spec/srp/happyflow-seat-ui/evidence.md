@@ -1,8 +1,8 @@
-# Evidence: <increment title>
+# Evidence: Move the Happyflow professional-seat UI into surface-ui/srp
 
 <!-- Stage: Test. Shared template — do not remove sections. Required for merge. -->
 
-Links: [intent](./intent.md) · [spec](./spec.md) · [plan](./plan.md) · PR: <link>
+Links: [intent](./intent.md) · [spec](./spec.md) · [plan](./plan.md) · PR: not opened yet
 
 ## Source freeze (task 0, 2026-10-26)
 Port source: `/Users/anandhu/Documents/Projects/experiencesrp-clone`, branch `srp-1.0`, HEAD `2993fcbc6f3ed42af2708a6289c9dbab80ca0693`.
@@ -54,23 +54,69 @@ fa6a506533974edfe6d12373a6cef3c2744044d065a47c270dfc12a4b0cd79d7  src/routes/_au
 ```
 
 ## Acceptance criteria results
+Run on branch `srp/happyflow-seat-ui` on 2026-10-26, locally. No browser run: every `/seat/*` page is behind sign-in and I did not sign in.
+
 | # | Criterion | Test / check | Result |
 |---|---|---|---|
+| 1 | 7 new routes exist and are in the route tree | `bun run build` regenerated `shell/.generated/routeTree.gen.ts`: +161 lines, 0 removed, paths `/connections /find /insights /network /profile /settings /website` under `/seat/$kind/$id` | PASS |
+| 2 | Pro seat shows Happyflow; office seat unchanged, pro-only routes show "Not available" | Read in the code (`isPro` gates in the seven routes, index, nora, interview; the office paths still render `LocationOverview` and the live interview) and confirmed by the independent review. No test and no browser check | NOT VERIFIED BY A TEST |
+| 3 | `?day` / `?events` / `?from` handling | `utils/overview-search.test.ts` (3 tests). Day 7/24 → `HomeDay7Screen` read in the code only | PASS for the validation; selection not tested |
+| 4 | `HfRoute` → URL mapping | `components/happyflow/seat-nav.test.ts` on the pure `hfNavTarget`. The `useHfNav` hook itself is not tested | PASS for the mapping |
+| 5 | Pro nav items, PRO pill, lock, header hidden for pros | `components/seat/scoped-shell.test.ts`: labels and order, pill/lock flags, every suffix is a real route file, office nav unchanged. `hideHeader` is not tested | PASS except header; not seen visually |
+| 6 | "Full radial view" opens in the seat and back returns | Ported from the clone; no test, not run | NOT VERIFIED |
+| 7 | No supabase / server fn / fetch / `@/` / cross-Surface import | `src/happyflow-guard.test.ts` over `components/happyflow/` and the 7 routes; also `bun test` boundary guard. Does not scan `components/graph/` or `utils/expertise-graph.ts` | PASS for the scanned files |
+| 8 | Boundary guard still passes | `surface-ui/state/boundaries.test.ts` inside `bun test` | PASS |
+| 9 | tsc, tests, build | `bunx tsc --noEmit -p .` exit 0; the loop over all 15 `surface-ui/*/tsconfig.json` exit 0; `bun test` 95 pass, 0 fail; `bun run build` built. Test files are excluded from `tsc` (see below) | PASS |
+| 10 | Blocked storage does not throw | `use-hf-device.test.ts`, `screens/profile-store.test.ts` (also malformed and wrong-shaped content) | PASS |
+| 11 | No change outside srp, route tree and spec | `git diff main --stat -- surface-api contracts docs` is empty; changed paths are `surface-ui/srp` (52 files), `surface-ui/shell/.generated/routeTree.gen.ts`, `surface-spec/srp` (4) | PASS |
+| 12 | Graph loads only via `/graph/expertise/...`, no data is handled | `utils/expertise-graph.test.ts` (3 tests: URL, null → null, empty rows). The embedded page with no data was not looked at | PASS for the loader |
+| 13 | Visual parity with the clone | Not done | NOT DONE |
+
+Also added, beyond the spec: `components/happyflow/screens/render.test.ts` renders all 13 screen variants on the server inside a router
+(first render only; no clicks or effects) and requires distinct markup per screen.
+
+Deviations from test-first: tasks 6 (nav), 7 (graph loader) and the render test were written after or with the code, not before; tasks 1-5 and the
+route/search tests were written first and failed for the right reason.
+
+## Source freeze (task 0, 2026-10-26)
+Port source: `/Users/anandhu/Documents/Projects/experiencesrp-clone`, branch `srp-1.0`, HEAD `2993fcbc6f3ed42af2708a6289c9dbab80ca0693`.
+The Happyflow work is **uncommitted** in that tree (24 `git status` entries, including unrelated untracked files that are not ported:
+`.claude/`, `.pnp.cjs`, `.pnp.loader.mjs`, `.yarn/`, `yarn.lock`, `ai-native-features.xlsx`). The SHA-256 list of the 40 files copied or merged is
+in the earlier version of this file (commit `9e9e4b6`). Re-checked after the port: all 40 hashes still match, so the copy is current as of 2026-10-26.
+The graph files were not taken from the clone's tree as is: the page and canvas come from the clone with imports rewritten, the loader from `surface-ui/search`
+(the clone's loader reads the browser database).
 
 ## CI gates
-Links to the CI run; all required gates green.
+No CI run yet: no PR is open. Local runs of the same commands (2026-10-26):
+- `cd surface-ui && bunx tsc --noEmit -p .` and `-p <each surface>`: all exit 0.
+- `cd surface-ui && bun test`: 95 pass, 0 fail.
+- `cd surface-ui && bun run build`: built.
+- `cd surface-api && uv run ruff check .`: all checks passed.
+- `cd surface-api && uv run pytest`: 1608 pass, **3 fail**. The three are `test_new_tables_are_closed_to_anon_by_grants` for `_base` (`survey_sources`),
+  `campaigns` (`campaigns_tables`) and `xmp` (`xmp_tables`): those migrations lack a `REVOKE ALL ... FROM anon, authenticated, PUBLIC`. This branch changes nothing under
+  `surface-api/`, so they fail on the base too (I did not run them on `main` separately). They will likely block `core-gates` until fixed elsewhere.
+- `python3 tools/lint/lint_all.py`, `tools/ci/*` and `tools/hooks/guard.py` are **not in this checkout**; not run.
 
 ## Evals (Skills / NORA / AI output only)
-Suite, score, threshold, budget used.
+None: no model output is involved.
 
 ## Live verification (data changes only)
-Read-only queries run and their results (JOIN match counts, not isolated counts).
+None: no data or database object changed.
 
 ## Applied changes
-What was applied where (migrations, config) and by which approved step. "None" if nothing applied.
+None applied to any database, config or environment. Files changed in the working tree only; commits are local and unpushed. The spec folder and plan file were written through the shell because the repo's edit-guard hook script is missing (approved in chat).
 
 ## What remains unverified
-Be explicit. Untested paths, assumptions, things only production will show.
+- **Nothing was seen in a browser.** No click-through of the 11 professional routes or the office seat, no screenshots against the clone (criteria 2, 5 visuals, 6, 13). Needs a signed-in session.
+- Untested logic: the `useHfNav` hook, `hideHeader`, index `day` → screen, the "Not available" gating, the radial-view open/back flow, and the embedded graph with no data.
+- Test files are not type-checked: `srp/tsconfig.json` excludes `*.test.ts` (as the root config does) because bun types are not installed.
+- The render test covers a server first render only: no effects (so the day-7 `events` view), no clicks, no Web Speech, no fonts, no `HF_EMBED_HEIGHT` fit in the real layout.
+- `/graph/expertise/{kind}/{slug}` was only called against a stub; whether a seat session can reach it live is unchecked.
+- CI is unknown: `tools/lint`, `tools/ci` and the guard hook are absent here, and 3 unrelated backend tests fail locally.
+- Known clone behaviour carried over unchanged: `use-speech.ts` can show "not listening" after a fast stop-then-start; the desktop layout switches at a 1024 px window although the seat sidebar leaves ~784 px; `?from=` is kept only on the home links.
+- Demo copy was not read line by line for rate, price or ranking claims (compliance).
+- **Open rulings (see spec "Canon review"): showing demo values to a real professional without a label; the SRS screen counts 11 lanes where the scorer has 10 (O1); the persona name "Dana Whitfield" in code and copy.** The port is blocked from merge on these.
+- The second-model review did not read the screen code beyond its diff against the clone.
 
 ## Change log
-`docs/ETL-Enhancements.md` entry (required for DB / cron / ETL changes).
+Not required: no DB function, table, trigger, cron or ETL code changed.

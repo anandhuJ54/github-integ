@@ -169,7 +169,22 @@ is unchanged by this; each ruling can be applied as a small follow-up commit on 
 change, or a rename) without redesigning the port.
 
 ## Second-model review
-Not yet run. To be done on this spec before approval of `plan.md`; the summary and how disagreements were reconciled go here.
+Run 2026-10-26 by a fresh agent given the branch, the spec and `AGENTS.md`, but not my conclusions. It also ran `tsc` and `bun test`
+(both passed). Result: **no blocking defects; the office (location) seat is not affected.**
+- It diffed every file under `components/happyflow/` against the clone, ignoring import lines, and confirmed the "verbatim copy"
+  claim: only `profile.tsx` (storage moved to `profile-store.ts`), `use-hf-device.ts` and `seat-nav.ts` differ, each behaviour-preserving.
+  It read the `profile.tsx` store extraction only, not the rest of that diff.
+- Findings (all low), and how each was handled:
+  1. `use-speech.ts` `start()`: the aborted recognizer's `onend` can set "not listening" after a fast stop-then-start. **Clone behaviour, left as is**; logged in `evidence.md`.
+  2. `profile-store.ts` accepted `{"f":"abc"}` or an array. **Fixed** (plain-object check) with two new test cases.
+  3. `useHfDevice` picks desktop at a 1024 px window though the seat sidebar leaves ~784 px. **Clone behaviour, left as is**; a visual-parity risk for criterion 13, unverified.
+  4. `srp/tsconfig.json` excludes `*.test.ts`, so `tsc -p srp` does not typecheck the new tests (the root config does the same for the state tests; bun types are not installed). **Left, logged as unverified.**
+  5. Only the home targets keep `?from=`; other Happyflow links and the sidebar drop it. **Matches the clone and the spec**; low impact.
+- Weak tests it named: the render test only checked length and `hf-root`; `useHfNav` itself, `hideHeader`, index routing (`day`), the
+  "Not available" gating and the radial-view flow are not tested; the guard covers only `components/happyflow/` and the 7 new routes.
+  **Handled:** the render test now also requires distinct markup per screen (the events variant is excluded because it differs only after an
+  effect), the nav test now checks every suffix is a real route file. **Not handled, recorded as unverified:** the rest of that list.
+- It did not check: a build, lint, a browser, endpoint reachability, or the ~18k lines of screen code beyond the diff against the clone.
 
 ## Decision log entries
 | Date | Decision | What it blocks |
