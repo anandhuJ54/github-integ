@@ -53,6 +53,10 @@ fa6a506533974edfe6d12373a6cef3c2744044d065a47c270dfc12a4b0cd79d7  src/routes/_au
 4afd326c434439b70b1053db85af6b3cb27f730fcb08ae08afcdda78838030dc  src/routes/_authenticated/seat.$kind.$id.website.tsx
 ```
 
+Re-checked after the port (2026-10-26): all 40 hashes above still match the clone, so the copy is current.
+The graph files were not taken from the clone's tree as is: the page and canvas come from the clone with imports rewritten, the loader from `surface-ui/search`
+(the clone's loader reads the browser database).
+
 ## Acceptance criteria results
 Run on branch `srp/happyflow-seat-ui` on 2026-10-26, locally. No browser run: every `/seat/*` page is behind sign-in and I did not sign in.
 
@@ -77,14 +81,6 @@ Also added, beyond the spec: `components/happyflow/screens/render.test.ts` rende
 
 Deviations from test-first: tasks 6 (nav), 7 (graph loader) and the render test were written after or with the code, not before; tasks 1-5 and the
 route/search tests were written first and failed for the right reason.
-
-## Source freeze (task 0, 2026-10-26)
-Port source: `/Users/anandhu/Documents/Projects/experiencesrp-clone`, branch `srp-1.0`, HEAD `2993fcbc6f3ed42af2708a6289c9dbab80ca0693`.
-The Happyflow work is **uncommitted** in that tree (24 `git status` entries, including unrelated untracked files that are not ported:
-`.claude/`, `.pnp.cjs`, `.pnp.loader.mjs`, `.yarn/`, `yarn.lock`, `ai-native-features.xlsx`). The SHA-256 list of the 40 files copied or merged is
-in the earlier version of this file (commit `9e9e4b6`). Re-checked after the port: all 40 hashes still match, so the copy is current as of 2026-10-26.
-The graph files were not taken from the clone's tree as is: the page and canvas come from the clone with imports rewritten, the loader from `surface-ui/search`
-(the clone's loader reads the browser database).
 
 ## CI gates
 No CI run yet: no PR is open. Local runs of the same commands (2026-10-26):
