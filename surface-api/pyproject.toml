@@ -46,6 +46,7 @@ packages = [
     "surfaces.ops",
     "surfaces.integrations",
     "surfaces.reports",
+    "surfaces.listings",
 ]
 
 [tool.setuptools.package-dir]
@@ -64,6 +65,7 @@ packages = [
 "surfaces.ops" = "ops/src"
 "surfaces.integrations" = "integrations/src"
 "surfaces.reports" = "reports/src"
+"surfaces.listings" = "listings/src"
 
 [dependency-groups]
 # Dev/CI tooling. `uv sync` installs these by default, so core-gates' `ruff`/`pytest` resolve.

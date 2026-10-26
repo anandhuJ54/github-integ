@@ -266,6 +266,7 @@ Each Surface lives in three homes: `surface-api/<snake>`, `surface-ui/<kebab>`,
 | 13 | Ops | `surface-api/ops` | `surface-ui/ops` | `surface-spec/ops` |
 | 14 | Integrations | `surface-api/integrations` | `surface-ui/integrations` | `surface-spec/integrations` |
 | 15 | Reports | `surface-api/reports` | `surface-ui/reports` | `surface-spec/reports` |
+| 16 | Listings (reviews, listings, social posts) | `surface-api/listings` | `surface-ui/listings` | `surface-spec/listings` |
 
 ## 8. Control status — what is actually enforced
 

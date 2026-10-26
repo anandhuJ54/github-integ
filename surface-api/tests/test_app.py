@@ -10,7 +10,7 @@ from app import main as app
 # Prefix each Surface's base router mounts (hyphenated for multiword packages).
 SURFACES = [
     "sales", "marketing", "search", "srp", "xmp", "campaigns", "etl", "graph",
-    "nora-os", "skills", "conversion-agents", "admin", "ops", "integrations", "reports",
+    "nora-os", "skills", "conversion-agents", "admin", "ops", "integrations", "reports", "listings",
 ]
 
 

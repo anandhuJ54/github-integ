@@ -108,3 +108,9 @@
 /surface-ui/reports/          @BuyersRoad/surface-reports
 /contracts/reports/           @BuyersRoad/surface-reports
 /surface-spec/reports/        @BuyersRoad/surface-reports
+
+# 16 Listings (reviews, listings, social posts)
+/surface-api/listings/        @BuyersRoad/surface-listings
+/surface-ui/listings/         @BuyersRoad/surface-listings
+/contracts/listings/          @BuyersRoad/surface-listings
+/surface-spec/listings/       @BuyersRoad/surface-listings

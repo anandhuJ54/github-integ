@@ -11,6 +11,7 @@ from surfaces.conversion_agents.router import router as conversion_agents
 from surfaces.etl.router import router as etl
 from surfaces.graph.router import router as graph
 from surfaces.integrations.router import router as integrations
+from surfaces.listings.router import router as listings
 from surfaces.marketing.router import router as marketing
 from surfaces.nora_os.router import router as nora_os
 from surfaces.ops.router import router as ops
@@ -38,4 +39,5 @@ ROUTERS = [
     ops,
     integrations,
     reports,
+    listings,
 ]
