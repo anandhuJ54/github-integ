@@ -67,6 +67,12 @@
       ],
       "@v3/ops/*": [
         "./ops/src/*"
+      ],
+      "@v3/integrations/*": [
+        "./integrations/src/*"
+      ],
+      "@v3/reports/*": [
+        "./reports/src/*"
       ]
     }
   }

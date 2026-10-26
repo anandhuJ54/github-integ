@@ -10,9 +10,11 @@ from surfaces.campaigns.router import router as campaigns
 from surfaces.conversion_agents.router import router as conversion_agents
 from surfaces.etl.router import router as etl
 from surfaces.graph.router import router as graph
+from surfaces.integrations.router import router as integrations
 from surfaces.marketing.router import router as marketing
 from surfaces.nora_os.router import router as nora_os
 from surfaces.ops.router import router as ops
+from surfaces.reports.router import router as reports
 from surfaces.sales.router import router as sales
 from surfaces.search.router import router as search
 from surfaces.skills.router import router as skills
@@ -34,4 +36,6 @@ ROUTERS = [
     conversion_agents,
     admin,
     ops,
+    integrations,
+    reports,
 ]
