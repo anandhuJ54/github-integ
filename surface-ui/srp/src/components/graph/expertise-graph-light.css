@@ -1,0 +1,107 @@
+/*
+ * Light theme for the expertise graph when it is embedded in a workspace (the professional
+ * seat's "Full radial view"). Everything is scoped under `.eg-light`; the public
+ * /p, /o and /c graph pages keep the dark look.
+ */
+
+.eg-light {
+  background-color: #f7f8fc;
+  background-image:
+    radial-gradient(60% 40% at 0% 0%, #fde4ee 0%, transparent 60%),
+    radial-gradient(55% 40% at 100% 0%, #dde8fd 0%, transparent 60%),
+    radial-gradient(60% 45% at 100% 100%, #e2f4ea 0%, transparent 60%),
+    radial-gradient(55% 40% at 0% 100%, #ece4fc 0%, transparent 60%);
+  color: #202124;
+}
+
+/* Text */
+.eg-light .text-white,
+.eg-light .text-slate-100,
+.eg-light .text-slate-200 {
+  color: #202124;
+}
+.eg-light .text-slate-300,
+.eg-light .text-slate-400 {
+  color: #5f6368;
+}
+.eg-light .text-slate-500,
+.eg-light .text-slate-600 {
+  color: #80868b;
+}
+.eg-light .hover\:text-slate-200:hover {
+  color: #202124;
+}
+.eg-light .text-cyan-300,
+.eg-light .text-cyan-300\/80 {
+  color: #1a73e8;
+}
+.eg-light .hover\:text-cyan-200:hover {
+  color: #1557b0;
+}
+.eg-light .text-fuchsia-200 {
+  color: #7b4ce0;
+}
+
+/* Cards, chips and borders */
+.eg-light .border-white\/10 {
+  border-color: #e8eaed;
+}
+.eg-light .bg-white\/\[0\.02\],
+.eg-light .bg-white\/\[0\.03\],
+.eg-light .bg-white\/\[0\.04\] {
+  background-color: rgba(255, 255, 255, 0.92);
+}
+.eg-light .bg-white\/\[0\.06\] {
+  background-color: #eceef1;
+}
+.eg-light .border-fuchsia-400\/25 {
+  border-color: #e3d7fb;
+}
+.eg-light .bg-fuchsia-400\/10 {
+  background-color: #f3e8fd;
+}
+
+/* Canvas controls and hover card */
+.eg-light .bg-slate-900\/80,
+.eg-light .bg-slate-950\/85 {
+  background-color: rgba(255, 255, 255, 0.95);
+  box-shadow: 0 1px 3px rgba(60, 64, 67, 0.12);
+}
+.eg-light .hover\:bg-slate-800:hover {
+  background-color: #f1f3f4;
+}
+
+/* SVG labels: dark on light. The score inside the dark root node stays white. */
+.eg-light svg .fill-white,
+.eg-light svg .fill-slate-100 {
+  fill: #202124;
+}
+.eg-light svg .fill-white.text-\[12px\] {
+  fill: #fff;
+}
+.eg-light svg .fill-slate-300 {
+  fill: #3c4043;
+  font-weight: 600;
+}
+.eg-light svg .fill-slate-400 {
+  fill: #5f6368;
+}
+/* A white halo keeps every label readable where edges cross it. */
+.eg-light svg text {
+  paint-order: stroke;
+  stroke: #ffffff;
+  stroke-width: 3.5px;
+  stroke-linejoin: round;
+}
+/* No halo inside the dark root node or on the white hub pills. */
+.eg-light svg .fill-white.text-\[12px\],
+.eg-light svg .fill-slate-100 {
+  stroke: none;
+}
+/* Branch hub pills and orbit rings */
+.eg-light svg [fill="rgba(2,6,23,0.85)"] {
+  fill: #fff;
+}
+.eg-light svg [stroke="rgba(148,163,184,0.12)"] {
+  stroke: rgba(95, 99, 104, 0.18);
+}
