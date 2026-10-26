@@ -44,9 +44,8 @@ Index `validateSearch`: `day` is kept only if it is 7 or 24; `events` only if it
 ### Seat shell (`components/seat/scoped-shell.tsx`)
 - `NavItem` gains `locked?` (lock icon, page still opens) and `pro?` (orange "PRO" pill).
 - `ScopedShell` gains `hideHeader` (drops the top search/subtitle bar). It is set for professional seats only.
-- `PRO_NAV` becomes: Home (`""`), SRS (`/nora`); then Profile, Insights, Website Analytics (`pro`), Expertise Graph,
-  Reviews (`locked`), Connections, Network; then Settings; and the NORA interview entry stays reachable
-  (final order and grouping are copied from the clone's `enterprise-shell.tsx`, not re-decided here).
+- `PRO_NAV` becomes three groups, as in the clone: (no label) Home `""`, SRS `/nora`; "My presence" Profile, Insights,
+  Website Analytics (`pro`), Expertise Graph, Reviews (`locked`), Connections, Network; (no label) Settings, NORA interview.
 - `LOCATION_NAV` and `PROFESSIONAL_NAV_LABELS`/`LOCATION_NAV_LABELS` exports keep working.
 
 ### Browser-only state (the only persistence)
@@ -148,14 +147,26 @@ are not engaged by demo screens, but no demo copy should guarantee price, sale o
 reading the copied copy once and recorded in `evidence.md`.
 
 ## Canon review
-To be filled by the `canon-review` skill before the PR. Conflicts already visible, flagged and not resolved:
-- **AGENTS.md §4 "No restyling or design-system work until the final reskin":** Happyflow is a new design. It is
-  brought in scoped, with no theme or shared edits. Needs a reviewer's confirmation.
-- **Extend, never duplicate:** copying the expertise-graph components into srp duplicates `surface-ui/search`. Alternative
-  (promote to `@v3/shared`) is a shared-core change and is not proposed.
-- **Open decision O1 (rings):** the SRS screen shows demo ring/score values only; no ring logic is written.
-- **Hard rule "No people's names, roles or titles":** demo-data personas use business-style names; the review will scan the
-  copied files and comments for named individuals and replace them with generic labels if found.
+Run 2026-10-26 with the `canon-review` skill against the implemented diff (`main...HEAD`). Evidence is from reading and
+grepping the code; nothing was run in a browser. **Conflicts are flagged, not resolved.**
+
+| # | Check | Result | Evidence |
+|---|---|---|---|
+| 1 | Ownership | PASS, one note | Files are under `surface-ui/srp`, the generated route tree, and this spec folder. `git diff main --stat -- surface-api contracts` is empty. The embedded graph calls `/graph/expertise/{kind}/{slug}` (`surface-ui/srp/src/utils/expertise-graph.ts:346`), a published endpoint of another Surface, as `search` and srp's `/graph/fn/getCategoryBrief` already do; its capability file is one of the deferred ones in `docs/SURFACE_AUDIT.md` §10 |
+| 2 | Extend, never duplicate | **CONFLICT (accepted in intent)** | `components/graph/expertise-graph-{page,canvas}.tsx` and `utils/expertise-graph.ts` duplicate `surface-ui/search`; promoting to `@v3/shared` is a shared-core PR. Logged in the decision log |
+| 3 | Identifiers | N/A | No gcid or entity id is read or written |
+| 4 | Governed writes | N/A | Nothing is written to the database |
+| 5 | Security | PASS | No tables or grants. Grep for key/secret/token terms in `components/happyflow` and the seat routes finds only UI copy ("Password", "Reset password" in `screens/settings.tsx:443-447`). No network calls in Happyflow (`happyflow-guard.test.ts`) |
+| 6 | Model vs code | **CONFLICT, needs a ruling** | The screens show fabricated values to a signed-in professional as if they were theirs, with no "demo / sample" label in the UI: score `390 of 850` (`demo-data.ts:39`, `shell.tsx:179`), lanes, insights, connections. AGENTS.md §3: "Missing behaviour returns `not_implemented`, never faked output" and "Every fact carries provenance". The profile-voice extractor is deterministic regex in the browser, not a model (`screens/profile-voice.ts:1-6`) |
+| 7 | Gated actions | N/A | No cron, indexing, enrichment or queue change |
+| 8 | Compliance | PASS, with a note | Nothing is published or sent. The profile editor accepts NMLS/licence text only in the browser (`profile-voice.ts`); demo copy was not checked line by line for rate/price guarantees (listed as unverified) |
+| 9 | Scoring / rings | **CONFLICT, needs a ruling (O1)** | `screens/srs.tsx:26` says "the 11 lanes add up to 850"; the live scorer is SRS v5 with 850 points and **10** lanes (`AGENTS.md` §3). The demo ring/lane vocabulary and the "ring" completeness list are not confirmed against `exp_rings`. No scoring logic is written, but the labels are shown to users |
+| 10 | Open decisions | Flag | O1 (rings/lanes vocabulary) above. Standing rule "No restyling until the final reskin": Happyflow is a new design, ported scoped (`happyflow.css` under `.hf-root`), with no theme/shared edits; reviewer must confirm. Hard rule "No people's names": a fictional persona, "Dana Whitfield" (`demo-data.ts:4,17`), is hard-coded in 12 Happyflow files and appears in comments and UI copy ("Hi Dana", `home-day1.tsx:4-5`); it is fixture data, but the rule lists code, comments and UI labels and exempts only business data and history. Needs a ruling: keep as fixture, or replace with a generic persona label |
+
+**Verdict: blocked by:** rulings on (a) showing demo values to real professionals without a label (check 6), (b) the 11-vs-10 lane
+count in the SRS screen (check 9, O1), and (c) the persona name in code and copy (check 10). Code that is already written
+is unchanged by this; each ruling can be applied as a small follow-up commit on this branch (a label/banner, a lane list
+change, or a rename) without redesigning the port.
 
 ## Second-model review
 Not yet run. To be done on this spec before approval of `plan.md`; the summary and how disagreements were reconciled go here.

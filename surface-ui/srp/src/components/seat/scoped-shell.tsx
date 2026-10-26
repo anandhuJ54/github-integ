@@ -207,6 +207,9 @@ const PRO_NAV: NavGroup[] = [
 
 export const LOCATION_NAV_LABELS = LOCATION_NAV.flatMap((g) => g.items.map((i) => i.label));
 export const PROFESSIONAL_NAV_LABELS = PRO_NAV.flatMap((g) => g.items.map((i) => i.label));
+/** Suffix of every nav item, for tests. */
+export const PROFESSIONAL_NAV_SUFFIXES = PRO_NAV.flatMap((g) => g.items.map((i) => i.suffix));
+export const LOCATION_NAV_SUFFIXES = LOCATION_NAV.flatMap((g) => g.items.map((i) => i.suffix));
 /** Items with a PRO pill or a lock, for tests. */
 export const PROFESSIONAL_NAV_FLAGS = PRO_NAV.flatMap((g) =>
   g.items.filter((i) => i.pro || i.locked).map((i) => ({ label: i.label, pro: !!i.pro, locked: !!i.locked })),

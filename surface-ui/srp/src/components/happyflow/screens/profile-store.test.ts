@@ -56,6 +56,10 @@ describe("demo profile storage", () => {
     expect(loadStored(INITIAL)).toBeNull();
     g.window = { localStorage: memoryStorage({ [STORE_KEY]: "null" }) };
     expect(loadStored(INITIAL)).toBeNull();
+    g.window = { localStorage: memoryStorage({ [STORE_KEY]: JSON.stringify({ f: "abc" }) }) };
+    expect(loadStored(INITIAL)).toBeNull();
+    g.window = { localStorage: memoryStorage({ [STORE_KEY]: JSON.stringify({ f: ["x"] }) }) };
+    expect(loadStored(INITIAL)).toBeNull();
   });
 
   test("saves when there are edits, and clears when there are none", () => {

@@ -1,4 +1,5 @@
-// Render smoke test: every Happyflow screen renders on the server without throwing and shows its own content.
+// Render smoke test: every Happyflow screen renders on the server without throwing, inside .hf-root, and no two
+// screens render the same markup. It does not check what a screen says.
 // There is no DOM in this test setup, so this covers the first render only (no effects, no clicks).
 import { createElement, type ComponentType } from "react";
 import { renderToString } from "react-dom/server";
@@ -50,6 +51,21 @@ const SCREENS: [string, ComponentType][] = [
 ];
 
 describe("Happyflow screens render", () => {
+  test("each screen renders different markup", async () => {
+    // "home day 7 events" differs from "home day 7" only after an effect runs (home-day7.tsx), so a server render
+    // cannot tell them apart; it is left out of this comparison.
+    const screens = SCREENS.filter(([name]) => name !== "home day 7 events");
+    const out = await Promise.all(screens.map(([, Screen]) => render(Screen)));
+    const seen = new Map<string, string>();
+    const dup: string[] = [];
+    screens.forEach(([name], i) => {
+      const first = seen.get(out[i]);
+      if (first) dup.push(`${name} = ${first}`);
+      else seen.set(out[i], name);
+    });
+    expect(dup).toEqual([]);
+  });
+
   for (const [name, Screen] of SCREENS) {
     test(name, async () => {
       const html = await render(Screen);

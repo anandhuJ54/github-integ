@@ -12,7 +12,8 @@ export function loadStored<F extends Record<string, string>>(initial: F): Stored
     const raw = window.localStorage.getItem(STORE_KEY);
     if (!raw) return null;
     const v = JSON.parse(raw) as Stored<F> | null;
-    return v && typeof v === "object" && v.f ? { f: { ...initial, ...v.f }, src: v.src ?? {} } : null;
+    const plain = (x: unknown): x is Record<string, unknown> => !!x && typeof x === "object" && !Array.isArray(x);
+    return v && plain(v.f) ? { f: { ...initial, ...v.f }, src: plain(v.src) ? v.src : {} } : null;
   } catch {
     return null;
   }
