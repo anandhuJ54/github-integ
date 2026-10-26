@@ -48,6 +48,22 @@ Index `validateSearch`: `day` is kept only if it is 7 or 24; `events` only if it
   Website Analytics (`pro`), Expertise Graph, Reviews (`locked`), Connections, Network; (no label) Settings, NORA interview.
 - `LOCATION_NAV` and `PROFESSIONAL_NAV_LABELS`/`LOCATION_NAV_LABELS` exports keep working.
 
+### Sample-data notice (added 2026-10-26, canon review fix)
+Every route that renders a Happyflow screen (the seat index, `/nora`, `/interview`, and the seven new pages) wraps it in
+`SampleData` (`components/happyflow/sample-data.tsx`): a visible notice above the screen reading "Sample data: These screens show example
+values, not your real profile, score or activity." The frame height leaves room for it (`HF_SAMPLE_BANNER_HEIGHT`, `seat-nav.ts`). The notice
+stays until a screen is wired to real data.
+
+### SRS lanes (changed 2026-10-26, canon review fix)
+The SRS screen lists the 10 SRS v5 lanes and budgets from `AGENTS.md` §3 and `docs/PLATFORM_HANDOFF_2026-10-12.md` §2.6: Reviews 187,
+Completeness 182, Articles 103, Website 102, Directories 90, GBP 68, Connections 51, Q&A 34, Videos 27, Audio 6 (850). The clone's
+Credentials, Posts and Social lanes are gone (Credentials folds into Completeness). Open points per lane are sample values that still earn
+390 of 850 (`SCORE_BY_DAY[1]`).
+
+### Sample persona (changed 2026-10-26, canon review fix)
+The clone's named persona is replaced by a generic sample one ("Alex Sample", Demo Mortgage Co; a look-alike "Alex Sampler"); the constant is
+`PERSONA`, the asset files are `sample-pro*.jpg`. No other name appears in code, comments or copy.
+
 ### Browser-only state (the only persistence)
 | Key | Store | Used by | Content |
 |---|---|---|---|
@@ -68,7 +84,7 @@ Fonts (Manrope, Sora) are already loaded by `shell/root.tsx`, and the tokens `--
 `--color-ink-3`, `--color-hairline`, `--color-g-blue` and `--color-g-blue-soft` already exist in
 `surface-ui/theme/css/tokens.css`. If the port finds another token missing, it is defined in the scoped CSS, never in `@v3/theme`.
 
-### Port transformations (mechanical, no behaviour change)
+### Port transformations (mechanical, no behaviour change except the three canon fixes above)
 - `@/components/ui/*` → `@v3/shared/components/ui/*`; `@/components/console/primitives` → `@v3/shared/components/ui/console-primitives`;
   `@/components/sales/entity-avatar` → `@v3/shared/components/ui/entity-avatar`; `@/lib/utils` → `@v3/shared/components/utils/utils`.
 - `@/components/seat/*` → `@v3/srp/components/seat/*`; `@/lib/seat` → `@v3/srp/utils/seat`; `@/components/happyflow/*` → `@v3/srp/components/happyflow/*`;
@@ -102,6 +118,11 @@ Numbered; each becomes a test or a recorded manual check.
     "not yet captured" state and does not crash (unit test on the loader mapping if it is pure, otherwise manual).
 13. Visual parity: for each professional route, a screenshot in the v3 app matches the clone at the same width, with
     differences listed in `evidence.md` (manual; cannot be automated with the current test setup).
+
+14. Every route that renders a Happyflow screen wraps it in the "Sample data" notice (`happyflow-guard.test.ts`, which also requires exactly
+    10 such routes; `render.test.ts` checks the notice renders before the screen).
+15. The SRS screen has exactly the 10 SRS v5 lanes with their budgets, totalling 850, and the sample earns `SCORE_BY_DAY[1]` (`screens/srs.test.ts`).
+16. No file under `components/happyflow/` or the seven new routes contains the clone's persona name (`happyflow-guard.test.ts`).
 
 ## Data
 - **Tables and schemas read or written: none.** No SQL, no ORM, no `/srp/*` call is added by Happyflow. Existing
@@ -157,16 +178,14 @@ grepping the code; nothing was run in a browser. **Conflicts are flagged, not re
 | 3 | Identifiers | N/A | No gcid or entity id is read or written |
 | 4 | Governed writes | N/A | Nothing is written to the database |
 | 5 | Security | PASS | No tables or grants. Grep for key/secret/token terms in `components/happyflow` and the seat routes finds only UI copy ("Password", "Reset password" in `screens/settings.tsx:443-447`). No network calls in Happyflow (`happyflow-guard.test.ts`) |
-| 6 | Model vs code | **CONFLICT, needs a ruling** | The screens show fabricated values to a signed-in professional as if they were theirs, with no "demo / sample" label in the UI: score `390 of 850` (`demo-data.ts:39`, `shell.tsx:179`), lanes, insights, connections. AGENTS.md §3: "Missing behaviour returns `not_implemented`, never faked output" and "Every fact carries provenance". The profile-voice extractor is deterministic regex in the browser, not a model (`screens/profile-voice.ts:1-6`) |
+| 6 | Model vs code | **FIXED 2026-10-26** | Was: fabricated values shown to a signed-in professional with no label. Now every Happyflow route wraps its screen in a visible "Sample data" notice (`components/happyflow/sample-data.tsx`; enforced by `happyflow-guard.test.ts`). The values themselves are still demo values. The profile-voice extractor is deterministic regex in the browser, not a model (`screens/profile-voice.ts:1-6`) |
 | 7 | Gated actions | N/A | No cron, indexing, enrichment or queue change |
 | 8 | Compliance | PASS, with a note | Nothing is published or sent. The profile editor accepts NMLS/licence text only in the browser (`profile-voice.ts`); demo copy was not checked line by line for rate/price guarantees (listed as unverified) |
-| 9 | Scoring / rings | **CONFLICT, needs a ruling (O1)** | `screens/srs.tsx:26` says "the 11 lanes add up to 850"; the live scorer is SRS v5 with 850 points and **10** lanes (`AGENTS.md` §3). The demo ring/lane vocabulary and the "ring" completeness list are not confirmed against `exp_rings`. No scoring logic is written, but the labels are shown to users |
-| 10 | Open decisions | Flag | O1 (rings/lanes vocabulary) above. Standing rule "No restyling until the final reskin": Happyflow is a new design, ported scoped (`happyflow.css` under `.hf-root`), with no theme/shared edits; reviewer must confirm. Hard rule "No people's names": a fictional persona, "Dana Whitfield" (`demo-data.ts:4,17`), is hard-coded in 12 Happyflow files and appears in comments and UI copy ("Hi Dana", `home-day1.tsx:4-5`); it is fixture data, but the rule lists code, comments and UI labels and exempts only business data and history. Needs a ruling: keep as fixture, or replace with a generic persona label |
+| 9 | Scoring / rings | **FIXED 2026-10-26; O1 still open** | Was: "the 11 lanes add up to 850". Now the SRS screen has the 10 SRS v5 lanes and budgets (`screens/srs.tsx`, tested in `screens/srs.test.ts`). The lane names and budgets come from `AGENTS.md` §3 and `docs/PLATFORM_HANDOFF_2026-10-12.md` §2.6, **not confirmed against the live scorer**: the only connected database has no `exp_*` objects. The "ring" vocabulary used in the demo grid is still unconfirmed against `exp_rings`, so O1 stays open. No scoring logic is written |
+| 10 | Open decisions | Flag; persona **FIXED** | O1 as above. Standing rule "No restyling until the final reskin": Happyflow is a new design, ported scoped (`happyflow.css` under `.hf-root`), no theme/shared edits; **a reviewer must still confirm**. Hard rule "No people's names": the named persona is replaced by the generic sample persona "Alex Sample" in every file, and the asset files are renamed (`happyflow-guard.test.ts` fails on the old name). The portrait photos are stock-style images whose licence and origin I could not confirm |
 
-**Verdict: blocked by:** rulings on (a) showing demo values to real professionals without a label (check 6), (b) the 11-vs-10 lane
-count in the SRS screen (check 9, O1), and (c) the persona name in code and copy (check 10). Code that is already written
-is unchanged by this; each ruling can be applied as a small follow-up commit on this branch (a label/banner, a lane list
-change, or a rename) without redesigning the port.
+**Verdict (updated 2026-10-26, re-checked by hand against the fixes; the `canon-review` skill was not re-run): clear to proceed to a PR, with three things for the reviewers.** The three blocking items are fixed. Still open: (a) a reviewer must confirm the
+restyling rule reading above, (b) the SRS lane budgets are unconfirmed against the live scorer and O1 (ring vocabulary) is untouched, (c) the origin and licence of the three portrait images.
 
 ## Second-model review
 Run 2026-10-26 by a fresh agent given the branch, the spec and `AGENTS.md`, but not my conclusions. It also ran `tsc` and `bun test`
@@ -193,3 +212,4 @@ Run 2026-10-26 by a fresh agent given the branch, the spec and `AGENTS.md`, but 
 | 2026-10-26 | Ships as UI only on demo data; no API or contract change | Real data and entitlement are a later increment |
 | 2026-10-26 | Graph components are copied into srp rather than promoted to `@v3/shared` (proposed, confirmed with the intent) | De-duplication with `search` is a later shared-core PR |
 | 2026-10-26 | Spec files were written through the shell because the edit-guard hook script `tools/hooks/guard.py` is missing from the checkout | Restoring the hook is a separate shared-core fix |
+| 2026-10-26 | Canon review fixes applied on this branch on request: "Sample data" notice on every screen, SRS screen on the 10 v5 lanes, generic sample persona | Lane budgets stay unconfirmed against the live scorer until it can be queried |

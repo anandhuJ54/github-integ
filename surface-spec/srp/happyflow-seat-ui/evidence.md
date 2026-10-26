@@ -53,7 +53,9 @@ fa6a506533974edfe6d12373a6cef3c2744044d065a47c270dfc12a4b0cd79d7  src/routes/_au
 4afd326c434439b70b1053db85af6b3cb27f730fcb08ae08afcdda78838030dc  src/routes/_authenticated/seat.$kind.$id.website.tsx
 ```
 
-Re-checked after the port (2026-10-26): all 40 hashes above still match the clone, so the copy is current.
+Re-checked after the port (2026-10-26): all 40 hashes above still matched the clone, so the copy was current. After the canon-review fixes the copied
+files are **no longer byte-for-byte the clone's**: the persona name, the SRS lane list, a few lane mentions (shell, connections, profile, network), the
+asset file names and `HF_EMBED_HEIGHT` were changed on purpose (see the canon review in `spec.md`).
 The graph files were not taken from the clone's tree as is: the page and canvas come from the clone with imports rewritten, the loader from `surface-ui/search`
 (the clone's loader reads the browser database).
 
@@ -70,11 +72,14 @@ Run on branch `srp/happyflow-seat-ui` on 2026-10-26, locally. No browser run: ev
 | 6 | "Full radial view" opens in the seat and back returns | Ported from the clone; no test, not run | NOT VERIFIED |
 | 7 | No supabase / server fn / fetch / `@/` / cross-Surface import | `src/happyflow-guard.test.ts` over `components/happyflow/` and the 7 routes; also `bun test` boundary guard. Does not scan `components/graph/` or `utils/expertise-graph.ts` | PASS for the scanned files |
 | 8 | Boundary guard still passes | `surface-ui/state/boundaries.test.ts` inside `bun test` | PASS |
-| 9 | tsc, tests, build | `bunx tsc --noEmit -p .` exit 0; the loop over all 15 `surface-ui/*/tsconfig.json` exit 0; `bun test` 95 pass, 0 fail; `bun run build` built. Test files are excluded from `tsc` (see below) | PASS |
+| 9 | tsc, tests, build | `bunx tsc --noEmit -p .` exit 0; the loop over all 15 `surface-ui/*/tsconfig.json` exit 0; `bun test` 100 pass, 0 fail; `bun run build` built. Test files are excluded from `tsc` (see below) | PASS |
 | 10 | Blocked storage does not throw | `use-hf-device.test.ts`, `screens/profile-store.test.ts` (also malformed and wrong-shaped content) | PASS |
 | 11 | No change outside srp, route tree and spec | `git diff main --stat -- surface-api contracts docs` is empty; changed paths are `surface-ui/srp` (52 files), `surface-ui/shell/.generated/routeTree.gen.ts`, `surface-spec/srp` (4) | PASS |
 | 12 | Graph loads only via `/graph/expertise/...`, no data is handled | `utils/expertise-graph.test.ts` (3 tests: URL, null → null, empty rows). The embedded page with no data was not looked at | PASS for the loader |
 | 13 | Visual parity with the clone | Not done | NOT DONE |
+| 14 | "Sample data" notice on every route showing a Happyflow screen | `happyflow-guard.test.ts` (10 routes, all wrap in `SampleData`); `render.test.ts` (notice renders before the screen). Not seen in a browser; the notice's fit with the frame height (`HF_EMBED_HEIGHT` now leaves 40 px) is unchecked | PASS in tests |
+| 15 | SRS screen = the 10 SRS v5 lanes, 850 points, earns the day-1 score | `screens/srs.test.ts` (3 tests). Budgets come from `AGENTS.md` and the handoff doc, not the live scorer | PASS against the repo's own record |
+| 16 | No named persona in code or copy | `happyflow-guard.test.ts` fails on the old name; grep of `surface-ui/srp/src` finds none | PASS |
 
 Also added, beyond the spec: `components/happyflow/screens/render.test.ts` renders all 13 screen variants on the server inside a router
 (first render only; no clicks or effects) and requires distinct markup per screen.
@@ -85,7 +90,7 @@ route/search tests were written first and failed for the right reason.
 ## CI gates
 No CI run yet: no PR is open. Local runs of the same commands (2026-10-26):
 - `cd surface-ui && bunx tsc --noEmit -p .` and `-p <each surface>`: all exit 0.
-- `cd surface-ui && bun test`: 95 pass, 0 fail.
+- `cd surface-ui && bun test`: 100 pass, 0 fail.
 - `cd surface-ui && bun run build`: built.
 - `cd surface-api && uv run ruff check .`: all checks passed.
 - `cd surface-api && uv run pytest`: 1608 pass, **3 fail**. The three are `test_new_tables_are_closed_to_anon_by_grants` for `_base` (`survey_sources`),
@@ -111,7 +116,8 @@ None applied to any database, config or environment. Files changed in the workin
 - CI is unknown: `tools/lint`, `tools/ci` and the guard hook are absent here, and 3 unrelated backend tests fail locally.
 - Known clone behaviour carried over unchanged: `use-speech.ts` can show "not listening" after a fast stop-then-start; the desktop layout switches at a 1024 px window although the seat sidebar leaves ~784 px; `?from=` is kept only on the home links.
 - Demo copy was not read line by line for rate, price or ranking claims (compliance).
-- **Open rulings (see spec "Canon review"): showing demo values to a real professional without a label; the SRS screen counts 11 lanes where the scorer has 10 (O1); the persona name "Dana Whitfield" in code and copy.** The port is blocked from merge on these.
+- Canon review fixes (2026-10-26): the "Sample data" notice, the 10-lane SRS screen and the generic persona are in and tested, but not seen in a browser. Still open for reviewers: the restyling-rule reading; the lane budgets are from the repo's docs, **not confirmed against the live scorer** (the connected Supabase project has no `exp_*` objects, so `exp_score_v5_explain` could not be read); O1 (ring vocabulary in the demo grid) is untouched; the licence and origin of the three portrait images (stock-style photos) are unknown. The `canon-review` skill was not re-run after the fixes; the spec's table was updated by hand.
+- The copied screens now differ from the clone by the three fixes; later syncs from the clone need to re-apply them.
 - The second-model review did not read the screen code beyond its diff against the clone.
 
 ## Change log
