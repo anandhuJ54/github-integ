@@ -214,7 +214,7 @@ tools/                 enforcement (lint, ci, hooks) — plain stdlib Python, ru
   ```
   cd surface-api && uv run ruff check .    # Python lint (backend project)
   cd surface-api && uv run pytest          # Python tests (backend project)
-  cd surface-ui && bun install && for d in */; do [ "$d" = _base/ ] || bunx tsc --noEmit -p "$d"; done
+  cd surface-ui && bun install && for d in */; do [ -f "$d/tsconfig.json" ] && [ "$d" != _base/ ] && bunx tsc --noEmit -p "$d"; done
                                            # TS typecheck per frontend app
   python3 tools/lint/lint_all.py           # security / canon / migration / boundary lint (ratchet)
   ```

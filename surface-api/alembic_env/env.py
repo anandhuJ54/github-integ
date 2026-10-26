@@ -32,7 +32,9 @@ def _url() -> str:
 
 
 def run_migrations_offline() -> None:
-    context.configure(url=_url(), literal_binds=True, target_metadata=target_metadata)
+    # `--sql` only prints SQL, so it needs no database: no DATABASE_URL is fine here.
+    url = _url() if os.environ.get("DATABASE_URL") else "postgresql+psycopg://"
+    context.configure(url=url, literal_binds=True, target_metadata=target_metadata)
     with context.begin_transaction():
         context.run_migrations()
 
