@@ -1,13 +1,13 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useServerFn } from "@v3/ui/lib/server-fn";
+import { useServerFn } from "@v3/state/api/server-fn";
 import { useEffect, useMemo, useState } from "react";
 import { AlertTriangle, Sparkles } from "lucide-react";
 import { toast } from "sonner";
-import { Button } from "@v3/ui/components/ui/button";
-import { Input } from "@v3/ui/components/ui/input";
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@v3/ui/components/ui/sheet";
-import { EmptyState, Panel } from "@v3/ui/components/console/primitives";
-import { listCapabilities, listSkills, type Skill } from "@v3/skills/lib/nora-registry";
+import { Button } from "@v3/shared/components/ui/button";
+import { Input } from "@v3/shared/components/ui/input";
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@v3/shared/components/ui/sheet";
+import { EmptyState, Panel } from "@v3/shared/components/ui/console-primitives";
+import { listCapabilities, listSkills, type Skill } from "@v3/skills/utils/nora-registry";
 import {
   WEIGHT_KEYS,
   buildTrace,
@@ -25,12 +25,12 @@ import {
   whyLine,
   type Ranked,
   type Weights,
-} from "@v3/skills/lib/nora-sandbox";
+} from "@v3/skills/utils/nora-sandbox";
 import { Chip } from "@v3/skills/components/nora/registry-tabs";
 import { LEVEL_TONE, SkillRunDetail } from "@v3/skills/components/nora/skill-runs";
-import { runSkill } from "@v3/skills/lib/nora-runner.functions";
-import type { SkillRun } from "@v3/skills/lib/nora-runner";
-import { cn } from "@v3/ui/lib/utils";
+import { runSkill } from "@v3/skills/utils/nora-runner.functions";
+import type { SkillRun } from "@v3/skills/utils/nora-runner";
+import { cn } from "@v3/shared/components/utils/utils";
 
 const label = "text-[11px] font-bold uppercase tracking-wider text-[color:var(--color-ink-3)]";
 const n = (v: unknown) => (typeof v === "number" ? v.toLocaleString() : v == null || v === "" ? "—" : String(v));

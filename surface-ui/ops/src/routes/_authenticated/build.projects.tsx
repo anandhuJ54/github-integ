@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { DevBoard } from "./dev.board";
 import { PriorityBoard } from "./dev.priorities";
-import { cn } from "@v3/ui/lib/utils";
+import { cn } from "@v3/shared/components/utils/utils";
 
 export const Route = createFileRoute("/_authenticated/build/projects")({
   head: () => ({

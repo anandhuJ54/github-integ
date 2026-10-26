@@ -2,18 +2,18 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Loader2, Plus, ShieldCheck, Trash2, UserCog } from "lucide-react";
-import { api } from "@v3/ui/lib/server-fn";
-import { EmpLayout } from "@v3/ui/components/emp-layout";
-import { Button } from "@v3/ui/components/ui/button";
-import { Badge } from "@v3/ui/components/ui/badge";
+import { api } from "@v3/state/api/server-fn";
+import { EmpLayout } from "@v3/shared/components/ui/emp-layout";
+import { Button } from "@v3/shared/components/ui/button";
+import { Badge } from "@v3/shared/components/ui/badge";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@v3/ui/components/ui/select";
-import { ROLE_LABELS, useRole, type ControlRole } from "@v3/ui/lib/roles";
+} from "@v3/shared/components/ui/select";
+import { ROLE_LABELS, useRole, type ControlRole } from "@v3/state/access/roles";
 
 export const Route = createFileRoute("/_authenticated/admin/users")({
   head: () => ({

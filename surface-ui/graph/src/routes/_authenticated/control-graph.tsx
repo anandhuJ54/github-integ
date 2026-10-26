@@ -1,10 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
-import { EmpLayout } from "@v3/ui/components/emp-layout";
+import { EmpLayout } from "@v3/shared/components/ui/emp-layout";
 import { GraphHealthCard } from "@v3/graph/components/control/graph-health-card";
 import { ControlTreeTab } from "@v3/graph/components/control/control-tree-tab";
 import { EntitiesTab } from "@v3/graph/components/control/entities-tab";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@v3/ui/components/ui/tabs";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@v3/shared/components/ui/tabs";
 
 export const Route = createFileRoute("/_authenticated/control-graph")({
   head: () => ({

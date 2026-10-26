@@ -3,11 +3,11 @@ import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Ticket } from "lucide-react";
-import { DataTable, EmptyState, PageBody, PageHeader, Panel } from "@v3/ui/components/console/primitives";
-import { Button } from "@v3/ui/components/ui/button";
-import { Input } from "@v3/ui/components/ui/input";
-import { createPromo, listPromos, redemptionCounts, setPromoActive, type Promo } from "@v3/sales/lib/sales-cpq";
-import { loadRepNames } from "@v3/sales/lib/teams";
+import { DataTable, EmptyState, PageBody, PageHeader, Panel } from "@v3/shared/components/ui/console-primitives";
+import { Button } from "@v3/shared/components/ui/button";
+import { Input } from "@v3/shared/components/ui/input";
+import { createPromo, listPromos, redemptionCounts, setPromoActive, type Promo } from "@v3/sales/utils/sales-cpq";
+import { loadRepNames } from "@v3/sales/utils/teams";
 
 export const Route = createFileRoute("/_authenticated/sales/promos")({
   head: () => ({

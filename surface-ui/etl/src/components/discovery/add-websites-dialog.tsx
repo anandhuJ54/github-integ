@@ -2,11 +2,11 @@ import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Plus } from "lucide-react";
 import { toast } from "sonner";
-import { api } from "@v3/ui/lib/server-fn";
-import { Button } from "@v3/ui/components/ui/button";
-import { Textarea } from "@v3/ui/components/ui/textarea";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@v3/ui/components/ui/dialog";
-import { useRole } from "@v3/ui/lib/roles";
+import { api } from "@v3/state/api/server-fn";
+import { Button } from "@v3/shared/components/ui/button";
+import { Textarea } from "@v3/shared/components/ui/textarea";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@v3/shared/components/ui/dialog";
+import { useRole } from "@v3/state/access/roles";
 
 /* Manual add (2026-10-16): websites the discovery did not find are added to the category's pending company list
    (disco_add_companies_manual) and approved with the same checklist. One website per line: "domain" or "Name, domain".

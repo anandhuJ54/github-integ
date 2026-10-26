@@ -1,4 +1,4 @@
-import { ogImageUrl } from "@v3/marketing/lib/marketing/seo";
+import { ogImageUrl } from "@v3/marketing/utils/marketing/seo";
 import { PageBreadcrumb } from "@v3/marketing/components/marketing/PageBreadcrumb";
 import { ContentHeroSection } from "@v3/marketing/components/marketing/sections/content/ContentHeroSection";
 import { ContentStrategicBanner } from "@v3/marketing/components/marketing/sections/content/ContentStrategicBanner";
@@ -9,7 +9,7 @@ import { ContentFAQSection } from "@v3/marketing/components/marketing/sections/c
 import { SRPOverviewSection } from "@v3/marketing/components/marketing/sections/parent/SRPOverviewSection";
 import { PenTool, Share2, HelpCircle } from "lucide-react";
 import synergyAsset from "@v3/marketing/assets/content/Content_Child5_Platform_Synergy.png";
-import { getSignUpUrl } from "@v3/marketing/lib/marketing/envUrls";
+import { getSignUpUrl } from "@v3/marketing/utils/marketing/envUrls";
 
 const pageTitle =
   "Content Writing & Publishing Platform for AI Discovery & Local Authority | Experience.com";

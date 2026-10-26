@@ -1,4 +1,4 @@
-import { ogImageUrl } from "@v3/marketing/lib/marketing/seo";
+import { ogImageUrl } from "@v3/marketing/utils/marketing/seo";
 import { Button } from "@v3/marketing/components/marketing/ui/button";
 import { ArrowRight } from "lucide-react";
 

@@ -1,10 +1,10 @@
 import { createFileRoute, Link, Outlet, useNavigate, useParams } from "@tanstack/react-router";
 import { useState } from "react";
 import { ChevronDown, ChevronRight, FileText, Pin } from "lucide-react";
-import { EmptyState, PageBody } from "@v3/ui/components/console/primitives";
+import { EmptyState, PageBody } from "@v3/shared/components/ui/console-primitives";
 import { WikiSearch, accentOf, useSpaceData } from "@v3/ops/components/build/wiki-bits";
-import type { TreeNode } from "@v3/ops/lib/build-wiki";
-import { cn } from "@v3/ui/lib/utils";
+import type { TreeNode } from "@v3/ops/utils/build-wiki";
+import { cn } from "@v3/shared/components/utils/utils";
 
 export const Route = createFileRoute("/_authenticated/build/spaces/$spaceKey")({
   head: ({ params }) => ({

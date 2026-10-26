@@ -19,10 +19,10 @@ import {
   User,
   Users,
 } from "lucide-react";
-import { BrandIcon } from "@v3/ui/components/brand/logo";
-import { PageBody } from "@v3/ui/components/console/primitives";
+import { BrandIcon } from "@v3/shared/components/icons/logo";
+import { PageBody } from "@v3/shared/components/ui/console-primitives";
 import { ActingAsBar } from "@v3/xmp/components/impersonation/acting-as-bar";
-import { BrandAvatar, PersonAvatar } from "@v3/ui/components/sales/entity-avatar";
+import { BrandAvatar, PersonAvatar } from "@v3/shared/components/ui/entity-avatar";
 import {
   Dialog,
   DialogContent,
@@ -30,17 +30,17 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@v3/ui/components/ui/dialog";
-import { Button } from "@v3/ui/components/ui/button";
+} from "@v3/shared/components/ui/dialog";
+import { Button } from "@v3/shared/components/ui/button";
 import {
   loadOfficePage,
   loadOfficePros,
   loadStateRollup,
   proName,
   type Brand,
-} from "@v3/xmp/lib/enterprise-xmp";
-import { ROLE_FOR_KIND, useImpersonation } from "@v3/ui/lib/impersonation";
-import { cn } from "@v3/ui/lib/utils";
+} from "@v3/xmp/utils/enterprise-xmp";
+import { ROLE_FOR_KIND, useImpersonation } from "@v3/state/impersonation/impersonation";
+import { cn } from "@v3/shared/components/utils/utils";
 
 type NavItem = { label: string; suffix: string; icon: ComponentType<{ className?: string }> };
 type NavGroup = { label: string | null; items: NavItem[] };

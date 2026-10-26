@@ -7,8 +7,8 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@v3/ui/components/ui/select";
-import { EmptyState, PageBody, PageHeader, Panel } from "@v3/ui/components/console/primitives";
+} from "@v3/shared/components/ui/select";
+import { EmptyState, PageBody, PageHeader, Panel } from "@v3/shared/components/ui/console-primitives";
 import {
   PRIORITIES,
   PRIORITY_CHIP,
@@ -17,8 +17,8 @@ import {
   loadOverview,
   trackOf,
   type Priority,
-} from "@v3/ops/lib/dev-progress";
-import { cn } from "@v3/ui/lib/utils";
+} from "@v3/ops/utils/dev-progress";
+import { cn } from "@v3/shared/components/utils/utils";
 
 export const Route = createFileRoute("/_authenticated/dev/priorities")({
   head: () => ({

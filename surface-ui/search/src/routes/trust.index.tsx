@@ -1,13 +1,13 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
-import { getPublicTrustDocs } from "@v3/ui/lib/public-site.functions";
-import { SiteShell } from "@v3/ui/components/public/site-chrome";
+import { getPublicTrustDocs } from "@v3/shared/public/utils/public-site.functions";
+import { SiteShell } from "@v3/shared/public/components/site-chrome";
 import {
   DATA_REQUEST_URL,
   TRUST_CATEGORIES,
   formatTrustDate,
   trustMeta,
-} from "@v3/search/lib/trust";
+} from "@v3/search/utils/trust";
 
 const TITLE = "Trust Center — Experience.com";
 const DESCRIPTION =

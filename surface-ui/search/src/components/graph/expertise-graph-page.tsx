@@ -9,7 +9,7 @@ import {
   nodeLabel,
   type GraphKind,
   type GraphNode,
-} from "@v3/search/lib/expertise-graph";
+} from "@v3/search/utils/expertise-graph";
 import { ExpertiseGraphCanvas } from "@v3/search/components/graph/expertise-graph-canvas";
 
 function Stat({ label, value, hint }: { label: string; value: string | number; hint?: string }) {

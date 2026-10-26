@@ -1,9 +1,9 @@
 import { useState } from "react";
 import { Lock, LockOpen } from "lucide-react";
-import { api } from "@v3/ui/lib/server-fn";
-import { useRole } from "@v3/ui/lib/roles";
-import { Button } from "@v3/ui/components/ui/button";
-import { Input } from "@v3/ui/components/ui/input";
+import { api } from "@v3/state/api/server-fn";
+import { useRole } from "@v3/state/access/roles";
+import { Button } from "@v3/shared/components/ui/button";
+import { Input } from "@v3/shared/components/ui/input";
 import {
   Dialog,
   DialogContent,
@@ -11,7 +11,7 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@v3/ui/components/ui/dialog";
+} from "@v3/shared/components/ui/dialog";
 
 /** Expected-Volume keys for the five content lanes.
  *  Each lane shows two per-category keys (Pro / Location) in the lane's natural

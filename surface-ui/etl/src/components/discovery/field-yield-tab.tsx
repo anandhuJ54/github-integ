@@ -1,7 +1,7 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { api } from "@v3/ui/lib/server-fn";
-import { Badge } from "@v3/ui/components/ui/badge";
-import { Button } from "@v3/ui/components/ui/button";
+import { api } from "@v3/state/api/server-fn";
+import { Badge } from "@v3/shared/components/ui/badge";
+import { Button } from "@v3/shared/components/ui/button";
 import { RequiredFieldsEditor, type FieldFloor } from "./required-fields-editor";
 
 type Floor = FieldFloor;

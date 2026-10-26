@@ -1,27 +1,27 @@
 import { growthHubStyles } from "@v3/sales/components/sales/growth-hub-styles";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { supabase } from "@v3/ui/integrations/supabase/client";
-import { createContractFromQuote } from "@v3/sales/lib/contracts";
+import { useSession } from "@v3/state";
+import { createContractFromQuote } from "@v3/sales/utils/contracts";
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Check, CheckCircle2, FileText, Info, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
-import { PageBody, PageHeader, Panel } from "@v3/ui/components/console/primitives";
+import { PageBody, PageHeader, Panel } from "@v3/shared/components/ui/console-primitives";
 import { QuoteInvoice, type InvoiceLine } from "@v3/sales/components/sales/quote-invoice";
-import { Button } from "@v3/ui/components/ui/button";
-import { Checkbox } from "@v3/ui/components/ui/checkbox";
-import { Input } from "@v3/ui/components/ui/input";
-import { Label } from "@v3/ui/components/ui/label";
+import { Button } from "@v3/shared/components/ui/button";
+import { Checkbox } from "@v3/shared/components/ui/checkbox";
+import { Input } from "@v3/shared/components/ui/input";
+import { Label } from "@v3/shared/components/ui/label";
 import { Slider } from "@v3/sales/components/ui/slider";
-import { Switch } from "@v3/ui/components/ui/switch";
-import { CATALOG, STEPS, catalogAnnualRate, catalogPrice, loadCatalog, type PackageId } from "@v3/sales/lib/cpq-catalog";
-import { evaluateApproval, creditCogs, loadPricingContext, type PricedLine } from "@v3/sales/lib/cpq-depth";
-import { priceDeal, safeNumber, validateState, volumeTierPct } from "@v3/sales/lib/cpq-pricing";
-import { normalizePackageInclusions, type QuoteState } from "@v3/sales/lib/cpq-state";
-import { buildLineItems, commitEntitlements, listAccounts, loadContractApproval, loadQuote, saveQuote, writeLocalDraft } from "@v3/sales/lib/sales-cpq";
-import { setMarginApproval } from "@v3/sales/lib/sales";
-import { cn } from "@v3/ui/lib/utils";
-import { api } from "@v3/ui/lib/server-fn";
+import { Switch } from "@v3/shared/components/ui/switch";
+import { CATALOG, STEPS, catalogAnnualRate, catalogPrice, loadCatalog, type PackageId } from "@v3/sales/utils/cpq-catalog";
+import { evaluateApproval, creditCogs, loadPricingContext, type PricedLine } from "@v3/sales/utils/cpq-depth";
+import { priceDeal, safeNumber, validateState, volumeTierPct } from "@v3/sales/utils/cpq-pricing";
+import { normalizePackageInclusions, type QuoteState } from "@v3/sales/utils/cpq-state";
+import { buildLineItems, commitEntitlements, listAccounts, loadContractApproval, loadQuote, saveQuote, writeLocalDraft } from "@v3/sales/utils/sales-cpq";
+import { setMarginApproval } from "@v3/sales/utils/sales";
+import { cn } from "@v3/shared/components/utils/utils";
+import { api } from "@v3/state/api/server-fn";
 
 export const Route = createFileRoute("/_authenticated/sales/quotes/$quoteId")({
   head: ({ params }) => ({ meta: [
@@ -191,13 +191,13 @@ function QuoteContractButton({ quoteId }: { quoteId: string }) {
       return data?.[0]?.id ?? null;
     },
   });
+  const { user } = useSession();
   const go = (contractId: string) => void navigate({ to: "/sales/contracts/$contractId", params: { contractId } });
   const onClick = async () => {
     if (existing.data) return go(existing.data);
     setBusy(true);
     try {
-      const { data: u } = await supabase.auth.getUser();
-      const who = u.user?.email ?? null; // the signed-in user, as the contracts page sends
+      const who = user?.email ?? null; // the signed-in user, as the contracts page sends
       const id = await createContractFromQuote(quoteId, who);
       toast.success("Contract created from quote");
       go(id);

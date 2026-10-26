@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import { GlobalFinalCTA } from "@v3/marketing/components/marketing/sections/shared/GlobalFinalCTA";
-import { SiteFooter, SiteHeader } from "@v3/ui/components/public/site-chrome";
+import { SiteFooter, SiteHeader } from "@v3/shared/public/components/site-chrome";
 
 /**
  * Shared shell for the imported marketing pages.

@@ -4,7 +4,7 @@ import type {
   ProfileBundle,
   ProofNode,
   ProofRing,
-} from "@v3/search/lib/profile-render";
+} from "@v3/search/utils/profile-render";
 
 const SOFT_TARGET = 10;
 const NEUTRAL_RING = "var(--color-ink-3)";

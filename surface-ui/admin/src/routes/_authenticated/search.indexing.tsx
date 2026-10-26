@@ -1,12 +1,12 @@
 import { useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useServerFn } from "@v3/ui/lib/server-fn";
+import { useServerFn } from "@v3/state/api/server-fn";
 import { ExternalLink, Layers, ListOrdered, Map as MapIcon, Radar, RefreshCw, Send, ShieldAlert } from "lucide-react";
 import { toast } from "sonner";
-import { Button } from "@v3/ui/components/ui/button";
-import { Input } from "@v3/ui/components/ui/input";
-import { Switch } from "@v3/ui/components/ui/switch";
+import { Button } from "@v3/shared/components/ui/button";
+import { Input } from "@v3/shared/components/ui/input";
+import { Switch } from "@v3/shared/components/ui/switch";
 import {
   DataTable,
   EmptyState,
@@ -14,11 +14,11 @@ import {
   PageHeader,
   Panel,
   StatTile,
-} from "@v3/ui/components/console/primitives";
-import { InstrumentNote, Pill } from "@v3/ui/components/website/bits";
-import { ReadOnlyLock } from "@v3/ui/components/model-lock";
-import { num } from "@v3/ui/lib/console-surfaces";
-import { useRole } from "@v3/ui/lib/roles";
+} from "@v3/shared/components/ui/console-primitives";
+import { InstrumentNote, Pill } from "@v3/shared/public/components/website-bits";
+import { ReadOnlyLock } from "@v3/shared/components/ui/model-lock";
+import { num } from "@v3/shared/public/utils/console-surfaces";
+import { useRole } from "@v3/state/access/roles";
 import {
   catLabel,
   HELD_PARTITION,
@@ -30,8 +30,8 @@ import {
   type IndexQueueRow,
   type SitemapPartitionRow,
   type SubmissionLogRow,
-} from "@v3/admin/lib/search-console";
-import { setSiteIndexing } from "@v3/admin/lib/site-indexing.functions";
+} from "@v3/admin/utils/search-console";
+import { setSiteIndexing } from "@v3/admin/utils/site-indexing.functions";
 
 
 export const Route = createFileRoute("/_authenticated/search/indexing")({

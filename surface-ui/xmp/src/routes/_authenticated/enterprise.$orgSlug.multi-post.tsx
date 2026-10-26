@@ -1,8 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { XmpShell } from "@v3/xmp/components/enterprise/xmp-chrome";
-import { EmptyState, PageHeader, Panel } from "@v3/ui/components/console/primitives";
-import { loadBrand } from "@v3/xmp/lib/enterprise-xmp";
+import { EmptyState, PageHeader, Panel } from "@v3/shared/components/ui/console-primitives";
+import { loadBrand } from "@v3/xmp/utils/enterprise-xmp";
 
 export const Route = createFileRoute("/_authenticated/enterprise/$orgSlug/multi-post")({
   ssr: false,

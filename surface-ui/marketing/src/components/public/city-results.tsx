@@ -13,13 +13,13 @@ import {
   Utensils,
   Wrench,
 } from "lucide-react";
-import { Button } from "@v3/ui/components/ui/button";
-import { ResultCard } from "@v3/ui/components/search/serp-parts";
-import { ScoreExplainer } from "@v3/ui/components/public/score-explainer";
-import { DEFAULT_QUERY, type Facets } from "@v3/ui/lib/search";
-import type { CityHomeData, CityResult } from "@v3/marketing/lib/city-home.functions";
-import { getCardActions, getRelatedSearches, type CardAction } from "@v3/ui/lib/engagement.functions";
-import { cn } from "@v3/ui/lib/utils";
+import { Button } from "@v3/shared/components/ui/button";
+import { ResultCard } from "@v3/shared/public/components/serp-parts";
+import { ScoreExplainer } from "@v3/shared/public/components/score-explainer";
+import { DEFAULT_QUERY, type Facets } from "@v3/shared/public/utils/search";
+import type { CityHomeData, CityResult } from "@v3/marketing/utils/city-home.functions";
+import { getCardActions, getRelatedSearches, type CardAction } from "@v3/shared/public/utils/engagement.functions";
+import { cn } from "@v3/shared/components/utils/utils";
 
 type Filters = { gcid: string; rating: number; claimed: "any" | "yes" | "no" };
 

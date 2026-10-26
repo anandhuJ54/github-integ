@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { SiteShell } from "@v3/ui/components/public/site-chrome";
-import { getHomeData } from "@v3/ui/lib/home.functions";
-import { DEFAULT_QUERY } from "@v3/ui/lib/search";
+import { SiteShell } from "@v3/shared/public/components/site-chrome";
+import { getHomeData } from "@v3/shared/public/utils/home.functions";
+import { DEFAULT_QUERY } from "@v3/shared/public/utils/search";
 
 const TITLE = "Topics people search on Experience.com";
 const DESCRIPTION =

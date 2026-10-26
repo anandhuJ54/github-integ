@@ -1,18 +1,18 @@
 import { Fragment, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { ChevronDown, ChevronRight, Network } from "lucide-react";
-import { api } from "@v3/ui/lib/server-fn";
-import { Badge } from "@v3/ui/components/ui/badge";
-import { Input } from "@v3/ui/components/ui/input";
-import { Label } from "@v3/ui/components/ui/label";
+import { api } from "@v3/state/api/server-fn";
+import { Badge } from "@v3/shared/components/ui/badge";
+import { Input } from "@v3/shared/components/ui/input";
+import { Label } from "@v3/shared/components/ui/label";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@v3/ui/components/ui/select";
-import { cn } from "@v3/ui/lib/utils";
+} from "@v3/shared/components/ui/select";
+import { cn } from "@v3/shared/components/utils/utils";
 
 type EntityRow = {
   entity_id: string;

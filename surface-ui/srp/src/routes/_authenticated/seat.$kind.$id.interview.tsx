@@ -11,22 +11,22 @@
  */
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { useServerFn } from "@v3/ui/lib/server-fn";
+import { useServerFn } from "@v3/state/api/server-fn";
 import { useMemo, useState } from "react";
 import { CheckCircle2, Globe, Loader2, ShieldCheck, Sparkles } from "lucide-react";
 import { toast } from "sonner";
-import { EmptyState, PageHeader, Panel, StatTile } from "@v3/ui/components/console/primitives";
+import { EmptyState, PageHeader, Panel, StatTile } from "@v3/shared/components/ui/console-primitives";
 import { SeatLoading } from "@v3/srp/components/seat/pieces";
 import { Chip, SkillRunDetail } from "@v3/srp/components/nora/skill-run-detail";
-import { Badge } from "@v3/ui/components/ui/badge";
-import { Button } from "@v3/ui/components/ui/button";
-import { Checkbox } from "@v3/ui/components/ui/checkbox";
+import { Badge } from "@v3/shared/components/ui/badge";
+import { Button } from "@v3/shared/components/ui/button";
+import { Checkbox } from "@v3/shared/components/ui/checkbox";
 import { RadioGroup, RadioGroupItem } from "@v3/srp/components/ui/radio-group";
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@v3/ui/components/ui/sheet";
-import { getCategoryBrief } from "@v3/srp/lib/category-brief.functions";
-import { runSkill } from "@v3/srp/lib/nora/skill-run";
-import type { RunMode, SkillRun } from "@v3/srp/lib/nora/skill-run";
-import type { ExtractResult } from "@v3/srp/lib/nora/extract/types";
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@v3/shared/components/ui/sheet";
+import { getCategoryBrief } from "@v3/srp/utils/category-brief.functions";
+import { runSkill } from "@v3/srp/utils/nora/skill-run";
+import type { RunMode, SkillRun } from "@v3/srp/utils/nora/skill-run";
+import type { ExtractResult } from "@v3/srp/utils/nora/extract/types";
 import {
   ORGANIZE_SKILLS,
   capabilityOutput,
@@ -44,8 +44,8 @@ import {
   type OrganizePhase,
   type ReviewCollection,
   type SubjectKind,
-} from "@v3/srp/lib/nora/interview";
-import { loadClaimSource, loadInterviewSubject } from "@v3/srp/lib/nora/interview-data";
+} from "@v3/srp/utils/nora/interview";
+import { loadClaimSource, loadInterviewSubject } from "@v3/srp/utils/nora/interview-data";
 import { useSeatParams } from "./seat.$kind.$id";
 
 export const Route = createFileRoute("/_authenticated/seat/$kind/$id/interview")({

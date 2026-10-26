@@ -1,8 +1,8 @@
 import { useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Bell } from "lucide-react";
-import { Popover, PopoverContent, PopoverTrigger } from "@v3/ui/components/ui/popover";
-import { loadNotifications, markNotificationRead, type Notification } from "@v3/sales/lib/contracts";
+import { Popover, PopoverContent, PopoverTrigger } from "@v3/shared/components/ui/popover";
+import { loadNotifications, markNotificationRead, type Notification } from "@v3/sales/utils/contracts";
 
 function ago(iso: string) {
   const s = Math.max(0, (Date.now() - new Date(iso).getTime()) / 1000);

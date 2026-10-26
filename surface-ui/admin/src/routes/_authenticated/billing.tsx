@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { CreditCard, TrendingUp, KeyRound, Coins, Info } from "lucide-react";
-import { EmpLayout } from "@v3/ui/components/emp-layout";
+import { EmpLayout } from "@v3/shared/components/ui/emp-layout";
 import {
   PageBody,
   PageHeader,
@@ -10,10 +10,10 @@ import {
   DataTable,
   EmptyState,
   type Column,
-} from "@v3/ui/components/console/primitives";
-import { money, num } from "@v3/ui/lib/console-surfaces";
-import { loadBilling, type ContractRow, type EntitlementRow } from "@v3/admin/lib/console-surfaces";
-import { cn } from "@v3/ui/lib/utils";
+} from "@v3/shared/components/ui/console-primitives";
+import { money, num } from "@v3/shared/public/utils/console-surfaces";
+import { loadBilling, type ContractRow, type EntitlementRow } from "@v3/admin/utils/console-surfaces";
+import { cn } from "@v3/shared/components/utils/utils";
 
 export const Route = createFileRoute("/_authenticated/billing")({
   head: () => ({

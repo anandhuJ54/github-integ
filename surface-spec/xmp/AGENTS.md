@@ -5,7 +5,7 @@ trees (polyglot: React + Python, plus its contract and its specs):
 
 - `surface-api/xmp/` — FastAPI code in `src/` (imported as `surfaces.xmp`, grouped by resource), tests in
   `tests/`, migrations in `db/migrations/` (its Alembic branch); mounted by `surface-api/app/routes.py`.
-- `surface-ui/xmp/`       — React 19 UI; imports `@v3/ui` (= `surface-ui/_base`).
+- `surface-ui/xmp/`       — React 19 UI; imports `@v3/shared` (= `surface-ui/shared`).
 - `contracts/xmp/` — versioned events + capabilities (the seam both `surface-api` and `surface-ui` consume,
   and the interface other Surfaces depend on).
 - `surface-spec/xmp/`     — this file, `CONTEXT.md`, and one folder per increment

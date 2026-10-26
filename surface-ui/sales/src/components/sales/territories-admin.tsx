@@ -3,10 +3,10 @@ import { Link } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { ArrowUpDown, Check, Pencil, Plus, Sparkles, Trash2, X } from "lucide-react";
-import { DataTable, EmptyState, Panel } from "@v3/ui/components/console/primitives";
-import { Button } from "@v3/ui/components/ui/button";
-import { Input } from "@v3/ui/components/ui/input";
-import { Label } from "@v3/ui/components/ui/label";
+import { DataTable, EmptyState, Panel } from "@v3/shared/components/ui/console-primitives";
+import { Button } from "@v3/shared/components/ui/button";
+import { Input } from "@v3/shared/components/ui/input";
+import { Label } from "@v3/shared/components/ui/label";
 import {
   Dialog,
   DialogContent,
@@ -14,7 +14,7 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@v3/ui/components/ui/dialog";
+} from "@v3/shared/components/ui/dialog";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -24,9 +24,9 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@v3/ui/components/ui/alert-dialog";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@v3/ui/components/ui/select";
-import { loadCategoryGroups } from "@v3/sales/lib/category-groups";
+} from "@v3/shared/components/ui/alert-dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@v3/shared/components/ui/select";
+import { loadCategoryGroups } from "@v3/sales/utils/category-groups";
 import {
   GEO_SCOPES,
   TERRITORY_TIERS,
@@ -45,7 +45,7 @@ import {
   type TerritoryListRow,
   type TerritoryProposal,
   type TerritoryRep,
-} from "@v3/sales/lib/territories";
+} from "@v3/sales/utils/territories";
 
 const nf = new Intl.NumberFormat("en-US");
 const cf = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 });

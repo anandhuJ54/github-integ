@@ -8,8 +8,8 @@ import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient, type QueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { FileSearch, MoreHorizontal, Pause, Play, RefreshCw, RotateCcw, SearchCheck, SlidersHorizontal } from "lucide-react";
-import { api } from "@v3/ui/lib/server-fn";
-import { Button } from "@v3/ui/components/ui/button";
+import { api } from "@v3/state/api/server-fn";
+import { Button } from "@v3/shared/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -17,7 +17,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@v3/ui/components/ui/dropdown-menu";
+} from "@v3/shared/components/ui/dropdown-menu";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -27,9 +27,9 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@v3/ui/components/ui/alert-dialog";
+} from "@v3/shared/components/ui/alert-dialog";
 import { SiteContractPanel } from "@v3/etl/components/discovery/site-contract-panel";
-import { useRole } from "@v3/ui/lib/roles";
+import { useRole } from "@v3/state/access/roles";
 
 /** An allow-listed ETL function through the API (the role-checked function decides). */
 const rpc = <T = unknown,>(name: string, args: Record<string, unknown>) =>

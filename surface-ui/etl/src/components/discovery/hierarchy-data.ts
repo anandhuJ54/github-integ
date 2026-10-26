@@ -1,4 +1,4 @@
-import { api } from "@v3/ui/lib/server-fn";
+import { api } from "@v3/state/api/server-fn";
 
 /* Hierarchy reads go through /etl/console/hierarchy/* (surface-api/etl/queries/hierarchy.py),
    which rebuilds the PostgREST embed filters this file used to send. */

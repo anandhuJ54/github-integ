@@ -2,9 +2,9 @@ import { growthHubStyles } from "@v3/sales/components/sales/growth-hub-styles";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { FileText, Plus } from "lucide-react";
-import { DataTable, EmptyState, PageBody, PageHeader, Panel } from "@v3/ui/components/console/primitives";
-import { Button } from "@v3/ui/components/ui/button";
-import { listQuotes, newQuoteId, type QuoteRow } from "@v3/sales/lib/sales-cpq";
+import { DataTable, EmptyState, PageBody, PageHeader, Panel } from "@v3/shared/components/ui/console-primitives";
+import { Button } from "@v3/shared/components/ui/button";
+import { listQuotes, newQuoteId, type QuoteRow } from "@v3/sales/utils/sales-cpq";
 
 export const Route = createFileRoute("/_authenticated/sales/quotes/")({
   head: () => ({

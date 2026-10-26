@@ -2,20 +2,20 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Search, User } from "lucide-react";
-import { api } from "@v3/ui/lib/server-fn";
-import { EmpLayout } from "@v3/ui/components/emp-layout";
-import { Button } from "@v3/ui/components/ui/button";
-import { Input } from "@v3/ui/components/ui/input";
+import { api } from "@v3/state/api/server-fn";
+import { EmpLayout } from "@v3/shared/components/ui/emp-layout";
+import { Button } from "@v3/shared/components/ui/button";
+import { Input } from "@v3/shared/components/ui/input";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@v3/ui/components/ui/select";
-import { Avatar, AvatarFallback, AvatarImage } from "@v3/ui/components/ui/avatar";
+} from "@v3/shared/components/ui/select";
+import { Avatar, AvatarFallback, AvatarImage } from "@v3/shared/components/ui/avatar";
 import { TerritoryChip } from "@v3/admin/components/territory-chip";
-import { cn } from "@v3/ui/lib/utils";
+import { cn } from "@v3/shared/components/utils/utils";
 
 function DepthBadges({
   products,

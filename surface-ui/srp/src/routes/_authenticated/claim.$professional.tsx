@@ -1,16 +1,16 @@
 import { createFileRoute, notFound, Link } from "@tanstack/react-router";
 import { useSuspenseQuery, queryOptions } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
-import { api, ServerFnError, useServerFn } from "@v3/ui/lib/server-fn";
-import { supabase } from "@v3/ui/integrations/supabase/client";
+import { api, ServerFnError, useServerFn } from "@v3/state/api/server-fn";
+import { useSession } from "@v3/state";
 import { lovable } from "@v3/srp/integrations/lovable";
-import { submitClaim, verifyClaimCode } from "@v3/srp/lib/claim.functions";
-import { Button } from "@v3/ui/components/ui/button";
-import { Card, CardContent } from "@v3/ui/components/ui/card";
-import { Avatar, AvatarFallback, AvatarImage } from "@v3/ui/components/ui/avatar";
-import { Badge } from "@v3/ui/components/ui/badge";
-import { Input } from "@v3/ui/components/ui/input";
-import { Label } from "@v3/ui/components/ui/label";
+import { submitClaim, verifyClaimCode } from "@v3/srp/utils/claim.functions";
+import { Button } from "@v3/shared/components/ui/button";
+import { Card, CardContent } from "@v3/shared/components/ui/card";
+import { Avatar, AvatarFallback, AvatarImage } from "@v3/shared/components/ui/avatar";
+import { Badge } from "@v3/shared/components/ui/badge";
+import { Input } from "@v3/shared/components/ui/input";
+import { Label } from "@v3/shared/components/ui/label";
 import {
   BadgeCheck,
   CheckCircle2,
@@ -97,26 +97,14 @@ function ClaimPage() {
   const verifyCode = useServerFn(verifyClaimCode);
 
   const [step, setStep] = useState<Step>("preview");
-  const [hasSession, setHasSession] = useState(false);
+  const { user: sessionUser } = useSession();
+  const hasSession = !!sessionUser;
   const [autoSubmitted, setAutoSubmitted] = useState(false);
   const [license, setLicense] = useState("");
   const [code, setCode] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<ClaimResult | null>(null);
-
-  // Session detection
-  useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => {
-      setHasSession(!!data.session);
-    });
-    const { data: sub } = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === "SIGNED_IN" || event === "SIGNED_OUT" || event === "INITIAL_SESSION") {
-        setHasSession(!!session);
-      }
-    });
-    return () => sub.subscription.unsubscribe();
-  }, []);
 
   const fullName =
     prof.display_name ??

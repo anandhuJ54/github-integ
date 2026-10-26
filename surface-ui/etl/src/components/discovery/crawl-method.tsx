@@ -1,6 +1,6 @@
 import { Globe, HelpCircle, Lock, UserX, Zap } from "lucide-react";
-import { Badge } from "@v3/ui/components/ui/badge";
-import { cn } from "@v3/ui/lib/utils";
+import { Badge } from "@v3/shared/components/ui/badge";
+import { cn } from "@v3/shared/components/utils/utils";
 
 export type CrawlMethod =
   | "server_crawl"

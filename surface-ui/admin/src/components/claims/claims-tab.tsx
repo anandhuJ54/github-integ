@@ -2,17 +2,17 @@ import { Fragment, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ChevronDown, ChevronRight, Inbox } from "lucide-react";
 import { toast } from "sonner";
-import { api } from "@v3/ui/lib/server-fn";
-import { Badge } from "@v3/ui/components/ui/badge";
-import { Button } from "@v3/ui/components/ui/button";
-import { Label } from "@v3/ui/components/ui/label";
+import { api } from "@v3/state/api/server-fn";
+import { Badge } from "@v3/shared/components/ui/badge";
+import { Button } from "@v3/shared/components/ui/button";
+import { Label } from "@v3/shared/components/ui/label";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@v3/ui/components/ui/select";
+} from "@v3/shared/components/ui/select";
 import {
   Dialog,
   DialogContent,
@@ -20,10 +20,10 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@v3/ui/components/ui/dialog";
-import { Textarea } from "@v3/ui/components/ui/textarea";
-import { useRole } from "@v3/ui/lib/roles";
-import { cn } from "@v3/ui/lib/utils";
+} from "@v3/shared/components/ui/dialog";
+import { Textarea } from "@v3/shared/components/ui/textarea";
+import { useRole } from "@v3/state/access/roles";
+import { cn } from "@v3/shared/components/utils/utils";
 
 type ClaimRow = {
   claim_id: string;

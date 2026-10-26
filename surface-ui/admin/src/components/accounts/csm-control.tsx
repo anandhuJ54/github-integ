@@ -1,10 +1,10 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
-import { Button } from "@v3/ui/components/ui/button";
-import { Popover, PopoverContent, PopoverTrigger } from "@v3/ui/components/ui/popover";
-import { useRole } from "@v3/ui/lib/roles";
-import { assignCsm, clearCsm, isMine, listCsmCandidates, type CsmAssignment } from "@v3/admin/lib/csm";
+import { Button } from "@v3/shared/components/ui/button";
+import { Popover, PopoverContent, PopoverTrigger } from "@v3/shared/components/ui/popover";
+import { useRole } from "@v3/state/access/roles";
+import { assignCsm, clearCsm, isMine, listCsmCandidates, type CsmAssignment } from "@v3/admin/utils/csm";
 
 /** "CSM: <name> · Change/Assign" — super-admins pick anyone; others can claim or release for themselves. */
 export function CsmControl({ orgId, csm, compact }: { orgId: string; csm: CsmAssignment | null | undefined; compact?: boolean }) {

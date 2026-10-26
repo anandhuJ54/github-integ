@@ -2,14 +2,14 @@ import { useEffect, useMemo, useState } from "react";
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { useNavigate, useSearch } from "@tanstack/react-router";
 import { ArrowDown, ArrowUp, ChevronDown, ChevronRight, Network } from "lucide-react";
-import { Badge } from "@v3/ui/components/ui/badge";
-import { Button } from "@v3/ui/components/ui/button";
-import { Input } from "@v3/ui/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@v3/ui/components/ui/select";
-import { cn } from "@v3/ui/lib/utils";
+import { Badge } from "@v3/shared/components/ui/badge";
+import { Button } from "@v3/shared/components/ui/button";
+import { Input } from "@v3/shared/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@v3/shared/components/ui/select";
+import { cn } from "@v3/shared/components/utils/utils";
 import { SearchSelect, type Opt } from "./search-select";
 import { EntityDetailPanel } from "./entity-detail-panel";
-import { api } from "@v3/ui/lib/server-fn";
+import { api } from "@v3/state/api/server-fn";
 import {
   PAGE_SIZE,
   TYPE_LABEL,

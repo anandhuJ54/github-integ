@@ -1,11 +1,11 @@
 import { growthHubStyles } from "@v3/sales/components/sales/growth-hub-styles";
 import type { ReactNode } from "react";
 import { FileText, Printer } from "lucide-react";
-import { Button } from "@v3/ui/components/ui/button";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@v3/ui/components/ui/dialog";
-import { CATALOG } from "@v3/sales/lib/cpq-catalog";
-import type { DealPricing } from "@v3/sales/lib/cpq-pricing";
-import type { CpqLine } from "@v3/sales/lib/sales-cpq";
+import { Button } from "@v3/shared/components/ui/button";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@v3/shared/components/ui/dialog";
+import { CATALOG } from "@v3/sales/utils/cpq-catalog";
+import type { DealPricing } from "@v3/sales/utils/cpq-pricing";
+import type { CpqLine } from "@v3/sales/utils/sales-cpq";
 
 const money = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 });
 const number = new Intl.NumberFormat("en-US");

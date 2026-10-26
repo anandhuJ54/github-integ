@@ -1,29 +1,29 @@
 import { useEffect, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Plus, Trash2, X } from "lucide-react";
-import { ModelLock, ModelLockNotice, ReadOnlyLock } from "@v3/ui/components/model-lock";
-import { useRole } from "@v3/ui/lib/roles";
-import { api } from "@v3/ui/lib/server-fn";
-import { Button } from "@v3/ui/components/ui/button";
-import { Input } from "@v3/ui/components/ui/input";
-import { Label } from "@v3/ui/components/ui/label";
-import { Switch } from "@v3/ui/components/ui/switch";
-import { Textarea } from "@v3/ui/components/ui/textarea";
-import { Badge } from "@v3/ui/components/ui/badge";
+import { ModelLock, ModelLockNotice, ReadOnlyLock } from "@v3/shared/components/ui/model-lock";
+import { useRole } from "@v3/state/access/roles";
+import { api } from "@v3/state/api/server-fn";
+import { Button } from "@v3/shared/components/ui/button";
+import { Input } from "@v3/shared/components/ui/input";
+import { Label } from "@v3/shared/components/ui/label";
+import { Switch } from "@v3/shared/components/ui/switch";
+import { Textarea } from "@v3/shared/components/ui/textarea";
+import { Badge } from "@v3/shared/components/ui/badge";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogFooter,
-} from "@v3/ui/components/ui/dialog";
+} from "@v3/shared/components/ui/dialog";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@v3/ui/components/ui/select";
+} from "@v3/shared/components/ui/select";
 
 type ComplianceRow = {
   gcid: string;

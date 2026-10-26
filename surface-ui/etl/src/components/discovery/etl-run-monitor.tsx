@@ -6,10 +6,10 @@ import {
   DataTable,
   EmptyState,
   type Column,
-} from "@v3/ui/components/console/primitives";
-import { loadEtlMonitor, type FlaggedRow } from "@v3/etl/lib/etl-monitor";
-import { num } from "@v3/ui/lib/console-surfaces";
-import { cn } from "@v3/ui/lib/utils";
+} from "@v3/shared/components/ui/console-primitives";
+import { loadEtlMonitor, type FlaggedRow } from "@v3/etl/utils/etl-monitor";
+import { num } from "@v3/shared/public/utils/console-surfaces";
+import { cn } from "@v3/shared/components/utils/utils";
 
 const pctOf = (part: number, whole: number) =>
   whole ? `${Math.round((part / whole) * 1000) / 10}%` : "—";

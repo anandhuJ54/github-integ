@@ -3,7 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Building2, LogIn, Search, ShieldCheck, TriangleAlert } from "lucide-react";
 import { toast } from "sonner";
-import { EmpLayout } from "@v3/ui/components/emp-layout";
+import { EmpLayout } from "@v3/shared/components/ui/emp-layout";
 import {
   DataTable,
   EmptyState,
@@ -11,22 +11,22 @@ import {
   PageHeader,
   Panel,
   StatTile,
-} from "@v3/ui/components/console/primitives";
-import { Button } from "@v3/ui/components/ui/button";
-import { Input } from "@v3/ui/components/ui/input";
+} from "@v3/shared/components/ui/console-primitives";
+import { Button } from "@v3/shared/components/ui/button";
+import { Input } from "@v3/shared/components/ui/input";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@v3/ui/components/ui/select";
-import { ROLE_FOR_KIND, useImpersonation } from "@v3/ui/lib/impersonation";
-import { useRole } from "@v3/ui/lib/roles";
-import { loadAccounts, recordLoginAs, type AccountSummary } from "@v3/admin/lib/accounts";
-import { isMine, listActiveCsms } from "@v3/admin/lib/csm";
+} from "@v3/shared/components/ui/select";
+import { ROLE_FOR_KIND, useImpersonation } from "@v3/state/impersonation/impersonation";
+import { useRole } from "@v3/state/access/roles";
+import { loadAccounts, recordLoginAs, type AccountSummary } from "@v3/admin/utils/accounts";
+import { isMine, listActiveCsms } from "@v3/admin/utils/csm";
 import { CsmControl } from "@v3/admin/components/accounts/csm-control";
-import { cn } from "@v3/ui/lib/utils";
+import { cn } from "@v3/shared/components/utils/utils";
 
 const TAB_KEY = "xp.accounts.tab";
 

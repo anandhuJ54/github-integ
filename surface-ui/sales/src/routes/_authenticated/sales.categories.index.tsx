@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { EmptyState, PageBody, PageHeader, Panel } from "@v3/ui/components/console/primitives";
-import { loadScopeDashboard } from "@v3/sales/lib/sales-spine";
+import { EmptyState, PageBody, PageHeader, Panel } from "@v3/shared/components/ui/console-primitives";
+import { loadScopeDashboard } from "@v3/sales/utils/sales-spine";
 
 export const Route = createFileRoute("/_authenticated/sales/categories/")({
   head: () => ({

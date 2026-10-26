@@ -11,8 +11,8 @@ import { createFileRoute, Outlet, useSearch } from "@tanstack/react-router";
 import { useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { ScopedShell } from "@v3/srp/components/seat/scoped-shell";
-import { ROLE_FOR_KIND, useImpersonation } from "@v3/ui/lib/impersonation";
-import { loadLocationSeat, loadProfessionalSeat, seatProName } from "@v3/srp/lib/seat";
+import { ROLE_FOR_KIND, useImpersonation } from "@v3/state/impersonation/impersonation";
+import { loadLocationSeat, loadProfessionalSeat, seatProName } from "@v3/srp/utils/seat";
 
 export const Route = createFileRoute("/_authenticated/seat/$kind/$id")({
   ssr: false,

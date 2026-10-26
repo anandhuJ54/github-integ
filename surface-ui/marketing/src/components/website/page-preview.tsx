@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { Monitor, Smartphone, ExternalLink } from "lucide-react";
-import { BlockRenderer } from "@v3/ui/components/public/blocks";
-import { Button } from "@v3/ui/components/ui/button";
-import type { Block } from "@v3/ui/lib/public-site";
+import { BlockRenderer } from "@v3/shared/public/components/blocks";
+import { Button } from "@v3/shared/components/ui/button";
+import type { Block } from "@v3/shared/public/utils/public-site";
 
 /**
  * Live preview column for the CMS edit drawer. Renders the blocks currently

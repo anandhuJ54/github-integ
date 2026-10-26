@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { Headphones, Inbox, Clock, Users, Info, ArrowRight } from "lucide-react";
-import { EmpLayout } from "@v3/ui/components/emp-layout";
+import { EmpLayout } from "@v3/shared/components/ui/emp-layout";
 import {
   PageBody,
   PageHeader,
@@ -9,9 +9,9 @@ import {
   StatTile,
   EmptyState,
   ConsoleTabs,
-} from "@v3/ui/components/console/primitives";
-import { num } from "@v3/ui/lib/console-surfaces";
-import { loadOrgStats } from "@v3/admin/lib/console-surfaces";
+} from "@v3/shared/components/ui/console-primitives";
+import { num } from "@v3/shared/public/utils/console-surfaces";
+import { loadOrgStats } from "@v3/admin/utils/console-surfaces";
 
 export const Route = createFileRoute("/_authenticated/support")({
   head: () => ({

@@ -2,14 +2,14 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { ArrowUpDown, Search, Pencil, ChevronRight, ChevronDown } from "lucide-react";
-import { EmpLayout } from "@v3/ui/components/emp-layout";
-import { api } from "@v3/ui/lib/server-fn";
-import { cn } from "@v3/ui/lib/utils";
-import { getCategoryRelationships } from "@v3/graph/lib/category-relationships";
-import { PARENT, CHILDREN } from "@v3/graph/lib/category-relationships.data";
-import { Card, CardContent } from "@v3/ui/components/ui/card";
-import { Input } from "@v3/ui/components/ui/input";
-import { Button } from "@v3/ui/components/ui/button";
+import { EmpLayout } from "@v3/shared/components/ui/emp-layout";
+import { api } from "@v3/state/api/server-fn";
+import { cn } from "@v3/shared/components/utils/utils";
+import { getCategoryRelationships } from "@v3/graph/utils/category-relationships";
+import { PARENT, CHILDREN } from "@v3/graph/utils/category-relationships.data";
+import { Card, CardContent } from "@v3/shared/components/ui/card";
+import { Input } from "@v3/shared/components/ui/input";
+import { Button } from "@v3/shared/components/ui/button";
 import {
   Table,
   TableBody,
@@ -18,7 +18,7 @@ import {
   TableHeader,
   TableRow,
 } from "@v3/graph/components/ui/table";
-import { Badge } from "@v3/ui/components/ui/badge";
+import { Badge } from "@v3/shared/components/ui/badge";
 
 export const Route = createFileRoute("/_authenticated/categories/")({
   head: () => ({

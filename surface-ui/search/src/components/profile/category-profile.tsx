@@ -12,13 +12,13 @@ import {
   Star,
   Utensils,
 } from "lucide-react";
-import { useOptionalRole } from "@v3/ui/lib/roles";
-import { cn } from "@v3/ui/lib/utils";
-import { hubPath, prettyTopic, servesIn } from "@v3/ui/lib/voce";
-import { EntityAvatar, displayPhone } from "@v3/ui/components/public/visual";
+import { useOptionalRole } from "@v3/state/access/roles";
+import { cn } from "@v3/shared/components/utils/utils";
+import { hubPath, prettyTopic, servesIn } from "@v3/shared/public/utils/voce";
+import { EntityAvatar, displayPhone } from "@v3/shared/public/components/visual";
 import { ProfileExpertise } from "@v3/search/components/profile/profile-expertise";
-import { ScoreExplainer } from "@v3/ui/components/public/score-explainer";
-import { useRecordView } from "@v3/ui/lib/visitor-lists";
+import { ScoreExplainer } from "@v3/shared/public/components/score-explainer";
+import { useRecordView } from "@v3/shared/public/utils/visitor-lists";
 import {
   Card,
   ClaimButton,
@@ -38,14 +38,14 @@ import {
   ClaimConversionUnit,
   useUnclaimedAdUnits,
 } from "@v3/search/components/profile/claim-conversion";
-import { usePageViewPing } from "@v3/search/lib/monetization";
+import { usePageViewPing } from "@v3/search/utils/monetization";
 import {
   breadcrumbs,
   buildJsonLd,
   completeness,
   renderableSections,
   type ProfileBundle,
-} from "@v3/search/lib/profile-render";
+} from "@v3/search/utils/profile-render";
 
 /* ------------------------------- pieces ------------------------------- */
 

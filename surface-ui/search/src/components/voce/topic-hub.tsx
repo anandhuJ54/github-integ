@@ -1,10 +1,10 @@
 import { Link } from "@tanstack/react-router";
-import { SiteFooter, SiteHeader } from "@v3/ui/components/public/site-chrome";
-import { ResultCard } from "@v3/ui/components/search/serp-parts";
-import { DEFAULT_QUERY } from "@v3/ui/lib/search";
-import { hubPath, prettyTopic, servesIn, type VoceArticle } from "@v3/ui/lib/voce";
-import { cn } from "@v3/ui/lib/utils";
-import type { HubData } from "@v3/search/lib/voce-hub";
+import { SiteFooter, SiteHeader } from "@v3/shared/public/components/site-chrome";
+import { ResultCard } from "@v3/shared/public/components/serp-parts";
+import { DEFAULT_QUERY } from "@v3/shared/public/utils/search";
+import { hubPath, prettyTopic, servesIn, type VoceArticle } from "@v3/shared/public/utils/voce";
+import { cn } from "@v3/shared/components/utils/utils";
+import type { HubData } from "@v3/search/utils/voce-hub";
 
 function ArticleCard({
   a,

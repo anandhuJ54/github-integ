@@ -10,10 +10,10 @@ import {
   PageHeader,
   Panel,
   StatTile,
-} from "@v3/ui/components/console/primitives";
-import { Button } from "@v3/ui/components/ui/button";
-import { Input } from "@v3/ui/components/ui/input";
-import { Label } from "@v3/ui/components/ui/label";
+} from "@v3/shared/components/ui/console-primitives";
+import { Button } from "@v3/shared/components/ui/button";
+import { Input } from "@v3/shared/components/ui/input";
+import { Label } from "@v3/shared/components/ui/label";
 import {
   Dialog,
   DialogContent,
@@ -21,15 +21,15 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@v3/ui/components/ui/dialog";
+} from "@v3/shared/components/ui/dialog";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@v3/ui/components/ui/select";
-import { Switch } from "@v3/ui/components/ui/switch";
+} from "@v3/shared/components/ui/select";
+import { Switch } from "@v3/shared/components/ui/switch";
 import { DemoChip } from "@v3/sales/routes/_authenticated/sales.territories.index";
 import {
   addGroupMember,
@@ -44,7 +44,7 @@ import {
   searchCategories,
   type GroupMember,
   type GroupSellerCard,
-} from "@v3/sales/lib/category-groups";
+} from "@v3/sales/utils/category-groups";
 import {
   TIER_LABEL,
   currentPeriodStart,
@@ -56,7 +56,7 @@ import {
   unassignTerritory,
   type TerritoryRep,
   type TerritorySlot,
-} from "@v3/sales/lib/territories";
+} from "@v3/sales/utils/territories";
 
 export const Route = createFileRoute("/_authenticated/sales/territories/$groupKey")({
   head: () => ({

@@ -1,4 +1,4 @@
-import { ogImageUrl } from "@v3/marketing/lib/marketing/seo";
+import { ogImageUrl } from "@v3/marketing/utils/marketing/seo";
 import {
   SocialHeroSection,
   SocialStrategicBanner,
@@ -12,7 +12,7 @@ import { SRPOverviewSection } from "@v3/marketing/components/marketing/sections/
 import { Share2, Zap, TrendingUp } from "lucide-react";
 import reviewsEcosystemImg from "@v3/marketing/assets/reviews-ecosystem-hero.png";
 import socialMorePostsImg from "@v3/marketing/assets/social-more-posts.png";
-import { getSignUpUrl } from "@v3/marketing/lib/marketing/envUrls";
+import { getSignUpUrl } from "@v3/marketing/utils/marketing/envUrls";
 import { PageBreadcrumb } from "@v3/marketing/components/marketing/PageBreadcrumb";
 
 const Social = () => {

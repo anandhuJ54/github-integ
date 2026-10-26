@@ -1,12 +1,12 @@
 import { Suspense, lazy, useMemo, useState } from "react";
 import { ClientOnly, Link } from "@tanstack/react-router";
 import { Maximize2, Minimize2 } from "lucide-react";
-import type { OsmPin } from "@v3/ui/components/public/osm-map";
-import { locationLine, profilePath, type SearchDoc } from "@v3/ui/lib/search";
-import { cn } from "@v3/ui/lib/utils";
+import type { OsmPin } from "@v3/shared/public/components/osm-map";
+import { locationLine, profilePath, type SearchDoc } from "@v3/shared/public/utils/search";
+import { cn } from "@v3/shared/components/utils/utils";
 
 // Leaflet touches window at import time, so it only loads in the browser.
-const OsmMap = lazy(() => import("@v3/ui/components/public/osm-map"));
+const OsmMap = lazy(() => import("@v3/shared/public/components/osm-map"));
 
 export type MapPin = SearchDoc & { categoryLabel: string | null; coord_approx?: boolean };
 

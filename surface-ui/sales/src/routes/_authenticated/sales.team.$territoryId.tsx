@@ -1,5 +1,5 @@
 import { createFileRoute, redirect } from "@tanstack/react-router";
-import { loadTeamDetail } from "@v3/sales/lib/teams";
+import { loadTeamDetail } from "@v3/sales/utils/teams";
 export const Route = createFileRoute("/_authenticated/sales/team/$territoryId")({
   beforeLoad: async ({ params }) => {
     const team = await loadTeamDetail(params.territoryId);

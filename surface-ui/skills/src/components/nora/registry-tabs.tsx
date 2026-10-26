@@ -2,11 +2,11 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
 import { AlertTriangle, FlaskConical, Plus } from "lucide-react";
 import { toast } from "sonner";
-import { Button } from "@v3/ui/components/ui/button";
-import { Input } from "@v3/ui/components/ui/input";
-import { Textarea } from "@v3/ui/components/ui/textarea";
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@v3/ui/components/ui/sheet";
-import { DataTable, EmptyState, Panel, type Column } from "@v3/ui/components/console/primitives";
+import { Button } from "@v3/shared/components/ui/button";
+import { Input } from "@v3/shared/components/ui/input";
+import { Textarea } from "@v3/shared/components/ui/textarea";
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@v3/shared/components/ui/sheet";
+import { DataTable, EmptyState, Panel, type Column } from "@v3/shared/components/ui/console-primitives";
 import {
   BUILD_STATES,
   SKILL_STATUSES,
@@ -35,8 +35,8 @@ import {
   type BuildStep,
   type Capability,
   type Skill,
-} from "@v3/skills/lib/nora-registry";
-import { cn } from "@v3/ui/lib/utils";
+} from "@v3/skills/utils/nora-registry";
+import { cn } from "@v3/shared/components/utils/utils";
 
 const STATUS_TONE: Record<string, string> = {
   draft: "bg-[color:var(--color-surface-3)] text-[color:var(--color-ink-2)]",

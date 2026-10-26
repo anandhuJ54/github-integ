@@ -1,9 +1,9 @@
-import { BrandWordmark } from "@v3/ui/components/brand/logo";
+import { BrandWordmark } from "@v3/shared/components/icons/logo";
 import type { ReactNode } from "react";
 import { Star, BadgeCheck, ShieldQuestion } from "lucide-react";
 import { Link } from "@tanstack/react-router";
-import { cn } from "@v3/ui/lib/utils";
-import { sourceLabel, type RatingRow, type ReviewRow } from "@v3/search/lib/public-profile";
+import { cn } from "@v3/shared/components/utils/utils";
+import { sourceLabel, type RatingRow, type ReviewRow } from "@v3/search/utils/public-profile";
 
 export function UnclaimedBadge({ claimed }: { claimed: boolean | null | undefined }) {
   if (claimed) {

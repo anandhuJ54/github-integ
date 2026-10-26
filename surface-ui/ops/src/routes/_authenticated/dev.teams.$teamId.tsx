@@ -14,17 +14,17 @@ import {
   Upload,
 } from "lucide-react";
 import { toast } from "sonner";
-import { Button } from "@v3/ui/components/ui/button";
-import { Input } from "@v3/ui/components/ui/input";
-import { Label } from "@v3/ui/components/ui/label";
-import { Textarea } from "@v3/ui/components/ui/textarea";
+import { Button } from "@v3/shared/components/ui/button";
+import { Input } from "@v3/shared/components/ui/input";
+import { Label } from "@v3/shared/components/ui/label";
+import { Textarea } from "@v3/shared/components/ui/textarea";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@v3/ui/components/ui/select";
+} from "@v3/shared/components/ui/select";
 import { GateBadge, NeedsYouBanner } from "@v3/ops/components/dev/needs-you-banner";
 import {
   ConsoleTabs,
@@ -33,7 +33,7 @@ import {
   PageBody,
   PageHeader,
   Panel,
-} from "@v3/ui/components/console/primitives";
+} from "@v3/shared/components/ui/console-primitives";
 import {
   ITEM_STATUSES,
   MEMBER_ROLES,
@@ -52,8 +52,8 @@ import {
   type Priority,
   type Project,
   type SprintItem,
-} from "@v3/ops/lib/dev-progress";
-import { cn } from "@v3/ui/lib/utils";
+} from "@v3/ops/utils/dev-progress";
+import { cn } from "@v3/shared/components/utils/utils";
 
 export const Route = createFileRoute("/_authenticated/dev/teams/$teamId")({
   head: () => ({

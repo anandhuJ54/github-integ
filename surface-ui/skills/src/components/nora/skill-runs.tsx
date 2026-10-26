@@ -1,11 +1,11 @@
 import { useQuery } from "@tanstack/react-query";
 import { Fragment, useState } from "react";
 import { ChevronDown, ChevronRight } from "lucide-react";
-import { EmptyState, Panel } from "@v3/ui/components/console/primitives";
+import { EmptyState, Panel } from "@v3/shared/components/ui/console-primitives";
 import { Chip } from "@v3/skills/components/nora/registry-tabs";
-import { listSkillRuns } from "@v3/skills/lib/nora-registry";
-import type { SkillRun, TraceStep } from "@v3/skills/lib/nora-runner";
-import { cn } from "@v3/ui/lib/utils";
+import { listSkillRuns } from "@v3/skills/utils/nora-registry";
+import type { SkillRun, TraceStep } from "@v3/skills/utils/nora-runner";
+import { cn } from "@v3/shared/components/utils/utils";
 
 /* Skill runs — reads exp_skill_run (written by runSkill). Shared by the Runs tab and the Sandbox. */
 

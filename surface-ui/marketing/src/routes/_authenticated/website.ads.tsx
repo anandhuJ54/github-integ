@@ -3,15 +3,15 @@ import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { MonitorPlay, Plus } from "lucide-react";
 import { toast } from "sonner";
-import { Button } from "@v3/ui/components/ui/button";
-import { Input } from "@v3/ui/components/ui/input";
+import { Button } from "@v3/shared/components/ui/button";
+import { Input } from "@v3/shared/components/ui/input";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@v3/ui/components/ui/select";
+} from "@v3/shared/components/ui/select";
 import {
   DataTable,
   EmptyState,
@@ -19,9 +19,9 @@ import {
   PageHeader,
   Panel,
   StatTile,
-} from "@v3/ui/components/console/primitives";
-import { FieldRow, InstrumentNote, Pill } from "@v3/ui/components/website/bits";
-import { loadAds, webMutations } from "@v3/marketing/lib/website";
+} from "@v3/shared/components/ui/console-primitives";
+import { FieldRow, InstrumentNote, Pill } from "@v3/shared/public/components/website-bits";
+import { loadAds, webMutations } from "@v3/marketing/utils/website";
 
 const PLACEMENTS = ["in_app", "nora", "event", "external"];
 

@@ -8,10 +8,10 @@ import {
   PageHeader,
   Panel,
   StatTile,
-} from "@v3/ui/components/console/primitives";
-import { InstrumentNote } from "@v3/ui/components/website/bits";
-import { num, pct } from "@v3/ui/lib/console-surfaces";
-import { catLabel, loadSearchOverview, type VolumeRow } from "@v3/admin/lib/search-console";
+} from "@v3/shared/components/ui/console-primitives";
+import { InstrumentNote } from "@v3/shared/public/components/website-bits";
+import { num, pct } from "@v3/shared/public/utils/console-surfaces";
+import { catLabel, loadSearchOverview, type VolumeRow } from "@v3/admin/utils/search-console";
 
 export const Route = createFileRoute("/_authenticated/search/")({
   head: () => ({

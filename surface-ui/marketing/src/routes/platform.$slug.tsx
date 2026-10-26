@@ -1,7 +1,7 @@
 import { createFileRoute, redirect } from "@tanstack/react-router";
-import { getPublicPage } from "@v3/ui/lib/public-site.functions";
-import { MarketingPage, marketingHead } from "@v3/ui/components/public/marketing-page";
-import { SiteShell } from "@v3/ui/components/public/site-chrome";
+import { getPublicPage } from "@v3/shared/public/utils/public-site.functions";
+import { MarketingPage, marketingHead } from "@v3/shared/public/components/marketing-page";
+import { SiteShell } from "@v3/shared/public/components/site-chrome";
 
 export const Route = createFileRoute("/platform/$slug")({
   loader: async ({ params }) => {

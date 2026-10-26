@@ -3,10 +3,10 @@ import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Cookie } from "lucide-react";
 import { toast } from "sonner";
-import { Button } from "@v3/ui/components/ui/button";
-import { Input } from "@v3/ui/components/ui/input";
-import { Textarea } from "@v3/ui/components/ui/textarea";
-import { Switch } from "@v3/ui/components/ui/switch";
+import { Button } from "@v3/shared/components/ui/button";
+import { Input } from "@v3/shared/components/ui/input";
+import { Textarea } from "@v3/shared/components/ui/textarea";
+import { Switch } from "@v3/shared/components/ui/switch";
 import {
   DataTable,
   EmptyState,
@@ -14,9 +14,9 @@ import {
   PageHeader,
   Panel,
   StatTile,
-} from "@v3/ui/components/console/primitives";
-import { FieldRow, InstrumentNote } from "@v3/ui/components/website/bits";
-import { consentStats, loadConsent, webMutations, type ConsentConfig } from "@v3/marketing/lib/website";
+} from "@v3/shared/components/ui/console-primitives";
+import { FieldRow, InstrumentNote } from "@v3/shared/public/components/website-bits";
+import { consentStats, loadConsent, webMutations, type ConsentConfig } from "@v3/marketing/utils/website";
 
 export const Route = createFileRoute("/_authenticated/website/consent")({
   head: () => ({

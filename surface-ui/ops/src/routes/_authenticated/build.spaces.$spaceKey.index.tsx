@@ -2,12 +2,12 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Eye, EyeOff, Plus } from "lucide-react";
 import { toast } from "sonner";
-import { Button } from "@v3/ui/components/ui/button";
-import { EmptyState, PageHeader, Panel } from "@v3/ui/components/console/primitives";
+import { Button } from "@v3/shared/components/ui/button";
+import { EmptyState, PageHeader, Panel } from "@v3/shared/components/ui/console-primitives";
 import { useSpaceData } from "@v3/ops/components/build/wiki-bits";
-import { createDoc, isWatching, teamForSpace, toggleWatch } from "@v3/ops/lib/build-wiki";
-import { TRACK_META, expectedPct, loadOverview, trackOf, weightedProgress } from "@v3/ops/lib/dev-progress";
-import { cn } from "@v3/ui/lib/utils";
+import { createDoc, isWatching, teamForSpace, toggleWatch } from "@v3/ops/utils/build-wiki";
+import { TRACK_META, expectedPct, loadOverview, trackOf, weightedProgress } from "@v3/ops/utils/dev-progress";
+import { cn } from "@v3/shared/components/utils/utils";
 
 export const Route = createFileRoute("/_authenticated/build/spaces/$spaceKey/")({
   component: SpaceHome,

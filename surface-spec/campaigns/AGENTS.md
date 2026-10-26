@@ -5,7 +5,7 @@ trees (polyglot: React + Python, plus its contract and its specs):
 
 - `surface-api/campaigns/` — FastAPI code in `src/` (imported as `surfaces.campaigns`, grouped by resource), tests in
   `tests/`, migrations in `db/migrations/` (its Alembic branch); mounted by `surface-api/app/routes.py`.
-- `surface-ui/campaigns/`       — React 19 UI; imports `@v3/ui` (= `surface-ui/_base`).
+- `surface-ui/campaigns/`       — React 19 UI; imports `@v3/shared` (= `surface-ui/shared`).
 - `contracts/campaigns/` — versioned events + capabilities (the seam both `surface-api` and `surface-ui` consume,
   and the interface other Surfaces depend on).
 - `surface-spec/campaigns/`     — this file, `CONTEXT.md`, and one folder per increment

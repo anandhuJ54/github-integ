@@ -3,18 +3,18 @@ import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Plus, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
-import { Button } from "@v3/ui/components/ui/button";
-import { Input } from "@v3/ui/components/ui/input";
-import { Textarea } from "@v3/ui/components/ui/textarea";
+import { Button } from "@v3/shared/components/ui/button";
+import { Input } from "@v3/shared/components/ui/input";
+import { Textarea } from "@v3/shared/components/ui/textarea";
 import {
   EmptyState,
   PageBody,
   PageHeader,
   Panel,
   StatTile,
-} from "@v3/ui/components/console/primitives";
-import { FieldRow } from "@v3/ui/components/website/bits";
-import { loadTrustItems, webMutations, type TrustItem } from "@v3/marketing/lib/website";
+} from "@v3/shared/components/ui/console-primitives";
+import { FieldRow } from "@v3/shared/public/components/website-bits";
+import { loadTrustItems, webMutations, type TrustItem } from "@v3/marketing/utils/website";
 
 export const Route = createFileRoute("/_authenticated/website/trust")({
   head: () => ({

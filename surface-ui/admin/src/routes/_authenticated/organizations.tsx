@@ -2,8 +2,8 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { useQuery, keepPreviousData } from "@tanstack/react-query";
 import { Building2, BadgeCheck, Gauge, Plug, ExternalLink } from "lucide-react";
-import { api } from "@v3/ui/lib/server-fn";
-import { EmpLayout } from "@v3/ui/components/emp-layout";
+import { api } from "@v3/state/api/server-fn";
+import { EmpLayout } from "@v3/shared/components/ui/emp-layout";
 import {
   PageBody,
   PageHeader,
@@ -13,19 +13,19 @@ import {
   DetailDrawer,
   EmptyState,
   type Column,
-} from "@v3/ui/components/console/primitives";
-import { Input } from "@v3/ui/components/ui/input";
-import { Button } from "@v3/ui/components/ui/button";
+} from "@v3/shared/components/ui/console-primitives";
+import { Input } from "@v3/shared/components/ui/input";
+import { Button } from "@v3/shared/components/ui/button";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@v3/ui/components/ui/select";
-import { num } from "@v3/ui/lib/console-surfaces";
-import { loadOrgStats, ORG_COLUMNS, type OrgRow } from "@v3/admin/lib/console-surfaces";
-import { cn } from "@v3/ui/lib/utils";
+} from "@v3/shared/components/ui/select";
+import { num } from "@v3/shared/public/utils/console-surfaces";
+import { loadOrgStats, ORG_COLUMNS, type OrgRow } from "@v3/admin/utils/console-surfaces";
+import { cn } from "@v3/shared/components/utils/utils";
 
 export const Route = createFileRoute("/_authenticated/organizations")({
   head: () => ({

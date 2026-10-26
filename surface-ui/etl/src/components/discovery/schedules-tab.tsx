@@ -2,12 +2,12 @@ import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { RefreshCw } from "lucide-react";
 import { toast } from "sonner";
-import { api } from "@v3/ui/lib/server-fn";
-import { useRole } from "@v3/ui/lib/roles";
-import { Badge } from "@v3/ui/components/ui/badge";
-import { Button } from "@v3/ui/components/ui/button";
-import { Switch } from "@v3/ui/components/ui/switch";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@v3/ui/components/ui/tooltip";
+import { api } from "@v3/state/api/server-fn";
+import { useRole } from "@v3/state/access/roles";
+import { Badge } from "@v3/shared/components/ui/badge";
+import { Button } from "@v3/shared/components/ui/button";
+import { Switch } from "@v3/shared/components/ui/switch";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@v3/shared/components/ui/tooltip";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -17,7 +17,7 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@v3/ui/components/ui/alert-dialog";
+} from "@v3/shared/components/ui/alert-dialog";
 
 
 type CronRow = {

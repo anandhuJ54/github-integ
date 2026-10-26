@@ -1,8 +1,8 @@
 import { Link } from "@tanstack/react-router";
 import { BadgeCheck, MapPin, Megaphone } from "lucide-react";
-import { EntityAvatar, ScoreBadge } from "@v3/ui/components/public/visual";
-import type { AdUnit, SponsoredSlot } from "@v3/search/lib/monetization";
-import { profilePath, type SearchKind } from "@v3/ui/lib/search";
+import { EntityAvatar, ScoreBadge } from "@v3/shared/public/components/visual";
+import type { AdUnit, SponsoredSlot } from "@v3/search/utils/monetization";
+import { profilePath, type SearchKind } from "@v3/shared/public/utils/search";
 
 
 function SponsoredTag() {

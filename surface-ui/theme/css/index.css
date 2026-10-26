@@ -1,0 +1,11 @@
+@import "./tokens.css";
+@import "./themes.css";
+
+@custom-variant dark (&:is(.dark *));
+
+/*
+ * Experience.com — Google-AI Design System
+ * Palette: Google brand (Blue/Red/Yellow/Green) over white surfaces
+ * Type: Arial everywhere
+ * Motion: maximum register (Gemini ribbon, count-ups, orb-fields)
+ */

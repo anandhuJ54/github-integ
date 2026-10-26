@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
-import { EmpLayout } from "@v3/ui/components/emp-layout";
+import { EmpLayout } from "@v3/shared/components/ui/emp-layout";
 import { SourceRegistryTab } from "@v3/etl/components/discovery/source-registry-tab";
 import { PipelineTab } from "@v3/etl/components/discovery/pipeline-tab";
 import { RunsTab } from "@v3/etl/components/discovery/runs-tab";
@@ -10,7 +10,7 @@ import { CategoryPopulationTab } from "@v3/etl/components/discovery/category-pop
 import { SchedulesTab } from "@v3/etl/components/discovery/schedules-tab";
 import { SourceStatsTab } from "@v3/etl/components/discovery/source-stats-tab";
 import { AiCostTab } from "@v3/etl/components/discovery/ai-cost-tab";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@v3/ui/components/ui/tabs";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@v3/shared/components/ui/tabs";
 
 export const Route = createFileRoute("/_authenticated/discovery")({
   head: () => ({

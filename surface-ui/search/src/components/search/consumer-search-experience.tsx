@@ -14,12 +14,12 @@ import {
   Utensils,
   Wrench,
 } from "lucide-react";
-import heroCity from "@v3/ui/assets/home/city-skyline-hero.jpg";
-import { BrandIcon } from "@v3/ui/components/brand/logo";
-import { Button } from "@v3/ui/components/ui/button";
-import { SearchBox } from "@v3/ui/components/search/serp-parts";
-import { DEFAULT_QUERY } from "@v3/ui/lib/search";
-import type { HomeCategory } from "@v3/ui/lib/home.functions";
+import heroCity from "@v3/shared/public/assets/home/city-skyline-hero.jpg";
+import { BrandIcon } from "@v3/shared/components/icons/logo";
+import { Button } from "@v3/shared/components/ui/button";
+import { SearchBox } from "@v3/shared/public/components/serp-parts";
+import { DEFAULT_QUERY } from "@v3/shared/public/utils/search";
+import type { HomeCategory } from "@v3/shared/public/utils/home.functions";
 
 const ICONS = [Utensils, Coffee, Wrench, Stethoscope, Building2, Home, PawPrint, HeartPulse];
 const NATURAL_EXAMPLES = [

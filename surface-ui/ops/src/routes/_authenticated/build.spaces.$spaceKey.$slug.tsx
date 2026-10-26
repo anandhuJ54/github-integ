@@ -3,10 +3,10 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
 import { Check, Eye, EyeOff, History, Pencil, Pin, Plus } from "lucide-react";
 import { toast } from "sonner";
-import { Button } from "@v3/ui/components/ui/button";
-import { Input } from "@v3/ui/components/ui/input";
-import { Textarea } from "@v3/ui/components/ui/textarea";
-import { EmptyState, Panel } from "@v3/ui/components/console/primitives";
+import { Button } from "@v3/shared/components/ui/button";
+import { Input } from "@v3/shared/components/ui/input";
+import { Textarea } from "@v3/shared/components/ui/textarea";
+import { EmptyState, Panel } from "@v3/shared/components/ui/console-primitives";
 import { Markdown, useSpaceData } from "@v3/ops/components/build/wiki-bits";
 import {
   addComment,
@@ -22,7 +22,7 @@ import {
   updateDoc,
   type WikiComment,
   type WikiDoc,
-} from "@v3/ops/lib/build-wiki";
+} from "@v3/ops/utils/build-wiki";
 
 export const Route = createFileRoute("/_authenticated/build/spaces/$spaceKey/$slug")({
   validateSearch: (s: Record<string, unknown>): { edit?: boolean } => (s.edit ? { edit: true } : {}),

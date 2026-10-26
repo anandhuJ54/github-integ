@@ -1,5 +1,5 @@
 import { createFileRoute, notFound } from "@tanstack/react-router";
-import { loadOrgBundle } from "@v3/search/lib/profile-render";
+import { loadOrgBundle } from "@v3/search/utils/profile-render";
 import { CategoryProfile, profileHead } from "@v3/search/components/profile/category-profile";
 
 export const Route = createFileRoute("/o/$slug")({

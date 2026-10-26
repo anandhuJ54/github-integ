@@ -11,13 +11,13 @@ import {
   PageBody,
   PageHeader,
   Panel,
-} from "@v3/ui/components/console/primitives";
-import { Input } from "@v3/ui/components/ui/input";
-import { Button } from "@v3/ui/components/ui/button";
-import { Checkbox } from "@v3/ui/components/ui/checkbox";
-import { loadPriceBook, saveCreditConfig, savePrice } from "@v3/sales/lib/sales";
-import { creditCostBasis, loadPricingContext, type CreditProduct } from "@v3/sales/lib/cpq-depth";
-import { loadCatalog } from "@v3/sales/lib/cpq-catalog";
+} from "@v3/shared/components/ui/console-primitives";
+import { Input } from "@v3/shared/components/ui/input";
+import { Button } from "@v3/shared/components/ui/button";
+import { Checkbox } from "@v3/shared/components/ui/checkbox";
+import { loadPriceBook, saveCreditConfig, savePrice } from "@v3/sales/utils/sales";
+import { creditCostBasis, loadPricingContext, type CreditProduct } from "@v3/sales/utils/cpq-depth";
+import { loadCatalog } from "@v3/sales/utils/cpq-catalog";
 import { AssumptionsAdmin, ProductsAdmin, VolumeSchedule } from "@v3/sales/components/sales/catalog-admin";
 
 export const Route = createFileRoute("/_authenticated/sales/price-book")({

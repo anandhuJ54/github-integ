@@ -1,15 +1,15 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useServerFn } from "@v3/ui/lib/server-fn";
+import { useServerFn } from "@v3/state/api/server-fn";
 import { useEffect, useMemo, useState } from "react";
 import { Star, Flag, Sparkles, AlertTriangle, CheckCircle2, Send, Megaphone } from "lucide-react";
-import { supabase } from "@v3/ui/integrations/supabase/client";
-import { api } from "@v3/ui/lib/server-fn";
-import { Button } from "@v3/ui/components/ui/button";
-import { Card } from "@v3/ui/components/ui/card";
-import { Badge } from "@v3/ui/components/ui/badge";
-import { Textarea } from "@v3/ui/components/ui/textarea";
-import { Input } from "@v3/ui/components/ui/input";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@v3/ui/components/ui/dialog";
+import { getCurrentUser } from "@v3/state/session/current-user";
+import { api } from "@v3/state/api/server-fn";
+import { Button } from "@v3/shared/components/ui/button";
+import { Card } from "@v3/shared/components/ui/card";
+import { Badge } from "@v3/shared/components/ui/badge";
+import { Textarea } from "@v3/shared/components/ui/textarea";
+import { Input } from "@v3/shared/components/ui/input";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@v3/shared/components/ui/dialog";
 import { toast } from "sonner";
 import { DashboardShell } from "@v3/srp/components/dashboard-shell";
 import {
@@ -17,7 +17,7 @@ import {
   checkReplyCompliance,
   saveReviewReply,
   flagReview,
-} from "@v3/srp/lib/reviews.functions";
+} from "@v3/srp/utils/reviews.functions";
 
 export const Route = createFileRoute("/_authenticated/dashboard/reviews")({
   ssr: false,
@@ -98,8 +98,8 @@ function ReviewsPage() {
   const flagFn = useServerFn(flagReview);
 
   const load = async () => {
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) {
+    const user = await getCurrentUser();
+    if (!user) {
       navigate({ to: "/auth" as any });
       return;
     }

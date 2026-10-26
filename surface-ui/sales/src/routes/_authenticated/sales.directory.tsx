@@ -3,9 +3,9 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
 import { useQueries } from "@tanstack/react-query";
 import { Search } from "lucide-react";
-import { Input } from "@v3/ui/components/ui/input";
-import { EmptyState, PageBody, PageHeader, Panel } from "@v3/ui/components/console/primitives";
-import { browse, type BrowseTab } from "@v3/sales/lib/sales-nav";
+import { Input } from "@v3/shared/components/ui/input";
+import { EmptyState, PageBody, PageHeader, Panel } from "@v3/shared/components/ui/console-primitives";
+import { browse, type BrowseTab } from "@v3/sales/utils/sales-nav";
 
 export const Route = createFileRoute("/_authenticated/sales/directory")({
   head: () => ({

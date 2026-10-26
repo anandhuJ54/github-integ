@@ -1,14 +1,14 @@
 import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
-import { useServerFn } from "@v3/ui/lib/server-fn";
+import { useServerFn } from "@v3/state/api/server-fn";
 import { toast } from "sonner";
-import { Badge } from "@v3/ui/components/ui/badge";
-import { Button } from "@v3/ui/components/ui/button";
-import { Textarea } from "@v3/ui/components/ui/textarea";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@v3/ui/components/ui/dialog";
+import { Badge } from "@v3/shared/components/ui/badge";
+import { Button } from "@v3/shared/components/ui/button";
+import { Textarea } from "@v3/shared/components/ui/textarea";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@v3/shared/components/ui/dialog";
 import { AddressValue, PayloadFields, isAddressObject } from "@v3/etl/components/discovery/pipeline-tab";
-import { previewSiteProposal, type ProposalPreviewRecord } from "@v3/etl/lib/site-proposal.functions";
-import { csvExport } from "@v3/etl/lib/csv-export";
+import { previewSiteProposal, type ProposalPreviewRecord } from "@v3/etl/utils/site-proposal.functions";
+import { csvExport } from "@v3/etl/utils/csv-export";
 
 /* Contract preview (2026-10-15): "Preview records" for a pending proposal or for the saved contract (re-check).
    Builds records live with the contract (previewSiteProposal, read-only), on the contract's sample pages or on up

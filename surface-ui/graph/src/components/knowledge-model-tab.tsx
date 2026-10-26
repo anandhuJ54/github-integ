@@ -1,9 +1,9 @@
 import { useMemo, useState } from "react";
 import { AlertTriangle } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@v3/ui/components/ui/card";
-import { Badge } from "@v3/ui/components/ui/badge";
-import { CategoryIntelligencePanel } from "@v3/graph/lib/category-intelligence";
-import { cn } from "@v3/ui/lib/utils";
+import { Card, CardContent, CardHeader, CardTitle } from "@v3/shared/components/ui/card";
+import { Badge } from "@v3/shared/components/ui/badge";
+import { CategoryIntelligencePanel } from "@v3/graph/utils/category-intelligence";
+import { cn } from "@v3/shared/components/utils/utils";
 
 export type KnowledgeRow = {
   id?: string;

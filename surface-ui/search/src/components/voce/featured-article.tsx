@@ -1,6 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { Newspaper } from "lucide-react";
-import { hubPath, prettyTopic, type VoceArticle } from "@v3/ui/lib/voce";
+import { hubPath, prettyTopic, type VoceArticle } from "@v3/shared/public/utils/voce";
 
 /** Labeled "Featured article" unit for the SERP — never styled as an entity result. */
 export function FeaturedArticleUnit({ article }: { article: VoceArticle }) {

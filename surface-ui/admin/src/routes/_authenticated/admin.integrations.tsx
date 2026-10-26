@@ -1,18 +1,18 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useServerFn } from "@v3/ui/lib/server-fn";
+import { useServerFn } from "@v3/state/api/server-fn";
 import { CheckCircle2, Circle, Copy, Mail, Plug, RefreshCw, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
-import { EmpLayout } from "@v3/ui/components/emp-layout";
-import { Button } from "@v3/ui/components/ui/button";
-import { Badge } from "@v3/ui/components/ui/badge";
-import { Input } from "@v3/ui/components/ui/input";
-import { useRole } from "@v3/ui/lib/roles";
-import { checkDomainVerification, dispatchGoogleOutbox, getGoogleIntegration, startDomainVerification, startGoogleConnect } from "@v3/admin/lib/google-workspace.functions";
-import { getNoraIntegrations, updateNoraIntegration } from "@v3/admin/lib/integrations.functions";
-import { INTEGRATION_STATUS_LABEL, INTEGRATIONS, type IntegrationStatus } from "@v3/admin/lib/integrations";
-import { ALERT_RULES, ALERT_TIER_LABEL, runAlertEngineNow } from "@v3/admin/lib/sales-alerts";
+import { EmpLayout } from "@v3/shared/components/ui/emp-layout";
+import { Button } from "@v3/shared/components/ui/button";
+import { Badge } from "@v3/shared/components/ui/badge";
+import { Input } from "@v3/shared/components/ui/input";
+import { useRole } from "@v3/state/access/roles";
+import { checkDomainVerification, dispatchGoogleOutbox, getGoogleIntegration, startDomainVerification, startGoogleConnect } from "@v3/admin/utils/google-workspace.functions";
+import { getNoraIntegrations, updateNoraIntegration } from "@v3/admin/utils/integrations.functions";
+import { INTEGRATION_STATUS_LABEL, INTEGRATIONS, type IntegrationStatus } from "@v3/admin/utils/integrations";
+import { ALERT_RULES, ALERT_TIER_LABEL, runAlertEngineNow } from "@v3/admin/utils/sales-alerts";
 
 export const Route = createFileRoute("/_authenticated/admin/integrations")({
   head: () => ({

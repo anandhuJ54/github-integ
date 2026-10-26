@@ -13,13 +13,13 @@ import {
   Search,
 } from "lucide-react";
 import { toast } from "sonner";
-import { api } from "@v3/ui/lib/server-fn";
+import { api } from "@v3/state/api/server-fn";
 
 import { SiteContractPanel } from "@v3/etl/components/discovery/site-contract-panel";
 import { useDiscoverMore, useSourceActions } from "@v3/etl/components/discovery/source-actions";
 import { AddWebsitesButton } from "@v3/etl/components/discovery/add-websites-dialog";
 import { CategoryBoundaryPanel } from "@v3/etl/components/discovery/category-boundary-panel";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@v3/ui/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@v3/shared/components/ui/tooltip";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -29,15 +29,15 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@v3/ui/components/ui/alert-dialog";
-import { Badge } from "@v3/ui/components/ui/badge";
-import { Button } from "@v3/ui/components/ui/button";
-import { Checkbox } from "@v3/ui/components/ui/checkbox";
-import { Input } from "@v3/ui/components/ui/input";
-import { Label } from "@v3/ui/components/ui/label";
-import { ReadOnlyLock } from "@v3/ui/components/model-lock";
-import { useRole } from "@v3/ui/lib/roles";
-import { cn } from "@v3/ui/lib/utils";
+} from "@v3/shared/components/ui/alert-dialog";
+import { Badge } from "@v3/shared/components/ui/badge";
+import { Button } from "@v3/shared/components/ui/button";
+import { Checkbox } from "@v3/shared/components/ui/checkbox";
+import { Input } from "@v3/shared/components/ui/input";
+import { Label } from "@v3/shared/components/ui/label";
+import { ReadOnlyLock } from "@v3/shared/components/ui/model-lock";
+import { useRole } from "@v3/state/access/roles";
+import { cn } from "@v3/shared/components/utils/utils";
 import {
   CRAWL_METHOD_LABEL,
   CRAWL_METHOD_REASON,

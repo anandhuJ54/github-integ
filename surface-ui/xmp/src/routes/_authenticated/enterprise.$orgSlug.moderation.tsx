@@ -2,9 +2,9 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { ShieldAlert } from "lucide-react";
 import { XmpShell } from "@v3/xmp/components/enterprise/xmp-chrome";
-import { Panel, EmptyState, StatTile } from "@v3/ui/components/console/primitives";
-import { Badge } from "@v3/ui/components/ui/badge";
-import { loadBrand, loadModerationQueue } from "@v3/xmp/lib/enterprise-xmp";
+import { Panel, EmptyState, StatTile } from "@v3/shared/components/ui/console-primitives";
+import { Badge } from "@v3/shared/components/ui/badge";
+import { loadBrand, loadModerationQueue } from "@v3/xmp/utils/enterprise-xmp";
 
 export const Route = createFileRoute("/_authenticated/enterprise/$orgSlug/moderation")({
   ssr: false,

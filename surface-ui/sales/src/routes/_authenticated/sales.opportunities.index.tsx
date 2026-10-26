@@ -7,8 +7,8 @@ import {
   PageBody,
   PageHeader,
   Panel,
-} from "@v3/ui/components/console/primitives";
-import { loadOpportunityList, usd, type OppListRow } from "@v3/sales/lib/opportunity-file";
+} from "@v3/shared/components/ui/console-primitives";
+import { loadOpportunityList, usd, type OppListRow } from "@v3/sales/utils/opportunity-file";
 
 export const Route = createFileRoute("/_authenticated/sales/opportunities/")({
   head: () => ({

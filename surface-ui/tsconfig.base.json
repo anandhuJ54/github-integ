@@ -1,5 +1,6 @@
 // Shared by every surface-ui project. Each Surface has its own alias (@v3/<surface>/*);
-// _base is @v3/ui. One alias map means one program can typecheck the composed app.
+// shared/, state/, shell/ and theme/ are @v3/shared, @v3/state, @v3/shell and @v3/theme.
+// One alias map means one program can typecheck the composed app.
 {
   "compilerOptions": {
     "target": "ES2022",
@@ -23,14 +24,20 @@
     "noUnusedParameters": false,
     "noFallthroughCasesInSwitch": true,
     "paths": {
-      "@v3/ui": [
-        "./_base/index.ts"
+      "@v3/shared/*": [
+        "./shared/*"
       ],
-      "@v3/ui/*": [
-        "./_base/src/*"
+      "@v3/state": [
+        "./state/index.ts"
       ],
-      "@v3/app/*": [
-        "./app/src/*"
+      "@v3/state/*": [
+        "./state/*"
+      ],
+      "@v3/shell/*": [
+        "./shell/*"
+      ],
+      "@v3/theme/*": [
+        "./theme/*"
       ],
       "@v3/marketing/*": [
         "./marketing/src/*"

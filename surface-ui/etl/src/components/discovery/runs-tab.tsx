@@ -1,8 +1,8 @@
 import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Info } from "lucide-react";
-import { api } from "@v3/ui/lib/server-fn";
-import { cn } from "@v3/ui/lib/utils";
+import { api } from "@v3/state/api/server-fn";
+import { cn } from "@v3/shared/components/utils/utils";
 
 type RunRow = {
   run_id: string;

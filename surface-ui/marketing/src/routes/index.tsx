@@ -1,8 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { SiteShell } from "@v3/ui/components/public/site-chrome";
+import { SiteShell } from "@v3/shared/public/components/site-chrome";
 import { CityHome } from "@v3/marketing/components/public/city-home";
-import { getHomeData } from "@v3/ui/lib/home.functions";
-import { getCityHome } from "@v3/marketing/lib/city-home.functions";
+import { getHomeData } from "@v3/shared/public/utils/home.functions";
+import { getCityHome } from "@v3/marketing/utils/city-home.functions";
 
 const TITLE = "Search people, offices and brands | Experience.com";
 const DESCRIPTION =

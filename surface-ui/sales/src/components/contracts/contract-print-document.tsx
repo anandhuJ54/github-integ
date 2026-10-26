@@ -1,6 +1,6 @@
-import type { ContractDetail } from "@v3/sales/lib/contracts";
-import { money } from "@v3/sales/lib/contracts";
-import { hasCertificate, record, records, text, utc, verification, type PrintDoc } from "@v3/sales/lib/contract-print";
+import type { ContractDetail } from "@v3/sales/utils/contracts";
+import { money } from "@v3/sales/utils/contracts";
+import { hasCertificate, record, records, text, utc, verification, type PrintDoc } from "@v3/sales/utils/contract-print";
 
 const amount = (x: unknown) => x == null || x === "" || !Number.isFinite(Number(x)) ? "—" : money(Number(x));
 const percent = (x: unknown) => x == null ? "—" : `${text(x)}%`;
