@@ -15,8 +15,8 @@ from fastapi.testclient import TestClient
 from _base.auth import current_user
 from sales.tests import test_core as ct
 from sales.tests.test_cpq import RID, RID2, values, writes
-from surfaces.sales.queries import seller_setup as q
-from surfaces.sales.routers.seller_setup_data import router
+from surfaces.sales.seller_setup import services as q
+from surfaces.sales.seller_setup.router import router
 
 P = "/sales/seller-setup"
 CLAIMS, select_list, selects = ct.CLAIMS, ct.select_list, ct.selects

@@ -10,8 +10,8 @@ from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
 from _base.auth import current_user
-from surfaces.admin.routers import site_indexing_fn
-from surfaces.admin.routers.site_indexing_fn import router
+from surfaces.admin.site_indexing import router as site_indexing_fn
+from surfaces.admin.site_indexing.router import router
 
 
 class _Result:

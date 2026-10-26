@@ -12,8 +12,10 @@ from fastapi.testclient import TestClient
 
 from _base.auth import current_user
 from _base.integrations import status
+from surfaces.admin.integration import google_oauth_callback_router as google_oauth_callback
+from surfaces.admin.integration import google_workspace_router as google_workspace_fn
+from surfaces.admin.integration import router as integrations_fn
 from surfaces.admin.router import router
-from surfaces.admin.routers import google_oauth_callback, google_workspace_fn, integrations_fn
 
 CLAIMS = {"sub": "u-1", "role": "authenticated", "email": "Me@Corp.com"}
 WS_ROW = {"id": "workspace", "status": "not_connected", "domain": "corp.com",

@@ -10,7 +10,7 @@ from __future__ import annotations
 
 from fastapi import APIRouter
 
-from surfaces.conversion_agents.routers.health import router as health_router
+from surfaces.conversion_agents.health.router import router as health_router
 
 router = APIRouter()
 router.include_router(health_router)

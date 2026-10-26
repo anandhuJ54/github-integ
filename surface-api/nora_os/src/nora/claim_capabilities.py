@@ -22,13 +22,16 @@ from typing import Any
 
 import httpx
 
-from surfaces.nora_os.category_brief import (
+from surfaces.nora_os.internal.category_brief import (
     compile_category_brief,
     entity_brief_for_office,
     load_category_brief_rows,
 )
-from surfaces.nora_os.db import Db
-from surfaces.nora_os.jsutil import date_ms, js_number, js_round, now_ms, nz
+from surfaces.nora_os.internal.db import Db
+from surfaces.nora_os.internal.jsutil import date_ms, js_number, js_round, now_ms, nz
+from surfaces.nora_os.internal.office_mode import is_single_pro, load_office_mode
+from surfaces.nora_os.internal.runner import CapabilityHandler, HandlerContext, HandlerRegistry
+from surfaces.nora_os.internal.runner_server import is_uuid
 from surfaces.nora_os.nora.claim_gate import (
     OTP_TTL_MINUTES,
     BriefClaim,
@@ -43,9 +46,6 @@ from surfaces.nora_os.nora.claim_gate import (
 )
 from surfaces.nora_os.nora.claim_otp import generate_otp, otp_hash
 from surfaces.nora_os.nora.integrations_adapter import with_integration
-from surfaces.nora_os.office_mode import is_single_pro, load_office_mode
-from surfaces.nora_os.runner import CapabilityHandler, HandlerContext, HandlerRegistry
-from surfaces.nora_os.runner_server import is_uuid
 
 
 def _need(ctx: HandlerContext, what: str) -> tuple[str, str]:

@@ -16,8 +16,9 @@ from psycopg.types.json import Jsonb
 
 from _base.auth import current_user
 from _base.db import session as core_db
-from surfaces.sales.queries import contracts as q
-from surfaces.sales.routers.contracts_data import router
+from surfaces.sales.contract import services as q
+from surfaces.sales.contract.router import router
+from surfaces.sales.internal import UnknownRpc
 
 UID = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa"
 EMAIL = "seller@example.com"
@@ -538,7 +539,7 @@ def test_record_usage_dates_and_nullable_high_water():
     ("m4_finalize", {"p_contract": 5}, "must be a string"),
 ])
 def test_rpc_refusals(name, args, why):
-    with pytest.raises(q.UnknownRpc, match=why):
+    with pytest.raises(UnknownRpc, match=why):
         q.rpc_sql(name, args, EMAIL)
 
 

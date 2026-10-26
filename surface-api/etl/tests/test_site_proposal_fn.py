@@ -13,7 +13,7 @@ from fastapi import FastAPI, HTTPException
 from fastapi.testclient import TestClient
 
 from _base.auth import current_user
-from surfaces.etl.routers.site_proposal_fn import (
+from surfaces.etl.site_proposal.router import (
     crawl_method_for,
     given_url_problem,
     js_number,
@@ -76,7 +76,8 @@ class FakeDB:
 def fake_db(monkeypatch):
     def install(responder: Callable[[str, Any], list[dict]]) -> FakeDB:
         db = FakeDB(responder)
-        from surfaces.etl.routers import _sql, site_proposal_fn
+        from surfaces.etl.site_proposal import _sql
+        from surfaces.etl.site_proposal import router as site_proposal_fn
 
         monkeypatch.setattr(_sql, "role_connection", db.role_connection)
         monkeypatch.setattr(site_proposal_fn, "role_connection", db.role_connection)

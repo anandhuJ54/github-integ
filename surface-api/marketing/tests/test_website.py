@@ -13,8 +13,8 @@ from psycopg.types.json import Jsonb
 
 from _base.auth import current_user
 from _base.db import session as core_db
-from surfaces.marketing.queries import website as q
-from surfaces.marketing.routers.website_data import router
+from surfaces.marketing.website import services as q
+from surfaces.marketing.website.router import router
 
 CLAIMS = {"sub": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa", "role": "authenticated"}
 RID = "11111111-1111-4111-8111-111111111111"

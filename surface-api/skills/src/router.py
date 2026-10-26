@@ -6,8 +6,8 @@ from __future__ import annotations
 
 from fastapi import APIRouter
 
-from surfaces.skills.routers.health import router as health_router
-from surfaces.skills.routers.registry import router as registry_router
+from surfaces.skills.health.router import router as health_router
+from surfaces.skills.registry.router import router as registry_router
 
 router = APIRouter()
 router.include_router(health_router)

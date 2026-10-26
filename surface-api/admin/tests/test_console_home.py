@@ -10,7 +10,7 @@ from fastapi.testclient import TestClient
 
 from _base.auth import current_user
 from _base.db import session as core_db
-from surfaces.admin.routers.console_home import router
+from surfaces.admin.console_home.router import router
 
 CLAIMS = {"sub": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa", "email": "me@example.com",
           "role": "authenticated"}

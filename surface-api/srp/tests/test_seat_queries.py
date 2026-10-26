@@ -6,7 +6,9 @@ from __future__ import annotations
 import pytest
 
 from _base.db.sql import capped, compile_sql
-from surfaces.srp.queries import common, dashboard, seat
+from surfaces.srp import internal
+from surfaces.srp.seat import dashboard
+from surfaces.srp.seat import services as seat
 
 PID = "11111111-1111-4111-8111-111111111111"
 OID = "22222222-2222-4222-8222-222222222222"
@@ -55,7 +57,7 @@ def test_dashboard_professional_by_user_or_by_id():
 # --- RPC allow-list ----------------------------------------------------------------------------
 
 def test_scalar_rpc():
-    s, _, rows = common.rpc_sql("exp_office_mode", {"p_entity_type": "professional",
+    s, _, rows = internal.rpc_sql("exp_office_mode", {"p_entity_type": "professional",
                                                     "p_entity_id": PID})
     assert s == ("select public.exp_office_mode(p_entity_type => %(p_entity_type)s::text, "
                  "p_entity_id => %(p_entity_id)s::uuid) as v") and not rows
@@ -67,5 +69,5 @@ def test_scalar_rpc():
     ("exp_office_mode", {"p_entity_type": "professional", "p_evil": 1}),
 ])
 def test_rpc_outside_the_allow_list_is_refused(name, args):
-    with pytest.raises(common.UnknownRpc):
-        common.rpc_sql(name, args)
+    with pytest.raises(internal.UnknownRpc):
+        internal.rpc_sql(name, args)

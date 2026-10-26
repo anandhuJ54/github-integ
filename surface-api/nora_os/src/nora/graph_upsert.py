@@ -7,7 +7,7 @@ graph_nodes directly.
 """
 from __future__ import annotations
 
-from surfaces.nora_os.db import Db
+from surfaces.nora_os.internal.db import Db
 
 TRUST_TIERS = ("self_declared", "imported", "platform_observed", "authority_verified", "owner_verified")
 GRAPH_SOURCES = ("oauth", "etl", "crm_sync", "api", "manual", "rss", "platform", "user")

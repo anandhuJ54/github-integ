@@ -10,7 +10,7 @@ from fastapi.testclient import TestClient
 
 from _base.auth import current_user
 from _base.db import session as core_db
-from surfaces.ops.queries.wiki import slugify
+from surfaces.ops.console.wiki import slugify
 from surfaces.ops.router import router
 
 CLAIMS = {"sub": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa", "email": "me@example.com",

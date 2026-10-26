@@ -10,7 +10,7 @@ from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
 from _base.auth import current_user
-from surfaces.search.routers import schema_cache_fn
+from surfaces.search.schema_cache import router as schema_cache_fn
 
 CLAIMS = {"sub": "u-1", "role": "authenticated", "email": "a@x.com"}
 

@@ -23,9 +23,9 @@ from sales.tests.test_contracts import (
     sqls,
     table_of,
 )
-from surfaces.sales.queries import opportunity as q
-from surfaces.sales.queries.contracts import UnknownRpc
-from surfaces.sales.routers.opportunity_data import router
+from surfaces.sales.internal import UnknownRpc
+from surfaces.sales.opportunity import services as q
+from surfaces.sales.opportunity.router import router
 
 P = "/sales/opportunities"
 OPP = "44444444-4444-4444-8444-444444444444"

@@ -10,11 +10,11 @@ from __future__ import annotations
 
 from fastapi import APIRouter
 
-from surfaces.srp.routers.claim_profile import router as claim_profile_router
-from surfaces.srp.routers.directory_data import router as directory_data_router
-from surfaces.srp.routers.health import router as health_router
-from surfaces.srp.routers.reviews_fn import router as reviews_fn_router
-from surfaces.srp.routers.seat_data import router as seat_data_router
+from surfaces.srp.claim_profile.router import router as claim_profile_router
+from surfaces.srp.directory.router import router as directory_data_router
+from surfaces.srp.health.router import router as health_router
+from surfaces.srp.review.router import router as reviews_fn_router
+from surfaces.srp.seat.router import router as seat_data_router
 
 router = APIRouter()
 router.include_router(health_router)

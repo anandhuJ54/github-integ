@@ -4,13 +4,13 @@ from __future__ import annotations
 
 import pytest
 
-from surfaces.nora_os.category_brief import (
+from surfaces.nora_os.internal.category_brief import (
     compile_category_brief,
     entity_brief,
     entity_brief_for_office,
     load_category_brief_rows,
 )
-from surfaces.nora_os.jsutil import js_numbers
+from surfaces.nora_os.internal.jsutil import js_numbers
 from surfaces.nora_os.testing import FakeDb, fixture
 
 RINGS = fixture("exp_rings.json")

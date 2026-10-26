@@ -9,7 +9,7 @@ from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
 from etl.tests.test_deep_hydrate import FakeConn
-from surfaces.etl.routers import export_prompt_bundles as r
+from surfaces.etl.export_prompt_bundle import router as r
 
 
 class Resp:

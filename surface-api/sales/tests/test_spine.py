@@ -18,8 +18,8 @@ from sales.tests.test_contracts import (
     sqls,
     table_of,
 )
-from surfaces.sales.queries import spine as q
-from surfaces.sales.routers.spine_data import router
+from surfaces.sales.spine import services as q
+from surfaces.sales.spine.router import router
 
 P = "/sales/spine"
 

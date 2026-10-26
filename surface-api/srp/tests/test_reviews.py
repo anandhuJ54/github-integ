@@ -5,8 +5,8 @@ import json
 
 import pytest
 
-from surfaces.srp.routers import reviews_fn
-from surfaces.srp.routers.reviews_fn import build_prompts, check_compliance, review_style
+from surfaces.srp.review import router as reviews_fn
+from surfaces.srp.review.router import build_prompts, check_compliance, review_style
 
 RID = "11111111-1111-4111-8111-111111111111"
 PID = "22222222-2222-4222-8222-222222222222"

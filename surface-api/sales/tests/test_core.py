@@ -16,8 +16,8 @@ from fastapi.testclient import TestClient
 from _base.auth import current_user
 from _base.db import session as core_db
 from sales.tests.test_cpq import RID, RID2, UID, FakeConn, values, writes
-from surfaces.sales.queries import core as q
-from surfaces.sales.routers.core_data import router
+from surfaces.sales.core import services as q
+from surfaces.sales.core.router import router
 
 CLAIMS = {"sub": UID, "role": "authenticated", "email": "seller@example.com"}
 P = "/sales/core"

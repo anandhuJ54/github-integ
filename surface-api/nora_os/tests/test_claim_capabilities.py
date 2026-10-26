@@ -3,10 +3,10 @@ from __future__ import annotations
 
 import pytest
 
+from surfaces.nora_os.internal.runner import HandlerContext, RunEntity
 from surfaces.nora_os.nora import claim_capabilities as cc
 from surfaces.nora_os.nora.claim_gate import BriefClaim, Claimant
 from surfaces.nora_os.nora.claim_otp import otp_hash
-from surfaces.nora_os.runner import HandlerContext, RunEntity
 from surfaces.nora_os.testing import FakeDb
 
 ENT = "11111111-1111-4111-8111-111111111111"

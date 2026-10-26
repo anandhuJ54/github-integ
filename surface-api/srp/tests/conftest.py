@@ -58,7 +58,7 @@ class FakeDB:
         return _cm()
 
 
-_MODULES = ("surfaces.srp.routers.reviews_fn",)
+_MODULES = ("surfaces.srp.review.router",)
 
 
 @pytest.fixture

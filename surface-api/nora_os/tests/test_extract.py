@@ -3,8 +3,8 @@ from __future__ import annotations
 
 import json
 
-from surfaces.nora_os.category_brief import compile_category_brief, entity_brief
-from surfaces.nora_os.jsutil import js_numbers
+from surfaces.nora_os.internal.category_brief import compile_category_brief, entity_brief
+from surfaces.nora_os.internal.jsutil import js_numbers
 from surfaces.nora_os.nora.extract.haiku import build_prompt, haiku_extractor, output_schema
 from surfaces.nora_os.nora.extract.index import extract_facts, graph_entity_type, validate_llm_items
 from surfaces.nora_os.nora.extract.match import host_tokens, match_vocabulary, normalize_value

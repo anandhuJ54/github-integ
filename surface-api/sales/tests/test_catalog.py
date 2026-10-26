@@ -15,7 +15,7 @@ from psycopg.types.json import Jsonb
 
 from _base.auth import current_user
 from _base.db import session as core_db
-from surfaces.sales.routers.catalog_data import router
+from surfaces.sales.catalog.router import router
 
 CLAIMS = {"sub": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa", "role": "authenticated"}
 PID = "11111111-1111-4111-8111-111111111111"

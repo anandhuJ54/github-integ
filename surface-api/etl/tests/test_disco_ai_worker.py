@@ -13,7 +13,7 @@ from surfaces.etl.disco import ai_worker_classify as cl
 from surfaces.etl.disco import ai_worker_discover as dc
 from surfaces.etl.disco import ai_worker_util as u
 from surfaces.etl.disco import ai_worker_v2 as v2m
-from surfaces.etl.routers.disco_ai_worker import router
+from surfaces.etl.disco_ai_worker.router import router
 
 
 class FakeCursor:

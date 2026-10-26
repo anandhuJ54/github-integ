@@ -12,7 +12,7 @@ from sales.tests.test_contracts import (
     sqls,
     table_of,
 )
-from surfaces.sales.routers.team_central_data import router
+from surfaces.sales.team_central.router import router
 
 P = "/sales/team-central"
 TID = "44444444-4444-4444-8444-444444444444"

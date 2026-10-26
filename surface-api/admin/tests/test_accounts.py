@@ -17,8 +17,8 @@ from psycopg.types.json import Jsonb
 
 from _base.auth import current_user
 from _base.db import session as core_db
-from surfaces.admin.queries import accounts as q
-from surfaces.admin.routers.accounts_data import router
+from surfaces.admin.account import services as q
+from surfaces.admin.account.router import router
 
 P = "/admin/accounts"
 UID = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa"

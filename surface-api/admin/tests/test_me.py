@@ -14,8 +14,8 @@ from _base.auth import current_user
 from _base.db import session as core_db
 from _base.db.sql import capped, compile_sql
 from _base.server_fn import optional_user
-from surfaces.admin.queries import me as q
-from surfaces.admin.routers.me import router
+from surfaces.admin.me import services as q
+from surfaces.admin.me.router import router
 
 UID = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa"
 CLAIMS = {"sub": UID, "role": "authenticated"}

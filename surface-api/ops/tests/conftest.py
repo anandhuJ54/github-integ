@@ -58,7 +58,7 @@ class FakeDB:
         return _cm()
 
 
-_MODULES = ("surfaces.ops.dev_weekly",)
+_MODULES = ("surfaces.ops.dev_weekly.services",)
 
 
 @pytest.fixture

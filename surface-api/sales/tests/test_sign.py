@@ -7,8 +7,8 @@ import psycopg
 import pytest
 
 from sales.tests.test_contracts import install_fake_db, make_client
-from surfaces.sales.queries import sign as q
-from surfaces.sales.routers.sign_public import router
+from surfaces.sales.sign import services as q
+from surfaces.sales.sign.router import router
 
 P = "/sales/sign"
 

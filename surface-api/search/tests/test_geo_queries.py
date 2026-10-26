@@ -11,8 +11,8 @@ from fastapi.testclient import TestClient
 from _base.db import session as core_db
 from _base.db.sql import capped, compile_sql
 from _base.server_fn import optional_user
-from surfaces.search.queries import geo as q
-from surfaces.search.routers.geo import router
+from surfaces.search.geo import services as q
+from surfaces.search.geo.router import router
 
 CLAIMS = {"sub": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa", "role": "authenticated"}
 

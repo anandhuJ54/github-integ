@@ -21,7 +21,7 @@ Counts are (reads/writes/rpc) as measured on 2026-10-23.
 2. Add tables to `_base/schema/generate.py`, then regenerate `tables.py`.
 3. Write the Core queries in `queries/<feature>.py` and the router with Pydantic response models.
 4. Run pytest with a fake connection, and a live read-only smoke test against GCP.
-5. Publish the contract: `uv run python -m _base.contracts <surface>`.
+5. Publish the contract: `uv run python -m app.contracts <surface>`.
 6. Switch the UI to `api.get/post`, keep the query keys, and check that `tsc` passes.
 7. Add a parity case in `surface-ui/parity/cases/<surface>.ts`; `bun run.ts <surface>` must PASS.
 8. Click through the screen in the app.

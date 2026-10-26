@@ -10,8 +10,8 @@ from fastapi.testclient import TestClient
 
 from _base.auth import current_user
 from _base.db import session as core_db
+from surfaces.nora_os.claim import router as claim_fn
 from surfaces.nora_os.router import router
-from surfaces.nora_os.routers import claim_fn
 
 USER = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa"
 PRO = "22222222-2222-4222-8222-222222222222"
@@ -166,7 +166,7 @@ def test_db_errors_surface_with_the_ts_message(dbfake):
 def test_rpc_sql_is_named_and_cast(dbfake):
     log, state = dbfake
     state["answer"] = lambda s, p: [{"result": ENT}]
-    from surfaces.nora_os.db import Db
+    from surfaces.nora_os.internal.db import Db
 
     out = Db("service_role").rpc(
         "exp_entity_for_record",

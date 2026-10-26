@@ -17,8 +17,8 @@ from psycopg.types.json import Jsonb
 
 from _base.auth import current_user
 from _base.db import session as core_db
-from surfaces.sales.queries import cpq as q
-from surfaces.sales.routers.cpq_data import router
+from surfaces.sales.cpq import services as q
+from surfaces.sales.cpq.router import router
 
 UID = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa"
 CLAIMS = {"sub": UID, "role": "authenticated"}

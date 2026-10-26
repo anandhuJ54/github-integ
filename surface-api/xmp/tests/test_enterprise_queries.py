@@ -6,7 +6,8 @@ import pytest
 from psycopg.types.json import Jsonb
 
 from _base.db.sql import capped, compile_sql
-from surfaces.xmp.queries import common, enterprise
+from surfaces.xmp import internal
+from surfaces.xmp.enterprise import services as enterprise
 
 PID = "11111111-1111-4111-8111-111111111111"
 OID = "22222222-2222-4222-8222-222222222222"
@@ -115,7 +116,7 @@ def test_deactivate_updates_then_audits_ignoring_the_audit_error():
 # --- RPC allow-list ----------------------------------------------------------------------------
 
 def test_set_returning_rpc_casts_and_caps():
-    s, p, rows = common.rpc_sql("exp_xmp_offices_page", {"p_brand": OID, "p_q": "", "p_state": "",
+    s, p, rows = internal.rpc_sql("exp_xmp_offices_page", {"p_brand": OID, "p_q": "", "p_state": "",
                                                          "p_limit": 25, "p_offset": 0})
     assert s == ("select * from public.exp_xmp_offices_page(p_brand => %(p_brand)s::uuid, "
                  "p_q => %(p_q)s::text, p_state => %(p_state)s::text, "
@@ -124,14 +125,14 @@ def test_set_returning_rpc_casts_and_caps():
 
 
 def test_scalar_rpc():
-    s, _, rows = common.rpc_sql("exp_xmp_brand_overview", {"p_brand": OID})
+    s, _, rows = internal.rpc_sql("exp_xmp_brand_overview", {"p_brand": OID})
     assert s.endswith("as v") and not rows
 
 
 def test_office_mode_moved_to_srp():
     # moved (surface audit 2026-10-25): exp_office_mode is in srp's allow-list now
-    with pytest.raises(common.UnknownRpc):
-        common.rpc_sql("exp_office_mode", {"p_entity_type": "professional", "p_entity_id": PID})
+    with pytest.raises(internal.UnknownRpc):
+        internal.rpc_sql("exp_office_mode", {"p_entity_type": "professional", "p_entity_id": PID})
 
 
 @pytest.mark.parametrize("name,args", [
@@ -140,5 +141,5 @@ def test_office_mode_moved_to_srp():
     ("exp_score_v5_persist", {}),
 ])
 def test_rpc_outside_the_allow_list_is_refused(name, args):
-    with pytest.raises(common.UnknownRpc):
-        common.rpc_sql(name, args)
+    with pytest.raises(internal.UnknownRpc):
+        internal.rpc_sql(name, args)

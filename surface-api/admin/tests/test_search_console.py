@@ -13,8 +13,8 @@ from fastapi.testclient import TestClient
 from _base.auth import current_user
 from _base.db import session as core_db
 from _base.db.sql import compile_sql
-from surfaces.admin.queries import voce_boost
-from surfaces.admin.routers.search_console import router
+from surfaces.admin.search_console import voce_boost
+from surfaces.admin.search_console.router import router
 
 AID = "11111111-1111-4111-8111-111111111111"
 CLAIMS = {"sub": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa", "role": "authenticated"}

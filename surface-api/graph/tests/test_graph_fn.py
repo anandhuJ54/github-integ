@@ -10,12 +10,10 @@ from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
 from _base.auth import current_user
+from surfaces.graph.category_boundary import router as category_boundary_fn
+from surfaces.graph.category_brief import router as category_brief_fn
+from surfaces.graph.expertise_schema import router as expertise_schema_fn
 from surfaces.graph.router import router
-from surfaces.graph.routers import (
-    category_boundary_fn,
-    category_brief_fn,
-    expertise_schema_fn,
-)
 
 CLAIMS = {"sub": "u-1", "role": "authenticated", "email": "a@x.com"}
 

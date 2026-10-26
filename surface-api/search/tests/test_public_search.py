@@ -14,10 +14,10 @@ from _base.auth import current_user
 from _base.db import session as core_db
 from _base.db.sql import capped, compile_sql
 from _base.server_fn import optional_user
-from surfaces.search.queries import public_search as q
-from surfaces.search.queries import voce as v
-from surfaces.search.routers.public_search import router as search_router
-from surfaces.search.routers.voce import router as voce_router
+from surfaces.search.public_search import services as q
+from surfaces.search.public_search.router import router as search_router
+from surfaces.search.voce import services as v
+from surfaces.search.voce.router import router as voce_router
 
 CLAIMS = {"sub": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa", "role": "authenticated"}
 AID = "11111111-1111-4111-8111-111111111111"

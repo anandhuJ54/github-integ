@@ -1,4 +1,4 @@
-"""Tests for surfaces.etl.deep_hydrate (fake psycopg connection; no DB, no network)."""
+"""Tests for surfaces.etl.deep_hydrate.services (fake psycopg connection; no DB, no network)."""
 from __future__ import annotations
 
 from typing import Any
@@ -8,7 +8,7 @@ from psycopg import sql as psql
 from psycopg.types.json import Jsonb
 
 from etl.tests.test_statefarm import HTML
-from surfaces.etl import deep_hydrate as dh
+from surfaces.etl.deep_hydrate import services as dh
 
 
 class FakeCursor:

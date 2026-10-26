@@ -1,8 +1,8 @@
 """Pure: HTML → CandidateFacts (port of lib/nora/organize/parse.ts). No network, no DB.
 
 Every parse step is the shared ETL code (the disco site contract's JSON-LD reader + formats, the
-sameAs / credential classifiers, via `surfaces.nora_os.disco`); this file only arranges their outputs into
-the interview's candidate shape. Nothing here is category-specific. cheerio → BeautifulSoup
+sameAs / credential classifiers, via `surfaces.nora_os.internal.disco`); this file only arranges
+their outputs into the interview's candidate shape. Nothing here is category-specific. cheerio → BeautifulSoup
 (`html.parser`); element text keeps script/style text and drops comments, as cheerio's .text().
 """
 from __future__ import annotations
@@ -14,8 +14,8 @@ from urllib.parse import urlsplit, urlunsplit
 from bs4 import BeautifulSoup, Comment, Declaration, Doctype, NavigableString, Tag
 from bs4.element import ProcessingInstruction
 
-from surfaces.nora_os import disco
-from surfaces.nora_os.jsutil import iso_now
+from surfaces.nora_os.internal import disco
+from surfaces.nora_os.internal.jsutil import iso_now
 
 TEXT_BLOCK_CAP = 150
 TEXT_CHAR_CAP = 20_000

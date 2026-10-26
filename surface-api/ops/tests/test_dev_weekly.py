@@ -5,7 +5,7 @@ from datetime import UTC, date, datetime
 
 import pytest
 
-from surfaces.ops import dev_weekly as dw
+from surfaces.ops.dev_weekly import services as dw
 
 MEMBERS = [
     {"id": "m1", "team_id": "t1", "name": "Ann", "role": "dev", "email": "ann@x.test"},

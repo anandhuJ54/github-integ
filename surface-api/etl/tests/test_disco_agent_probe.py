@@ -7,7 +7,7 @@ import pytest
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
-from surfaces.etl.routers import disco_agent_probe as probe
+from surfaces.etl.disco_agent_probe import router as probe
 
 
 @pytest.fixture

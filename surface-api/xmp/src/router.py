@@ -10,9 +10,9 @@ from __future__ import annotations
 
 from fastapi import APIRouter
 
-from surfaces.xmp.routers.directory_data import router as directory_data_router
-from surfaces.xmp.routers.enterprise_data import router as enterprise_data_router
-from surfaces.xmp.routers.health import router as health_router
+from surfaces.xmp.directory.router import router as directory_data_router
+from surfaces.xmp.enterprise.router import router as enterprise_data_router
+from surfaces.xmp.health.router import router as health_router
 
 router = APIRouter()
 router.include_router(health_router)

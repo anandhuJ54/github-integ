@@ -13,9 +13,9 @@ from sales.tests.test_contracts import (
     install_fake_db,
     make_client,
 )
-from surfaces.sales.queries import worklist as q
-from surfaces.sales.queries.contracts import UnknownRpc
-from surfaces.sales.routers.worklist_data import router
+from surfaces.sales.internal import UnknownRpc
+from surfaces.sales.worklist import services as q
+from surfaces.sales.worklist.router import router
 
 P = "/sales/worklist"
 

@@ -6,7 +6,7 @@ import time
 
 import pytest
 
-from surfaces.nora_os.runner import (
+from surfaces.nora_os.internal.runner import (
     SKILL_RUN_COLUMNS,
     CapabilityHandler,
     RunEntity,
@@ -21,7 +21,7 @@ from surfaces.nora_os.runner import (
     run_telemetry,
     status_for,
 )
-from surfaces.nora_os.sandbox import estimate_telemetry, model_label
+from surfaces.nora_os.internal.sandbox import estimate_telemetry, model_label
 
 NOW = dt.datetime(2026, 10, 11, tzinfo=dt.UTC)
 

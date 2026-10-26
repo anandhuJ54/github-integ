@@ -14,13 +14,13 @@ from __future__ import annotations
 
 from typing import Any
 
-from surfaces.nora_os.db import Db
-from surfaces.nora_os.jsutil import nz
+from surfaces.nora_os.internal.db import Db
+from surfaces.nora_os.internal.jsutil import nz
+from surfaces.nora_os.internal.runner import CapabilityHandler, HandlerContext, HandlerRegistry
 from surfaces.nora_os.nora.organize.costs import sum_costs
 from surfaces.nora_os.nora.organize.fetch_site import CRAWL_METHODS, fetch_site, hop2, owned_urls
 from surfaces.nora_os.nora.organize.gbp import gbp_lookup
 from surfaces.nora_os.nora.organize.web_sweep import web_sweep
-from surfaces.nora_os.runner import CapabilityHandler, HandlerContext, HandlerRegistry
 
 
 def _str(v: Any) -> str | None:

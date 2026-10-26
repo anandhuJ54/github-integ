@@ -11,8 +11,8 @@ import concurrent.futures
 import re
 from typing import Any
 
-from surfaces.nora_os import disco
-from surfaces.nora_os.jsutil import js_round
+from surfaces.nora_os.internal import disco
+from surfaces.nora_os.internal.jsutil import js_round
 from surfaces.nora_os.nora.organize.costs import UNIT_COST_USD
 from surfaces.nora_os.nora.organize.integrations import with_oxylabs
 from surfaces.nora_os.nora.organize.parse import _split, host_of, platform_of, registrable_domain

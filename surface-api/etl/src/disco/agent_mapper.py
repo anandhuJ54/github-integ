@@ -9,7 +9,7 @@ accepted (submit_config).
 Dry runs only: nothing is written to any table. A worker call stops about 4 minutes in and
 returns {status: 'continue', state}; the next call sends that state back and the research
 continues. The state is a JSON dict with the TS keys. The route lives in
-`surfaces.etl.routers.disco_agent_mapper`; `handle_request` here holds its logic.
+`surfaces.etl.disco_agent_mapper.router`; `handle_request` here holds its logic.
 
 Used by the disco-ai-worker port (`run_v2_research`, `run_v2_step`, `spread_profile_urls`,
 `V2_STEP_MS`) and the list worker (`oxy_fetch`).

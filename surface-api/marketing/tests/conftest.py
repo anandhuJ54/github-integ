@@ -59,10 +59,10 @@ class FakeDB:
 
 
 _MODULES = (
-    "surfaces.marketing.geo",
-    "surfaces.marketing.routers.home_fn",
-    "surfaces.marketing.routers.city_home_fn",
-    "surfaces.marketing.routers.public_site_fn",
+    "surfaces.marketing.internal.geo",
+    "surfaces.marketing.home.router",
+    "surfaces.marketing.city_home.router",
+    "surfaces.marketing.public_site.router",
 )
 
 

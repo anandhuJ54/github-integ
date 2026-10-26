@@ -19,8 +19,8 @@ from sales.tests.test_contracts import (
     install_fake_db,
     make_client,
 )
-from surfaces.sales.queries import csm as q
-from surfaces.sales.routers.csm_data import router
+from surfaces.sales.csm import services as q
+from surfaces.sales.csm.router import router
 
 P = "/sales/csm"
 

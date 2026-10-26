@@ -11,7 +11,7 @@ from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
 from _base.auth import current_user
-from surfaces.search.routers.engagement_fn import (
+from surfaces.search.engagement.router import (
     address_of,
     build_compare,
     merge_card_actions,
@@ -67,7 +67,7 @@ class FakeDB:
 def fake_db(monkeypatch):
     def install(responder: Callable[[str, Any], list[dict]]) -> FakeDB:
         db = FakeDB(responder)
-        from surfaces.search.routers import _sql
+        from surfaces.search.engagement import _sql
 
         monkeypatch.setattr(_sql, "role_connection", db.role_connection)
         return db

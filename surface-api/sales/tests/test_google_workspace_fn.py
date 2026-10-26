@@ -6,8 +6,8 @@ from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
 from _base.auth import current_user
+from surfaces.sales.google_workspace import router as google_workspace_fn
 from surfaces.sales.router import router
-from surfaces.sales.routers import google_workspace_fn
 
 CLAIMS = {"sub": "u-1", "role": "authenticated", "email": "Me@Corp.com"}
 OPP = "11111111-2222-3333-4444-555555555555"

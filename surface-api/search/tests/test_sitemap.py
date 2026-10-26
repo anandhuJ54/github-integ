@@ -8,14 +8,15 @@ from fastapi import FastAPI
 from fastapi.responses import Response
 from fastapi.testclient import TestClient
 
-from surfaces.search import robots, site_indexing, sitemap
-from surfaces.search.robots import (
+from surfaces.search import internal as site_indexing
+from surfaces.search.internal import parse_indexing_enabled
+from surfaces.search.sitemap import robots, sitemap
+from surfaces.search.sitemap.robots import (
     CONSOLE_PATH_PREFIXES,
     robots_txt,
     site_robots_header,
     site_robots_meta,
 )
-from surfaces.search.site_indexing import parse_indexing_enabled
 
 PARTS = [
     {"partition_key": "priority-high", "min_score": 650},
@@ -142,7 +143,7 @@ def test_switch_is_cached(fake_db):
 
 
 def _client():
-    from surfaces.search.routers.sitemap import router
+    from surfaces.search.sitemap.router import router
 
     app = FastAPI()
     app.include_router(router)

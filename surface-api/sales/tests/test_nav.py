@@ -18,8 +18,8 @@ from sales.tests.test_contracts import (
     sqls,
     table_of,
 )
-from surfaces.sales.queries import nav as q
-from surfaces.sales.routers.nav_data import router
+from surfaces.sales.nav import services as q
+from surfaces.sales.nav.router import router
 
 P = "/sales/nav"
 

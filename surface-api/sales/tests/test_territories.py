@@ -22,9 +22,9 @@ from sales.tests.test_contracts import (
     make_client,
     sqls,
 )
-from surfaces.sales.queries import territories as q
-from surfaces.sales.queries.contracts import UnknownRpc
-from surfaces.sales.routers.territories_data import router
+from surfaces.sales.internal import UnknownRpc
+from surfaces.sales.territory import services as q
+from surfaces.sales.territory.router import router
 
 P = "/sales/territories"
 ORG = "33333333-3333-4333-8333-333333333333"

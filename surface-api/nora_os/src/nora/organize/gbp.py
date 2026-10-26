@@ -10,7 +10,7 @@ from urllib.parse import quote
 
 import httpx
 
-from surfaces.nora_os import disco
+from surfaces.nora_os.internal import disco
 from surfaces.nora_os.nora.organize.costs import UNIT_COST_USD
 from surfaces.nora_os.nora.organize.integrations import with_integration
 from surfaces.nora_os.nora.organize.web_sweep import token_share

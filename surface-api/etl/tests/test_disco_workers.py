@@ -14,13 +14,11 @@ from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
 from surfaces.etl.disco import contract_row as cr
-from surfaces.etl.routers import (
-    disco_detail_api_worker,
-    disco_harvest_worker,
-    disco_list_worker,
-    disco_staging_backfill,
-    disco_webscraper_worker,
-)
+from surfaces.etl.disco_detail_api_worker import router as disco_detail_api_worker
+from surfaces.etl.disco_harvest_worker import router as disco_harvest_worker
+from surfaces.etl.disco_list_worker import router as disco_list_worker
+from surfaces.etl.disco_staging_backfill import router as disco_staging_backfill
+from surfaces.etl.disco_webscraper_worker import router as disco_webscraper_worker
 
 KEY = {"x-disco-worker-key": "k"}
 

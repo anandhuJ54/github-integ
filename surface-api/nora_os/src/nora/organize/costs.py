@@ -7,7 +7,7 @@ from __future__ import annotations
 
 import os
 
-from surfaces.nora_os.jsutil import js_round
+from surfaces.nora_os.internal.jsutil import js_round
 
 UNIT_COST_USD = {
     # Oxylabs Web Scraper API, source "universal", no JS render.

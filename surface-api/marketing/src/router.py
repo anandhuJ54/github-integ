@@ -4,17 +4,18 @@ City home, home data and CMS page reads moved here from srp, surface audit 2026-
 Demand engine API (/website/* pages and the site navigation menus) moved here from xmp, same
 audit.
 
-The app mounts only this. Include new marketing sub-routers here, not in app.py.
+The app mounts only this. Include each resource folder's router here (one include per
+router), not in app.py. No endpoints here.
 """
 from __future__ import annotations
 
 from fastapi import APIRouter
 
-from surfaces.marketing.routers.city_home_fn import router as city_home_fn_router
-from surfaces.marketing.routers.health import router as health_router
-from surfaces.marketing.routers.home_fn import router as home_fn_router
-from surfaces.marketing.routers.public_site_fn import router as public_site_fn_router
-from surfaces.marketing.routers.website_data import router as website_data_router
+from surfaces.marketing.city_home.router import router as city_home_fn_router
+from surfaces.marketing.health.router import router as health_router
+from surfaces.marketing.home.router import router as home_fn_router
+from surfaces.marketing.public_site.router import router as public_site_fn_router
+from surfaces.marketing.website.router import router as website_data_router
 
 router = APIRouter()
 router.include_router(health_router)

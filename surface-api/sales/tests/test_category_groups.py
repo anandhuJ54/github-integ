@@ -16,7 +16,7 @@ from sales.tests.test_contracts import (
     make_client,
     sqls,
 )
-from surfaces.sales.routers.category_groups_data import router
+from surfaces.sales.category_group.router import router
 
 P = "/sales/category-groups"
 

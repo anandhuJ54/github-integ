@@ -20,9 +20,9 @@ from sales.tests.test_contracts import (
     make_client,
     sqls,
 )
-from surfaces.sales.queries import alerts as q
-from surfaces.sales.queries.contracts import UnknownRpc
-from surfaces.sales.routers.alerts_data import router
+from surfaces.sales.alert import services as q
+from surfaces.sales.alert.router import router
+from surfaces.sales.internal import UnknownRpc
 
 P = "/sales/alerts"
 OPP = "44444444-4444-4444-8444-444444444444"

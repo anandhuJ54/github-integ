@@ -1,9 +1,9 @@
-"""Tests for surfaces.etl.statefarm (pure parser)."""
+"""Tests for surfaces.etl.deep_hydrate.statefarm (pure parser)."""
 from __future__ import annotations
 
 import json
 
-from surfaces.etl import statefarm as sf
+from surfaces.etl.deep_hydrate import statefarm as sf
 
 LD = {
     "@type": ["InsuranceAgency"],

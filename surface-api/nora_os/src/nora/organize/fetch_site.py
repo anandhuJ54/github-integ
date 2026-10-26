@@ -9,8 +9,8 @@ import concurrent.futures
 import re
 from typing import Any
 
-from surfaces.nora_os import disco
-from surfaces.nora_os.jsutil import iso_now, message
+from surfaces.nora_os.internal import disco
+from surfaces.nora_os.internal.jsutil import iso_now, message
 from surfaces.nora_os.nora.organize.costs import scrape_cost
 from surfaces.nora_os.nora.organize.parse import parse_candidate_facts
 

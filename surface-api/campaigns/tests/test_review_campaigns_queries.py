@@ -3,7 +3,7 @@
 2026-10-25."""
 from __future__ import annotations
 
-from surfaces.campaigns.queries import review_campaigns as q
+from surfaces.campaigns.review_campaign import services as q
 
 PID = "11111111-1111-4111-8111-111111111111"
 OID = "22222222-2222-4222-8222-222222222222"

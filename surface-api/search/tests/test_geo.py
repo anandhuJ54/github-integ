@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import pytest
 
-from surfaces.search import geo
+from surfaces.search.geo import geo
 
 CF = {
     "cf-ipcity": "San%20Ramon",

@@ -9,8 +9,8 @@ from __future__ import annotations
 
 from fastapi import APIRouter
 
-from surfaces.campaigns.routers.health import router as health_router
-from surfaces.campaigns.routers.review_campaigns import router as review_campaigns_router
+from surfaces.campaigns.health.router import router as health_router
+from surfaces.campaigns.review_campaign.router import router as review_campaigns_router
 
 router = APIRouter()
 router.include_router(health_router)

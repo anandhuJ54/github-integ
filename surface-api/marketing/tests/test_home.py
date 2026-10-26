@@ -1,8 +1,8 @@
 """getHomeData and the search-document helpers it uses (moved from srp, surface audit 2026-10-25)."""
 from __future__ import annotations
 
-from surfaces.marketing.routers.home_fn import build_home
-from surfaces.marketing.search_docs import decode_name, jitter, with_coordinates
+from surfaces.marketing.home.router import build_home
+from surfaces.marketing.internal.search_docs import decode_name, jitter, with_coordinates
 
 CF = {
     "cf-ipcity": "San%20Ramon",

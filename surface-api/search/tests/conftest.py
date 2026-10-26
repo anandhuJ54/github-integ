@@ -59,11 +59,11 @@ class FakeDB:
 
 
 _MODULES = (
-    "surfaces.search.site_indexing",
-    "surfaces.search.presentation",
-    "surfaces.search.geo",
-    "surfaces.search.sitemap",
-    "surfaces.search.routers.public_site_fn",
+    "surfaces.search.internal",
+    "surfaces.search.search_presentation.presentation",
+    "surfaces.search.geo.geo",
+    "surfaces.search.sitemap.sitemap",
+    "surfaces.search.public_site.router",
 )
 
 
@@ -71,7 +71,7 @@ _MODULES = (
 def fake_db(monkeypatch):
     import importlib
 
-    from surfaces.search import site_indexing as indexing
+    from surfaces.search import internal as indexing
 
     indexing.reset_site_indexing_cache()
 

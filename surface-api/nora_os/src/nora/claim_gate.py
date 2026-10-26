@@ -19,7 +19,7 @@ from dataclasses import dataclass, field
 from typing import Any
 from urllib.parse import urlsplit
 
-from surfaces.nora_os.jsutil import date_ms, now_ms
+from surfaces.nora_os.internal.jsutil import date_ms, now_ms
 
 TIERS = (0, 1, 2)
 TIER_LABEL = {

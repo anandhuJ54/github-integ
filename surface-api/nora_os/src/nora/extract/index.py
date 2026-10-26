@@ -9,7 +9,7 @@ from __future__ import annotations
 
 from collections.abc import Callable
 
-from surfaces.nora_os.category_brief import entity_brief
+from surfaces.nora_os.internal.category_brief import entity_brief
 from surfaces.nora_os.nora.extract.deterministic import deterministic_facts, to_proposal
 from surfaces.nora_os.nora.extract.match import (
     item_prop_for,

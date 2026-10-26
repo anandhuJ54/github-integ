@@ -4,7 +4,7 @@ from __future__ import annotations
 from datetime import UTC, datetime
 from decimal import Decimal
 
-from surfaces.marketing.routers.city_home_fn import (
+from surfaces.marketing.city_home.router import (
     build_collections,
     pick_sponsored,
     split_area,

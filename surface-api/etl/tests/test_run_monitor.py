@@ -9,7 +9,7 @@ from fastapi.testclient import TestClient
 
 from _base.auth import current_user
 from _base.db import session as core_db
-from surfaces.etl.routers.run_monitor import router
+from surfaces.etl.run_monitor.router import router
 
 CLAIMS = {"sub": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa", "role": "authenticated"}
 
@@ -128,7 +128,7 @@ def test_reads_as_the_user_and_builds_the_monitor(calls):
 
 
 def test_zero_totals_do_not_divide(calls, monkeypatch):
-    from surfaces.etl.queries import run_monitor as q
+    from surfaces.etl.run_monitor import services as q
 
     monkeypatch.setattr(q, "staging_counts",
                         lambda c: {"total": 0, "processed": 0, "remaining": 0, "flagged": 0})

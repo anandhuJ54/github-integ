@@ -1,11 +1,14 @@
 # Shared core: _base
 
 Not a numbered Surface — this is the **shared runtime** every Surface imports
-(`surface-api/_base/`: app factory, auth, db access, compliance). Rules here are
-stricter-or-equal to the root `AGENTS.md`; nothing here loosens it.
+(`surface-api/_base/`: auth, db access, compliance; the app shell is `surface-api/app/`). Rules
+here are stricter-or-equal to the root `AGENTS.md`; nothing here loosens it.
 
-- `surface-api/_base/`  — shared Python runtime (`app_factory.py`, `core/auth.py`,
-  `core/db.py`, `core/compliance.py`). Imported by every Surface's `surface-api/<surface>/`.
+- `surface-api/_base/`  — shared Python runtime (`auth.py`, `config.py`, `server_fn.py`,
+  `compliance.py`, `db/session.py`, `db/sql.py`, `db/tables.py`, `disco/`, `integrations/`).
+  Imported by every Surface's `surface-api/<surface>/src/`. It never imports `app` or a Surface
+  (`surface-api/tests/test_boundaries.py`).
+- `surface-api/app/`   — app shell (`main.py`, `routes.py`, `surfaces.py`, `contracts.py`).
 - `surface-spec/_base/` — this file, `CONTEXT.md`, and one folder per shared-core increment
   (`<increment>/intent.md spec.md plan.md evidence.md`).
 

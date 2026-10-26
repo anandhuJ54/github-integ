@@ -14,7 +14,13 @@ from urllib.parse import parse_qsl, urlencode, urljoin, urlsplit, urlunsplit
 
 import pytest
 
-from surfaces.nora_os import disco
+from surfaces.nora_os.internal import disco
+from surfaces.nora_os.internal.runner import (
+    CapabilityHandler,
+    HandlerContext,
+    RunEntity,
+    dispatch_capabilities,
+)
 from surfaces.nora_os.nora.organize import costs, handlers, parse, web_sweep
 from surfaces.nora_os.nora.organize.costs import scrape_cost, sum_costs
 from surfaces.nora_os.nora.organize.fetch_site import hop2, owned_urls
@@ -30,12 +36,6 @@ from surfaces.nora_os.nora.organize.web_sweep import (
     dedupe_key,
     organic_rows,
     sweep_queries,
-)
-from surfaces.nora_os.runner import (
-    CapabilityHandler,
-    HandlerContext,
-    RunEntity,
-    dispatch_capabilities,
 )
 
 FIX = Path(__file__).resolve().parent / "fixtures" / "organize"

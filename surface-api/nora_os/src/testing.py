@@ -1,4 +1,4 @@
-"""A scripted stand-in for surfaces.nora_os.db.Db: routes SQL (by substring) to canned rows."""
+"""A scripted stand-in for surfaces.nora_os.internal.db.Db: routes SQL (by substring) to canned rows."""
 from __future__ import annotations
 
 import json
@@ -6,7 +6,7 @@ from collections.abc import Callable
 from pathlib import Path
 from typing import Any
 
-from surfaces.nora_os.db import DbError
+from surfaces.nora_os.internal.db import DbError
 
 FIXTURES = Path(__file__).resolve().parents[1] / "tests" / "fixtures"
 

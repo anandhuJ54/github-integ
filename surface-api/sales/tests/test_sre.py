@@ -19,8 +19,8 @@ from sales.tests.test_contracts import (
     sqls,
     table_of,
 )
-from surfaces.sales.queries import sre as q
-from surfaces.sales.routers.sre_data import router
+from surfaces.sales.sre import services as q
+from surfaces.sales.sre.router import router
 
 P = "/sales/sre"
 REP = "c1000000-0000-4000-8000-000000000001"
