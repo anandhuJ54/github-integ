@@ -71,8 +71,9 @@ surface-api/           self-contained Python/FastAPI project (its own pyproject.
   _base/               shared runtime: auth.py, config.py, server_fn.py, compliance.py,
                        db/ (session.py, sql.py, tables.py), disco/, integrations/, tests/
   tests/               cross-cutting guards: Surface boundaries, routes, app wiring
-  migrate.py           migration runner (cd surface-api && python -m migrate status|apply)
-  migrations/          the ONE shared migration history: NNNN_*.sql + meta/_journal.json
+  alembic.ini          one Alembic branch per Surface (+ _base); env in alembic_env/ (uv run alembic upgrade heads)
+  migrate.py           runner for the closed SQL stream (python -m migrate status|apply)
+  migrations/          closed SQL stream NNNN_*.sql + meta/_journal.json (no new files)
   <surface>/           one folder per Surface (snake_case), private to it
     src/               Python package `surfaces.<surface>`
       router.py        aggregate router: includes each resource router, no endpoints
@@ -80,7 +81,7 @@ surface-api/           self-contained Python/FastAPI project (its own pyproject.
       internal.py      helpers shared by two or more of its resource folders
       <resource>/      router.py (endpoints) · schemas.py (request/response) · services.py (queries, logic)
     tests/             test_*.py + conftest.py
-    db/migrations/     reserved for this Surface's migrations (empty; migrate.py reads only migrations/ today)
+    db/migrations/     this Surface's Alembic branch (hand-written SQL revisions)
 surface-ui/            self-contained React SPA workspace (its own package.json, bun workspaces)
   _base/               shared design system (@v3/ui)
   <surface>/           one React app per Surface (kebab-case), private to it
@@ -185,9 +186,14 @@ tools/                 enforcement (lint, ci, hooks) — plain stdlib Python, ru
   (e.g. graph, sales, marketing) can ship separately while sharing `surface-api/_base`, `surface-ui/_base` and
   one database.
 - **Migrations:**
-  - **One shared database ⇒ one migration history:** write them in `surface-api/migrations/NNNN_*.sql` with a
-    `meta/_journal.json` entry; apply with `cd surface-api && python -m migrate`. A Surface logically owns its
-    tables (naming + `rls-grant-review`), but the physical migration stream is singular and common.
+  - **One shared database, one Alembic branch per Surface:** a Surface writes its migrations as Alembic
+    revisions in `surface-api/<surface>/db/migrations/` (branch label = Surface name; shared core uses
+    `_base/db/migrations/`). Revisions are hand-written SQL (`op.execute`), and declare `depends_on` for any
+    table another branch creates. Each branch starts from the `_base` baseline revision. Apply with
+    `cd surface-api && uv run alembic upgrade heads` (`--sql` to review first). `surface-api/tests/test_migrations.py`
+    checks folders, branches and heads.
+  - The older numbered SQL stream `surface-api/migrations/NNNN_*.sql` (+ `meta/_journal.json`, `migrate.py`) is
+    **closed**: no new files. The `_base` baseline refuses to run until all of it is applied.
     `supabase/migrations/` is historical.
   - Never edit an applied migration.
   - Merged migrations are **not** applied automatically. Apply them through a human-approved step: backup (`zz_backup_*`), apply, verify by JOIN, then log.

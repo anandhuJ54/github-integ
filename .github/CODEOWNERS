@@ -12,6 +12,8 @@
 /surface-api/app/             @BuyersRoad/eng-core
 /surface-api/tests/           @BuyersRoad/eng-core
 /surface-api/pyproject.toml   @BuyersRoad/eng-core
+/surface-api/alembic.ini      @BuyersRoad/eng-core
+/surface-api/alembic_env/     @BuyersRoad/eng-core
 /surface-ui/_base/            @BuyersRoad/eng-core
 /surface-api/migrations/      @BuyersRoad/eng-core
 /reference/                   @BuyersRoad/eng-core

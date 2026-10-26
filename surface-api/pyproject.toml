@@ -17,6 +17,8 @@ dependencies = [
     "beautifulsoup4>=4.12",
     "websockets>=13",
     "sqlalchemy>=2.0,<2.1",
+    # Migrations per Surface: one Alembic branch per `<name>/db/migrations/` (alembic.ini).
+    "alembic>=1.13",
 ]
 
 [build-system]
