@@ -46,6 +46,8 @@ jobs:
             bunx tsc --noEmit -p "$dir/tsconfig.json"
             echo "::endgroup::"
           done
+      - name: UI tests (bun test, surface-ui; includes the layout and store guards)
+        run: cd surface-ui && bun test
 
       # --- Security / canon / migration / boundary lint (ratchet) ---
       # Enforcement tooling is plain stdlib Python, run with python3 (no project).

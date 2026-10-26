@@ -29,7 +29,7 @@ step "Frontend: surface-ui (bun install)"
 (cd "$ROOT/surface-ui" && bun install)
 
 step "Env files"
-for pair in "surface-api/env.example:surface-api/.env" "surface-ui/app/env.example:surface-ui/app/.env"; do
+for pair in "surface-api/env.example:surface-api/.env" "surface-ui/env.example:surface-ui/.env"; do
   src="$ROOT/${pair%%:*}"
   dst="$ROOT/${pair##*:}"
   if [ -f "$dst" ]; then
@@ -44,22 +44,25 @@ if $CHECK; then
   step "Checks: backend lint and tests"
   (cd "$ROOT/surface-api" && uv run ruff check . && uv run pytest -q)
 
-  step "Checks: UI typecheck (every app)"
+  step "Checks: UI typecheck (the composed app, then every Surface) and UI tests"
   (
     cd "$ROOT/surface-ui"
+    echo "tsc ."
+    bunx tsc --noEmit -p .
     for d in */; do
-      [ -f "$d/tsconfig.json" ] && [ "$d" != _base/ ] || continue
+      [ -f "$d/tsconfig.json" ] || continue
       echo "tsc $d"
       bunx tsc --noEmit -p "$d"
     done
+    bun test
   )
 fi
 
 cat <<'EOF'
 
 Done. Next:
-  1. Fill in surface-api/.env and surface-ui/app/.env (real values from the team's secret store).
+  1. Fill in surface-api/.env and surface-ui/.env (real values from the team's secret store).
   2. Start the API:  cd surface-api && uv run --env-file .env uvicorn app:app --reload --port 8000
-  3. Start the UI:   cd surface-ui/app && bun dev          (http://localhost:5173)
+  3. Start the UI:   cd surface-ui && bun dev              (http://localhost:5173)
 Guide: surface-api/docs/DEVELOPER_GUIDE.md
 EOF

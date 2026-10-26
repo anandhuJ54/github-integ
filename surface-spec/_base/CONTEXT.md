@@ -20,5 +20,9 @@ the one shared Supabase Postgres and the RLS context that goes with each request
 ## Open questions
 - Shared-runtime **ownership** is unassigned (root `AGENTS.md` §5). Shared-core PRs need
   all-Surface review until an owner exists.
+- **Needs a decision:** the UI's shared access state (`surface-ui/state/access/thunks.ts`) calls admin's
+  `/admin/me/grants`, `/admin/me/bootstrap` and `/admin/me/audit`, so shared core depends on the admin Surface.
+  Options: record it as the one shared-core exception, or serve `/me/*` from `surface-api/_base`. Identity
+  ownership is unassigned (root `AGENTS.md` §5).
 - Connection scaling: single DB, fresh connection per call, no pool
   (see increment `db-read-write-split`).

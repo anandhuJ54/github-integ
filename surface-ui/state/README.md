@@ -18,6 +18,28 @@ const { activeRole, canEdit, activeGrant } = useAccess();
 ```
 `useRole()` and `useImpersonation()` still work as before; they now read this store.
 
+## What goes in the store (and what doesn't)
+| Kind of state | Where it lives |
+|---|---|
+| Data from the API (lists, records, counts) | **React Query** (`useQuery` / `useMutation`), never the store. One cache, refetched and invalidated in one place. |
+| Browser-only state of one Surface (filters, wizard step, open panel, unsaved draft) | that Surface's slice in `<surface>/src/state/` |
+| Who is signed in, the active grant and role, impersonation | the app-level slices (`useSession`, `useAccess`) |
+
+A Surface's `src/state/` makes no API calls (`api.get/post`, `serverFn`, `fetch`, `createAsyncThunk`).
+The store is not a security control: the API and the database check every permission.
+
+`surface-ui/state/boundaries.test.ts` (run by `bun test`, in `core-gates`) checks that:
+- a Surface imports only `@v3/shared`, `@v3/state`, `@v3/theme` and itself, never another Surface or `@v3/shell`;
+- `shared/`, `state/` and `theme/` import no Surface and no shell;
+- a Surface's slice is named after its folder, and its selectors read only its own slice plus
+  `session`, `access` and `impersonation`;
+- a Surface's `src/state/` loads no API data.
+
+**Needs a decision:** the app-level access state calls admin's API (`GET /admin/me/grants`,
+`POST /admin/me/bootstrap`, `POST /admin/me/audit` in `access/thunks.ts`), so shared core depends on the
+admin Surface. Options: record it as the one shared-core exception, or serve `/me/*` from `surface-api/_base`.
+Until then, keep any new identity call out of `state/` (see `surface-spec/_base/CONTEXT.md`).
+
 ## Adding a Surface slice
 ```ts
 // campaigns/src/state/campaigns.slice.ts
