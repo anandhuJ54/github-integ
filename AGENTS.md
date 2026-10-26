@@ -80,6 +80,7 @@ surface-api/           self-contained Python/FastAPI project (its own pyproject.
       internal.py      helpers shared by two or more of its resource folders
       <resource>/      router.py (endpoints) · schemas.py (request/response) · services.py (queries, logic)
     tests/             test_*.py + conftest.py
+    db/migrations/     reserved for this Surface's migrations (empty; migrate.py reads only migrations/ today)
 surface-ui/            self-contained React SPA workspace (its own package.json, bun workspaces)
   _base/               shared design system (@v3/ui)
   <surface>/           one React app per Surface (kebab-case), private to it
