@@ -3,7 +3,7 @@
  * What NORA does on her own, when she works, and what she can touch. All values are demo state.
  */
 import { useState, type ReactNode } from "react";
-import { DANA } from "../demo-data";
+import { PERSONA } from "../demo-data";
 import { HappyflowShell, Toggle, useHf, type Think } from "../shell";
 import { Ic, NoraFace, Tick } from "../primitives";
 import type { HfIconName } from "../icons";
@@ -101,7 +101,7 @@ const CFG0: Cfg = {
   t_z: "Read only",
   t_yt: "Read only",
   v_tone: "Warm",
-  v_sign: "— Dana",
+  v_sign: "— Alex",
   v_avoid: ["guarantee", "lowest rate", "best rate", "instant approval"],
   v_eho: true,
   n_text: true,
@@ -120,7 +120,7 @@ const CFG0: Cfg = {
 
 const MEM: [string, string][] = [
   ["You check in weekdays, early morning", "Interview · Oct 16"],
-  ["The Dana Whitfield in Tampa isn't you", "Interview · Oct 16"],
+  ["The Alex Sample in Tampa isn't you", "Interview · Oct 16"],
   ["You don't offer reverse mortgages or non-QM", "Interview · Oct 16"],
   ["Your office line is (563) 555-0100, not the old branch line", "Interview · Oct 16"],
   ["You prefer short replies without exclamation marks", "Learned from your edits"],
@@ -228,7 +228,7 @@ function SettingsBody() {
       [
         ["In the app", "Cards in Needs you", tog("ap_app")],
         ["By text", "Reply YES to (563) 555-0144", tog("ap_text")],
-        ["By email", "dana.whitfield@demomortgage.com", tog("ap_email")],
+        ["By email", "alex.sample@demomortgage.com", tog("ap_email")],
         [
           "If you don’t answer",
           "I can go ahead after a while. Sensitive items always wait.",
@@ -286,7 +286,7 @@ function SettingsBody() {
           "Replies, posts, hours, photos",
           seg("t_gbp", ["Read only", "Can act"]),
         ],
-        ["Website", "demomortgage.com/dana-whitfield", seg("t_web", ["Read only", "Can act"])],
+        ["Website", "demomortgage.com/alex-sample", seg("t_web", ["Read only", "Can act"])],
         ["LinkedIn", "Photo, title, credentials", seg("t_li", ["Read only", "Can act"])],
         ["Facebook", "Posts and messages", seg("t_fb", ["Read only", "Can act"])],
         ["Zillow", "Reviews shown on your profile", seg("t_z", ["Read only", "Can act"])],
@@ -331,7 +331,7 @@ function SettingsBody() {
       "How I reach you, and what counts as urgent.",
       [
         ["Text", "(563) 555-0144", tog("n_text")],
-        ["Email", "dana.whitfield@demomortgage.com", tog("n_email")],
+        ["Email", "alex.sample@demomortgage.com", tog("n_email")],
         ["A 1–3★ review", "Right away, even in quiet hours", tog("n_neg")],
         ["A connection is about to expire", "A few days before", tog("n_exp")],
         ["A competitor passes you", "In the map or the score", tog("n_comp")],
@@ -407,7 +407,7 @@ function SettingsBody() {
       [
         [
           "Recovery email",
-          DANA.email,
+          PERSONA.email,
           act("Change", () =>
             hf.openSheet(
               {
@@ -418,13 +418,13 @@ function SettingsBody() {
                 nora: "We send a confirmation link to the new address before it takes over.",
                 done: "Check your inbox to confirm the new recovery email",
               },
-              DANA.email,
+              PERSONA.email,
             ),
           ),
         ],
         [
           "Phone number",
-          `${DANA.mobile} · sign-in codes and texts`,
+          `${PERSONA.mobile} · sign-in codes and texts`,
           act("Change", () =>
             hf.openSheet(
               {
@@ -435,7 +435,7 @@ function SettingsBody() {
                 nora: "We text a code to confirm the new number.",
                 done: "Code sent",
               },
-              DANA.mobile,
+              PERSONA.mobile,
             ),
           ),
         ],
@@ -445,7 +445,7 @@ function SettingsBody() {
           act("Reset password", () =>
             hf.openSheet({
               title: "Reset your password?",
-              body: `We will email a reset link to ${DANA.email}. The link works once and expires after an hour.`,
+              body: `We will email a reset link to ${PERSONA.email}. The link works once and expires after an hour.`,
               cta: "Send reset link",
               nora: "Your profile, reviews and connections are not affected.",
               done: "Reset link sent",

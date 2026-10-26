@@ -1,15 +1,15 @@
 /**
- * Screen 9 · Website Analytics — audits Dana's own page and turns each failure into a fix
+ * Screen 9 · Website Analytics — audits Alex's own page and turns each failure into a fix
  * NORA can hand to her webmaster. Ported 1:1 from the Happyflow prototype (SRP App, `sWeb`).
  */
 import { createContext, useContext, useEffect, useRef, useState } from "react";
-import { DANA } from "../demo-data";
+import { PERSONA } from "../demo-data";
 import { HappyflowShell, useHf, type Think } from "../shell";
 import { HealthGauge, Hov, Ic, NoraFace } from "../primitives";
 import type { HfIconName } from "../icons";
 
 // Demo data (Happyflow prototype)
-const HEAD = ["Website Analytics", DANA.site] as const;
+const HEAD = ["Website Analytics", PERSONA.site] as const;
 
 const SENT_TOAST = "Sent to your webmaster with the code attached";
 
@@ -78,7 +78,7 @@ const HANDOFF = ["Sent", "Opened by webmaster", "Installed", "Verified on your p
 
 const CODE = `<script type="application/ld+json">
 { "@type": "FinancialService",
-  "name": "Dana Whitfield – Demo Mortgage",
+  "name": "Alex Sample – Demo Mortgage",
   "telephone": "(563) 555-0100",
   "address": "100 Main St, Davenport, IA 52801" }
 </script>`;

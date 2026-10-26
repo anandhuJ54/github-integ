@@ -1,8 +1,8 @@
 /**
  * NORA home, first session (screen 4) — Happyflow prototype "Dashboard", variant B.
  *
- * NORA flies in from the top left ("Hi Dana. I'm here when you need me."), settles into the
- * launcher (desktop) or the bottom bar (mobile), then finishes her first task in front of Dana:
+ * NORA flies in from the top left ("Hi Alex. I'm here when you need me."), settles into the
+ * launcher (desktop) or the bottom bar (mobile), then finishes her first task in front of Alex:
  * "Adding your Google category and services" → Done · +6 points, score 384 → 390.
  * Demo data only; nothing is read from or written to the database.
  */
@@ -15,7 +15,7 @@ import {
   type ReactNode,
 } from "react";
 import { HappyflowShell, useHf, type Think, HF_NORA_UI } from "../shell";
-import { DANA, GRID, RIVERBEND_SCORE, SCORE_AT_LANDING } from "../demo-data";
+import { PERSONA, GRID, RIVERBEND_SCORE, SCORE_AT_LANDING } from "../demo-data";
 import {
   Hov,
   Ic,
@@ -235,7 +235,7 @@ export function HomeDay1Screen() {
       screen="home"
       day={1}
       home
-      title={`${greet}, ${DANA.first}`}
+      title={`${greet}, ${PERSONA.first}`}
       sub={<HomeSub />}
       hideLauncher={intro !== "done"}
       nora={{
@@ -557,7 +557,7 @@ function Arrival({
                 animation: "hf-pop .45s cubic-bezier(.2,.8,.2,1) both",
               }}
             >
-              Hi Dana. <b>I&apos;m here when you need me.</b>
+              Hi Alex. <b>I&apos;m here when you need me.</b>
             </div>
           </div>
         ) : null}
@@ -799,14 +799,14 @@ function HomeBody({
             >
               <span style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13 }}>
                 <img
-                  src={DANA.photo}
+                  src={PERSONA.photo}
                   alt=""
                   style={{
                     width: 30,
                     height: 30,
                     borderRadius: "50%",
                     objectFit: "cover",
-                    objectPosition: DANA.photoPos,
+                    objectPosition: PERSONA.photoPos,
                     boxShadow: "0 0 0 2px #fff,0 0 0 3.5px #1a73e8",
                   }}
                 />

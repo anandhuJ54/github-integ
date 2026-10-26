@@ -23,7 +23,7 @@ type Lane = {
   lane: string;
   icon: HfIconName;
   status: LaneStatus;
-  /** Points allocated to the lane (the 11 lanes add up to 850). */
+  /** Points allocated to the lane (the 10 SRS v5 lanes add up to 850). */
   max: number;
   /** Points still open in the lane; earned = max − pts. */
   pts: number;
@@ -32,19 +32,31 @@ type Lane = {
   to: LaneTo;
 };
 
+// The 10 SRS v5 lanes and their budgets (AGENTS.md §3; docs/PLATFORM_HANDOFF_2026-10-12.md §2.6): 850 points in all.
+// `pts` (points still open) and the comparisons are sample values; they add up to 460 open, so 390 are earned.
 const LANES: Lane[] = [
+  {
+    lane: "Completeness",
+    icon: "user",
+    status: "Fix",
+    max: 182,
+    pts: 105,
+    cmp: "Bio thin, service areas missing, NMLS only vs 3 designations",
+    act: "Fill my profile",
+    to: "profile",
+  },
   {
     lane: "Articles",
     icon: "pen",
     status: "Missing",
-    max: 85,
+    max: 103,
     pts: 85,
     cmp: "0 vs 14 articles",
     act: "Start publishing",
     to: "voce",
   },
   {
-    lane: "Website + schema",
+    lane: "Website",
     icon: "code",
     status: "Fix",
     max: 102,
@@ -54,34 +66,24 @@ const LANES: Lane[] = [
     to: "website",
   },
   {
-    lane: "Completeness",
-    icon: "user",
+    lane: "Directories",
+    icon: "pin",
+    status: "Fix · locked",
+    max: 90,
+    pts: 48,
+    cmp: "9 consistent vs 28",
+    act: "Unlock Listings",
+    to: "Billing",
+  },
+  {
+    lane: "Connections",
+    icon: "share",
     status: "Fix",
-    max: 153,
-    pts: 55,
-    cmp: "Bio thin, service areas missing",
-    act: "Fill my profile",
-    to: "profile",
-  },
-  {
-    lane: "Credentials",
-    icon: "award",
-    status: "Missing",
-    max: 68,
-    pts: 50,
-    cmp: "NMLS only vs 3 designations",
-    act: "Add credentials",
-    to: "profile",
-  },
-  {
-    lane: "Posts",
-    icon: "msgsq",
-    status: "Missing",
     max: 51,
     pts: 47,
-    cmp: "2 vs 11 posts in 90 days",
-    act: "Draft my posts",
-    to: "voce",
+    cmp: "2 vs 5 connected accounts",
+    act: "Connect accounts",
+    to: "connections",
   },
   {
     lane: "Reviews",
@@ -94,47 +96,37 @@ const LANES: Lane[] = [
     to: "reviews",
   },
   {
-    lane: "Directories",
-    icon: "pin",
-    status: "Fix · locked",
-    max: 51,
-    pts: 42,
-    cmp: "9 consistent vs 28",
-    act: "Unlock Listings",
-    to: "Billing",
-  },
-  {
     lane: "Q&A",
     icon: "help",
-    status: "Fix",
+    status: "Missing",
     max: 34,
-    pts: 28,
-    cmp: "3 vs 12 answered",
+    pts: 34,
+    cmp: "0 vs 12 answered",
     act: "Answer questions",
     to: "chat",
   },
   {
-    lane: "Social",
-    icon: "share",
-    status: "Fix",
-    max: 34,
-    pts: 28,
-    cmp: "2 vs 4 active profiles",
-    act: "Connect profiles",
-    to: "connections",
-  },
-  {
     lane: "Videos",
     icon: "video",
-    status: "Fix",
-    max: 17,
-    pts: 17,
+    status: "Missing",
+    max: 27,
+    pts: 27,
     cmp: "Last video 23 months old",
     act: "Plan a video",
     to: "chat",
   },
   {
-    lane: "GBP connection",
+    lane: "Audio",
+    icon: "mic",
+    status: "Missing",
+    max: 6,
+    pts: 6,
+    cmp: "No audio vs 3 episodes",
+    act: "Plan a podcast",
+    to: "chat",
+  },
+  {
+    lane: "GBP",
     icon: "plug",
     status: "Strong",
     max: 68,
@@ -144,7 +136,6 @@ const LANES: Lane[] = [
     to: "connections",
   },
 ];
-
 /** Status → [pill / icon background, pill / icon foreground, bar colour]. */
 const ST: Record<LaneStatus, [string, string, string]> = {
   Missing: ["#fce8e6", "#c5221f", "#ea4335"],
@@ -590,7 +581,7 @@ function SrsBody() {
               >
                 {OPEN_TOTAL}
               </span>
-              <span style={{ fontSize: 12, color: "#5f6368" }}>points open across 11 lanes</span>
+              <span style={{ fontSize: 12, color: "#5f6368" }}>points open across 10 lanes</span>
             </div>
           </div>
         </section>
@@ -1036,7 +1027,7 @@ function CalcDialog({ isD, onClose }: { isD: boolean; onClose: () => void }) {
           <CloseBtn onClick={onClose} />
         </div>
         <p style={p}>
-          Your Search Rank Score runs from 0 to 850. It adds up what you've earned across 11 lanes —
+          Your Search Rank Score runs from 0 to 850. It adds up what you've earned across 10 lanes —
           the things Google and AI look at when they decide which lender to show.
         </p>
         <p style={p}>

@@ -6,7 +6,7 @@
 import { useEffect, useState, type CSSProperties, type MouseEvent, type ReactNode } from "react";
 import { HF_EMBED_HEIGHT, useHfNav } from "../seat-nav";
 import "../happyflow.css";
-import { DANA, GRID, HF_ASSETS } from "../demo-data";
+import { PERSONA, GRID, HF_ASSETS } from "../demo-data";
 import { Hov, Ic, NoraFace, Tick, useReducedMotion } from "../primitives";
 import type { HfIconName } from "../icons";
 import { useHfDevice } from "../use-hf-device";
@@ -310,7 +310,7 @@ export function InterviewScreen() {
       rows: [
         "Demo Mortgage Co — Davenport Branch",
         "12 years in mortgage",
-        "demomortgage.com/dana-whitfield",
+        "demomortgage.com/alex-sample",
       ],
       badge: c >= 6 ? ["Tampa agent walled off", "b"] : null,
       fresh: c === 5 && st.twin === "out",
@@ -868,7 +868,7 @@ export function InterviewScreen() {
             >
               <div style={{ ...person, background: "#f5f9ff", border: "1.5px solid #c6dafc" }}>
                 <img
-                  src={DANA.photo}
+                  src={PERSONA.photo}
                   alt=""
                   style={{
                     width: 48,
@@ -939,7 +939,7 @@ export function InterviewScreen() {
                 }}
               >
                 <img
-                  src={HF_ASSETS.danaTampaPhoto}
+                  src={HF_ASSETS.sampleTampaPhoto}
                   alt=""
                   style={{
                     width: 48,
@@ -949,7 +949,7 @@ export function InterviewScreen() {
                     objectPosition: "50% 30%",
                   }}
                 />
-                <span style={{ fontSize: 13, fontWeight: 700 }}>Dana Whitfield</span>
+                <span style={{ fontSize: 13, fontWeight: 700 }}>Alex Sample</span>
                 <span style={{ fontSize: 11, color: "#5f6368" }}>
                   Real estate agent · <b style={{ color: "#1a73e8" }}>Tampa</b>
                 </span>
@@ -1301,7 +1301,7 @@ export function InterviewScreen() {
               [
                 ["cal", "When", "Weekday mornings"],
                 ["msg", "Text", "(563) 555-0144"],
-                ["mail", "Email", "dana.whitfield@demomortgage.com"],
+                ["mail", "Email", "alex.sample@demomortgage.com"],
               ] as [HfIconName, string, string][]
             ).map(([icon, k, v]) => (
               <div
@@ -1540,7 +1540,7 @@ export function InterviewScreen() {
             <button
               type="button"
               onClick={() =>
-                eng.toast("Opens your public profile · demomortgage.com/dana-whitfield")
+                eng.toast("Opens your public profile · demomortgage.com/alex-sample")
               }
               style={{
                 border: 0,
@@ -1743,7 +1743,7 @@ export function InterviewScreen() {
                     gap: 18,
                   }}
                 >
-                  <span style={{ fontSize: 24, fontWeight: 600 }}>Morning, Dana</span>
+                  <span style={{ fontSize: 24, fontWeight: 600 }}>Morning, Alex</span>
                   <div style={{ display: "flex", gap: 16 }}>
                     <div style={{ flex: 2, height: 220, borderRadius: 20, background: "#fff" }} />
                     <div style={{ flex: 1, height: 220, borderRadius: 20, background: "#fff" }} />
@@ -1835,7 +1835,7 @@ export function InterviewScreen() {
                     }}
                   >
                     <img
-                      src={DANA.photo}
+                      src={PERSONA.photo}
                       alt=""
                       style={{
                         width: 44,
@@ -1856,7 +1856,7 @@ export function InterviewScreen() {
                         gap: 2,
                       }}
                     >
-                      <span style={{ fontSize: 15, fontWeight: 700 }}>Dana Whitfield</span>
+                      <span style={{ fontSize: 15, fontWeight: 700 }}>Alex Sample</span>
                       <span
                         style={{
                           fontSize: 12,
@@ -2198,7 +2198,7 @@ export function InterviewScreen() {
                     }}
                   >
                     <img
-                      src={DANA.photo}
+                      src={PERSONA.photo}
                       alt=""
                       style={{
                         width: 64,
@@ -2219,7 +2219,7 @@ export function InterviewScreen() {
                         gap: 3,
                       }}
                     >
-                      <span style={{ fontSize: 19, fontWeight: 700 }}>Dana Whitfield</span>
+                      <span style={{ fontSize: 19, fontWeight: 700 }}>Alex Sample</span>
                       <span style={{ fontSize: 13, color: "#5f6368" }}>
                         Senior Loan Officer · Demo Mortgage Co
                       </span>

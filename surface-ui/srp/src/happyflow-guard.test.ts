@@ -9,7 +9,7 @@ const ROUTES = join(SRC, "routes", "_authenticated");
 const NEW_ROUTES = ["profile", "insights", "website", "connections", "network", "settings", "find"].map(
   (n) => join(ROUTES, `seat.$kind.$id.${n}.tsx`),
 );
-const ASSETS = ["dana-whitfield.jpg", "dana-tampa.jpg", "dana-whitley.jpg", "experience-icon.png"].map((n) =>
+const ASSETS = ["sample-pro.jpg", "sample-pro-tampa.jpg", "sample-pro-similar.jpg", "experience-icon.png"].map((n) =>
   join(SRC, "assets", "happyflow", n),
 );
 

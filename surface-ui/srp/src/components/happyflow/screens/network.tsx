@@ -11,7 +11,7 @@ const HEAD = [
 const THINKS: Think[] = [
   {
     t: "Priya and Luis want to promote you.",
-    d: "Partners who promote you send buyers and add to your Presence lane.",
+    d: "Partners who promote you send buyers and add to your Connections lane.",
     cta: "Show me",
     act: "close",
   },
@@ -294,7 +294,7 @@ function NetworkBody() {
         input: true,
         done: "Sent · I will follow up in 5 days",
       },
-      "Hi! It was a joy helping you with your home. If a friend is thinking about buying, I would love to help them too. — Dana",
+      "Hi! It was a joy helping you with your home. If a friend is thinking about buying, I would love to help them too. — Alex",
     );
   const nudgeAll = () => {
     setNudged(true);
@@ -884,7 +884,7 @@ function NetworkBody() {
                   }}
                 >
                   &quot;Hi! Just checking in — if anyone you know is thinking about buying, I&apos;d
-                  love to help. — Dana&quot;
+                  love to help. — Alex&quot;
                 </span>
                 <button
                   type="button"

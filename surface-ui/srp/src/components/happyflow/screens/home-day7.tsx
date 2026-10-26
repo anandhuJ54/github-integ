@@ -30,7 +30,7 @@ const DRAFTS: { n: string; s: number; t: string; d: string }[] = [
   {
     n: "Maria L.",
     s: 5,
-    t: "Dana walked us through every step of our FHA loan. We closed in 28 days.",
+    t: "Alex walked us through every step of our FHA loan. We closed in 28 days.",
     d: "Thank you, Maria! It was a pleasure helping you and your family get into your new home.",
   },
   {
@@ -74,7 +74,7 @@ export function HomeDay7Screen({ day, events }: { day: Exclude<HfDay, 1>; events
       screen="home"
       day={day}
       home
-      title={`${greet}, Dana`}
+      title={`${greet}, Alex`}
       sub={isM ? `Day ${day} of 30 · NORA is on it` : "Here is what happened while you were away."}
       banner={banner ? <EventBanner kind={banner} onClose={() => setBanner(null)} /> : null}
       nora={{ thinks: THINKS }}

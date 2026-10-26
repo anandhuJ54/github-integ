@@ -44,7 +44,7 @@ const COMPS: [number, string, string, string][] = [
   [3, "Bluff City Mortgage", "4.6 (188)", "4.0"],
   [4, "Mississippi Valley Loans", "4.5 (96)", "5.2"],
   [5, "Heartland Credit Union", "4.4 (151)", "5.9"],
-  [6, "Dana Whitfield (you)", "4.9 (128)", "7.8"],
+  [6, "Alex Sample (you)", "4.9 (128)", "7.8"],
 ];
 
 const INS_LOCKED: [string, string][] = [

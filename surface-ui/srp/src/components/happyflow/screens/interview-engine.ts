@@ -21,12 +21,12 @@ const CUM = SRC6.reduce<number[]>((a, _x, i) => {
   return a;
 }, []);
 export const SOURCES: [string, string][] = [
-  ["demomortgage.com/dana-whitfield", "Your Demo Mortgage page"],
-  ["Dana Whitfield – Demo Mortgage", "Google Business Profile"],
+  ["demomortgage.com/alex-sample", "Your Demo Mortgage page"],
+  ["Alex Sample – Demo Mortgage", "Google Business Profile"],
   ["NMLS #482913", "NMLS Consumer Access"],
   ["Lender profile", "Zillow"],
-  ["Dana Whitfield", "LinkedIn"],
-  ["Dana Whitfield, Mortgage", "Facebook"],
+  ["Alex Sample", "LinkedIn"],
+  ["Alex Sample, Mortgage", "Facebook"],
   ['"FHA loans explained in 4 minutes"', "YouTube"],
   ["Quad Cities Home Hour, episode 31", "Podcast"],
   ["Lender page", "Realtor.com"],
@@ -220,7 +220,7 @@ export const B: Beat[][] = [
   [{ w: "finale" }, { l: "fin1" }, { l: "fin2" }, { w: "task" }, { w: "finCta" }],
 ];
 
-/** Riverbend's 7 × 7 grid (the interview's own; Dana's grid is `GRID` from demo-data). */
+/** Riverbend's 7 × 7 grid (the interview's own; Alex's grid is `GRID` from demo-data). */
 export const RIVER: { bg: string }[] = (() => {
   const cells: { i: number; d: number; bg: string }[] = [];
   for (let r = 0; r < 7; r++)
@@ -306,7 +306,7 @@ export function lineText(st: IvState, k: LineKey, greet: string): string {
   const ad = (st.addr || "100 Main St").split(",")[0];
   const n = kept(st).length;
   const L: Record<LineKey, string> = {
-    hello1: `${greet}, Dana. Before you typed a thing, I found you in [[6 places]] — your **Demo Mortgage page**, Google, NMLS, Zillow, LinkedIn and Facebook.`,
+    hello1: `${greet}, Alex. Before you typed a thing, I found you in [[6 places]] — your **Demo Mortgage page**, Google, NMLS, Zillow, LinkedIn and Facebook.`,
     hello2: `That's [[23 facts]] about you, and you don't have to type any of them. Give me about 2 minutes: we'll check them together, I'll fix anything that's off, and I'll show you who's winning ~Davenport~ buyers so we can win them back.`,
     src: `Here's everything I think is yours, including your **FHA explainer** on YouTube and your **Quad Cities Home Hour** episode. Untick anything that isn't you.`,
     aha1: `[[6 sources, 67 facts]], one record. You've built **12 years** of expertise across the internet; now it lives in one place Google and AI can read.`,
@@ -314,7 +314,7 @@ export function lineText(st: IvState, k: LineKey, greet: string): string {
     phone: `Google and your website say [[(563) 555-0100]], but Zillow still shows [[(563) 555-0177]]. Which one should buyers call?`,
     mob: `And your mobile — that's where I'll text you when something needs you.`,
     aha2: `Done. [[${ph}]] and **${ad}** are now your only number and address. I corrected **Zillow**, **Yelp** and 2 directories that still had the old branch line.`,
-    twin1: `There's another **Dana Whitfield** — a real estate agent in ~Tampa~. Different licence, different state. I'll keep her out of your record.`,
+    twin1: `There's another **Alex Sample** — a real estate agent in ~Tampa~. Different licence, different state. I'll keep her out of your record.`,
     twin2: `Walled off. If she shows up anywhere near your name, I'll catch it.`,
     offer1: `Here's what I read on your site. Your **FHA video** tells me first-time buyers are a big part of your work. Tick anything else you do.`,
     offer2: `[[${n} products]]. I'll make sure each one shows up when someone in ~Davenport~ searches for it.`,
@@ -323,7 +323,7 @@ export function lineText(st: IvState, k: LineKey, greet: string): string {
     map3: `They have [[412 reviews]] to your [[128]], but yours average **4.9**. They have [[14 articles]]; you have none. That gap I can close.`,
     map4: `Here's my plan to get you past them: [[3 moves]], I'll do 2 myself.`,
     work: `You've got closings to run, so I'll do the work and only check in when something needs you. **Weekday mornings** by text — does that work?`,
-    fin1: `Not bad for two minutes, Dana. Your record went from [[298]] to [[384]] and **Riverbend** now has a target on its back.`,
+    fin1: `Not bad for two minutes, Alex. Your record went from [[298]] to [[384]] and **Riverbend** now has a target on its back.`,
     fin2: `I've already started: adding your Google category and services. I'll text you **Tuesday morning** with what I've done.`,
   };
   return L[k];

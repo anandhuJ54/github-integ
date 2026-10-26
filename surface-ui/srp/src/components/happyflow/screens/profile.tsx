@@ -1,5 +1,5 @@
 /**
- * Screen 7 · Profile — every fact NORA knows about Dana, with its source.
+ * Screen 7 · Profile — every fact NORA knows about Alex, with its source.
  * Ported 1:1 from the Happyflow prototype (SRP App, `sProfile`).
  */
 import {
@@ -12,7 +12,7 @@ import {
   useState,
   type CSSProperties,
 } from "react";
-import { DANA, PRODUCTS } from "../demo-data";
+import { PERSONA, PRODUCTS } from "../demo-data";
 import { HappyflowShell, useHf, type HfApi, type Think } from "../shell";
 import { Hov, Ic, NoraFace, ProBadge } from "../primitives";
 import { useSpeech } from "../use-speech";
@@ -24,7 +24,7 @@ import { loadStored, saveStored } from "./profile-store";
 const HEAD = ["Profile", "Every fact NORA knows about you, with its source."] as const;
 
 const BIO_DRAFT =
-  "Dana Whitfield has helped Quad Cities families buy and refinance homes for 12 years, with a focus on first-time buyers and FHA and VA loans.";
+  "Alex Sample has helped Quad Cities families buy and refinance homes for 12 years, with a focus on first-time buyers and FHA and VA loans.";
 
 const PEARL_BG =
   "radial-gradient(120% 90% at 0% 0%,oklch(0.965 0.021 30) 0%,transparent 55%),radial-gradient(110% 90% at 100% 0%,oklch(0.955 0.025 285) 0%,transparent 55%),linear-gradient(180deg,oklch(0.985 0.004 285),#fff)";
@@ -33,17 +33,17 @@ const PEARL_BG =
 type Apply = (changes: ProfileChanges, how: string) => ProfileField[];
 
 const INITIAL: Record<ProfileField, string> = {
-  Name: DANA.name,
-  Title: DANA.title,
+  Name: PERSONA.name,
+  Title: PERSONA.title,
   Bio: "Thin",
   "Year started": "",
-  Office: DANA.officePhone,
-  Mobile: DANA.mobile,
-  Email: DANA.email,
-  Address: DANA.address,
+  Office: PERSONA.officePhone,
+  Mobile: PERSONA.mobile,
+  Email: PERSONA.email,
+  Address: PERSONA.address,
   Hours: "Mon–Fri 9:00–5:00",
-  NMLS: DANA.nmls,
-  "Licensed in": DANA.states,
+  NMLS: PERSONA.nmls,
+  "Licensed in": PERSONA.states,
   "Service areas": "",
   Designations: "",
   Awards: "",
@@ -134,7 +134,7 @@ function editCard(
     {
       title: "Edit profile",
       input: true,
-      ph: `Started from ${t} — change anything in one go, e.g. “name Dana Ross and phone 563 555 0177”`,
+      ph: `Started from ${t} — change anything in one go, e.g. “name Alex Rowe and phone 563 555 0177”`,
       cta: "Continue",
       nora: "Change any fields across your profile at once, in your own words. I'll show you what I found before anything changes.",
       onSave: (text) =>
@@ -270,7 +270,7 @@ export function ProfileScreen() {
   );
 }
 
-/** Shown once the demo profile has been edited: puts Dana's original demo values back. */
+/** Shown once the demo profile has been edited: puts Alex's original demo values back. */
 function ResetDemoButton() {
   const hf = useHf();
   const { src, reset } = useProfile();
@@ -314,8 +314,8 @@ function ProfileBody() {
       ?.scrollIntoView({ behavior: "smooth", block: "start" });
   // Quick actions stay on the preview card in both its full and minimized form.
   const quick: [string, () => void][] = [
-    [`Reviews (${DANA.reviews})`, () => hf.go("reviews")],
-    [`★ ${DANA.rating} rating`, () => hf.go("reviews")],
+    [`Reviews (${PERSONA.reviews})`, () => hf.go("reviews")],
+    [`★ ${PERSONA.rating} rating`, () => hf.go("reviews")],
     ["About", () => jump("Identity")],
     ["Services", () => jump("Services and areas")],
     ["Licences", () => jump("Licences")],
@@ -378,7 +378,7 @@ function ProfileBody() {
   const addCreds = () => {
     setCreds("added");
     apply({ Designations: "2 certifications" }, "From LinkedIn · added by you");
-    hf.toast("Added · Credentials lane +points next scan");
+    hf.toast("Added · Completeness lane +points next scan");
   };
   const credCount = [f.Designations, f.Awards, f.Education].filter(Boolean).length;
 
@@ -463,12 +463,12 @@ function ProfileBody() {
         <ProBadge />
       </span>
       <span style={{ fontSize: 14, color: "#5f6368" }}>
-        {f.Title} · {DANA.company}
+        {f.Title} · {PERSONA.company}
       </span>
       <span style={{ fontSize: 13, color: "#5f6368" }}>
         <span style={{ color: "#f9ab00" }}>★</span>{" "}
-        <b style={{ color: "#202124" }}>{DANA.rating}</b> ({DANA.reviews}) · {DANA.city} · NMLS{" "}
-        {DANA.nmls}
+        <b style={{ color: "#202124" }}>{PERSONA.rating}</b> ({PERSONA.reviews}) · {PERSONA.city} · NMLS{" "}
+        {PERSONA.nmls}
       </span>
     </div>
   );
@@ -584,7 +584,7 @@ function ProfileBody() {
   );
   const previewPhoto = (size: number) => (
     <img
-      src={DANA.photo}
+      src={PERSONA.photo}
       alt=""
       style={{
         width: size,
@@ -592,7 +592,7 @@ function ProfileBody() {
         flex: "none",
         borderRadius: "50%",
         objectFit: "cover",
-        objectPosition: DANA.photoPos,
+        objectPosition: PERSONA.photoPos,
         boxShadow: "0 0 0 4px #fff",
       }}
     />
@@ -614,7 +614,7 @@ function ProfileBody() {
           <div style={{ padding: "14px 16px", display: "flex", flexDirection: "column", gap: 10 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 12, paddingRight: 90 }}>
               <img
-                src={DANA.photo}
+                src={PERSONA.photo}
                 alt=""
                 style={{
                   width: 44,
@@ -622,7 +622,7 @@ function ProfileBody() {
                   flex: "none",
                   borderRadius: "50%",
                   objectFit: "cover",
-                  objectPosition: DANA.photoPos,
+                  objectPosition: PERSONA.photoPos,
                 }}
               />
               <div style={{ minWidth: 0, display: "flex", flexDirection: "column", gap: 2 }}>
@@ -631,7 +631,7 @@ function ProfileBody() {
                   <ProBadge size="sm" />
                 </span>
                 <span style={{ fontSize: 12, color: "#5f6368" }}>
-                  <span style={{ color: "#f9ab00" }}>★</span> {DANA.rating} ({DANA.reviews}) · 64%
+                  <span style={{ color: "#f9ab00" }}>★</span> {PERSONA.rating} ({PERSONA.reviews}) · 64%
                   complete
                 </span>
               </div>

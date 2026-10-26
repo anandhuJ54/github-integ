@@ -19,7 +19,7 @@ import {
   type ReactNode,
 } from "react";
 import { HF_EMBED_HEIGHT, useHfNav } from "./seat-nav";
-import { DANA, GRID, HF_ASSETS, SCORE_BY_DAY, parseBold, type HfDay } from "./demo-data";
+import { PERSONA, GRID, HF_ASSETS, SCORE_BY_DAY, parseBold, type HfDay } from "./demo-data";
 import {
   Hov,
   Ic,
@@ -176,7 +176,7 @@ const ANSWERS: Record<
     acts: [["Start publishing", "voce", true]],
   },
   "Why is my score 390?": {
-    t: "You've earned **390 of 850**. The biggest lanes still open are Articles (85), Website + schema (62) and Completeness (55).",
+    t: "You've earned **390 of 850**. The biggest lanes still open are Completeness (105), Articles (85) and Website (62).",
     acts: [["Open SRS", "srs", true]],
   },
   "Show my map": {
@@ -579,14 +579,14 @@ export function HappyflowShell(props: HappyflowShellProps) {
                 ) : null}
                 {isM && home ? (
                   <img
-                    src={DANA.photo}
+                    src={PERSONA.photo}
                     alt=""
                     style={{
                       width: 40,
                       height: 40,
                       borderRadius: "50%",
                       objectFit: "cover",
-                      objectPosition: DANA.photoPos,
+                      objectPosition: PERSONA.photoPos,
                       flex: "none",
                       boxShadow: "0 0 0 2px #fff,0 0 0 3px #e8eaed",
                     }}
@@ -1181,7 +1181,7 @@ export function HappyflowShell(props: HappyflowShellProps) {
                       >
                         {nora.greeting ?? (
                           <>
-                            Hi Dana.{" "}
+                            Hi Alex.{" "}
                             <b>
                               {day >= 7
                                 ? "You crossed into Established this week."
@@ -1869,7 +1869,7 @@ function VocePanel({
             VA loans in Davenport: what veterans should know
           </h3>
           <span style={{ fontSize: 12, color: "#5f6368" }}>
-            Dana Whitfield · Senior Loan Officer · NMLS 482913
+            Alex Sample · Senior Loan Officer · NMLS 482913
           </span>
           <p style={{ margin: 0, fontSize: 14, lineHeight: 1.6, color: "#3c4043" }}>
             If you've served, a VA loan can help you buy a home in Davenport without a down payment.

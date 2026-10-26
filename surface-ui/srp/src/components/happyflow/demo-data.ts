@@ -1,21 +1,21 @@
 /**
  * DEMO DATA — Happyflow prototype ("Happyflow Prototype — Screens and Mock Data", Oct 16 2026).
  *
- * One fictional loan officer (Dana Whitfield, Demo Mortgage Co) and one fictional market
+ * One fictional loan officer (Alex Sample, Demo Mortgage Co) and one fictional market
  * (Davenport, IA). Every number on every Happyflow screen comes from here or from the screen's
  * own demo constants, so the score climbs consistently from screen to screen. None of this is
  * read from or written to the database.
  */
-import danaPhoto from "@v3/srp/assets/happyflow/dana-whitfield.jpg";
-import danaTampaPhoto from "@v3/srp/assets/happyflow/dana-tampa.jpg";
-import danaWhitleyPhoto from "@v3/srp/assets/happyflow/dana-whitley.jpg";
+import samplePhoto from "@v3/srp/assets/happyflow/sample-pro.jpg";
+import sampleTampaPhoto from "@v3/srp/assets/happyflow/sample-pro-tampa.jpg";
+import sampleSimilarPhoto from "@v3/srp/assets/happyflow/sample-pro-similar.jpg";
 import experienceIcon from "@v3/srp/assets/happyflow/experience-icon.png";
 
-export const HF_ASSETS = { danaPhoto, danaTampaPhoto, danaWhitleyPhoto, experienceIcon };
+export const HF_ASSETS = { samplePhoto, sampleTampaPhoto, sampleSimilarPhoto, experienceIcon };
 
-export const DANA = {
-  name: "Dana Whitfield",
-  first: "Dana",
+export const PERSONA = {
+  name: "Alex Sample",
+  first: "Alex",
   title: "Senior Loan Officer",
   company: "Demo Mortgage Co",
   branch: "Davenport Branch",
@@ -24,14 +24,14 @@ export const DANA = {
   officePhone: "(563) 555-0100",
   oldPhone: "(563) 555-0177",
   mobile: "(563) 555-0144",
-  email: "dana.whitfield@demomortgage.com",
+  email: "alex.sample@demomortgage.com",
   nmls: "482913",
   states: "Iowa and Illinois",
   rating: 4.9,
   reviews: 128,
   years: 12,
-  site: "demomortgage.com/dana-whitfield",
-  photo: danaPhoto,
+  site: "demomortgage.com/alex-sample",
+  photo: samplePhoto,
   photoPos: "50% 22%",
 } as const;
 

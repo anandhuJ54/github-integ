@@ -30,27 +30,27 @@ type Person = {
 const PEOPLE: Person[] = [
   {
     id: 0,
-    name: "Dana Whitfield",
+    name: "Alex Sample",
     title: "Senior Loan Officer · Demo Mortgage Co",
     city: "Davenport, IA",
-    photo: HF_ASSETS.danaPhoto,
+    photo: HF_ASSETS.samplePhoto,
     pos: "50% 22%",
     likely: true,
   },
   {
     id: 1,
-    name: "Dana Whitfield",
+    name: "Alex Sample",
     title: "Real estate agent",
     city: "Tampa, FL",
-    photo: HF_ASSETS.danaTampaPhoto,
+    photo: HF_ASSETS.sampleTampaPhoto,
     pos: "50% 30%",
   },
   {
     id: 2,
-    name: "Dana Whitley",
+    name: "Alex Sampler",
     title: "Loan Officer",
     city: "Moline, IL",
-    photo: HF_ASSETS.danaWhitleyPhoto,
+    photo: HF_ASSETS.sampleSimilarPhoto,
     pos: "50% 26%",
   },
 ];
@@ -140,7 +140,7 @@ export function FindYouScreen() {
   const { isD, isM, framed } = useHfDevice();
   const hfNav = useHfNav();
 
-  const [q, setQState] = useState("Dana Whitfield");
+  const [q, setQState] = useState("Alex Sample");
   const [searching, setSearching] = useState(false);
   const [focus, setFocus] = useState(false);
   const [typed, setTyped] = useState(0);
@@ -359,7 +359,7 @@ export function FindYouScreen() {
               ) : null}
               <div style={{ display: "flex", alignItems: "center", gap: 14, paddingRight: 36 }}>
                 <img
-                  src={HF_ASSETS.danaPhoto}
+                  src={HF_ASSETS.samplePhoto}
                   alt=""
                   style={{
                     width: 56,
@@ -375,7 +375,7 @@ export function FindYouScreen() {
                   style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 3 }}
                 >
                   <span style={{ font: "700 20px Sora,sans-serif", letterSpacing: "-0.02em" }}>
-                    Dana Whitfield
+                    Alex Sample
                   </span>
                   <span
                     style={{
@@ -1002,7 +1002,7 @@ export function FindYouScreen() {
                                   setClaim("idle");
                                   setOpenPct(0);
                                 }
-                              : toast("The demo follows Dana in Davenport")
+                              : toast("The demo follows Alex in Davenport")
                           }
                           style={{
                             flex: "none",
