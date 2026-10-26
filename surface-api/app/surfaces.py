@@ -25,4 +25,7 @@ SURFACES: tuple[str, ...] = (
     "conversion_agents",
     "admin",
     "ops",
+    "integrations",
+    "reports",
+    "listings",
 )
