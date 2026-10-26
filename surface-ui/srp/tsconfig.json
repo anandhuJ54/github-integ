@@ -4,5 +4,8 @@
     "src",
     "../shell/.generated/routeTree.gen.ts",
     "../shell/router.tsx"
+  ],
+  "exclude": [
+    "**/*.test.ts"
   ]
 }
