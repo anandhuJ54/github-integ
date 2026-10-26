@@ -11,3 +11,5 @@ Intended scope: reviews, listings and social posts.
   moving or adding listings code here (today in etl, graph and xmp, plus the publisher tables of
   `surface-api/migrations/0026_listings_catalog_db.sql`) needs the O6 ruling first.
 - Reviews: review replies live in srp today (`surface-api/srp/src/review/`); moving them is a separate decision.
+
+What may move here from other Surfaces: `docs/NEW_SURFACES_MOVES.md` (nothing moved yet).
