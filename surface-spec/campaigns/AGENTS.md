@@ -16,5 +16,9 @@ trees (polyglot: React + Python, plus its contract and its specs):
   Cross-Surface reaction goes through the events/capabilities in `contracts/`, never a direct call.
 - Imports: `from _base... import`, `from surfaces.campaigns... import`. Another Surface is imported only
   through `surfaces.<other>.exports` (`surface-api/tests/test_boundaries.py`); `_base` is shared.
-- Tables owned here go in `src/models/` (empty until moved from `_base/db/tables.py`); their migrations
-  in `db/migrations/`. One shared database; the older `surface-api/migrations/` stream is closed (root `AGENTS.md` §4).
+- Tables owned here live in this Surface's own Postgres schema (named after the `surface-api` package)
+  and go in `src/models/` (most are still in `_base/db/tables.py`, in `public`, until moved); their
+  migrations in `db/migrations/`.
+- Only this Surface reads and writes the tables in its schema. Another Surface reads or writes them
+  only through this Surface's `exports.py` (plain shapes, never ORM classes or tables; foreign keys
+  through the exported `*_ID_FK` constants). Root `AGENTS.md` §2; `surface-api/tests/test_boundaries.py`. One shared database; the older `surface-api/migrations/` stream is closed (root `AGENTS.md` §4).

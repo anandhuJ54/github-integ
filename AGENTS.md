@@ -69,7 +69,8 @@ surface-api/           self-contained Python/FastAPI project (its own pyproject.
   app/                 app shell: main.py (create_app + the app), routes.py (mounts each Surface router),
                        surfaces.py (registry), contracts.py (cd surface-api && uvicorn app:app)
   _base/               shared runtime: auth.py, config.py, server_fn.py, compliance.py,
-                       db/ (session.py, sql.py, tables.py), disco/, integrations/, tests/
+                       db/ (session.py, sql.py, tables.py, base.py), models/ (shared-core ORM
+                       classes, in `public`), disco/, integrations/, tests/
   tests/               cross-cutting guards: Surface boundaries, routes, app wiring
   alembic.ini          one Alembic branch per Surface (+ _base); env in alembic_env/ (uv run alembic upgrade heads)
   migrate.py           runner for the closed SQL stream (python -m migrate status|apply)
@@ -79,7 +80,9 @@ surface-api/           self-contained Python/FastAPI project (its own pyproject.
       router.py        aggregate router: includes each resource router, no endpoints
       exports.py       the ONLY module another Surface may import (lint + tests/test_boundaries.py)
       internal.py      helpers shared by two or more of its resource folders
-      models/          tables this Surface owns (empty; still in _base/db/tables.py until the team moves them)
+      models/          ORM classes (on `_base.db.base.Base`, one module per table) of the tables this
+                       Surface owns, in its own Postgres schema `<surface>` (most tables are still
+                       Core tables in _base/db/tables.py, in `public`, until the team moves them)
       <resource>/      router.py (endpoints) · schemas.py (request/response) · services.py (queries, logic)
     tests/             test_*.py + conftest.py
     db/migrations/     this Surface's Alembic branch (hand-written SQL revisions)
@@ -96,6 +99,7 @@ tools/                 enforcement (lint, ci, hooks) — plain stdlib Python, ru
 
 - **A Surface owns** its three homes (`surface-api/<surface>`, `surface-ui/<surface>`, `surface-spec/<surface>`), its `contracts/<surface>`, and the tables it owns (one shared database; each Surface's migrations are its own Alembic branch — see §4). Ownership is mapped in `.github/CODEOWNERS`.
 - **A Surface never edits** another Surface's internals or tables. Reads go through governed views/queries; writes go through capabilities; reactions go through events.
+- **Only the owning Surface reads and writes the tables in its schema** (`surface-api/<surface>`). Another Surface reads or writes them only by calling functions in `surfaces.<owner>.exports`, which return plain shapes (DTOs), never ORM classes or tables. No other Surface names them in SQL, maps an ORM relationship to them or imports their models; the only direct reference allowed is a foreign key, through the owner's exported `*_ID_FK` constant (and `REFERENCES <owner>.<table>` in a migration). Shared-core tables in `public` (`_base/models/`) are readable by every Surface. Enforced in `surface-api/tests/test_boundaries.py`; the database roles are shared, so Postgres does not enforce it.
 - **One app, one login — composed, not shared internals (§4).** A frontend app bundles a chosen set of `surface-ui/<surface>` apps; a backend service mounts a chosen set of `surface-api/<surface>` routers. `surface-ui/<surface>` calls **only** its own `surface-api/<surface>`, via a client generated from `contracts/<surface>`. Cross-Surface reaction goes through the events/capabilities in `contracts/`, never a direct import or call (lint: `boundary/*`). Hiding UI is not security: permissions are checked server-side in FastAPI (or the DB). A new or changed cross-Surface interface is a PR to `contracts/<surface>`, reviewed by the owning Surface.
 - **Shared core:** `AGENTS.md`, `templates/`, `surface-api/_base/`, `surface-api/app/`, `surface-api/tests/`, `surface-ui/_base/`, `.claude/`, `tools/`. Changes need a PR reviewed for all Surfaces.
 
@@ -126,8 +130,10 @@ tools/                 enforcement (lint, ci, hooks) — plain stdlib Python, ru
 - Rings: `exp_rings` (10) is canonical. Several other vocabularies exist (open decision O1). **Do not write new ring logic without confirming which vocabulary applies.** Never use `exp_ring` for new logic.
 
 **Security baseline (blocking in CI)**
-- New tables: `ENABLE` and `FORCE ROW LEVEL SECURITY`. Server writes use the service role.
-- **Never** `USING (true)` / `WITH CHECK (true)` for any role other than `service_role`.
+- New tables: **no row-level security** (owner decision 2026-10-26: new migrations do not add `ENABLE` / `FORCE ROW LEVEL SECURITY` or policies). Access is controlled by grants: `REVOKE ALL ON <t> FROM anon, authenticated, PUBLIC` (this also drops Supabase's default privileges on `public`), then grant each role only what it needs. Server writes use the service role. Existing tables keep their RLS (`docs/SECURITY_FINDINGS.md`).
+- New schemas: `REVOKE ALL ON SCHEMA <s> FROM PUBLIC, anon`; `GRANT USAGE` only to the roles that need it
+  (`authenticated`, `service_role`). Grants on its tables are explicit (no Supabase default privileges apply).
+- Where a table does use RLS (existing tables), **never** `USING (true)` / `WITH CHECK (true)` for any role other than `service_role`.
   > This supersedes the "RLS parity" rule in `docs/NORA_OS_MASTER_BUILD_THREAD.md` §4, which prescribed that pattern.
 - No table grants to `anon` or `PUBLIC`. Public reads go through curated SECURITY DEFINER views/functions with a pinned `search_path` and narrow EXECUTE grants.
 - Secrets live only in Secret Manager / Vault, referenced by name. Never in tables, code, logs or agent context. `main` is mirrored externally: never commit secrets.
@@ -180,8 +186,8 @@ tools/                 enforcement (lint, ci, hooks) — plain stdlib Python, ru
   send eligibility, score rules and persistence are decided in FastAPI (or the DB), never in the browser, and
   all writes go through the governed Postgres functions. Models handle language only.
 - **Enforcement note:** the boundary/canon/security lint is `tools/lint/lint_all.py` (plain stdlib Python, run
-  as `python3 tools/lint/lint_all.py`). The DB-side controls (RLS, `FORCE ROW LEVEL SECURITY`,
-  `SECURITY DEFINER` functions, narrow grants) remain the real gate — keep them authoritative.
+  as `python3 tools/lint/lint_all.py`). The DB-side controls (narrow grants, RLS on existing tables,
+  `SECURITY DEFINER` functions) remain the real gate — keep them authoritative.
 - **Deployables are compositions, not Surfaces.** A backend service mounts a chosen set of
   `surface-api/<surface>` routers; a frontend app bundles a chosen set of `surface-ui/<surface>` apps — so a few
   (e.g. graph, sales, marketing) can ship separately while sharing `surface-api/_base`, `surface-ui/_base` and
@@ -190,9 +196,21 @@ tools/                 enforcement (lint, ci, hooks) — plain stdlib Python, ru
   - **One shared database, one Alembic branch per Surface:** a Surface writes its migrations as Alembic
     revisions in `surface-api/<surface>/db/migrations/` (branch label = Surface name; shared core uses
     `_base/db/migrations/`). Revisions are hand-written SQL (`op.execute`), and declare `depends_on` for any
-    table another branch creates. Each branch starts from the `_base` baseline revision. Apply with
+    table another branch creates. Each branch starts from the `_base` baseline revision, or from a later
+    `_base` revision when it needs a shared table that revision creates; list only the newest `_base`
+    revision, never one together with its ancestor (Alembic then fails with a KeyError). Apply with
     `cd surface-api && uv run alembic upgrade heads` (`--sql` to review first). `surface-api/tests/test_migrations.py`
-    checks folders, branches and heads.
+    checks folders, branches, heads and dependencies.
+  - **One Postgres schema per Surface:** a Surface's own tables live in the schema named after its
+    `surface-api` package (`xmp`, `campaigns`, `nora_os`), created by its first revision
+    (`CREATE SCHEMA IF NOT EXISTS <surface>`) and named in every statement (`<surface>.<table>`); its ORM
+    classes in `src/models/` set `__table_args__ = ({"schema": "<surface>"},)` and must match its migrations
+    (`surface-api/tests/test_schemas.py`; Alembic's `compare_metadata` against a migrated scratch database). A table never
+    goes in another Surface's schema, and only the owner reads or writes it (other Surfaces go through
+    `exports.py`, §2). Shared-core tables stay in `public`: `_base/db/migrations/` creates
+    them and their ORM classes in `_base/models/` leave `schema` unset. Every table still in
+    `_base/db/tables.py` also stays in `public` until moved with a ruling; moving one is a migration of its own. Supabase's REST API
+    does not expose these schemas; the app reaches them through FastAPI.
   - The older numbered SQL stream `surface-api/migrations/NNNN_*.sql` (+ `meta/_journal.json`, `migrate.py`) is
     **closed**: no new files. The `_base` baseline refuses to run until all of it is applied.
     `supabase/migrations/` is historical.
@@ -277,7 +295,7 @@ Read this before relying on a control. **Enforced** = blocks a merge or an edit 
 | Build/typecheck (`surface-ui/*` frontends) and Python checks (`surface-api/` ruff + the `tools/` stdlib lint) | `core-gates` | Implemented — enforced once branch protection requires `core-gates` |
 | Tests (`cd surface-api && uv run pytest`) | `core-gates` | Implemented — as above |
 | Surface tests and evals (`*.eval.test.ts`, `RUN_EVALS=1`) | `surface-NN-*` | Implemented, path-filtered |
-| Security / canon / migration / boundary lint (incl. ENABLE **and** FORCE RLS on new tables), ratchet against the base branch baseline | `tools/lint/lint_all.py` in `core-gates` | Implemented — as above |
+| Security / canon / migration / boundary lint (incl. no anon / PUBLIC grants on new tables), ratchet against the base branch baseline | `tools/lint/lint_all.py` in `core-gates` | Implemented — as above |
 | Evidence or small-fix section required when anything but Markdown changes: evidence must be added/modified (not an unchanged rename), filled in with real content (placeholder-only text such as TODO/TBD is rejected), and belong to the touched Surface; small fix only for ≤200 lines, one Surface, no high-risk paths (`tools/ci/risk.py`) | `pr-evidence` (`tools/ci/check_evidence.py`, tested) | Implemented — enforced once branch protection requires `pr-evidence`. For `surface-api/`/`surface-ui/` changes not yet mapped to a Surface, any Surface's filled evidence is accepted |
 | Secret scan | `core-gates` (gitleaks) | Implemented — as above |
 | AI review, risk-tiered (same high-risk rule as the evidence gate, `tools/ci/risk.py`), after the `core-gates` checks pass (it does not wait for `pr-evidence`); superseded runs cancelled | `core-gates` → `ai-review` | Implemented; needs the `ANTHROPIC_API_KEY` repo secret. Advisory, not a merge gate |
@@ -285,7 +303,7 @@ Read this before relying on a control. **Enforced** = blocks a merge or an edit 
 | Agent edit guard (applied migrations, `.env`, always-true policies, anon/PUBLIC grants, secrets) | `.claude/settings.json` → `tools/hooks/guard.py` | **Partial** — blocks the Edit/Write/MultiEdit tools in Claude Code sessions using this repo's settings. Shell commands (e.g. `sed`, `>`), other tools and humans are not covered; CI lint is the backstop |
 | Deny force-push, push to `main`, reading `.env` | `.claude/settings.json` | **Partial** — matches the listed command patterns only; other spellings (e.g. `git push origin HEAD:main`, `cat .env`) are not caught. Branch protection is the real control |
 | Cross-Surface interaction only through `contracts/<surface>` (no `surface-ui/<surface>` → another Surface's `surface-api`/`surface-ui` internals; `surface-ui/<surface>` calls only its own `surface-api/<surface>`) | lint `boundary/cross-surface-import` in `core-gates` | Implemented — as above |
-| Backend structure: Surfaces import each other only via `exports`; `_base` imports no Surface; every Surface has the standard files, is registered and mounted once; no duplicate routes; each migration on its own Surface's Alembic branch | `surface-api/tests/` (`test_boundaries.py`, `test_routes.py`, `test_migrations.py`), run by `uv run pytest` in `core-gates` | Implemented — as above |
+| Backend structure: Surfaces import each other only via `exports`; only the owner names, maps or exports its schema's tables (SQL, ORM relationships, `exports.py` shapes); `_base` imports no Surface; every Surface has the standard files, is registered and mounted once; no duplicate routes; each migration on its own Surface's Alembic branch | `surface-api/tests/` (`test_boundaries.py`, `test_routes.py`, `test_migrations.py`), run by `uv run pytest` in `core-gates` | Implemented — as above |
 | Surface ownership and review routing | `.github/CODEOWNERS` | **Placeholder** — team handles must be created in GitHub |
 | Required checks, required reviews, no self-merge, no force-push to `main` | GitHub branch protection | **Placeholder** — not stored in this repo; open decision O8 |
 | Second approval for schema, security, money and identity changes | §4 | Documentation, until CODEOWNERS teams and branch protection exist |

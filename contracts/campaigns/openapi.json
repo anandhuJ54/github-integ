@@ -215,6 +215,61 @@
           }
         ]
       }
+    },
+    "/campaigns/survey-templates": {
+      "get": {
+        "tags": [
+          "campaigns"
+        ],
+        "summary": "List Survey Templates",
+        "description": "Active survey templates for a vertical and for \"All\", newest update first.",
+        "operationId": "list_survey_templates_campaigns_survey_templates_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "vertical_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "description": "Also returns templates of the \"All\" vertical.",
+              "title": "Vertical Id"
+            },
+            "description": "Also returns templates of the \"All\" vertical."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/SurveyTemplateSummaryOut"
+                  },
+                  "title": "Response List Survey Templates Campaigns Survey Templates Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -407,6 +462,49 @@
         },
         "type": "object",
         "title": "HTTPValidationError"
+      },
+      "SurveyTemplateSummaryOut": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "video_link": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Video Link"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "description",
+          "video_link"
+        ],
+        "title": "SurveyTemplateSummaryOut",
+        "description": "One survey template in a list: the fields a picker needs, without the heavy JSON settings."
       },
       "ValidationError": {
         "properties": {

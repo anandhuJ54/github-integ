@@ -1,5 +1,6 @@
 """Migrations per Surface (alembic.ini): every revision sits in its owner's folder, on its owner's
-branch; each branch has one head and starts from the `_base` baseline; the old SQL stream is closed."""
+branch; each branch has one head and starts from the `_base` baseline (or a later `_base` revision);
+no revision lists a `_base` revision and its ancestor; the old SQL stream is closed."""
 from __future__ import annotations
 
 import importlib.util
@@ -54,16 +55,37 @@ def test_one_head_per_branch():
     assert len(owners) == len(set(owners)), owners
 
 
+def _deps(rev) -> tuple[str, ...]:
+    deps = rev.dependencies or ()
+    return (deps,) if isinstance(deps, str) else tuple(deps)
+
+
+def _base_revisions(scripts: ScriptDirectory) -> set[str]:
+    return {r.revision for r in scripts.walk_revisions() if _owner(r.path) == BASE}
+
+
 def test_surface_branches_start_from_the_base_baseline():
+    """A Surface branch's first revision depends on the baseline or a later `_base` revision (which
+    sits on the baseline), e.g. the one that creates a shared table it references."""
     scripts = _scripts()
-    loose = []
-    for rev in scripts.walk_revisions():
-        if rev.down_revision is None and _owner(rev.path) != BASE:
-            deps = rev.dependencies or ()
-            deps = (deps,) if isinstance(deps, str) else tuple(deps)
-            if BASELINE not in deps and f"{BASE}@head" not in deps:
-                loose.append(rev.path)
+    base = _base_revisions(scripts) | {f"{BASE}@head"}
+    loose = [rev.path for rev in scripts.walk_revisions()
+             if rev.down_revision is None and _owner(rev.path) != BASE and not set(_deps(rev)) & base]
     assert loose == []
+
+
+def test_no_revision_depends_on_a_base_revision_and_its_ancestor():
+    """Listing a `_base` revision together with one below it (e.g. the baseline and a later `_base`
+    revision) makes `alembic upgrade heads` fail with a KeyError: list only the newest."""
+    scripts = _scripts()
+    base = _base_revisions(scripts)
+    redundant = []
+    for rev in scripts.walk_revisions():
+        deps = [d for d in _deps(rev) if d in base]
+        for d in deps:
+            below = {r.revision for r in scripts.iterate_revisions(d, "base")} - {d}
+            redundant += [f"{rev.path}: {d} already implies {a}" for a in deps if a in below]
+    assert redundant == []
 
 
 def test_the_sql_stream_is_closed():
