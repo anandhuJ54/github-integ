@@ -5,19 +5,19 @@ service composes whichever Surfaces it ships; this dev app mounts them all.
 """
 from __future__ import annotations
 
-from admin.router import router as admin
-from campaigns.router import router as campaigns
-from conversion_agents.router import router as conversion_agents
-from etl.router import router as etl
-from graph.router import router as graph
-from marketing.router import router as marketing
-from nora_os.router import router as nora_os
-from ops.router import router as ops
-from sales.router import router as sales
-from search.router import router as search
-from skills.router import router as skills
-from srp.router import router as srp
-from xmp.router import router as xmp
+from surfaces.admin.router import router as admin
+from surfaces.campaigns.router import router as campaigns
+from surfaces.conversion_agents.router import router as conversion_agents
+from surfaces.etl.router import router as etl
+from surfaces.graph.router import router as graph
+from surfaces.marketing.router import router as marketing
+from surfaces.nora_os.router import router as nora_os
+from surfaces.ops.router import router as ops
+from surfaces.sales.router import router as sales
+from surfaces.search.router import router as search
+from surfaces.skills.router import router as skills
+from surfaces.srp.router import router as srp
+from surfaces.xmp.router import router as xmp
 
 # Same order as app.surfaces.SURFACES.
 ROUTERS = [

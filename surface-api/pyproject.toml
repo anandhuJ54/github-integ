@@ -19,6 +19,46 @@ dependencies = [
     "sqlalchemy>=2.0,<2.1",
 ]
 
+[build-system]
+requires = ["setuptools>=75"]
+build-backend = "setuptools.build_meta"
+
+# Each Surface folder `<name>/` keeps its code in `<name>/src`, imported as `surfaces.<name>`.
+# `uv sync` installs the project editable, so the mapping below is what makes those imports work.
+# `_base` and `app` import from the project root (pytest `pythonpath`, uvicorn and `python -m`
+# run from surface-api/).
+[tool.setuptools]
+packages = [
+    "surfaces.sales",
+    "surfaces.marketing",
+    "surfaces.search",
+    "surfaces.srp",
+    "surfaces.xmp",
+    "surfaces.campaigns",
+    "surfaces.etl",
+    "surfaces.graph",
+    "surfaces.nora_os",
+    "surfaces.skills",
+    "surfaces.conversion_agents",
+    "surfaces.admin",
+    "surfaces.ops",
+]
+
+[tool.setuptools.package-dir]
+"surfaces.sales" = "sales/src"
+"surfaces.marketing" = "marketing/src"
+"surfaces.search" = "search/src"
+"surfaces.srp" = "srp/src"
+"surfaces.xmp" = "xmp/src"
+"surfaces.campaigns" = "campaigns/src"
+"surfaces.etl" = "etl/src"
+"surfaces.graph" = "graph/src"
+"surfaces.nora_os" = "nora_os/src"
+"surfaces.skills" = "skills/src"
+"surfaces.conversion_agents" = "conversion_agents/src"
+"surfaces.admin" = "admin/src"
+"surfaces.ops" = "ops/src"
+
 [dependency-groups]
 # Dev/CI tooling. `uv sync` installs these by default, so core-gates' `ruff`/`pytest` resolve.
 dev = [

@@ -3,7 +3,7 @@
 Queries are built with the Core query builder against `_base.db.tables` (no ORM: no
 mapped classes, no session). They compile to psycopg's `%(name)s` paramstyle and run on a
 leased `role_connection` / `read_connection`, so the RLS context and role set there apply.
-Rows come back JSON-shaped (`nora_os.db.jsonish` semantics), as PostgREST returned them.
+Rows come back JSON-shaped (`surfaces.nora_os.db.jsonish` semantics), as PostgREST returned them.
 
 Like the self-hosted PostgREST (`max-rows` = 1000, Content-Range 0-999), a SELECT returns at
 most MAX_ROWS rows: a larger or missing LIMIT is lowered to it, so an endpoint answers with the
