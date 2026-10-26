@@ -4,9 +4,9 @@ from __future__ import annotations
 
 import pytest
 from psycopg.types.json import Jsonb
-from surfaces.xmp.queries import common, enterprise
 
 from _base.db.sql import capped, compile_sql
+from surfaces.xmp.queries import common, enterprise
 
 PID = "11111111-1111-4111-8111-111111111111"
 OID = "22222222-2222-4222-8222-222222222222"

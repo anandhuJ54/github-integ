@@ -18,11 +18,11 @@ import httpx
 from fastapi import Depends, HTTPException
 from psycopg.types.json import Jsonb
 from pydantic import BaseModel, ConfigDict, StringConstraints
-from surfaces.graph.sqlutil import execute, parse_input, soft_execute, soft_maybe_one
 
 from _base.auth import current_user
 from _base.db.session import role_connection
 from _base.server_fn import FnCall, bad_input, fn_router
+from surfaces.graph.sqlutil import execute, parse_input, soft_execute, soft_maybe_one
 
 router = fn_router("graph")
 

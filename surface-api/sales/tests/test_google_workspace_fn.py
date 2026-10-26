@@ -4,10 +4,10 @@ from __future__ import annotations
 import pytest
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
-from surfaces.sales.router import router
-from surfaces.sales.routers import google_workspace_fn
 
 from _base.auth import current_user
+from surfaces.sales.router import router
+from surfaces.sales.routers import google_workspace_fn
 
 CLAIMS = {"sub": "u-1", "role": "authenticated", "email": "Me@Corp.com"}
 OPP = "11111111-2222-3333-4444-555555555555"

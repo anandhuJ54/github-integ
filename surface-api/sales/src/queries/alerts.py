@@ -24,12 +24,12 @@ from typing import Any
 import psycopg
 from psycopg.types.json import Jsonb
 from sqlalchemy import select
-from surfaces.sales.queries.contracts import call, rpc_call
-from surfaces.sales.queries.core import insert_rows, update_by
-from surfaces.sales.queries.cpq import cols, execute, now
 
 from _base.db import tables as T
 from _base.db.sql import fetch_all
+from surfaces.sales.queries.contracts import call, rpc_call
+from surfaces.sales.queries.core import insert_rows, update_by
+from surfaces.sales.queries.cpq import cols, execute, now
 
 _log = logging.getLogger(__name__)
 

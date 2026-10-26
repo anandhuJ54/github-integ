@@ -10,9 +10,6 @@ from decimal import Decimal
 import psycopg
 import pytest
 from psycopg.types.json import Jsonb
-from surfaces.sales.queries import opportunity as q
-from surfaces.sales.queries.contracts import UnknownRpc
-from surfaces.sales.routers.opportunity_data import router
 
 from sales.tests.test_contracts import (
     AUTH_READ,
@@ -26,6 +23,9 @@ from sales.tests.test_contracts import (
     sqls,
     table_of,
 )
+from surfaces.sales.queries import opportunity as q
+from surfaces.sales.queries.contracts import UnknownRpc
+from surfaces.sales.routers.opportunity_data import router
 
 P = "/sales/opportunities"
 OPP = "44444444-4444-4444-8444-444444444444"

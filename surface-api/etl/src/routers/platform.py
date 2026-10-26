@@ -6,10 +6,10 @@ from __future__ import annotations
 
 import psycopg
 from fastapi import APIRouter, Depends, HTTPException, status
-from surfaces.etl.queries import platform as q
 
 from _base.auth import current_user
 from _base.db import session as db
+from surfaces.etl.queries import platform as q
 
 router = APIRouter(prefix="/etl/platform", tags=["etl"])
 

@@ -4,9 +4,6 @@ from __future__ import annotations
 
 import psycopg
 import pytest
-from surfaces.sales.queries import worklist as q
-from surfaces.sales.queries.contracts import UnknownRpc
-from surfaces.sales.routers.worklist_data import router
 
 from sales.tests.test_contracts import (
     AUTH_WRITE,
@@ -16,6 +13,9 @@ from sales.tests.test_contracts import (
     install_fake_db,
     make_client,
 )
+from surfaces.sales.queries import worklist as q
+from surfaces.sales.queries.contracts import UnknownRpc
+from surfaces.sales.routers.worklist_data import router
 
 P = "/sales/worklist"
 

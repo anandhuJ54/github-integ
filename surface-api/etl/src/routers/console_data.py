@@ -9,10 +9,10 @@ from typing import Any, Literal
 import psycopg
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from pydantic import BaseModel, Field
-from surfaces.etl.queries import hierarchy, sources, tabs
 
 from _base.auth import current_user
 from _base.db import session as db
+from surfaces.etl.queries import hierarchy, sources, tabs
 
 router = APIRouter(prefix="/etl/console", tags=["etl"])
 

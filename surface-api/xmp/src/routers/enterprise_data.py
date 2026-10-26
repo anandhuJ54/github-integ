@@ -18,11 +18,11 @@ from typing import Any
 import psycopg
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from pydantic import BaseModel, ConfigDict, Field
-from surfaces.xmp.queries import common, enterprise, enterprise_ops
 
 from _base.auth import current_user
 from _base.db import session as db
 from _base.db.sql import fetch_all
+from surfaces.xmp.queries import common, enterprise, enterprise_ops
 
 router = APIRouter(prefix="/xmp", tags=["xmp"])
 

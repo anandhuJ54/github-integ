@@ -5,6 +5,7 @@ import datetime as dt
 import time
 
 import pytest
+
 from surfaces.nora_os.runner import (
     SKILL_RUN_COLUMNS,
     CapabilityHandler,

@@ -22,6 +22,7 @@ from typing import Any
 import httpx
 from psycopg import sql
 from psycopg.types.json import Jsonb
+
 from surfaces.etl.statefarm import parse_ok, parse_state_farm_agent
 
 BRAND_ORG_ID = "bbbbbbb1-0000-4000-8000-000000000001"  # State Farm brand org

@@ -9,10 +9,10 @@ import psycopg
 import pytest
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
-from surfaces.campaigns.routers.review_campaigns import router
 
 from _base.auth import current_user
 from _base.db import session as core_db
+from surfaces.campaigns.routers.review_campaigns import router
 
 UID = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa"
 CLAIMS = {"sub": UID, "role": "authenticated"}

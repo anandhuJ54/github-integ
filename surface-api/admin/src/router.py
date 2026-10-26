@@ -5,6 +5,7 @@ The app mounts only this. Include new admin sub-routers here, not in app.py.
 from __future__ import annotations
 
 from fastapi import APIRouter
+
 from surfaces.admin.routers.accounts_data import router as accounts_data_router
 from surfaces.admin.routers.claims import router as claims_router
 from surfaces.admin.routers.console_home import router as console_home_router

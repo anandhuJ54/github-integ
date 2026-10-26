@@ -6,9 +6,9 @@ from typing import Any
 import pytest
 from psycopg import sql as psql
 from psycopg.types.json import Jsonb
-from surfaces.etl import deep_hydrate as dh
 
 from etl.tests.test_statefarm import HTML
+from surfaces.etl import deep_hydrate as dh
 
 
 class FakeCursor:

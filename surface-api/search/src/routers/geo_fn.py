@@ -4,10 +4,10 @@ from __future__ import annotations
 import math
 
 from fastapi import Request
-from surfaces.search import geo
-from surfaces.search.pg import js_number
 
 from _base.server_fn import FnCall, fn_router
+from surfaces.search import geo
+from surfaces.search.pg import js_number
 
 router = fn_router("search")
 

@@ -5,10 +5,10 @@ from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel
-from surfaces.srp.queries.claim_profile import MultipleRows, claim_profile
 
 from _base.auth import current_user
 from _base.db import session as db
+from surfaces.srp.queries.claim_profile import MultipleRows, claim_profile
 
 router = APIRouter(prefix="/srp", tags=["srp"])
 

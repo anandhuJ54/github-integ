@@ -11,10 +11,10 @@ from typing import Any
 
 import psycopg
 from sqlalchemy import select
-from surfaces.sales.queries.catalog import cols
 
 from _base.db import tables as T
 from _base.db.sql import fetch_many
+from surfaces.sales.queries.catalog import cols
 
 org_t = T.t_organizations
 

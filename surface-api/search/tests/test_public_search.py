@@ -9,15 +9,15 @@ import psycopg
 import pytest
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
-from surfaces.search.queries import public_search as q
-from surfaces.search.queries import voce as v
-from surfaces.search.routers.public_search import router as search_router
-from surfaces.search.routers.voce import router as voce_router
 
 from _base.auth import current_user
 from _base.db import session as core_db
 from _base.db.sql import capped, compile_sql
 from _base.server_fn import optional_user
+from surfaces.search.queries import public_search as q
+from surfaces.search.queries import voce as v
+from surfaces.search.routers.public_search import router as search_router
+from surfaces.search.routers.voce import router as voce_router
 
 CLAIMS = {"sub": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa", "role": "authenticated"}
 AID = "11111111-1111-4111-8111-111111111111"

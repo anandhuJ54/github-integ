@@ -13,10 +13,10 @@ from typing import Any
 
 import psycopg
 from fastapi import APIRouter, Depends, HTTPException, Query, status
-from surfaces.search.queries import voce as q
 
 from _base.db import session as db
 from _base.server_fn import optional_user
+from surfaces.search.queries import voce as q
 
 log = logging.getLogger(__name__)
 

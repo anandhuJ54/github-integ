@@ -12,6 +12,9 @@ from typing import Any
 from zoneinfo import ZoneInfo
 
 from fastapi import Request
+
+from _base.db.session import role_connection
+from _base.server_fn import FnCall, fn_router
 from surfaces.marketing import geo
 from surfaces.marketing.pg import as_int_if_whole, js_number, num, safe
 from surfaces.marketing.search_docs import (
@@ -22,9 +25,6 @@ from surfaces.marketing.search_docs import (
     search_docs_facets,
     with_coordinates,
 )
-
-from _base.db.session import role_connection
-from _base.server_fn import FnCall, fn_router
 
 router = fn_router("marketing")
 

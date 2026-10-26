@@ -11,10 +11,10 @@ from __future__ import annotations
 
 from fastapi import APIRouter, Depends
 from pydantic import Field
-from surfaces.sales.queries import team_central as q
-from surfaces.sales.routers.cpq_data import _Body, _read_with
 
 from _base.auth import current_user
+from surfaces.sales.queries import team_central as q
+from surfaces.sales.routers.cpq_data import _Body, _read_with
 
 router = APIRouter(prefix="/sales/team-central", tags=["sales"])
 

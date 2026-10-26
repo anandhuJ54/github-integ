@@ -21,11 +21,11 @@ from typing import Any
 
 import psycopg
 from sqlalchemy import select
-from surfaces.sales.queries.cpq import cols, execute, single
-from surfaces.sales.queries.teams import one
 
 from _base.db import tables as T
 from _base.db.sql import fetch_many, typed
+from surfaces.sales.queries.cpq import cols, execute, single
+from surfaces.sales.queries.teams import one
 
 reps = T.t_exp_sales_reps
 verticals = T.t_exp_sales_rep_verticals

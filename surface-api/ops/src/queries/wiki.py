@@ -11,10 +11,10 @@ from typing import Any
 
 import psycopg
 from sqlalchemy import delete, func, insert, select, update
-from surfaces.ops.queries.dev import _exec
 
 from _base.db import tables as T
 from _base.db.sql import fetch_many
+from surfaces.ops.queries.dev import _exec
 
 spaces_t, docs_t = T.t_exp_wiki_spaces, T.t_exp_wiki_docs
 comments_t, revisions_t, watchers_t = T.t_exp_wiki_comments, T.t_exp_wiki_revisions, \

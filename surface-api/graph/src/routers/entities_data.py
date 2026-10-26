@@ -18,12 +18,12 @@ from typing import Any, Literal
 import psycopg
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel, Field
-from surfaces.graph.queries import entities as q
 
 from _base.auth import current_user
 from _base.db import session as db
 from _base.db.sql import fetch_all
 from _base.server_fn import optional_user
+from surfaces.graph.queries import entities as q
 
 router = APIRouter(prefix="/graph", tags=["graph"])
 

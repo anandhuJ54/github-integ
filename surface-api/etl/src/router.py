@@ -9,6 +9,7 @@ DB-side schedulers call over HTTP. Mounting them schedules nothing.
 from __future__ import annotations
 
 from fastapi import APIRouter
+
 from surfaces.etl.routers.console_data import router as console_data_router
 from surfaces.etl.routers.disco_agent_mapper import router as disco_agent_mapper_router
 from surfaces.etl.routers.disco_agent_probe import router as disco_agent_probe_router

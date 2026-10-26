@@ -12,10 +12,10 @@ from typing import Any
 
 from fastapi import APIRouter
 from pydantic import Field
-from surfaces.sales.queries import sign as q
-from surfaces.sales.routers.cpq_data import _Body, _guard
 
 from _base.db import session as db
+from surfaces.sales.queries import sign as q
+from surfaces.sales.routers.cpq_data import _Body, _guard
 
 router = APIRouter(prefix="/sales/sign", tags=["sales"])
 

@@ -7,10 +7,10 @@ import psycopg
 import pytest
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
-from surfaces.search.router import router
 
 from _base.db import session as core_db
 from _base.server_fn import optional_user
+from surfaces.search.router import router
 
 USER = {"sub": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa", "role": "authenticated"}
 

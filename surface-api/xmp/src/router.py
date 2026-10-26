@@ -9,6 +9,7 @@ The app mounts only this. Include new xmp sub-routers here, not in app.py.
 from __future__ import annotations
 
 from fastapi import APIRouter
+
 from surfaces.xmp.routers.directory_data import router as directory_data_router
 from surfaces.xmp.routers.enterprise_data import router as enterprise_data_router
 from surfaces.xmp.routers.health import router as health_router

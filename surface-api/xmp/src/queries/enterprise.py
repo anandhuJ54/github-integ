@@ -16,10 +16,10 @@ from typing import Any
 import psycopg
 from psycopg.types.json import Jsonb
 from sqlalchemy import select
-from surfaces.xmp.queries.common import call_rpc, cols, execute, single, soft
 
 from _base.db import tables as T
 from _base.db.sql import fetch_all, fetch_many
+from surfaces.xmp.queries.common import call_rpc, cols, execute, single, soft
 
 org_t, pro_t, nodes_t = T.t_organizations, T.t_professionals, T.t_graph_nodes
 roles_t, inv_t, acct_t, audit_t = T.t_user_roles, T.t_invitations, T.t_user_accounts, \

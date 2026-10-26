@@ -16,10 +16,10 @@ from typing import Any, Literal
 import psycopg
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from pydantic import BaseModel, ConfigDict, Field
-from surfaces.srp.queries import common, dashboard, seat
 
 from _base.auth import current_user
 from _base.db import session as db
+from surfaces.srp.queries import common, dashboard, seat
 
 router = APIRouter(prefix="/srp", tags=["srp"])
 

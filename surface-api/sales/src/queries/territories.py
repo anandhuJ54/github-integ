@@ -34,11 +34,11 @@ import psycopg
 from psycopg.types.json import Jsonb
 from sqlalchemy import Text, func, literal, select
 from sqlalchemy.dialects.postgresql import insert as pg_insert
-from surfaces.sales.queries.contracts import call, rpc_call
-from surfaces.sales.queries.cpq import cols, execute, single
 
 from _base.db import tables as T
 from _base.db.sql import fetch_all, fetch_many, typed
+from surfaces.sales.queries.contracts import call, rpc_call
+from surfaces.sales.queries.cpq import cols, execute, single
 
 territories = T.t_exp_territories
 brand = T.t_exp_territory_brand

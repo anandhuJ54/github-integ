@@ -12,10 +12,10 @@ from typing import Any, Literal
 import psycopg
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from pydantic import BaseModel, ConfigDict, Field
-from surfaces.graph.queries import categories as q
 
 from _base.auth import current_user
 from _base.db import session as db
+from surfaces.graph.queries import categories as q
 
 router = APIRouter(prefix="/graph/categories", tags=["graph"])
 

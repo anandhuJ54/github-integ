@@ -11,12 +11,12 @@ import psycopg
 import pytest
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
-from surfaces.sales.queries import teams as q
-from surfaces.sales.routers.teams_data import router
 
 from _base.auth import current_user
 from sales.tests import test_core as ct
 from sales.tests.test_cpq import RID, RID2, values, writes
+from surfaces.sales.queries import teams as q
+from surfaces.sales.routers.teams_data import router
 
 P = "/sales/teams"
 CLAIMS, select_list, selects = ct.CLAIMS, ct.select_list, ct.selects

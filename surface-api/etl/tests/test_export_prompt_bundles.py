@@ -7,9 +7,9 @@ from contextlib import contextmanager
 import pytest
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
-from surfaces.etl.routers import export_prompt_bundles as r
 
 from etl.tests.test_deep_hydrate import FakeConn
+from surfaces.etl.routers import export_prompt_bundles as r
 
 
 class Resp:

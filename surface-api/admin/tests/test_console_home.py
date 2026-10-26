@@ -7,10 +7,10 @@ from contextlib import contextmanager
 import pytest
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
-from surfaces.admin.routers.console_home import router
 
 from _base.auth import current_user
 from _base.db import session as core_db
+from surfaces.admin.routers.console_home import router
 
 CLAIMS = {"sub": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa", "email": "me@example.com",
           "role": "authenticated"}

@@ -12,11 +12,11 @@ from typing import Any
 import psycopg
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel, ConfigDict, Field
-from surfaces.admin.queries import me as q
 
 from _base.auth import current_user
 from _base.db import session as db
 from _base.server_fn import optional_user
+from surfaces.admin.queries import me as q
 
 router = APIRouter(prefix="/admin/me", tags=["admin"])
 

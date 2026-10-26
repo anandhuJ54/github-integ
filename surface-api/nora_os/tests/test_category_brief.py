@@ -3,6 +3,7 @@ lib/category-brief.ts on the same fixtures) + the legacy category-brief.test.ts 
 from __future__ import annotations
 
 import pytest
+
 from surfaces.nora_os.category_brief import (
     compile_category_brief,
     entity_brief,

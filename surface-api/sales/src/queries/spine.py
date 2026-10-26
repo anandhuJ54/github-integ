@@ -23,11 +23,11 @@ from typing import Any
 
 import psycopg
 from sqlalchemy import select
-from surfaces.sales.queries.boards import count_of, count_stmt
-from surfaces.sales.queries.cpq import cols
 
 from _base.db import tables as T
 from _base.db.sql import fetch_all, fetch_many
+from surfaces.sales.queries.boards import count_of, count_stmt
+from surfaces.sales.queries.cpq import cols
 
 claims = T.t_exp_claim_events
 territories = T.t_exp_territories

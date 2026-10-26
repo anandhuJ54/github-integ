@@ -8,10 +8,10 @@ import psycopg
 import pytest
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
-from surfaces.graph.routers.categories_data import router
 
 from _base.auth import current_user
 from _base.db import session as core_db
+from surfaces.graph.routers.categories_data import router
 
 CLAIMS = {"sub": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa", "role": "authenticated"}
 RID = "11111111-1111-4111-8111-111111111111"

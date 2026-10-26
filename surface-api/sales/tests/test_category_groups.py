@@ -7,7 +7,6 @@ from decimal import Decimal
 
 import psycopg
 import pytest
-from surfaces.sales.routers.category_groups_data import router
 
 from sales.tests.test_contracts import (
     AUTH_READ,
@@ -17,6 +16,7 @@ from sales.tests.test_contracts import (
     make_client,
     sqls,
 )
+from surfaces.sales.routers.category_groups_data import router
 
 P = "/sales/category-groups"
 

@@ -19,10 +19,10 @@ from typing import Any
 
 import psycopg
 from sqlalchemy import func, select
-from surfaces.sales.queries.cpq import cols, execute, maybe_single, now
 
 from _base.db import tables as T
 from _base.db.sql import fetch_all, fetch_many, typed
+from surfaces.sales.queries.cpq import cols, execute, maybe_single, now
 
 reps = T.t_exp_sales_reps
 terrs = T.t_exp_territories

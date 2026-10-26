@@ -9,11 +9,11 @@ from urllib.parse import parse_qs, urlsplit
 import pytest
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
-from surfaces.admin.router import router
-from surfaces.admin.routers import google_oauth_callback, google_workspace_fn, integrations_fn
 
 from _base.auth import current_user
 from _base.integrations import status
+from surfaces.admin.router import router
+from surfaces.admin.routers import google_oauth_callback, google_workspace_fn, integrations_fn
 
 CLAIMS = {"sub": "u-1", "role": "authenticated", "email": "Me@Corp.com"}
 WS_ROW = {"id": "workspace", "status": "not_connected", "domain": "corp.com",

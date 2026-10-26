@@ -15,6 +15,9 @@ from typing import Any
 
 from fastapi import Depends, HTTPException
 from pydantic import BaseModel, ConfigDict, ValidationError, field_validator
+
+from _base.auth import current_user
+from _base.server_fn import FnCall, bad_input, fn_router
 from surfaces.nora_os.capabilities import capability_handlers
 from surfaces.nora_os.db import Db, DbError
 from surfaces.nora_os.jsutil import js_number, nz
@@ -22,9 +25,6 @@ from surfaces.nora_os.nora.claim_gate import REFUSAL_MESSAGE, decide_next, ui_st
 from surfaces.nora_os.nora.claim_otp import otp_hash
 from surfaces.nora_os.routers.nora_runner_fn import _issues
 from surfaces.nora_os.runner_server import execute_skill_run
-
-from _base.auth import current_user
-from _base.server_fn import FnCall, bad_input, fn_router
 
 router = fn_router("nora_os")
 

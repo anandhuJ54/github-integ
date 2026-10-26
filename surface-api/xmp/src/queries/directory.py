@@ -16,10 +16,10 @@ from typing import Any
 
 import psycopg
 from sqlalchemy import func, select
-from surfaces.xmp.queries.common import cols
 
 from _base.db import tables as T
 from _base.db.sql import fetch_all, fetch_many
+from surfaces.xmp.queries.common import cols
 
 pros = T.t_professionals
 orgs = T.t_organizations

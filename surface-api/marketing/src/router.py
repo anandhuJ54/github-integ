@@ -9,6 +9,7 @@ The app mounts only this. Include new marketing sub-routers here, not in app.py.
 from __future__ import annotations
 
 from fastapi import APIRouter
+
 from surfaces.marketing.routers.city_home_fn import router as city_home_fn_router
 from surfaces.marketing.routers.health import router as health_router
 from surfaces.marketing.routers.home_fn import router as home_fn_router

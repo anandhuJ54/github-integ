@@ -15,9 +15,9 @@ from typing import Any
 
 import psycopg
 from sqlalchemy import exists, func, select
-from surfaces.etl.queries.common import fetch_many, one_of, rpc_value
 
 from _base.db import tables as T
+from surfaces.etl.queries.common import fetch_many, one_of, rpc_value
 
 src, stg, runs_t = T.t_exp_etl_sources, T.t_exp_etl_staging, T.t_exp_etl_runs
 contract_t, llm_t, props_t = T.t_disco_site_contract, T.t_disco_llm_requests, T.t_disco_proposals

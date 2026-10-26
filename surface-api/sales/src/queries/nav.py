@@ -28,11 +28,11 @@ from typing import Any
 
 import psycopg
 from sqlalchemy import select
-from surfaces.sales.queries.boards import count_of, count_stmt
-from surfaces.sales.queries.cpq import cols, maybe_single
 
 from _base.db import tables as T
 from _base.db.sql import fetch_all, fetch_many, typed
+from surfaces.sales.queries.boards import count_of, count_stmt
+from surfaces.sales.queries.cpq import cols, maybe_single
 
 reps = T.t_exp_sales_reps
 quotas = T.t_exp_sales_quotas

@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import pytest
+
 from surfaces.nora_os.nora import claim_capabilities as cc
 from surfaces.nora_os.nora.claim_gate import BriefClaim, Claimant
 from surfaces.nora_os.nora.claim_otp import otp_hash

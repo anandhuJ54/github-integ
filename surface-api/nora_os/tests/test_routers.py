@@ -7,11 +7,11 @@ import psycopg
 import pytest
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
-from surfaces.nora_os.router import router
-from surfaces.nora_os.routers import claim_fn
 
 from _base.auth import current_user
 from _base.db import session as core_db
+from surfaces.nora_os.router import router
+from surfaces.nora_os.routers import claim_fn
 
 USER = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa"
 PRO = "22222222-2222-4222-8222-222222222222"

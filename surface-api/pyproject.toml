@@ -79,6 +79,10 @@ line-length = 100
 # module; the importable top-level packages (`_base`, `sales`, …) are all valid names.
 ignore = ["B008", "N999"]
 
+[tool.ruff.lint.isort]
+# Project code: shared core, the app shell and every Surface (`surfaces.<name>`).
+known-first-party = ["_base", "app", "surfaces"]
+
 [tool.pytest.ini_options]
 testpaths = ["."]
 python_files = ["*_test.py", "test_*.py"]

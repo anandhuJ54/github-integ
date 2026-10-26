@@ -10,11 +10,11 @@ from __future__ import annotations
 
 import psycopg
 from fastapi import APIRouter, Depends, HTTPException, status
-from surfaces.srp.queries import common
-from surfaces.srp.queries import directory as q
 
 from _base.auth import current_user
 from _base.db import session as db
+from surfaces.srp.queries import common
+from surfaces.srp.queries import directory as q
 
 router = APIRouter(prefix="/srp/directory", tags=["srp"])
 

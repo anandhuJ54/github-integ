@@ -22,10 +22,10 @@ from typing import Any
 import psycopg
 from psycopg.types.json import Jsonb
 from sqlalchemy import select
-from surfaces.sales.queries.cpq import cols, execute, maybe_single, now, update
 
 from _base.db import tables as T
 from _base.db.sql import fetch_all, fetch_many, jsonish
+from surfaces.sales.queries.cpq import cols, execute, maybe_single, now, update
 
 contracts = T.t_exp_contracts
 orgs = T.t_organizations

@@ -7,6 +7,7 @@ import psycopg
 from fastapi import FastAPI
 from fastapi.responses import Response
 from fastapi.testclient import TestClient
+
 from surfaces.search import robots, site_indexing, sitemap
 from surfaces.search.robots import (
     CONSOLE_PATH_PREFIXES,

@@ -10,10 +10,9 @@ from __future__ import annotations
 
 from typing import Any
 
-from surfaces.marketing.pg import rows
-
 from _base.db.session import role_connection
 from _base.server_fn import FnCall, fn_router
+from surfaces.marketing.pg import rows
 
 router = fn_router("marketing")
 

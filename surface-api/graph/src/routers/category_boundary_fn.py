@@ -14,11 +14,11 @@ from typing import Any
 import httpx
 import psycopg
 from fastapi import Depends, HTTPException
-from surfaces.graph.sqlutil import maybe_one
 
 from _base.auth import current_user
 from _base.db.session import role_connection
 from _base.server_fn import FnCall, bad_input, fn_router, forbidden
+from surfaces.graph.sqlutil import maybe_one
 
 router = fn_router("graph")
 

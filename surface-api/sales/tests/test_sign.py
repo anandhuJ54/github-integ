@@ -5,10 +5,10 @@ from __future__ import annotations
 
 import psycopg
 import pytest
-from surfaces.sales.queries import sign as q
-from surfaces.sales.routers.sign_public import router
 
 from sales.tests.test_contracts import install_fake_db, make_client
+from surfaces.sales.queries import sign as q
+from surfaces.sales.routers.sign_public import router
 
 P = "/sales/sign"
 

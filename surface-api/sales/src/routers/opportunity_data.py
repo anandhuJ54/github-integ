@@ -16,12 +16,12 @@ from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from pydantic import Field
-from surfaces.sales.queries import opportunity as q
-from surfaces.sales.queries.contracts import UnknownRpc
-from surfaces.sales.routers.cpq_data import _Body, _guard, _read_with, _write_with
 
 from _base.auth import current_user
 from _base.db import session as db
+from surfaces.sales.queries import opportunity as q
+from surfaces.sales.queries.contracts import UnknownRpc
+from surfaces.sales.routers.cpq_data import _Body, _guard, _read_with, _write_with
 
 router = APIRouter(prefix="/sales/opportunities", tags=["sales"])
 

@@ -11,9 +11,8 @@ from datetime import UTC, date, datetime
 from decimal import ROUND_HALF_UP, Decimal
 from typing import Any
 
-from surfaces.search.pg import safe
-
 from _base.db.session import role_connection
+from surfaces.search.pg import safe
 
 # Held-below-floor pages are never emitted into an indexable sitemap.
 INDEXABLE_PARTITIONS: tuple[str, ...] = ("priority-high", "priority-mid", "priority-low")

@@ -15,10 +15,10 @@ from typing import Any, Literal
 
 import psycopg
 from sqlalchemy import select
-from surfaces.srp.queries.common import cols, single, single_or_raise
 
 from _base.db import tables as T
 from _base.db.sql import fetch_all, fetch_many
+from surfaces.srp.queries.common import cols, single, single_or_raise
 
 org_t, pro_t, nodes_t, reviews_t = T.t_organizations, T.t_professionals, T.t_graph_nodes, \
     T.t_reviews

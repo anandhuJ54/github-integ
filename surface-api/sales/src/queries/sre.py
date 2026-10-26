@@ -21,11 +21,11 @@ from typing import Any
 import psycopg
 from psycopg.types.json import Jsonb
 from sqlalchemy import select
-from surfaces.sales.queries.core import insert_rows
-from surfaces.sales.queries.cpq import cols, execute, maybe_single, now
 
 from _base.db import tables as T
 from _base.db.sql import fetch_all, fetch_many
+from surfaces.sales.queries.core import insert_rows
+from surfaces.sales.queries.cpq import cols, execute, maybe_single, now
 
 reps = T.t_exp_sales_reps
 promos = T.t_exp_promo_codes

@@ -10,6 +10,7 @@ The app mounts only this. Include new sales sub-routers here, not in app.py.
 from __future__ import annotations
 
 from fastapi import APIRouter
+
 from surfaces.sales.routers.alerts_data import router as alerts_data_router
 from surfaces.sales.routers.boards_data import router as boards_data_router
 from surfaces.sales.routers.catalog_data import router as catalog_data_router

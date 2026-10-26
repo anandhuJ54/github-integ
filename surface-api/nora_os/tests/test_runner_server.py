@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import pytest
+
 from surfaces.nora_os import capabilities as caps_mod
 from surfaces.nora_os.capabilities import IMPLEMENTED_CAPABILITIES, capability_handlers
 from surfaces.nora_os.runner import CapabilityHandler, HandlerContext, RunEntity

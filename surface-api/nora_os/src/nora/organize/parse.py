@@ -13,6 +13,7 @@ from urllib.parse import urlsplit, urlunsplit
 
 from bs4 import BeautifulSoup, Comment, Declaration, Doctype, NavigableString, Tag
 from bs4.element import ProcessingInstruction
+
 from surfaces.nora_os import disco
 from surfaces.nora_os.jsutil import iso_now
 

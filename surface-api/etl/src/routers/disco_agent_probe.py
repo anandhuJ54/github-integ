@@ -25,11 +25,11 @@ import httpx
 from fastapi import APIRouter, Request
 from fastapi.responses import JSONResponse, PlainTextResponse, Response
 from starlette.concurrency import run_in_threadpool
-from surfaces.etl.disco import agent_browser
-from surfaces.etl.disco.agent_mapper import ANTHROPIC_URL, _parallel
 
 from _base.disco import webscraper
 from _base.disco.agent_engine import now_ms
+from surfaces.etl.disco import agent_browser
+from surfaces.etl.disco.agent_mapper import ANTHROPIC_URL, _parallel
 
 router = APIRouter(tags=["etl:disco"])
 

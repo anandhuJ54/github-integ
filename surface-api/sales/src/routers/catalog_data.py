@@ -14,10 +14,10 @@ from typing import Any
 import psycopg
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel, ConfigDict, Field
-from surfaces.sales.queries import catalog as q
 
 from _base.auth import current_user
 from _base.db import session as db
+from surfaces.sales.queries import catalog as q
 
 router = APIRouter(prefix="/sales/catalog", tags=["sales"])
 

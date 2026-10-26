@@ -10,6 +10,7 @@ The app mounts only this. Include new search sub-routers here, not in app.py.
 from __future__ import annotations
 
 from fastapi import APIRouter
+
 from surfaces.search.routers.engagement_fn import router as engagement_fn_router
 from surfaces.search.routers.geo import router as geo_router
 from surfaces.search.routers.geo_fn import router as geo_fn_router

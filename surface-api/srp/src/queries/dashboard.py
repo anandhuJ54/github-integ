@@ -14,10 +14,10 @@ from typing import Any
 
 import psycopg
 from sqlalchemy import select
-from surfaces.srp.queries.common import cols, single
 
 from _base.db import tables as T
 from _base.db.sql import fetch_many
+from surfaces.srp.queries.common import cols, single
 
 pro_t, scores_t, subs_t, plg_t = T.t_professionals, T.t_search_rank_scores, T.t_subscriptions, \
     T.t_plg_rules

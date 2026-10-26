@@ -9,6 +9,7 @@ from typing import Any
 from urllib.parse import quote
 
 import httpx
+
 from surfaces.nora_os import disco
 from surfaces.nora_os.nora.organize.costs import UNIT_COST_USD
 from surfaces.nora_os.nora.organize.integrations import with_integration

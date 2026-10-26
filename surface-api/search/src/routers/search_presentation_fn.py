@@ -4,9 +4,9 @@ from __future__ import annotations
 from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field, ValidationError
-from surfaces.search.presentation import load_search_presentation
 
 from _base.server_fn import FnCall, bad_input, fn_router
+from surfaces.search.presentation import load_search_presentation
 
 router = fn_router("search")
 

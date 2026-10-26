@@ -8,10 +8,10 @@ from contextlib import contextmanager, nullcontext
 import pytest
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
-from surfaces.admin.routers import site_indexing_fn
-from surfaces.admin.routers.site_indexing_fn import router
 
 from _base.auth import current_user
+from surfaces.admin.routers import site_indexing_fn
+from surfaces.admin.routers.site_indexing_fn import router
 
 
 class _Result:

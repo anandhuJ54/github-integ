@@ -11,12 +11,12 @@ from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import Field
-from surfaces.sales.queries import worklist as q
-from surfaces.sales.queries.contracts import UnknownRpc
-from surfaces.sales.routers.cpq_data import _Body, _guard
 
 from _base.auth import current_user
 from _base.db import session as db
+from surfaces.sales.queries import worklist as q
+from surfaces.sales.queries.contracts import UnknownRpc
+from surfaces.sales.routers.cpq_data import _Body, _guard
 
 router = APIRouter(prefix="/sales/worklist", tags=["sales"])
 

@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import psycopg
 import pytest
+
 from surfaces.search.routers.public_site_fn import blocks_of
 
 PAGE = {"id": "p1", "slug": "about", "title": "About", "page_type": "page", "status": "published",

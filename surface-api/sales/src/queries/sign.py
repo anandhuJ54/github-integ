@@ -11,6 +11,7 @@ from __future__ import annotations
 from typing import Any
 
 import psycopg
+
 from surfaces.sales.queries.contracts import call, rpc_call
 
 SIGN_RPCS: dict[str, list[tuple[str, str]]] = {

@@ -7,12 +7,12 @@ import psycopg
 import pytest
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
-from surfaces.search.queries import geo as q
-from surfaces.search.routers.geo import router
 
 from _base.db import session as core_db
 from _base.db.sql import capped, compile_sql
 from _base.server_fn import optional_user
+from surfaces.search.queries import geo as q
+from surfaces.search.routers.geo import router
 
 CLAIMS = {"sub": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa", "role": "authenticated"}
 

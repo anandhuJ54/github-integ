@@ -14,10 +14,10 @@ from typing import Any
 
 import psycopg
 from sqlalchemy import func, nulls_last, select
-from surfaces.xmp.queries.common import cols, single, soft_all
 
 from _base.db import tables as T
 from _base.db.sql import fetch_many
+from surfaces.xmp.queries.common import cols, single, soft_all
 
 crm = T.t_crm_integrations
 oauth = T.t_oauth_connections

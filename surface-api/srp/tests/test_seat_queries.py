@@ -4,9 +4,9 @@ surface audit 2026-10-25."""
 from __future__ import annotations
 
 import pytest
-from surfaces.srp.queries import common, dashboard, seat
 
 from _base.db.sql import capped, compile_sql
+from surfaces.srp.queries import common, dashboard, seat
 
 PID = "11111111-1111-4111-8111-111111111111"
 OID = "22222222-2222-4222-8222-222222222222"

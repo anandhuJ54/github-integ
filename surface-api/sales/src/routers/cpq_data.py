@@ -17,10 +17,10 @@ from typing import Any
 import psycopg
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from pydantic import BaseModel, ConfigDict, Field
-from surfaces.sales.queries import cpq as q
 
 from _base.auth import current_user
 from _base.db import session as db
+from surfaces.sales.queries import cpq as q
 
 router = APIRouter(prefix="/sales/cpq", tags=["sales"])
 

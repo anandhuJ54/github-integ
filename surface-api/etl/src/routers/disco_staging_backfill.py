@@ -20,11 +20,11 @@ from typing import Any
 from fastapi import APIRouter, Request
 from psycopg.types.json import Jsonb
 from starlette.concurrency import run_in_threadpool
-from surfaces.etl.disco import contract_row as cr
-from surfaces.etl.routers._worker import is_invalid, jresp, read_json, worker_key_ok
 
 from _base.db.session import role_connection
 from _base.disco.agent_engine import js_number, json_stringify
+from surfaces.etl.disco import contract_row as cr
+from surfaces.etl.routers._worker import is_invalid, jresp, read_json, worker_key_ok
 
 router = APIRouter(tags=["etl:disco"])
 

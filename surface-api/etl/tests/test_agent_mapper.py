@@ -4,6 +4,7 @@ from __future__ import annotations
 import re
 
 import pytest
+
 from surfaces.etl.disco import agent_mapper as am
 
 

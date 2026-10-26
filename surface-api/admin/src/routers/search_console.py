@@ -12,11 +12,11 @@ from typing import Any, Literal
 import psycopg
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel, ConfigDict, Field
-from surfaces.admin.queries import search_console as q
-from surfaces.admin.queries import voce_boost
 
 from _base.auth import current_user
 from _base.db import session as db
+from surfaces.admin.queries import search_console as q
+from surfaces.admin.queries import voce_boost
 
 router = APIRouter(prefix="/admin/search-console", tags=["admin"])
 

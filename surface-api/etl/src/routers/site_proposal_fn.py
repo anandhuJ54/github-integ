@@ -22,11 +22,11 @@ from typing import Any
 from urllib.parse import urlsplit
 
 from fastapi import Depends
-from surfaces.etl.routers._sql import maybe_single
 
 from _base.auth import current_user
 from _base.db.session import role_connection
 from _base.server_fn import FnCall, bad_input, fn_router, forbidden
+from surfaces.etl.routers._sql import maybe_single
 
 log = logging.getLogger(__name__)
 

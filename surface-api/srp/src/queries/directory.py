@@ -14,10 +14,10 @@ from typing import Any
 
 import psycopg
 from sqlalchemy import select
-from surfaces.srp.queries.common import single_or_raise
 
 from _base.db import tables as T
 from _base.db.sql import fetch_all
+from surfaces.srp.queries.common import single_or_raise
 
 pros = T.t_professionals
 orgs = T.t_organizations

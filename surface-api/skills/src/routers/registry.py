@@ -13,11 +13,11 @@ from typing import Any, Literal
 import psycopg
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from pydantic import BaseModel, ConfigDict
-from surfaces.skills.queries import registry as reg
-from surfaces.skills.queries import sandbox as sbx
 
 from _base.auth import current_user
 from _base.db import session as db
+from surfaces.skills.queries import registry as reg
+from surfaces.skills.queries import sandbox as sbx
 
 router = APIRouter(prefix="/skills", tags=["skills"])
 

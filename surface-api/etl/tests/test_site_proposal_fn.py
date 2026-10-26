@@ -11,6 +11,8 @@ from typing import Any
 import pytest
 from fastapi import FastAPI, HTTPException
 from fastapi.testclient import TestClient
+
+from _base.auth import current_user
 from surfaces.etl.routers.site_proposal_fn import (
     crawl_method_for,
     given_url_problem,
@@ -19,8 +21,6 @@ from surfaces.etl.routers.site_proposal_fn import (
     parse_preview_input,
     sample_urls,
 )
-
-from _base.auth import current_user
 
 SC_V3 = {
     "version": 3,

@@ -7,8 +7,6 @@ import uuid
 
 import psycopg
 import pytest
-from surfaces.sales.queries import csm as q
-from surfaces.sales.routers.csm_data import router
 
 from sales.tests.test_contracts import (
     AUTH_READ,
@@ -21,6 +19,8 @@ from sales.tests.test_contracts import (
     install_fake_db,
     make_client,
 )
+from surfaces.sales.queries import csm as q
+from surfaces.sales.routers.csm_data import router
 
 P = "/sales/csm"
 

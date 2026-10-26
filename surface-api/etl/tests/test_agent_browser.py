@@ -4,6 +4,7 @@ from __future__ import annotations
 from concurrent.futures import Future
 
 import pytest
+
 from surfaces.etl.disco import agent_browser as ab
 
 

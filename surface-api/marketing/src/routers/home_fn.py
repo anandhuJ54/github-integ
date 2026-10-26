@@ -5,12 +5,12 @@ Every value is a live public (anon) read; an empty table renders as an empty sta
 from __future__ import annotations
 
 from fastapi import Request
-from surfaces.marketing import geo
-from surfaces.marketing.pg import as_int_if_whole, num, safe
-from surfaces.marketing.search_docs import decode_name, search_docs, search_docs_facets
 
 from _base.db.session import role_connection
 from _base.server_fn import FnCall, fn_router
+from surfaces.marketing import geo
+from surfaces.marketing.pg import as_int_if_whole, num, safe
+from surfaces.marketing.search_docs import decode_name, search_docs, search_docs_facets
 
 router = fn_router("marketing")
 

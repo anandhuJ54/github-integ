@@ -12,6 +12,7 @@ from __future__ import annotations
 from typing import Any
 
 import psycopg
+
 from surfaces.sales.queries.contracts import call, rpc_call
 
 # name → [(param, db type)], in the function's order (pg_get_function_identity_arguments, read

@@ -9,9 +9,6 @@ import uuid
 import psycopg
 import pytest
 from psycopg.types.json import Jsonb
-from surfaces.sales.queries import alerts as q
-from surfaces.sales.queries.contracts import UnknownRpc
-from surfaces.sales.routers.alerts_data import router
 
 from sales.tests.test_contracts import (
     AUTH_READ,
@@ -23,6 +20,9 @@ from sales.tests.test_contracts import (
     make_client,
     sqls,
 )
+from surfaces.sales.queries import alerts as q
+from surfaces.sales.queries.contracts import UnknownRpc
+from surfaces.sales.routers.alerts_data import router
 
 P = "/sales/alerts"
 OPP = "44444444-4444-4444-8444-444444444444"

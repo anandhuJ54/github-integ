@@ -14,10 +14,10 @@ from typing import Any
 import psycopg
 from psycopg.types.json import Jsonb
 from sqlalchemy import func, select
-from surfaces.etl.queries.common import fetch_many, rpc_rows, rpc_value
 
 from _base.db import tables as T
 from _base.db.sql import typed
+from surfaces.etl.queries.common import fetch_many, rpc_rows, rpc_value
 
 stg = T.t_exp_etl_staging
 

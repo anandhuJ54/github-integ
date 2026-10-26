@@ -15,11 +15,11 @@ from typing import Any
 import psycopg
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel, Field
-from surfaces.admin.queries import control_claims as q
 
 from _base.auth import current_user
 from _base.db import session as db
 from _base.db.sql import fetch_all
+from surfaces.admin.queries import control_claims as q
 
 router = APIRouter(prefix="/admin/control-claims", tags=["admin"])
 

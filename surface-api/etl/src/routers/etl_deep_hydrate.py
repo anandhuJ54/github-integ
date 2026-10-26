@@ -22,9 +22,9 @@ from typing import Any
 from fastapi import APIRouter, Request
 from fastapi.encoders import jsonable_encoder
 from fastapi.responses import JSONResponse, PlainTextResponse
-from surfaces.etl import deep_hydrate as mod
 
 from _base.db.session import role_connection
+from surfaces.etl import deep_hydrate as mod
 
 router = APIRouter(tags=["etl"])
 

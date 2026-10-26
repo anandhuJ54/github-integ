@@ -11,10 +11,10 @@ from __future__ import annotations
 
 import psycopg
 from fastapi import APIRouter, Depends, HTTPException, status
-from surfaces.admin.queries import console_home as console
 
 from _base.auth import current_user
 from _base.db import session as db
+from surfaces.admin.queries import console_home as console
 
 router = APIRouter(prefix="/admin/console", tags=["admin"])
 

@@ -10,11 +10,11 @@ from typing import Any
 
 import psycopg
 from fastapi import APIRouter, Depends, HTTPException, status
-from surfaces.search.queries import profile_page as q
 
 from _base.auth import current_user
 from _base.db import session as db
 from _base.db.sql import fetch_all
+from surfaces.search.queries import profile_page as q
 
 router = APIRouter(prefix="/search", tags=["search"])
 

@@ -21,6 +21,7 @@ import os
 from typing import Any
 
 import httpx
+
 from surfaces.nora_os.category_brief import (
     compile_category_brief,
     entity_brief_for_office,

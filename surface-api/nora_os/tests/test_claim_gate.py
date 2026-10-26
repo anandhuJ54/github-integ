@@ -7,6 +7,7 @@ import hmac
 from dataclasses import replace
 
 import pytest
+
 from surfaces.nora_os.nora.claim_gate import (
     BriefClaim,
     Claimant,

@@ -9,10 +9,10 @@ import re
 
 from fastapi import APIRouter, Request
 from fastapi.responses import PlainTextResponse, Response
-from surfaces.search import site_indexing, sitemap
-from surfaces.search.robots import robots_txt
 
 from _base.config import get_settings
+from surfaces.search import site_indexing, sitemap
+from surfaces.search.robots import robots_txt
 
 router = APIRouter(tags=["search:public"])
 

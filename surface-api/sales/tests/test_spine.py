@@ -8,8 +8,6 @@ from decimal import Decimal
 
 import psycopg
 import pytest
-from surfaces.sales.queries import spine as q
-from surfaces.sales.routers.spine_data import router
 
 from sales.tests.test_contracts import (
     AUTH_READ,
@@ -20,6 +18,8 @@ from sales.tests.test_contracts import (
     sqls,
     table_of,
 )
+from surfaces.sales.queries import spine as q
+from surfaces.sales.routers.spine_data import router
 
 P = "/sales/spine"
 

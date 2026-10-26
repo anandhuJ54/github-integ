@@ -12,6 +12,7 @@ from contextlib import contextmanager
 import pytest
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
+
 from surfaces.etl.disco import contract_row as cr
 from surfaces.etl.routers import (
     disco_detail_api_worker,

@@ -9,6 +9,8 @@ from typing import Any
 import pytest
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
+
+from _base.auth import current_user
 from surfaces.search.routers.engagement_fn import (
     address_of,
     build_compare,
@@ -16,8 +18,6 @@ from surfaces.search.routers.engagement_fn import (
     related_terms,
     trim,
 )
-
-from _base.auth import current_user
 
 UID = "11111111-1111-1111-1111-111111111111"
 

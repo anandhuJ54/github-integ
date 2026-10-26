@@ -16,11 +16,11 @@ import httpx
 import psycopg
 from fastapi import Depends, HTTPException
 from pydantic import BaseModel, ConfigDict, Field, ValidationError
-from surfaces.srp.pg import maybe_single, rows, safe
 
 from _base.auth import current_user
 from _base.db.session import role_connection
 from _base.server_fn import FnCall, bad_input, fn_router
+from surfaces.srp.pg import maybe_single, rows, safe
 
 log = logging.getLogger(__name__)
 router = fn_router("srp")

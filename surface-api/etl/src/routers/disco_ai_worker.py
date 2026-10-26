@@ -8,6 +8,7 @@ from __future__ import annotations
 from fastapi import APIRouter, Request
 from fastapi.concurrency import run_in_threadpool
 from fastapi.responses import JSONResponse, PlainTextResponse, Response
+
 from surfaces.etl.disco import ai_worker
 from surfaces.etl.disco.ai_worker_util import to_json
 

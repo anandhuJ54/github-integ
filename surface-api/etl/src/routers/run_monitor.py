@@ -3,10 +3,10 @@ from __future__ import annotations
 
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel, Field
-from surfaces.etl.queries.run_monitor import load_etl_monitor
 
 from _base.auth import current_user
 from _base.db import session as db
+from surfaces.etl.queries.run_monitor import load_etl_monitor
 
 router = APIRouter(prefix="/etl", tags=["etl"])
 

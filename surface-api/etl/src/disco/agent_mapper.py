@@ -29,11 +29,11 @@ from concurrent.futures import ThreadPoolExecutor
 from typing import Any
 
 import httpx
-from surfaces.etl.disco.agent_browser import BrowserError, RemoteBrowser
-from surfaces.etl.disco.agent_prompt import HEAVY_TOOLS, PARALLEL_TOOLS, SYSTEM_PROMPT, TOOLS
 
 from _base.disco import agent_engine as E
 from _base.disco.ai_cost import PRICES, note_ai_usage
+from surfaces.etl.disco.agent_browser import BrowserError, RemoteBrowser
+from surfaces.etl.disco.agent_prompt import HEAVY_TOOLS, PARALLEL_TOOLS, SYSTEM_PROMPT, TOOLS
 
 DEFAULT_MODEL = "claude-sonnet-5-5"
 ANTHROPIC_URL = "https://api.anthropic.com/v1/messages"

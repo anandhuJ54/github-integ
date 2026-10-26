@@ -13,11 +13,11 @@ import pytest
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 from psycopg.types.json import Jsonb
-from surfaces.sales.queries import contracts as q
-from surfaces.sales.routers.contracts_data import router
 
 from _base.auth import current_user
 from _base.db import session as core_db
+from surfaces.sales.queries import contracts as q
+from surfaces.sales.routers.contracts_data import router
 
 UID = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa"
 EMAIL = "seller@example.com"

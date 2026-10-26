@@ -20,10 +20,10 @@ from typing import Any
 import psycopg
 from psycopg.types.json import Jsonb
 from sqlalchemy import select
-from surfaces.marketing.queries.website import MultipleRows, execute, now
 
 from _base.db import tables as T
 from _base.db.sql import fetch_all
+from surfaces.marketing.queries.website import MultipleRows, execute, now
 
 menus = T.t_exp_web_nav_menus
 

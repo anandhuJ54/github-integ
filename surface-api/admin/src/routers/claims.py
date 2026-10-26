@@ -6,10 +6,10 @@ from typing import Any, Literal
 import psycopg
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel, Field
-from surfaces.admin.queries import claims as q
 
 from _base.auth import current_user
 from _base.db import session as db
+from surfaces.admin.queries import claims as q
 
 router = APIRouter(prefix="/admin/claims", tags=["admin"])
 

@@ -8,9 +8,9 @@ from typing import Any
 import pytest
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
-from surfaces.search.routers import schema_cache_fn
 
 from _base.auth import current_user
+from surfaces.search.routers import schema_cache_fn
 
 CLAIMS = {"sub": "u-1", "role": "authenticated", "email": "a@x.com"}
 

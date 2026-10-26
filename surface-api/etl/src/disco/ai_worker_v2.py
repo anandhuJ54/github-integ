@@ -13,10 +13,9 @@ from __future__ import annotations
 import re
 from typing import Any
 
+from _base.disco import detail_api
 from surfaces.etl.disco import ai_worker_map as mp
 from surfaces.etl.disco import ai_worker_util as u
-
-from _base.disco import detail_api
 
 MAP_RUN_LIMIT_MS = 285_000
 V2_CALL_MS = 480_000  # version 2 research, one call (dry runs)

@@ -7,9 +7,8 @@ from __future__ import annotations
 
 from typing import Any
 
-from surfaces.search.pg import safe
-
 from _base.db.session import role_connection
+from surfaces.search.pg import safe
 
 
 def _label_for(item: Any) -> str | None:

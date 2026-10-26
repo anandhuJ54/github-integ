@@ -10,10 +10,10 @@ from __future__ import annotations
 from typing import Any
 
 from fastapi import APIRouter, Depends, Query
-from surfaces.search.queries import public_search as q
 
 from _base.db import session as db
 from _base.server_fn import optional_user
+from surfaces.search.queries import public_search as q
 
 router = APIRouter(prefix="/search/public", tags=["search"])
 

@@ -11,10 +11,10 @@ from typing import Any, Literal
 import psycopg
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from pydantic import BaseModel, Field
-from surfaces.search.queries import monetization, profile
 
 from _base.db import session as db
 from _base.server_fn import optional_user
+from surfaces.search.queries import monetization, profile
 
 log = logging.getLogger(__name__)
 

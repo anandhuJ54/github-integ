@@ -14,10 +14,10 @@ from typing import Any, Literal
 import psycopg
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel, ConfigDict, Field
-from surfaces.admin.queries import accounts as q
 
 from _base.auth import current_user
 from _base.db import session as db
+from surfaces.admin.queries import accounts as q
 
 router = APIRouter(prefix="/admin/accounts", tags=["admin"])
 

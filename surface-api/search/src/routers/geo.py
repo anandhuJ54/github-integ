@@ -12,10 +12,10 @@ from typing import Any
 import psycopg
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel, ConfigDict, Field
-from surfaces.search.queries import geo as q
 
 from _base.db import session as db
 from _base.server_fn import optional_user
+from surfaces.search.queries import geo as q
 
 log = logging.getLogger(__name__)
 

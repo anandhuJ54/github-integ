@@ -24,14 +24,14 @@ import os
 from typing import Any
 
 from psycopg.types.json import Jsonb
+
+from _base.db.session import role_connection
+from _base.disco import ai_cost, boundary, extra_keys
 from surfaces.etl.disco import ai_worker_classify as cl
 from surfaces.etl.disco import ai_worker_discover as dc
 from surfaces.etl.disco import ai_worker_routes as rt
 from surfaces.etl.disco import ai_worker_util as u
 from surfaces.etl.disco import ai_worker_v2 as v2m
-
-from _base.db.session import role_connection
-from _base.disco import ai_cost, boundary, extra_keys
 
 BATCH = 5
 

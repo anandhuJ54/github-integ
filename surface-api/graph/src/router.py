@@ -7,6 +7,7 @@ The app mounts only this. Include new graph sub-routers here, not in app.py.
 from __future__ import annotations
 
 from fastapi import APIRouter
+
 from surfaces.graph.routers.categories_data import router as categories_data_router
 from surfaces.graph.routers.category_boundary_fn import router as category_boundary_fn_router
 from surfaces.graph.routers.category_brief_fn import router as category_brief_fn_router

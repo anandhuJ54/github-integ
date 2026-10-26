@@ -15,9 +15,9 @@ from typing import Any
 from urllib.parse import quote, unquote
 
 import httpx
-from surfaces.marketing.pg import rpc_args, safe
 
 from _base.db.session import role_connection
+from surfaces.marketing.pg import rpc_args, safe
 
 log = logging.getLogger(__name__)
 

@@ -10,6 +10,7 @@ import json
 from pathlib import Path
 
 import pytest
+
 from surfaces.graph.category_brief import (
     brief_failures,
     compile_category_brief,

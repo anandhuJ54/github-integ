@@ -28,10 +28,10 @@ from typing import Any
 
 import psycopg
 from sqlalchemy import func, or_, select
-from surfaces.sales.queries.cpq import cols, execute, insert, now, update
 
 from _base.db import tables as T
 from _base.db.sql import fetch_many, typed
+from surfaces.sales.queries.cpq import cols, execute, insert, now, update
 
 reps = T.t_exp_sales_reps
 quotas = T.t_exp_sales_quotas

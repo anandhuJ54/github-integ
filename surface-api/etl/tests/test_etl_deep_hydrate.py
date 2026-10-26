@@ -7,9 +7,9 @@ from datetime import UTC, datetime, timedelta
 import pytest
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
-from surfaces.etl.routers import etl_deep_hydrate as r
 
 from etl.tests.test_deep_hydrate import FakeConn
+from surfaces.etl.routers import etl_deep_hydrate as r
 
 JOB = {"job_key": "statefarm_deep_hydrate", "gcid": "gcid:insurance_agency", "status": "idle",
        "lease_until": None, "updated_at": "2026-10-01T00:00:00Z", "batch_size": 2,

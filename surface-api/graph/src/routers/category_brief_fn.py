@@ -9,12 +9,12 @@ from typing import Annotated, Any
 
 from fastapi import Depends
 from pydantic import BaseModel, ConfigDict, StringConstraints
-from surfaces.graph.category_brief import compile_category_brief
-from surfaces.graph.sqlutil import fetch_all, parse_input, soft_fetch_all, soft_maybe_one
 
 from _base.auth import current_user
 from _base.db.session import role_connection
 from _base.server_fn import FnCall, fn_router
+from surfaces.graph.category_brief import compile_category_brief
+from surfaces.graph.sqlutil import fetch_all, parse_input, soft_fetch_all, soft_maybe_one
 
 router = fn_router("graph")
 

@@ -3,6 +3,7 @@ moved to admin, surface audit 2026-10-25)."""
 from __future__ import annotations
 
 import psycopg
+
 from surfaces.search import site_indexing
 from surfaces.search.presentation import collect_tags, group_facets, strings
 

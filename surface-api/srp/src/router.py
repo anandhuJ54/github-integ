@@ -9,6 +9,7 @@ The app mounts only this. Include new srp sub-routers here, not in app.py.
 from __future__ import annotations
 
 from fastapi import APIRouter
+
 from surfaces.srp.routers.claim_profile import router as claim_profile_router
 from surfaces.srp.routers.directory_data import router as directory_data_router
 from surfaces.srp.routers.health import router as health_router

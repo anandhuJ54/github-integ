@@ -11,12 +11,12 @@ from typing import Any, Literal
 
 from fastapi import Depends, HTTPException
 from pydantic import BaseModel, ConfigDict, Field, ValidationError, field_validator
-from surfaces.nora_os.capabilities import capability_handlers
-from surfaces.nora_os.db import Db, DbError
-from surfaces.nora_os.runner_server import execute_skill_run
 
 from _base.auth import current_user
 from _base.server_fn import FnCall, bad_input, fn_router, forbidden
+from surfaces.nora_os.capabilities import capability_handlers
+from surfaces.nora_os.db import Db, DbError
+from surfaces.nora_os.runner_server import execute_skill_run
 
 router = fn_router("nora_os")
 

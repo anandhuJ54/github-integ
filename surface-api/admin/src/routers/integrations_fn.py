@@ -11,8 +11,6 @@ from typing import Annotated, Literal
 from fastapi import Depends, HTTPException
 from psycopg.types.json import Jsonb
 from pydantic import AfterValidator, BaseModel, ConfigDict, StringConstraints
-from surfaces.admin.routers.google_workspace_fn import audit, require_super_admin
-from surfaces.admin.sqlutil import execute, parse_input
 
 from _base.auth import current_user
 from _base.db.session import role_connection
@@ -23,6 +21,8 @@ from _base.integrations.status import (
     list_integration_statuses,
 )
 from _base.server_fn import FnCall, bad_input, fn_router
+from surfaces.admin.routers.google_workspace_fn import audit, require_super_admin
+from surfaces.admin.sqlutil import execute, parse_input
 
 router = fn_router("admin")
 
