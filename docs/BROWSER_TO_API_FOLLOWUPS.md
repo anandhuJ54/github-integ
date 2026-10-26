@@ -7,7 +7,7 @@ open questions. When one is decided, record the ruling and the date here, then d
 ## 1. Pages that show incomplete data because of the 1,000-row cap
 
 The self-hosted PostgREST returns at most 1,000 rows per REST response. The API matches that:
-`_base/core/sql.fetch_all` caps every SELECT at `MAX_ROWS = 1000` (decided 2026-10-23), so each
+`_base/db/sql.fetch_all` caps every SELECT at `MAX_ROWS = 1000` (decided 2026-10-23), so each
 endpoint returns exactly what the old browser call got and parity passes 1:1. The cost is that
 the pages below show less data than exists.
 
