@@ -8,10 +8,15 @@ import { Link, useRouterState } from "@tanstack/react-router";
 import {
   BarChart3,
   Gauge,
+  Globe,
+  House,
   LayoutGrid,
+  Lock,
   Network,
+  Plug,
   Search,
   Send,
+  SlidersHorizontal,
   Sparkles,
   Star,
   User,
@@ -23,7 +28,15 @@ import { ActingAsBar } from "@v3/srp/components/impersonation/acting-as-bar";
 import { BrandAvatar, PersonAvatar } from "@v3/shared/components/ui/entity-avatar";
 import { cn } from "@v3/shared/components/utils/utils";
 
-type NavItem = { label: string; suffix: string; icon: ComponentType<{ className?: string }> };
+type NavItem = {
+  label: string;
+  suffix: string;
+  icon: ComponentType<{ className?: string }>;
+  /** Shows a lock (feature not configurable yet); the page still opens. */
+  locked?: boolean;
+  /** Shows an orange PRO pill (paid-plan feature). */
+  pro?: boolean;
+};
 type NavGroup = { label: string | null; items: NavItem[] };
 
 function ShellFrame({
@@ -34,6 +47,7 @@ function ShellFrame({
   nav,
   base,
   actions,
+  hideHeader = false,
   children,
 }: {
   eyebrow: string;
@@ -43,6 +57,8 @@ function ShellFrame({
   nav: NavGroup[];
   base: string;
   actions?: ReactNode;
+  /** Drop the top search / subtitle bar (professional seats). */
+  hideHeader?: boolean;
   children: ReactNode;
 }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
@@ -89,6 +105,14 @@ function ShellFrame({
                     >
                       <Icon className="h-[18px] w-[18px] shrink-0" />
                       <span className="truncate">{item.label}</span>
+                      {item.pro ? (
+                        <span className="ml-auto rounded-full bg-orange-500 px-2 py-px text-[9px] font-bold tracking-wide text-white">
+                          PRO
+                        </span>
+                      ) : null}
+                      {item.locked ? (
+                        <Lock className="ml-auto h-3.5 w-3.5 shrink-0 text-amber-600" aria-label="Locked" />
+                      ) : null}
                     </Link>
                   );
                 })}
@@ -104,6 +128,7 @@ function ShellFrame({
         </aside>
 
         <div className="flex min-w-0 flex-1 flex-col">
+          {hideHeader ? null : (
           <header className="sticky top-0 z-30 flex h-16 items-center gap-3 border-b border-[color:var(--color-hairline)] bg-card/85 px-6 backdrop-blur-xl">
             <div className="relative w-full max-w-sm">
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[color:var(--color-ink-3)]" />
@@ -121,6 +146,7 @@ function ShellFrame({
               {actions}
             </div>
           </header>
+          )}
           <main className="flex-1 overflow-x-hidden">
             <PageBody>{children}</PageBody>
           </main>
@@ -149,19 +175,31 @@ const LOCATION_NAV: NavGroup[] = [
     ],
   },
 ];
+// Professional seat = the Happyflow SRP (components/happyflow); Expertise Graph and Reviews stay live.
 const PRO_NAV: NavGroup[] = [
-  { label: null, items: [{ label: "My Profile", suffix: "", icon: User }] },
+  {
+    label: null,
+    items: [
+      { label: "Home", suffix: "", icon: House },
+      { label: "SRS", suffix: "/nora", icon: Gauge },
+    ],
+  },
   {
     label: "My presence",
     items: [
+      { label: "Profile", suffix: "/profile", icon: User },
+      { label: "Insights", suffix: "/insights", icon: BarChart3 },
+      { label: "Website Analytics", suffix: "/website", icon: Globe, pro: true },
       { label: "Expertise Graph", suffix: "/graph", icon: Network },
-      { label: "Reviews", suffix: "/reviews", icon: Star },
+      { label: "Reviews", suffix: "/reviews", icon: Star, locked: true },
+      { label: "Connections", suffix: "/connections", icon: Plug },
+      { label: "Network", suffix: "/network", icon: Users },
     ],
   },
   {
     label: null,
     items: [
-      { label: "Nora", suffix: "/nora", icon: Gauge },
+      { label: "Settings", suffix: "/settings", icon: SlidersHorizontal },
       { label: "NORA interview", suffix: "/interview", icon: Sparkles },
     ],
   },
@@ -169,6 +207,10 @@ const PRO_NAV: NavGroup[] = [
 
 export const LOCATION_NAV_LABELS = LOCATION_NAV.flatMap((g) => g.items.map((i) => i.label));
 export const PROFESSIONAL_NAV_LABELS = PRO_NAV.flatMap((g) => g.items.map((i) => i.label));
+/** Items with a PRO pill or a lock, for tests. */
+export const PROFESSIONAL_NAV_FLAGS = PRO_NAV.flatMap((g) =>
+  g.items.filter((i) => i.pro || i.locked).map((i) => ({ label: i.label, pro: !!i.pro, locked: !!i.locked })),
+);
 
 
 /**
@@ -204,6 +246,7 @@ export function ScopedShell({
       }
       nav={kind === "office" ? LOCATION_NAV : PRO_NAV}
       base={base}
+      hideHeader={kind === "professional"}
     >
       {children}
     </ShellFrame>
