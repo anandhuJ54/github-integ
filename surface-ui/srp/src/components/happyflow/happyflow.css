@@ -1,0 +1,380 @@
+/*
+ * Happyflow prototype screens — scoped styles.
+ *
+ * Everything here is either under `.hf-root` or an `hf-`-prefixed keyframe, so it cannot leak
+ * into the rest of the app (src/styles.css is untouched). Layout and colour live inline in the
+ * components, exactly as in the Claude Design prototype.
+ */
+
+.hf-root {
+  color: #202124;
+  font-family: Arial, "Arial Nova", "Helvetica Neue", Helvetica, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+.hf-root *,
+.hf-root *::before,
+.hf-root *::after {
+  box-sizing: border-box;
+}
+.hf-root a {
+  color: #1a73e8;
+  text-decoration: none;
+}
+.hf-root a:hover {
+  color: #1557b0;
+}
+.hf-root button,
+.hf-root select,
+.hf-root input,
+.hf-root textarea {
+  font-family: Arial, sans-serif;
+}
+.hf-root input::placeholder {
+  color: #9aa0a6;
+}
+
+/* Discovery / claim screens use the Manrope + Sora marketing look from the prototype. */
+.hf-root.hf-discovery {
+  color: oklch(0.2371 0.0043 285.9);
+  font-family: Manrope, system-ui, sans-serif;
+}
+.hf-root.hf-discovery button,
+.hf-root.hf-discovery input {
+  font-family: Manrope, system-ui, sans-serif;
+}
+.hf-root.hf-discovery a {
+  color: oklch(0.5798 0.204 259.1);
+  font-weight: 600;
+}
+.hf-root.hf-discovery a:hover {
+  color: oklch(0.5108 0.2385 296.5);
+  text-decoration: underline;
+}
+
+/* Scrollable without a visible scrollbar (main content area). */
+.hf-noscrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.hf-noscrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hf-root *,
+  .hf-root *::before,
+  .hf-root *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+@keyframes hf-nDrift {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+@keyframes hf-nMorph {
+  0%,
+  100% {
+    border-radius: 42% 58% 63% 37% / 45% 40% 60% 55%;
+  }
+  25% {
+    border-radius: 58% 42% 38% 62% / 55% 60% 40% 45%;
+  }
+  50% {
+    border-radius: 48% 52% 57% 43% / 38% 55% 45% 62%;
+  }
+  75% {
+    border-radius: 36% 64% 46% 54% / 60% 42% 58% 40%;
+  }
+}
+@keyframes hf-nBlink {
+  0%,
+  92%,
+  100% {
+    transform: scaleY(1);
+  }
+  95% {
+    transform: scaleY(0.1);
+  }
+}
+@keyframes hf-nLook {
+  0%,
+  40%,
+  100% {
+    transform: translateX(0);
+  }
+  50%,
+  85% {
+    transform: translateX(8%);
+  }
+}
+@keyframes hf-nBurst {
+  0% {
+    transform: scale(1);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(1.9);
+    opacity: 0;
+  }
+}
+@keyframes hf-nSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@keyframes hf-rise {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes hf-rise10 {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes hf-pop {
+  0% {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+  70% {
+    opacity: 1;
+    transform: scale(1.06);
+  }
+  100% {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes hf-fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes hf-slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-14px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes hf-slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(28px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes hf-sheetIn {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: none;
+  }
+}
+@keyframes hf-sheetUp {
+  from {
+    opacity: 0;
+    transform: translateY(48px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes hf-modalIn {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -46%) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%);
+  }
+}
+@keyframes hf-modalInM {
+  from {
+    opacity: 0;
+    transform: translateY(-46%) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(-50%);
+  }
+}
+@keyframes hf-dlgIn {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -46%) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%);
+  }
+}
+@keyframes hf-orbit {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@keyframes hf-orbitR {
+  to {
+    transform: rotate(-360deg);
+  }
+}
+@keyframes hf-orbFloat {
+  0%,
+  100% {
+    transform: translate(0, 0);
+  }
+  33% {
+    transform: translate(18px, -14px);
+  }
+  66% {
+    transform: translate(-14px, 12px);
+  }
+}
+@keyframes hf-dotIn {
+  0% {
+    transform: scale(0);
+    opacity: 0;
+  }
+  70% {
+    transform: scale(1.5);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+@keyframes hf-halo {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 0.5;
+  }
+  50% {
+    transform: scale(1.18);
+    opacity: 0.85;
+  }
+}
+@keyframes hf-bounce {
+  0%,
+  80%,
+  100% {
+    transform: translateY(0);
+    opacity: 0.4;
+  }
+  40% {
+    transform: translateY(-4px);
+    opacity: 1;
+  }
+}
+@keyframes hf-grow {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+@keyframes hf-caret {
+  0%,
+  50% {
+    opacity: 1;
+  }
+  51%,
+  100% {
+    opacity: 0;
+  }
+}
+@keyframes hf-sweep {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+@keyframes hf-burstG {
+  0% {
+    transform: scale(0.4);
+    opacity: 0.9;
+  }
+  100% {
+    transform: scale(1.6);
+    opacity: 0;
+  }
+}
+@keyframes hf-land {
+  0% {
+    opacity: 0;
+    transform: translateY(10px);
+    background-color: #e8f0fe;
+  }
+  60% {
+    opacity: 1;
+    transform: none;
+    background-color: #e8f0fe;
+  }
+  100% {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes hf-lit {
+  0% {
+    box-shadow: 0 0 0 0 rgba(66, 133, 244, 0.5);
+  }
+  100% {
+    box-shadow: 0 0 0 8px rgba(66, 133, 244, 0);
+  }
+}
+@keyframes hf-pulseDot {
+  0% {
+    box-shadow: 0 0 0 0 rgba(155, 114, 242, 0.55);
+  }
+  100% {
+    box-shadow: 0 0 0 7px rgba(155, 114, 242, 0);
+  }
+}
+@keyframes hf-pulseRing {
+  0% {
+    transform: scale(0.9);
+    opacity: 0.5;
+  }
+  100% {
+    transform: scale(1.35);
+    opacity: 0;
+  }
+}
