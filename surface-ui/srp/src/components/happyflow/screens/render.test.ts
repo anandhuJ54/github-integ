@@ -11,6 +11,7 @@ import {
   createRouter,
 } from "@tanstack/react-router";
 import { describe, expect, test } from "bun:test";
+import { SampleData, SAMPLE_DATA_LABEL } from "../sample-data";
 import { HomeDay1Screen } from "./home-day1";
 import { HomeDay7Screen } from "./home-day7";
 import { SrsScreen } from "./srs";
@@ -51,6 +52,12 @@ const SCREENS: [string, ComponentType][] = [
 ];
 
 describe("Happyflow screens render", () => {
+  test("the sample-data notice is visible and wraps its screen", async () => {
+    const html = await render(() => createElement(SampleData, null, createElement(SettingsScreen)));
+    expect(html).toContain(SAMPLE_DATA_LABEL);
+    expect(html.indexOf(SAMPLE_DATA_LABEL)).toBeLessThan(html.indexOf("hf-root"));
+  });
+
   test("each screen renders different markup", async () => {
     // "home day 7 events" differs from "home day 7" only after an effect runs (home-day7.tsx), so a server render
     // cannot tell them apart; it is left out of this comparison.

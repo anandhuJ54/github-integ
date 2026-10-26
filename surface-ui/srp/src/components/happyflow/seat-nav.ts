@@ -21,8 +21,11 @@ export type HfRoute =
   | "network"
   | "settings";
 
-/** Height of the Happyflow frame inside the seat page body (view-as bar + page padding). */
-export const HF_EMBED_HEIGHT = "max(600px, calc(100vh - 124px))";
+/** Height of the "Sample data" notice above every Happyflow screen, margin included. */
+export const HF_SAMPLE_BANNER_HEIGHT = 40;
+
+/** Height of the Happyflow frame inside the seat page body (view-as bar + page padding + the sample-data notice). */
+export const HF_EMBED_HEIGHT = `max(600px, calc(100vh - ${124 + HF_SAMPLE_BANNER_HEIGHT}px))`;
 
 export type HfNavParams = { kind: string; id: string };
 export type HfNavTarget = {

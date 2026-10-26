@@ -5,6 +5,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { EmptyState } from "@v3/shared/components/ui/console-primitives";
 import { ConnectionsScreen } from "@v3/srp/components/happyflow/screens/connections";
+import { SampleData } from "@v3/srp/components/happyflow/sample-data";
 import { useSeatParams } from "./seat.$kind.$id";
 
 export const Route = createFileRoute("/_authenticated/seat/$kind/$id/connections")({
@@ -15,5 +16,9 @@ function SeatPage() {
   const { isPro } = useSeatParams();
   if (!isPro)
     return <EmptyState title="Not available" description="This is a professional-seat surface." />;
-  return <ConnectionsScreen />;
+  return (
+    <SampleData>
+      <ConnectionsScreen />
+    </SampleData>
+  );
 }

@@ -4,6 +4,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { EmptyState } from "@v3/shared/components/ui/console-primitives";
 import { SrsScreen } from "@v3/srp/components/happyflow/screens/srs";
+import { SampleData } from "@v3/srp/components/happyflow/sample-data";
 import { useSeatParams } from "./seat.$kind.$id";
 
 export const Route = createFileRoute("/_authenticated/seat/$kind/$id/nora")({
@@ -14,5 +15,9 @@ function SeatNora() {
   const { isPro } = useSeatParams();
   if (!isPro)
     return <EmptyState title="Not available" description="Nora is a professional-seat surface." />;
-  return <SrsScreen />;
+  return (
+    <SampleData>
+      <SrsScreen />
+    </SampleData>
+  );
 }

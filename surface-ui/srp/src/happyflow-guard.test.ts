@@ -28,15 +28,27 @@ const FORBIDDEN: [string, RegExp][] = [
   ["fetch call", /\bfetch\s*\(/],
   ["react-start", /@tanstack\/react-start/],
   ["clone-style alias import", /(?:from|import)\s*\(?\s*["']@\//],
+  ["a named persona (use the generic sample one)", /Dana|Whitfield|Whitley/],
   ["another Surface or the shell", /(?:from|import)\s*\(?\s*["']@v3\/(?!shared|state|theme|srp)[a-z0-9-]+/],
 ];
 
 const hf = files(join(SRC, "components", "happyflow"));
 const guarded = [...hf, ...NEW_ROUTES.filter(existsSync)];
 
+// Every route that renders a Happyflow screen shows the "Sample data" notice (canon review, spec check 6).
+const SCREEN_ROUTES = files(ROUTES).filter((f) =>
+  /components\/happyflow\/screens\//.test(readFileSync(f, "utf8")),
+);
+
 describe("Happyflow port", () => {
+  test("every route that shows a Happyflow screen wraps it in the sample-data notice", () => {
+    expect(SCREEN_ROUTES.length).toBe(10);
+    const missing = SCREEN_ROUTES.filter((f) => !/<SampleData>/.test(readFileSync(f, "utf8")));
+    expect(missing.map((f) => f.replace(SRC, ""))).toEqual([]);
+  });
+
   test("all Happyflow files are present", () => {
-    expect(hf.filter((f) => /\.tsx?$/.test(f)).length).toBe(21); // the clone's 20 plus screens/profile-store.ts
+    expect(hf.filter((f) => /\.tsx?$/.test(f)).length).toBe(22); // the clone's 20 plus screens/profile-store.ts and sample-data.tsx
     expect(hf.filter((f) => f.endsWith("happyflow.css")).length).toBe(1);
     for (const f of [...NEW_ROUTES, ...ASSETS]) expect(existsSync(f)).toBe(true);
   });

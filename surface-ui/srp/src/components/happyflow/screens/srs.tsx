@@ -19,7 +19,7 @@ import type { HfIconName } from "../icons";
 // Demo data (Happyflow prototype)
 type LaneStatus = "Missing" | "Fix" | "Fix · locked" | "Strong";
 type LaneTo = HfTarget | "Billing";
-type Lane = {
+export type Lane = {
   lane: string;
   icon: HfIconName;
   status: LaneStatus;
@@ -34,7 +34,7 @@ type Lane = {
 
 // The 10 SRS v5 lanes and their budgets (AGENTS.md §3; docs/PLATFORM_HANDOFF_2026-10-12.md §2.6): 850 points in all.
 // `pts` (points still open) and the comparisons are sample values; they add up to 460 open, so 390 are earned.
-const LANES: Lane[] = [
+export const LANES: Lane[] = [
   {
     lane: "Completeness",
     icon: "user",

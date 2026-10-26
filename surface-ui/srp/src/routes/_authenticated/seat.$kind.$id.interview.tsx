@@ -47,6 +47,7 @@ import {
 } from "@v3/srp/utils/nora/interview";
 import { loadClaimSource, loadInterviewSubject } from "@v3/srp/utils/nora/interview-data";
 import { InterviewScreen } from "@v3/srp/components/happyflow/screens/interview";
+import { SampleData } from "@v3/srp/components/happyflow/sample-data";
 import { useSeatParams } from "./seat.$kind.$id";
 
 export const Route = createFileRoute("/_authenticated/seat/$kind/$id/interview")({
@@ -56,7 +57,13 @@ export const Route = createFileRoute("/_authenticated/seat/$kind/$id/interview")
 /** Professional seats run the Happyflow interview (screen 3, demo data); locations keep the skill-run interview. */
 function SeatInterviewRoute() {
   const { isPro } = useSeatParams();
-  return isPro ? <InterviewScreen /> : <SeatInterview />;
+  return isPro ? (
+    <SampleData>
+      <InterviewScreen />
+    </SampleData>
+  ) : (
+    <SeatInterview />
+  );
 }
 
 const label = "text-[11px] font-bold uppercase tracking-wider text-[color:var(--color-ink-3)]";

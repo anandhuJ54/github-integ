@@ -14,6 +14,7 @@ import { Badge } from "@v3/shared/components/ui/badge";
 import { rosterCoverage, seatProName } from "@v3/srp/utils/seat";
 import { HomeDay1Screen } from "@v3/srp/components/happyflow/screens/home-day1";
 import { HomeDay7Screen } from "@v3/srp/components/happyflow/screens/home-day7";
+import { SampleData } from "@v3/srp/components/happyflow/sample-data";
 import { validateOverviewSearch } from "@v3/srp/utils/overview-search";
 import { useLocationSeat, useSeatParams } from "./seat.$kind.$id";
 
@@ -27,8 +28,11 @@ function SeatOverview() {
   const { isPro } = useSeatParams();
   const { day, events } = Route.useSearch();
   if (!isPro) return <LocationOverview />;
-  if (day === 7 || day === 24) return <HomeDay7Screen key={day} day={day} events={!!events} />;
-  return <HomeDay1Screen />;
+  return (
+    <SampleData>
+      {day === 7 || day === 24 ? <HomeDay7Screen key={day} day={day} events={!!events} /> : <HomeDay1Screen />}
+    </SampleData>
+  );
 }
 
 /* ─────────────────────────── LOCATION overview ─────────────────────────── */
