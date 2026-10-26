@@ -173,7 +173,9 @@ tools/                 enforcement (lint, ci, hooks) — plain stdlib Python, ru
   in `surface-ui/shared/` (`@v3/shared`), global state and the API client in `surface-ui/state/` (`@v3/state`),
   design tokens in `surface-ui/theme/` (`@v3/theme`). `surface-ui/` is one composed app with its own `package.json`
   (`cd surface-ui && bun install`). Surfaces import only `@v3/shared`, `@v3/state` and `@v3/theme`, never each other
-  or `shell`. No server-side rendering runtime; the SPA is static-hostable.
+  or `shell`. Data from the API lives in React Query; the Redux store (`@v3/state`) holds only browser state: the
+  app-level session/access/impersonation, plus each Surface's own slice, which no other Surface reads
+  (`surface-ui/state/README.md`). No server-side rendering runtime; the SPA is static-hostable.
 - **Backend:** **Python · FastAPI** in `surface-api/<surface>/src/` (package `surfaces.<surface>`, grouped by
   resource: `<resource>/router.py`, `schemas.py`, `services.py`); shared auth (Supabase JWT verification + RLS
   context), DB access and the compliance gate in `surface-api/_base/`; the app shell in `surface-api/app/`.
@@ -240,6 +242,7 @@ tools/                 enforcement (lint, ci, hooks) — plain stdlib Python, ru
   cd surface-api && uv run pytest          # Python tests (backend project)
   cd surface-ui && bun install && bunx tsc --noEmit -p . && for d in */; do [ -f "$d/tsconfig.json" ] && bunx tsc --noEmit -p "$d"; done
                                            # TS typecheck per frontend app
+  cd surface-ui && bun test                # UI tests, incl. the layout and store guards
   python3 tools/lint/lint_all.py           # security / canon / migration / boundary lint (ratchet)
   ```
   CI runs the same checks plus Surface tests and evals. Name tests `*.test.ts` and evals `*.eval.test.ts` (`bun test` ignores any other name); evals that call a model skip unless `RUN_EVALS=1`.
@@ -310,6 +313,7 @@ Read this before relying on a control. **Enforced** = blocks a merge or an edit 
 | Deny force-push, push to `main`, reading `.env` | `.claude/settings.json` | **Partial** — matches the listed command patterns only; other spellings (e.g. `git push origin HEAD:main`, `cat .env`) are not caught. Branch protection is the real control |
 | Cross-Surface interaction only through `contracts/<surface>` (no `surface-ui/<surface>` → another Surface's `surface-api`/`surface-ui` internals; `surface-ui/<surface>` calls only its own `surface-api/<surface>`) | lint `boundary/cross-surface-import` in `core-gates` | Implemented — as above |
 | Backend structure: Surfaces import each other only via `exports`; only the owner names, maps or exports its schema's tables (SQL, ORM relationships, `exports.py` shapes); `_base` imports no Surface; every Surface has the standard files, is registered and mounted once; no duplicate routes; each migration on its own Surface's Alembic branch | `surface-api/tests/` (`test_boundaries.py`, `test_routes.py`, `test_migrations.py`), run by `uv run pytest` in `core-gates` | Implemented — as above |
+| UI structure: a Surface imports only `@v3/shared`/`@v3/state`/`@v3/theme` (never another Surface or `shell`); `shared`/`state`/`theme` import no Surface; a Surface's store slice is its own and reads no other Surface's; a Surface's `src/state/` loads no API data | `surface-ui/state/boundaries.test.ts`, run by `bun test` in `core-gates` | Implemented — as above. Static checks: a selector written in an unusual shape can slip past |
 | Surface ownership and review routing | `.github/CODEOWNERS` | **Placeholder** — team handles must be created in GitHub |
 | Required checks, required reviews, no self-merge, no force-push to `main` | GitHub branch protection | **Placeholder** — not stored in this repo; open decision O8 |
 | Second approval for schema, security, money and identity changes | §4 | Documentation, until CODEOWNERS teams and branch protection exist |
