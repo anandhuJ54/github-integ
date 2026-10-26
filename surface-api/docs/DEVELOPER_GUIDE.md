@@ -29,7 +29,7 @@ Every change is an **increment**: one folder, one branch, one PR.
 ```bash
 cd surface-api
 uv sync                                  # once, and after pulling: installs deps + the `surfaces.*` names
-uv run uvicorn app:app --reload --port 8000
+uv run --env-file .env uvicorn app:app --reload --port 8000   # .env: see section 1
 uv run pytest                            # every test;  uv run pytest sales  → one Surface
 uv run ruff check .
 ```
@@ -163,7 +163,7 @@ uv run pytest tests/test_migrations.py
   SECURITY`, no grants to `anon`/`PUBLIC`, never `USING (true)` except for `service_role`.
 - `depends_on` any revision of another branch whose table you use.
 - Additive only on protected tables; never edit a revision once applied anywhere shared.
-- **Applying is a human-approved step** (backup, `uv run alembic upgrade heads`, verify by JOIN, log
+- **Applying is a human-approved step** (backup, `uv run --env-file .env alembic upgrade heads`, verify by JOIN, log
   in `docs/ETL-Enhancements.md`). Agents never apply or stamp.
 - After a table change, regenerate `_base/db/tables.py` (`_base/db/generate.py`) so queries see it.
 
