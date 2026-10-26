@@ -1,5 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { ExternalLink } from "lucide-react";
+import { useState } from "react";
+import { ExternalLink, Network } from "lucide-react";
+import { ExpertiseGraphPage } from "@v3/srp/components/graph/expertise-graph-page";
 import { EmptyState, PageHeader, Panel, StatTile } from "@v3/shared/components/ui/console-primitives";
 import { ReadOnlyRow, SeatLoading } from "@v3/srp/components/seat/pieces";
 import { Badge } from "@v3/shared/components/ui/badge";
@@ -13,11 +15,23 @@ export const Route = createFileRoute("/_authenticated/seat/$kind/$id/graph")({
 function SeatGraph() {
   const { id, isPro } = useSeatParams();
   const q = useProfessionalSeat(id, isPro);
+  const [radial, setRadial] = useState(false);
 
   if (!isPro) return <EmptyState title="Not available" description="The expertise graph is a professional-seat surface." />;
   if (q.isLoading) return <SeatLoading />;
   const seat = q.data;
   if (!seat) return <EmptyState title="Professional not found" />;
+
+  // The full radial view opens inside the seat's main content, not a new tab.
+  if (radial && seat.pro.slug)
+    return (
+      <ExpertiseGraphPage
+        kind="professional"
+        slug={seat.pro.slug}
+        embedded
+        onBack={() => setRadial(false)}
+      />
+    );
 
   const rings = ringSummary(seat.nodes);
   const points = seat.nodes.reduce((s, n) => s + (n.score_points ?? 0), 0);
@@ -31,14 +45,13 @@ function SeatGraph() {
         description={`Every active node captured for ${seatProName(seat.pro)}. Scoped to me only.`}
         actions={
           seat.pro.slug ? (
-            <a
-              href={`/p/${seat.pro.slug}/graph`}
-              target="_blank"
-              rel="noreferrer"
+            <button
+              type="button"
+              onClick={() => setRadial(true)}
               className="inline-flex items-center gap-1 text-xs font-semibold text-[color:var(--color-g-blue)]"
             >
-              Full radial view <ExternalLink className="h-3.5 w-3.5" />
-            </a>
+              Full radial view <Network className="h-3.5 w-3.5" />
+            </button>
           ) : null
         }
       />
