@@ -15,17 +15,15 @@ step() { printf '\n==> %s\n' "$1"; }
 fail() { printf '\nERROR: %s\n' "$1" >&2; exit 1; }
 
 step "Checking tools"
-command -v python3 >/dev/null || fail "python3 not found. Install Python 3.11 or newer."
-python3 -c 'import sys; sys.exit(sys.version_info < (3, 11))' \
-  || fail "Python 3.11 or newer is needed (found $(python3 --version 2>&1))."
+# No system Python needed: uv fetches the Python 3.11+ that surface-api/pyproject.toml asks for.
 command -v uv >/dev/null \
   || fail "uv not found. Install it: curl -LsSf https://astral.sh/uv/install.sh | sh"
 command -v bun >/dev/null \
   || fail "bun not found. Install it: curl -fsSL https://bun.sh/install | bash"
-echo "python $(python3 -c 'import platform; print(platform.python_version())'), $(uv --version), bun $(bun --version)"
+echo "$(uv --version), bun $(bun --version)"
 
 step "Backend: surface-api (uv sync)"
-(cd "$ROOT/surface-api" && uv sync)
+(cd "$ROOT/surface-api" && uv sync && echo "python: $(uv run python --version)")
 
 step "Frontend: surface-ui (bun install)"
 (cd "$ROOT/surface-ui" && bun install)
