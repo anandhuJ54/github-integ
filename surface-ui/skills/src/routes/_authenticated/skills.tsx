@@ -1,12 +1,12 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { BuildMapTab, CapabilitiesTab, EvalsTab, SkillsTab } from "@v3/skills/components/nora/registry-tabs";
-import { EmpLayout } from "@v3/ui/components/emp-layout";
-import { PageBody, PageHeader } from "@v3/ui/components/console/primitives";
+import { EmpLayout } from "@v3/shared/components/ui/emp-layout";
+import { PageBody, PageHeader } from "@v3/shared/components/ui/console-primitives";
 import { SandboxTab } from "@v3/skills/components/sandbox-tab";
 import { SkillRunsPanel } from "@v3/skills/components/nora/skill-runs";
 
-import { cn } from "@v3/ui/lib/utils";
+import { cn } from "@v3/shared/components/utils/utils";
 
 export const Route = createFileRoute("/_authenticated/skills")({
   head: () => ({

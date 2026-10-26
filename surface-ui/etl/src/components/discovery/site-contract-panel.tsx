@@ -2,10 +2,10 @@ import { useState, type ReactNode } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { ChevronRight, Copy } from "lucide-react";
 import { toast } from "sonner";
-import { api } from "@v3/ui/lib/server-fn";
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@v3/ui/components/ui/sheet";
-import { Badge } from "@v3/ui/components/ui/badge";
-import { cn } from "@v3/ui/lib/utils";
+import { api } from "@v3/state/api/server-fn";
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@v3/shared/components/ui/sheet";
+import { Badge } from "@v3/shared/components/ui/badge";
+import { cn } from "@v3/shared/components/utils/utils";
 import { SiteContractProposals } from "@v3/etl/components/discovery/site-contract-proposals";
 import { ContractPreview } from "@v3/etl/components/discovery/contract-preview";
 

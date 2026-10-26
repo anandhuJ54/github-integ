@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { EmptyState, PageBody, PageHeader, Panel } from "@v3/ui/components/console/primitives";
-import { loadOverview, weightedProgress } from "@v3/ops/lib/dev-progress";
+import { EmptyState, PageBody, PageHeader, Panel } from "@v3/shared/components/ui/console-primitives";
+import { loadOverview, weightedProgress } from "@v3/ops/utils/dev-progress";
 
 export const Route = createFileRoute("/_authenticated/build/teams")({
   head: () => ({

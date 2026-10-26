@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { api } from "@v3/ui/lib/server-fn";
+import { api } from "@v3/state/api/server-fn";
 import { Lightbulb, LayoutGrid } from "lucide-react";
 import {
   Select,
@@ -9,8 +9,8 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@v3/ui/components/ui/select";
-import { EmptyState, PageBody, PageHeader } from "@v3/ui/components/console/primitives";
+} from "@v3/shared/components/ui/select";
+import { EmptyState, PageBody, PageHeader } from "@v3/shared/components/ui/console-primitives";
 import {
   PRIORITY_CHIP,
   TRACK_META,
@@ -22,8 +22,8 @@ import {
   type Project,
   type Sprint,
   type SprintItem,
-} from "@v3/ops/lib/dev-progress";
-import { cn } from "@v3/ui/lib/utils";
+} from "@v3/ops/utils/dev-progress";
+import { cn } from "@v3/shared/components/utils/utils";
 
 export const Route = createFileRoute("/_authenticated/dev/board")({
   head: () => ({

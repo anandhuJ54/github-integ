@@ -1,28 +1,28 @@
 import { useMemo, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Check, Plus, Sparkles, X, GripVertical } from "lucide-react";
-import { api } from "@v3/ui/lib/server-fn";
-import { Button } from "@v3/ui/components/ui/button";
-import { ModelLock } from "@v3/ui/components/model-lock";
-import { Badge } from "@v3/ui/components/ui/badge";
-import { Input } from "@v3/ui/components/ui/input";
-import { Label } from "@v3/ui/components/ui/label";
+import { api } from "@v3/state/api/server-fn";
+import { Button } from "@v3/shared/components/ui/button";
+import { ModelLock } from "@v3/shared/components/ui/model-lock";
+import { Badge } from "@v3/shared/components/ui/badge";
+import { Input } from "@v3/shared/components/ui/input";
+import { Label } from "@v3/shared/components/ui/label";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogFooter,
-} from "@v3/ui/components/ui/dialog";
+} from "@v3/shared/components/ui/dialog";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@v3/ui/components/ui/select";
-import { Switch } from "@v3/ui/components/ui/switch";
-import { cn } from "@v3/ui/lib/utils";
+} from "@v3/shared/components/ui/select";
+import { Switch } from "@v3/shared/components/ui/switch";
+import { cn } from "@v3/shared/components/utils/utils";
 
 type TaxonomyRow = {
   id: string;

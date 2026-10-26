@@ -2,9 +2,9 @@ import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { CopyPlus, Link2, Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
-import { Button } from "@v3/ui/components/ui/button";
-import { Input } from "@v3/ui/components/ui/input";
-import { Textarea } from "@v3/ui/components/ui/textarea";
+import { Button } from "@v3/shared/components/ui/button";
+import { Input } from "@v3/shared/components/ui/input";
+import { Textarea } from "@v3/shared/components/ui/textarea";
 import {
   Dialog,
   DialogContent,
@@ -12,19 +12,19 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@v3/ui/components/ui/dialog";
+} from "@v3/shared/components/ui/dialog";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@v3/ui/components/ui/select";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@v3/ui/components/ui/tabs";
-import { DataTable, DetailDrawer, EmptyState, Panel } from "@v3/ui/components/console/primitives";
-import { FieldRow, Pill } from "@v3/ui/components/website/bits";
+} from "@v3/shared/components/ui/select";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@v3/shared/components/ui/tabs";
+import { DataTable, DetailDrawer, EmptyState, Panel } from "@v3/shared/components/ui/console-primitives";
+import { FieldRow, Pill } from "@v3/shared/public/components/website-bits";
 import { NavVisualEditor } from "@v3/marketing/components/website/nav-visual-editor";
-import { SiteFooter, SiteHeader } from "@v3/ui/components/public/site-chrome";
+import { SiteFooter, SiteHeader } from "@v3/shared/public/components/site-chrome";
 import {
   NAV_SITES,
   loadNavMenus,
@@ -35,8 +35,8 @@ import {
   siteLabel,
   type NavMenu,
   type NavMenuType,
-} from "@v3/ui/lib/nav-menus";
-import { useRole } from "@v3/ui/lib/roles";
+} from "@v3/shared/public/utils/nav-menus";
+import { useRole } from "@v3/state/access/roles";
 
 function pretty(value: unknown) {
   return JSON.stringify(value ?? {}, null, 2);

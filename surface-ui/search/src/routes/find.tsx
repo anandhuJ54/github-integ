@@ -1,21 +1,21 @@
 import { useEffect, useMemo, useState } from "react";
 import { createFileRoute, useNavigate, useRouterState } from "@tanstack/react-router";
 import { List, Map as MapIcon, SearchX, SlidersHorizontal } from "lucide-react";
-import { Sheet, SheetContent, SheetTrigger } from "@v3/ui/components/ui/sheet";
-import { SiteHeader, SiteFooter } from "@v3/ui/components/public/site-chrome";
-import { ResultsSkeleton } from "@v3/ui/components/public/visual";
+import { Sheet, SheetContent, SheetTrigger } from "@v3/shared/components/ui/sheet";
+import { SiteHeader, SiteFooter } from "@v3/shared/public/components/site-chrome";
+import { ResultsSkeleton } from "@v3/shared/public/components/visual";
 import {
   FacetRail,
   MapPanel,
   ResultCard,
-} from "@v3/ui/components/search/serp-parts";
+} from "@v3/shared/public/components/serp-parts";
 import { NativeAdUnit, SponsoredCard } from "@v3/search/components/search/sponsored-parts";
 import {
   loadAdUnits,
   loadSponsoredSlots,
   sponsoredKey,
   usePageViewPing,
-} from "@v3/search/lib/monetization";
+} from "@v3/search/utils/monetization";
 import {
   DEFAULT_QUERY,
   EMPTY_FACETS,
@@ -23,11 +23,11 @@ import {
   SORT_OPTIONS,
   runSearch,
   type SearchQuery,
-} from "@v3/ui/lib/search";
-import { cn } from "@v3/ui/lib/utils";
-import { loadFeaturedArticle } from "@v3/ui/lib/voce";
-import { getDetectedArea } from "@v3/ui/lib/geo.functions";
-import { useArea } from "@v3/ui/components/public/area-picker";
+} from "@v3/shared/public/utils/search";
+import { cn } from "@v3/shared/components/utils/utils";
+import { loadFeaturedArticle } from "@v3/shared/public/utils/voce";
+import { getDetectedArea } from "@v3/shared/public/utils/geo.functions";
+import { useArea } from "@v3/shared/public/components/area-picker";
 import { FeaturedArticleUnit } from "@v3/search/components/voce/featured-article";
 import {
   AiAssistantCard,
@@ -35,7 +35,7 @@ import {
   CuratedCollections,
   RelatedSearches,
 } from "@v3/search/components/search/consumer-search-experience";
-import { getSearchPresentation } from "@v3/ui/lib/search-presentation.functions";
+import { getSearchPresentation } from "@v3/shared/public/utils/search-presentation.functions";
 
 const SORTS = SORT_OPTIONS.map((s) => s.value) as string[];
 

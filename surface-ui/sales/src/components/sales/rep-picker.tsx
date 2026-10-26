@@ -1,15 +1,15 @@
 import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@v3/ui/integrations/supabase/client";
+import { useSession } from "@v3/state";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@v3/ui/components/ui/select";
-import { loadAssignments, loadReps, SELLER_ROLES, territoryFor, type SellerRole } from "@v3/sales/lib/sales";
-import { PersonAvatar } from "@v3/ui/components/sales/entity-avatar";
+} from "@v3/shared/components/ui/select";
+import { loadAssignments, loadReps, SELLER_ROLES, territoryFor, type SellerRole } from "@v3/sales/utils/sales";
+import { PersonAvatar } from "@v3/shared/components/ui/entity-avatar";
 
 
 const STORAGE_KEY = "xp.sales.viewAsRep";
@@ -18,10 +18,10 @@ export function useSalesContext() {
   const reps = useQuery({ queryKey: ["sales-reps"], queryFn: loadReps });
   const assignments = useQuery({ queryKey: ["sales-assignments"], queryFn: loadAssignments });
   const [repId, setRepId] = useState<string | null>(null);
-  const [email, setEmail] = useState<string | null>(null);
+  const { user } = useSession();
+  const email = user?.email ?? null;
 
   useEffect(() => {
-    void supabase.auth.getUser().then(({ data }) => setEmail(data.user?.email ?? null));
     const stored = typeof window !== "undefined" ? window.localStorage.getItem(STORAGE_KEY) : null;
     if (stored) setRepId(stored);
   }, []);

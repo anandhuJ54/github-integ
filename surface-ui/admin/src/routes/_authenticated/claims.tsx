@@ -2,20 +2,20 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Check, Inbox, X } from "lucide-react";
-import { api } from "@v3/ui/lib/server-fn";
-import { BrandAvatar, PersonAvatar } from "@v3/ui/components/sales/entity-avatar";
-import { EmpLayout } from "@v3/ui/components/emp-layout";
-import { Button } from "@v3/ui/components/ui/button";
-import { Textarea } from "@v3/ui/components/ui/textarea";
+import { api } from "@v3/state/api/server-fn";
+import { BrandAvatar, PersonAvatar } from "@v3/shared/components/ui/entity-avatar";
+import { EmpLayout } from "@v3/shared/components/ui/emp-layout";
+import { Button } from "@v3/shared/components/ui/button";
+import { Textarea } from "@v3/shared/components/ui/textarea";
 import {
   Sheet,
   SheetContent,
   SheetHeader,
   SheetTitle,
   SheetDescription,
-} from "@v3/ui/components/ui/sheet";
-import { cn } from "@v3/ui/lib/utils";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@v3/ui/components/ui/tabs";
+} from "@v3/shared/components/ui/sheet";
+import { cn } from "@v3/shared/components/utils/utils";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@v3/shared/components/ui/tabs";
 import { ClaimsTab as ControlGraphClaimsTab } from "@v3/admin/components/claims/claims-tab";
 import { toast } from "sonner";
 

@@ -2,7 +2,7 @@ import { useState } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft, Plus } from "lucide-react";
-import { EmpLayout } from "@v3/ui/components/emp-layout";
+import { EmpLayout } from "@v3/shared/components/ui/emp-layout";
 import { KnowledgeModelTab } from "@v3/graph/components/knowledge-model-tab";
 import { NodeRegistryTab } from "@v3/graph/components/node-registry-tab";
 import { TaxonomyTab } from "@v3/graph/components/taxonomy-tab";
@@ -12,22 +12,22 @@ import { OperationsTab } from "@v3/graph/components/operations-tab";
 import { ScoringTab } from "@v3/graph/components/scoring-tab";
 import { AiConfigTab } from "@v3/graph/components/ai-config-tab";
 import { SchemaTab } from "@v3/graph/components/schema-tab";
-import { api } from "@v3/ui/lib/server-fn";
-import { Card, CardContent, CardHeader, CardTitle } from "@v3/ui/components/ui/card";
-import { Badge } from "@v3/ui/components/ui/badge";
-import { Button } from "@v3/ui/components/ui/button";
-import { Switch } from "@v3/ui/components/ui/switch";
-import { Label } from "@v3/ui/components/ui/label";
+import { api } from "@v3/state/api/server-fn";
+import { Card, CardContent, CardHeader, CardTitle } from "@v3/shared/components/ui/card";
+import { Badge } from "@v3/shared/components/ui/badge";
+import { Button } from "@v3/shared/components/ui/button";
+import { Switch } from "@v3/shared/components/ui/switch";
+import { Label } from "@v3/shared/components/ui/label";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@v3/ui/components/ui/select";
-import { cn } from "@v3/ui/lib/utils";
-import { getCategoryRelationships } from "@v3/graph/lib/category-relationships";
-import { getCategorySchema } from "@v3/graph/lib/expertise-schema";
+} from "@v3/shared/components/ui/select";
+import { cn } from "@v3/shared/components/utils/utils";
+import { getCategoryRelationships } from "@v3/graph/utils/category-relationships";
+import { getCategorySchema } from "@v3/graph/utils/expertise-schema";
 
 export const Route = createFileRoute("/_authenticated/categories/$gcid")({
   component: CategoryDetailPage,

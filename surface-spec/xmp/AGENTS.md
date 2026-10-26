@@ -4,7 +4,7 @@ Local constitution. Stricter-or-equal to the root `AGENTS.md`. This Surface span
 trees (polyglot: React + Python, plus its contract and its specs):
 
 - `surface-api/xmp/`   — FastAPI routers (top-level Python package `xmp`), mounted by `surface-api/app.py`.
-- `surface-ui/xmp/`       — React 19 UI; imports `@v3/ui` (= `surface-ui/_base`).
+- `surface-ui/xmp/`       — React 19 UI; imports `@v3/shared` (= `surface-ui/shared`).
 - `contracts/xmp/` — versioned events + capabilities (the seam both `surface-api` and `surface-ui` consume,
   and the interface other Surfaces depend on).
 - `surface-spec/xmp/`     — this file, `CONTEXT.md`, and one folder per increment

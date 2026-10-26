@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { loadHub } from "@v3/search/lib/voce-hub";
+import { loadHub } from "@v3/search/utils/voce-hub";
 import { TopicHub } from "@v3/search/components/voce/topic-hub";
-import { prettyTopic } from "@v3/ui/lib/voce";
+import { prettyTopic } from "@v3/shared/public/utils/voce";
 
 export const Route = createFileRoute("/topic/$gcid/$topic")({
   loader: ({ params }) => loadHub(params.gcid, params.topic),

@@ -14,7 +14,14 @@
 /surface-api/pyproject.toml   @BuyersRoad/eng-core
 /surface-api/alembic.ini      @BuyersRoad/eng-core
 /surface-api/alembic_env/     @BuyersRoad/eng-core
-/surface-ui/_base/            @BuyersRoad/eng-core
+/surface-ui/shared/          @BuyersRoad/eng-core
+/surface-ui/shell/           @BuyersRoad/eng-core
+/surface-ui/state/           @BuyersRoad/eng-core
+/surface-ui/theme/           @BuyersRoad/eng-core
+/surface-ui/index.html       @BuyersRoad/eng-core
+/surface-ui/vite.config.ts   @BuyersRoad/eng-core
+/surface-ui/package.json     @BuyersRoad/eng-core
+/surface-ui/tsconfig*.json   @BuyersRoad/eng-core
 /surface-api/migrations/      @BuyersRoad/eng-core
 /reference/                   @BuyersRoad/eng-core
 /Dockerfile                   @BuyersRoad/eng-core

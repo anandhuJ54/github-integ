@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { api } from "@v3/ui/lib/server-fn";
+import { api } from "@v3/state/api/server-fn";
 
 // Admin's own copy of the sales territory chip (surface audit §11 row 5, 2026-10-25), for /professionals.
 // Reads the label through the sales API's published contract (GET /sales/territories/slots/{id}/label);

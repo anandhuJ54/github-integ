@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { EmptyState, PageHeader } from "@v3/ui/components/console/primitives";
+import { EmptyState, PageHeader } from "@v3/shared/components/ui/console-primitives";
 import { RatingSummary, ReadOnlyRow, ReviewList, SeatLoading } from "@v3/srp/components/seat/pieces";
 import { useLocationSeat, useProfessionalSeat, useSeatParams } from "./seat.$kind.$id";
 

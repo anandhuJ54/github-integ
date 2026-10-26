@@ -1,12 +1,12 @@
 import { useEffect, useState } from "react";
 import { Sparkles, Loader2 } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { api, useServerFn } from "@v3/ui/lib/server-fn";
-import { Card, CardContent } from "@v3/ui/components/ui/card";
-import { Button } from "@v3/ui/components/ui/button";
-import { cn } from "@v3/ui/lib/utils";
-import { supabase } from "@v3/ui/integrations/supabase/client";
-import { generateCategorySchema } from "@v3/graph/lib/expertise-schema.functions";
+import { api, useServerFn } from "@v3/state/api/server-fn";
+import { Card, CardContent } from "@v3/shared/components/ui/card";
+import { Button } from "@v3/shared/components/ui/button";
+import { cn } from "@v3/shared/components/utils/utils";
+import { getCurrentUser } from "@v3/state/session/current-user";
+import { generateCategorySchema } from "@v3/graph/utils/expertise-schema.functions";
 import {
   getCategorySchema,
   countFields,
@@ -16,7 +16,7 @@ import {
   type ElementDef,
   type FieldDef,
   type ProfileSection,
-} from "@v3/graph/lib/expertise-schema";
+} from "@v3/graph/utils/expertise-schema";
 
 // Canonical 13-ring order — mirrors node-registry-tab so the Schema tab groups
 // registry-derived fields into the same buckets users see there.
@@ -148,8 +148,8 @@ export function SchemaTab({
 
   const generate = useMutation({
     mutationFn: async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
+      const user = await getCurrentUser();
+      if (!user) {
         window.location.href = `/auth?redirect=${encodeURIComponent(window.location.pathname)}`;
         throw new Error("Sign in required to generate schema.");
       }

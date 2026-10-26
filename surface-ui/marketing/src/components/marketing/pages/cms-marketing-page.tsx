@@ -1,8 +1,8 @@
 import { MarketingPage } from "@v3/marketing/components/marketing/layouts/marketing-page";
 import { PageBreadcrumb } from "@v3/marketing/components/marketing/PageBreadcrumb";
-import { MarketingSections } from "@v3/ui/components/marketing/sections/premium/MarketingSections";
-import { ogImageUrl } from "@v3/marketing/lib/marketing/seo";
-import type { PublicPage } from "@v3/ui/lib/public-site";
+import { MarketingSections } from "@v3/shared/public/components/marketing-sections";
+import { ogImageUrl } from "@v3/marketing/utils/marketing/seo";
+import type { PublicPage } from "@v3/shared/public/utils/public-site";
 
 /**
  * Renders a marketing page entirely from its CMS content

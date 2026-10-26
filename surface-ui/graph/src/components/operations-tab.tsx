@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { CheckCircle2, MinusCircle, Circle } from "lucide-react";
-import { api } from "@v3/ui/lib/server-fn";
+import { api } from "@v3/state/api/server-fn";
 
 /** Operations tab — the category's operational layer at a glance.
  *  Groups the universal + class-scoped operational families and shows which

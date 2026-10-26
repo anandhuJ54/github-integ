@@ -2,11 +2,11 @@ import { useMemo, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { Activity, ArrowUp, BarChart3, DollarSign, Filter, TrendingDown, Trophy, Compass } from "lucide-react";
-import { PageBody, PageHeader, Panel } from "@v3/ui/components/console/primitives";
-import { BrandAvatar, PersonAvatar } from "@v3/ui/components/sales/entity-avatar";
-import { Button } from "@v3/ui/components/ui/button";
-import { loadScopeDashboard, type SalesScope, type ScopeDashboardData, type TeamLive } from "@v3/sales/lib/sales-spine";
-import { loadActivity, type ActivityEvent } from "@v3/sales/lib/sales";
+import { PageBody, PageHeader, Panel } from "@v3/shared/components/ui/console-primitives";
+import { BrandAvatar, PersonAvatar } from "@v3/shared/components/ui/entity-avatar";
+import { Button } from "@v3/shared/components/ui/button";
+import { loadScopeDashboard, type SalesScope, type ScopeDashboardData, type TeamLive } from "@v3/sales/utils/sales-spine";
+import { loadActivity, type ActivityEvent } from "@v3/sales/utils/sales";
 
 const nf = new Intl.NumberFormat("en-US");
 const cf = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", notation: "compact", maximumFractionDigits: 1 });

@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { Search } from "lucide-react";
-import { AreaPicker } from "@v3/ui/components/public/area-picker";
-import { DEFAULT_QUERY } from "@v3/ui/lib/search";
+import { AreaPicker } from "@v3/shared/public/components/area-picker";
+import { DEFAULT_QUERY } from "@v3/shared/public/utils/search";
 
 const INTENT_EXAMPLES = [
   "best fish and chips near me",

@@ -3,10 +3,10 @@
  * professional). Read-only by design — a seat never publishes or deletes.
  */
 import { Lock } from "lucide-react";
-import { EmptyState, Panel } from "@v3/ui/components/console/primitives";
-import { DemoChip, PersonAvatar } from "@v3/ui/components/sales/entity-avatar";
-import { Badge } from "@v3/ui/components/ui/badge";
-import type { SeatRating, SeatReview, SeatScore } from "@v3/srp/lib/seat";
+import { EmptyState, Panel } from "@v3/shared/components/ui/console-primitives";
+import { DemoChip, PersonAvatar } from "@v3/shared/components/ui/entity-avatar";
+import { Badge } from "@v3/shared/components/ui/badge";
+import type { SeatRating, SeatReview, SeatScore } from "@v3/srp/utils/seat";
 
 export function ReadOnlyRow({ isDemo, children }: { isDemo?: boolean; children?: React.ReactNode }) {
   return (

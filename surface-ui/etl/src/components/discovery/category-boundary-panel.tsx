@@ -1,12 +1,12 @@
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useServerFn } from "@v3/ui/lib/server-fn";
+import { useServerFn } from "@v3/state/api/server-fn";
 import { ChevronRight, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
-import { Badge } from "@v3/ui/components/ui/badge";
-import { Button } from "@v3/ui/components/ui/button";
-import { cn } from "@v3/ui/lib/utils";
-import { getCategoryBoundary, regenerateCategoryBoundary } from "@v3/etl/lib/category-boundary.functions";
+import { Badge } from "@v3/shared/components/ui/badge";
+import { Button } from "@v3/shared/components/ui/button";
+import { cn } from "@v3/shared/components/utils/utils";
+import { getCategoryBoundary, regenerateCategoryBoundary } from "@v3/etl/utils/category-boundary.functions";
 
 /* Category boundary panel (2026-10-16): shows the boundary discovery uses for this category (definition, includes,
    sub-types, what belongs elsewhere), labelled authored or generated, with Regenerate for a generated one (or to

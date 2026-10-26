@@ -1,9 +1,9 @@
 import { Fragment, useMemo, useState, type ReactNode } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { ChevronDown, ChevronRight } from "lucide-react";
-import { api } from "@v3/ui/lib/server-fn";
-import { Badge } from "@v3/ui/components/ui/badge";
-import { cn } from "@v3/ui/lib/utils";
+import { api } from "@v3/state/api/server-fn";
+import { Badge } from "@v3/shared/components/ui/badge";
+import { cn } from "@v3/shared/components/utils/utils";
 
 type StageRow = {
   stage_id: string;

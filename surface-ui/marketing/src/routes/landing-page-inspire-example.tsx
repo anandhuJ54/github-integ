@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { getPublicPage } from "@v3/ui/lib/public-site.functions";
+import { getPublicPage } from "@v3/shared/public/utils/public-site.functions";
 import { ContentCallout } from "@v3/marketing/components/landing/inspire/ContentCallout";
 import { Features } from "@v3/marketing/components/landing/inspire/Features";
 import { GettingStarted } from "@v3/marketing/components/landing/inspire/GettingStarted";
@@ -8,7 +8,7 @@ import { Platform } from "@v3/marketing/components/landing/inspire/Platform";
 import { TopBanner } from "@v3/marketing/components/landing/inspire/TopBanner";
 import { ToolsConverge } from "@v3/marketing/components/landing/inspire/ToolsConverge";
 import { InspireCopyProvider, inspireCopyFromBlocks } from "@v3/marketing/components/landing/inspire/copy";
-import { SiteFooter, SiteHeader } from "@v3/ui/components/public/site-chrome";
+import { SiteFooter, SiteHeader } from "@v3/shared/public/components/site-chrome";
 
 const SLUG = "landing-page-inspire-example";
 const TITLE = "Be the First Choice in Search and AI | Experience.com x Inspire Network";

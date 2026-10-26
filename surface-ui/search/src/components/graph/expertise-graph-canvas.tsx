@@ -8,7 +8,7 @@ import {
   type BranchKey,
   type ExpertiseGraphData,
   type GraphNode,
-} from "@v3/search/lib/expertise-graph";
+} from "@v3/search/utils/expertise-graph";
 
 type Placed = {
   id: string;

@@ -1,14 +1,14 @@
 import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Panel, StatTile } from "@v3/ui/components/console/primitives";
-import { Button } from "@v3/ui/components/ui/button";
-import { Checkbox } from "@v3/ui/components/ui/checkbox";
-import { Input } from "@v3/ui/components/ui/input";
-import { Switch } from "@v3/ui/components/ui/switch";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@v3/ui/components/ui/select";
-import { loadProposals, loadAllTerritories, rejectProposal } from "@v3/sales/lib/territories";
-import { loadReps } from "@v3/sales/lib/teams";
+import { Panel, StatTile } from "@v3/shared/components/ui/console-primitives";
+import { Button } from "@v3/shared/components/ui/button";
+import { Checkbox } from "@v3/shared/components/ui/checkbox";
+import { Input } from "@v3/shared/components/ui/input";
+import { Switch } from "@v3/shared/components/ui/switch";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@v3/shared/components/ui/select";
+import { loadProposals, loadAllTerritories, rejectProposal } from "@v3/sales/utils/territories";
+import { loadReps } from "@v3/sales/utils/teams";
 import {
   HYDRATION_GATE_PCT,
   LANE_ROLES,
@@ -26,7 +26,7 @@ import {
   updateSeatQuota,
   type LaneRole,
   type Seat,
-} from "@v3/sales/lib/territory-admin";
+} from "@v3/sales/utils/territory-admin";
 
 const nf = new Intl.NumberFormat("en-US");
 

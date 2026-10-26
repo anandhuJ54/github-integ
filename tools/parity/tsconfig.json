@@ -1,0 +1,4 @@
+{
+  "extends": "../../surface-ui/tsconfig.base.json",
+  "include": ["*.ts", "cases"]
+}

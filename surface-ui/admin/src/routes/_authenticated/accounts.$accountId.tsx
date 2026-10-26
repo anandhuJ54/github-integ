@@ -12,7 +12,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { useNavigate } from "@tanstack/react-router";
-import { EmpLayout } from "@v3/ui/components/emp-layout";
+import { EmpLayout } from "@v3/shared/components/ui/emp-layout";
 import {
   ConsoleTabs,
   DataTable,
@@ -21,18 +21,18 @@ import {
   PageHeader,
   Panel,
   StatTile,
-} from "@v3/ui/components/console/primitives";
-import { Button } from "@v3/ui/components/ui/button";
+} from "@v3/shared/components/ui/console-primitives";
+import { Button } from "@v3/shared/components/ui/button";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@v3/ui/components/ui/select";
-import { ROLE_FOR_KIND, useImpersonation } from "@v3/ui/lib/impersonation";
-import { useRole } from "@v3/ui/lib/roles";
-import { getAccountCsm } from "@v3/admin/lib/csm";
+} from "@v3/shared/components/ui/select";
+import { ROLE_FOR_KIND, useImpersonation } from "@v3/state/impersonation/impersonation";
+import { useRole } from "@v3/state/access/roles";
+import { getAccountCsm } from "@v3/admin/utils/csm";
 import { CsmControl } from "@v3/admin/components/accounts/csm-control";
 import { useQuery as useCsmQuery } from "@tanstack/react-query";
 import {
@@ -42,7 +42,7 @@ import {
   setEntitlement,
   type AccountTreeNode,
   type EntitlementState,
-} from "@v3/admin/lib/accounts";
+} from "@v3/admin/utils/accounts";
 
 export const Route = createFileRoute("/_authenticated/accounts/$accountId")({
   head: () => ({

@@ -2,8 +2,8 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { Gauge, Layers, Star, Building2 } from "lucide-react";
 import { XmpShell } from "@v3/xmp/components/enterprise/xmp-chrome";
-import { Panel, EmptyState, DataTable, type Column } from "@v3/ui/components/console/primitives";
-import { Badge } from "@v3/ui/components/ui/badge";
+import { Panel, EmptyState, DataTable, type Column } from "@v3/shared/components/ui/console-primitives";
+import { Badge } from "@v3/shared/components/ui/badge";
 import {
   loadBrand,
   loadTopProsByScore,
@@ -15,7 +15,7 @@ import {
   type OfficeRow,
   type DepthRow,
   type ReviewLeaderRow,
-} from "@v3/xmp/lib/enterprise-xmp";
+} from "@v3/xmp/utils/enterprise-xmp";
 
 export const Route = createFileRoute("/_authenticated/enterprise/$orgSlug/leaderboards")({
   ssr: false,

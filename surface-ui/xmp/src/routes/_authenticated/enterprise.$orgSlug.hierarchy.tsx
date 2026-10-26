@@ -10,24 +10,24 @@ import {
   Search,
 } from "lucide-react";
 import { XmpShell } from "@v3/xmp/components/enterprise/xmp-chrome";
-import { Panel, EmptyState } from "@v3/ui/components/console/primitives";
-import { Input } from "@v3/ui/components/ui/input";
-import { Button } from "@v3/ui/components/ui/button";
-import { Badge } from "@v3/ui/components/ui/badge";
+import { Panel, EmptyState } from "@v3/shared/components/ui/console-primitives";
+import { Input } from "@v3/shared/components/ui/input";
+import { Button } from "@v3/shared/components/ui/button";
+import { Badge } from "@v3/shared/components/ui/badge";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@v3/ui/components/ui/select";
+} from "@v3/shared/components/ui/select";
 import {
   loadBrand,
   loadOfficePage,
   loadOfficePros,
   loadStateOptions,
   proName,
-} from "@v3/xmp/lib/enterprise-xmp";
+} from "@v3/xmp/utils/enterprise-xmp";
 
 export const Route = createFileRoute("/_authenticated/enterprise/$orgSlug/hierarchy")({
   ssr: false,

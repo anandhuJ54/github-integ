@@ -35,10 +35,12 @@ jobs:
       - uses: oven-sh/setup-bun@v2
       - name: Install JS deps (surface-ui)
         run: cd surface-ui && bun install --frozen-lockfile
-      - name: Typecheck / build (surface-ui/*)
+      - name: Typecheck / build (surface-ui)
         run: |
+          echo "::group::tsc surface-ui (composed app: shell, state, shared, theme, every Surface)"
+          bunx tsc --noEmit -p surface-ui/tsconfig.json
+          echo "::endgroup::"
           for dir in surface-ui/*/; do
-            [ "$(basename "$dir")" = "_base" ] && continue
             [ -f "$dir/tsconfig.json" ] || continue
             echo "::group::tsc $dir"
             bunx tsc --noEmit -p "$dir/tsconfig.json"

@@ -3,13 +3,13 @@ import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Plus, Tag } from "lucide-react";
-import { DataTable, EmptyState, Panel } from "@v3/ui/components/console/primitives";
-import { Button } from "@v3/ui/components/ui/button";
-import { Checkbox } from "@v3/ui/components/ui/checkbox";
-import { Input } from "@v3/ui/components/ui/input";
-import { Label } from "@v3/ui/components/ui/label";
-import { Textarea } from "@v3/ui/components/ui/textarea";
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@v3/ui/components/ui/dialog";
+import { DataTable, EmptyState, Panel } from "@v3/shared/components/ui/console-primitives";
+import { Button } from "@v3/shared/components/ui/button";
+import { Checkbox } from "@v3/shared/components/ui/checkbox";
+import { Input } from "@v3/shared/components/ui/input";
+import { Label } from "@v3/shared/components/ui/label";
+import { Textarea } from "@v3/shared/components/ui/textarea";
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@v3/shared/components/ui/dialog";
 import {
   LANES,
   LANE_PLACEMENT,
@@ -23,7 +23,7 @@ import {
   type AdminProduct,
   type ProductPatch,
   type VolumeTier,
-} from "@v3/sales/lib/catalog-admin";
+} from "@v3/sales/utils/catalog-admin";
 
 /** Every engine query that reads the catalog; invalidated after any admin save. */
 function useInvalidateEngine() {

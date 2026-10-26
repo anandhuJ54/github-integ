@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
-import { api } from "@v3/ui/lib/server-fn";
+import { api } from "@v3/state/api/server-fn";
 import { ChevronDown, ChevronRight, AlertTriangle } from "lucide-react";
-import { cn } from "@v3/ui/lib/utils";
-import { fetchCatalogs } from "@v3/graph/lib/listings/catalog";
+import { cn } from "@v3/shared/components/utils/utils";
+import { fetchCatalogs } from "@v3/graph/utils/listings/catalog";
 import {
   PUBLISHER_CATALOGS, STUB_PUBLISHERS, type PublisherCatalog, type RowStatus, type Section,
-} from "@v3/graph/lib/listings/catalog.fallback";
+} from "@v3/graph/utils/listings/catalog.fallback";
 
 /** Listings tab — publisher mapping catalog.
  *  Column order (Scott, 2026-07-09): Their Field | Our Mapped Field | Rules.

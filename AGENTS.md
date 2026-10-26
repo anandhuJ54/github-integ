@@ -83,9 +83,13 @@ surface-api/           self-contained Python/FastAPI project (its own pyproject.
       <resource>/      router.py (endpoints) · schemas.py (request/response) · services.py (queries, logic)
     tests/             test_*.py + conftest.py
     db/migrations/     this Surface's Alembic branch (hand-written SQL revisions)
-surface-ui/            self-contained React SPA workspace (its own package.json, bun workspaces)
-  _base/               shared design system (@v3/ui)
-  <surface>/           one React app per Surface (kebab-case), private to it
+surface-ui/            self-contained composed React SPA (one package.json, one Vite app at the root)
+  index.html vite.config.ts package.json tsconfig.json   global entry, build config, the one dependency list
+  shell/               composition root: main, root, router, providers, global routes (auth, guard); imports no Surface
+  state/               centralized store: api client, auth adapters, global state (@v3/state)
+  shared/              shared components for every Surface (@v3/shared): components/{ui,icons,utils}
+  theme/               design tokens and Tailwind css (@v3/theme)
+  <surface>/           one React app per Surface (kebab-case), private to it: src/{routes,components,utils,types,state}
 surface-spec/          governance docs (human-authored prose)
   <surface>/
     AGENTS.md CONTEXT.md   this Surface's local constitution + context
@@ -97,7 +101,7 @@ tools/                 enforcement (lint, ci, hooks) — plain stdlib Python, ru
 - **A Surface owns** its three homes (`surface-api/<surface>`, `surface-ui/<surface>`, `surface-spec/<surface>`), its `contracts/<surface>`, and the tables it logically owns (the physical migration stream is shared — see §4). Ownership is mapped in `.github/CODEOWNERS`.
 - **A Surface never edits** another Surface's internals or tables. Reads go through governed views/queries; writes go through capabilities; reactions go through events.
 - **One app, one login — composed, not shared internals (§4).** A frontend app bundles a chosen set of `surface-ui/<surface>` apps; a backend service mounts a chosen set of `surface-api/<surface>` routers. `surface-ui/<surface>` calls **only** its own `surface-api/<surface>`, via a client generated from `contracts/<surface>`. Cross-Surface reaction goes through the events/capabilities in `contracts/`, never a direct import or call (lint: `boundary/*`). Hiding UI is not security: permissions are checked server-side in FastAPI (or the DB). A new or changed cross-Surface interface is a PR to `contracts/<surface>`, reviewed by the owning Surface.
-- **Shared core:** `AGENTS.md`, `templates/`, `surface-api/_base/`, `surface-api/app/`, `surface-api/tests/`, `surface-ui/_base/`, `.claude/`, `tools/`. Changes need a PR reviewed for all Surfaces.
+- **Shared core:** `AGENTS.md`, `templates/`, `surface-api/_base/`, `surface-api/app/`, `surface-api/tests/`, `surface-ui/shell/`, `surface-ui/state/`, `surface-ui/shared/`, `surface-ui/theme/`, `.claude/`, `tools/`. Changes need a PR reviewed for all Surfaces.
 
 ## 3. Hard rules
 
@@ -159,9 +163,11 @@ tools/                 enforcement (lint, ci, hooks) — plain stdlib Python, ru
   same domain across the trees — e.g. `surface-api/sales`, `surface-ui/sales`, `surface-spec/sales`. Names: the
   backend tree uses `snake_case` (valid packages: `nora_os`, `conversion_agents`); `surface-ui/`, `contracts/`
   and `surface-spec/` use `kebab-case` (`nora-os`, `conversion-agents`).
-- **Frontend:** React 19 SPA · Vite · Tailwind v4 · shadcn/Radix in `surface-ui/<surface>/`; shared design
-  system in `surface-ui/_base/` (`@v3/ui`). `surface-ui/` is a self-contained bun workspace
-  (`cd surface-ui && bun install`). No server-side rendering runtime; the SPA is static-hostable.
+- **Frontend:** React 19 SPA · Vite · Tailwind v4 · shadcn/Radix in `surface-ui/<surface>/`; shared components
+  in `surface-ui/shared/` (`@v3/shared`), global state and the API client in `surface-ui/state/` (`@v3/state`),
+  design tokens in `surface-ui/theme/` (`@v3/theme`). `surface-ui/` is one composed app with its own `package.json`
+  (`cd surface-ui && bun install`). Surfaces import only `@v3/shared`, `@v3/state` and `@v3/theme`, never each other
+  or `shell`. No server-side rendering runtime; the SPA is static-hostable.
 - **Backend:** **Python · FastAPI** in `surface-api/<surface>/src/` (package `surfaces.<surface>`, grouped by
   resource: `<resource>/router.py`, `schemas.py`, `services.py`); shared auth (Supabase JWT verification + RLS
   context), DB access and the compliance gate in `surface-api/_base/`; the app shell in `surface-api/app/`.
@@ -184,7 +190,7 @@ tools/                 enforcement (lint, ci, hooks) — plain stdlib Python, ru
   `SECURITY DEFINER` functions, narrow grants) remain the real gate — keep them authoritative.
 - **Deployables are compositions, not Surfaces.** A backend service mounts a chosen set of
   `surface-api/<surface>` routers; a frontend app bundles a chosen set of `surface-ui/<surface>` apps — so a few
-  (e.g. graph, sales, marketing) can ship separately while sharing `surface-api/_base`, `surface-ui/_base` and
+  (e.g. graph, sales, marketing) can ship separately while sharing `surface-api/_base`, `surface-ui/shared` and
   one database.
 - **Migrations:**
   - **One shared database, one Alembic branch per Surface:** a Surface writes its migrations as Alembic
@@ -214,7 +220,7 @@ tools/                 enforcement (lint, ci, hooks) — plain stdlib Python, ru
   ```
   cd surface-api && uv run ruff check .    # Python lint (backend project)
   cd surface-api && uv run pytest          # Python tests (backend project)
-  cd surface-ui && bun install && for d in */; do [ -f "$d/tsconfig.json" ] && [ "$d" != _base/ ] && bunx tsc --noEmit -p "$d"; done
+  cd surface-ui && bun install && bunx tsc --noEmit -p . && for d in */; do [ -f "$d/tsconfig.json" ] && bunx tsc --noEmit -p "$d"; done
                                            # TS typecheck per frontend app
   python3 tools/lint/lint_all.py           # security / canon / migration / boundary lint (ratchet)
   ```

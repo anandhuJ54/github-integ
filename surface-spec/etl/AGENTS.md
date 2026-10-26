@@ -4,7 +4,7 @@ Local constitution. Stricter-or-equal to the root `AGENTS.md`. This Surface span
 trees (polyglot: React + Python, plus its contract and its specs):
 
 - `surface-api/etl/`   — FastAPI routers (top-level Python package `etl`), mounted by `surface-api/app.py`.
-- `surface-ui/etl/`       — React 19 UI; imports `@v3/ui` (= `surface-ui/_base`).
+- `surface-ui/etl/`       — React 19 UI; imports `@v3/shared` (= `surface-ui/shared`).
 - `contracts/etl/` — versioned events + capabilities (the seam both `surface-api` and `surface-ui` consume,
   and the interface other Surfaces depend on).
 - `surface-spec/etl/`     — this file, `CONTEXT.md`, and one folder per increment

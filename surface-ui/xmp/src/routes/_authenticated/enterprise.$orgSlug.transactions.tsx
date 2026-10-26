@@ -17,9 +17,9 @@ import {
   PageHeader,
   Panel,
   StatTile,
-} from "@v3/ui/components/console/primitives";
-import { Button } from "@v3/ui/components/ui/button";
-import { loadBrand } from "@v3/xmp/lib/enterprise-xmp";
+} from "@v3/shared/components/ui/console-primitives";
+import { Button } from "@v3/shared/components/ui/button";
+import { loadBrand } from "@v3/xmp/utils/enterprise-xmp";
 import {
   RECORD_STATES,
   csvExport,
@@ -28,8 +28,8 @@ import {
   type FeedRow,
   type SyncJobRow,
   type VolumeAuditRow,
-} from "@v3/xmp/lib/enterprise-ops";
-import { cn } from "@v3/ui/lib/utils";
+} from "@v3/xmp/utils/enterprise-ops";
+import { cn } from "@v3/shared/components/utils/utils";
 
 export const Route = createFileRoute("/_authenticated/enterprise/$orgSlug/transactions")({
   ssr: false,

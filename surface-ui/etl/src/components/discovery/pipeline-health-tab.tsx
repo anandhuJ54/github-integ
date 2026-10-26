@@ -6,11 +6,11 @@ import {
   DataTable,
   EmptyState,
   type Column,
-} from "@v3/ui/components/console/primitives";
+} from "@v3/shared/components/ui/console-primitives";
 import { EtlRunMonitor } from "@v3/etl/components/discovery/etl-run-monitor";
-import { num } from "@v3/ui/lib/console-surfaces";
-import { loadPipelineHealth, type DiscoJob } from "@v3/etl/lib/pipeline-health";
-import { cn } from "@v3/ui/lib/utils";
+import { num } from "@v3/shared/public/utils/console-surfaces";
+import { loadPipelineHealth, type DiscoJob } from "@v3/etl/utils/pipeline-health";
+import { cn } from "@v3/shared/components/utils/utils";
 
 /* Run health (the old /nora-os Runs tab, surface audit 2026-10-24), shown at /run-health under
    the NORA OS menu:

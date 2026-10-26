@@ -1,12 +1,12 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { api } from "@v3/ui/lib/server-fn";
-import { EmpLayout } from "@v3/ui/components/emp-layout";
-import { Button } from "@v3/ui/components/ui/button";
-import { Input } from "@v3/ui/components/ui/input";
-import { Checkbox } from "@v3/ui/components/ui/checkbox";
-import { cn } from "@v3/ui/lib/utils";
+import { api } from "@v3/state/api/server-fn";
+import { EmpLayout } from "@v3/shared/components/ui/emp-layout";
+import { Button } from "@v3/shared/components/ui/button";
+import { Input } from "@v3/shared/components/ui/input";
+import { Checkbox } from "@v3/shared/components/ui/checkbox";
+import { cn } from "@v3/shared/components/utils/utils";
 
 export const Route = createFileRoute("/_authenticated/compliance")({
   component: CompliancePage,

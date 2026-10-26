@@ -11,17 +11,17 @@ import {
   Plug,
   Globe,
 } from "lucide-react";
-import { supabase } from "@v3/ui/integrations/supabase/client";
-import { api } from "@v3/ui/lib/server-fn";
-import { Button } from "@v3/ui/components/ui/button";
-import { Card } from "@v3/ui/components/ui/card";
-import { Badge } from "@v3/ui/components/ui/badge";
+import { getCurrentUser } from "@v3/state/session/current-user";
+import { api } from "@v3/state/api/server-fn";
+import { Button } from "@v3/shared/components/ui/button";
+import { Card } from "@v3/shared/components/ui/card";
+import { Badge } from "@v3/shared/components/ui/badge";
 import { Progress } from "@v3/srp/components/ui/progress";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@v3/ui/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@v3/shared/components/ui/tooltip";
 import { toast } from "sonner";
 import { DashboardShell } from "@v3/srp/components/dashboard-shell";
-import { loadOfficeMode } from "@v3/srp/lib/office-mode";
-import { listingSubject } from "@v3/srp/lib/listings/subject";
+import { loadOfficeMode } from "@v3/srp/utils/office-mode";
+import { listingSubject } from "@v3/srp/utils/listings/subject";
 
 export const Route = createFileRoute("/_authenticated/dashboard/listings")({
   ssr: false,
@@ -102,10 +102,8 @@ function ListingsPage() {
   const [registry, setRegistry] = useState<Registry[]>([]);
 
   const load = async () => {
-    const {
-      data: { session },
-    } = await supabase.auth.getSession();
-    if (!session) {
+    const user = await getCurrentUser();
+    if (!user) {
       navigate({ to: "/auth" as any });
       return;
     }

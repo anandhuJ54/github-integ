@@ -17,11 +17,11 @@ import {
   User,
   Users,
 } from "lucide-react";
-import { BrandIcon } from "@v3/ui/components/brand/logo";
-import { PageBody } from "@v3/ui/components/console/primitives";
+import { BrandIcon } from "@v3/shared/components/icons/logo";
+import { PageBody } from "@v3/shared/components/ui/console-primitives";
 import { ActingAsBar } from "@v3/srp/components/impersonation/acting-as-bar";
-import { BrandAvatar, PersonAvatar } from "@v3/ui/components/sales/entity-avatar";
-import { cn } from "@v3/ui/lib/utils";
+import { BrandAvatar, PersonAvatar } from "@v3/shared/components/ui/entity-avatar";
+import { cn } from "@v3/shared/components/utils/utils";
 
 type NavItem = { label: string; suffix: string; icon: ComponentType<{ className?: string }> };
 type NavGroup = { label: string | null; items: NavItem[] };

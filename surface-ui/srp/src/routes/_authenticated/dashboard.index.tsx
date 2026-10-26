@@ -1,14 +1,14 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { ArrowRight, Sparkles } from "lucide-react";
-import { supabase } from "@v3/ui/integrations/supabase/client";
-import { api } from "@v3/ui/lib/server-fn";
-import { Avatar, AvatarFallback, AvatarImage } from "@v3/ui/components/ui/avatar";
-import { Button } from "@v3/ui/components/ui/button";
-import { Card } from "@v3/ui/components/ui/card";
+import { getCurrentUser } from "@v3/state/session/current-user";
+import { api } from "@v3/state/api/server-fn";
+import { Avatar, AvatarFallback, AvatarImage } from "@v3/shared/components/ui/avatar";
+import { Button } from "@v3/shared/components/ui/button";
+import { Card } from "@v3/shared/components/ui/card";
 import { DashboardShell } from "@v3/srp/components/dashboard-shell";
 import { ScoreGauge } from "@v3/srp/components/ai/score-gauge";
-import { cn } from "@v3/ui/lib/utils";
+import { cn } from "@v3/shared/components/utils/utils";
 
 export const Route = createFileRoute("/_authenticated/dashboard/")({
   ssr: false,
@@ -75,8 +75,8 @@ function DashboardPage() {
 
   useEffect(() => {
     (async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
+      const user = await getCurrentUser();
+      if (!user) {
         window.location.href = "/auth";
         return;
       }

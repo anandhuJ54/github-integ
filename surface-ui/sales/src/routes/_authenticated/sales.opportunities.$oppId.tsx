@@ -2,10 +2,10 @@ import { growthHubStyles } from "@v3/sales/components/sales/growth-hub-styles";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft } from "lucide-react";
-import { Button } from "@v3/ui/components/ui/button";
-import { EmptyState, PageBody, PageHeader, Panel } from "@v3/ui/components/console/primitives";
+import { Button } from "@v3/shared/components/ui/button";
+import { EmptyState, PageBody, PageHeader, Panel } from "@v3/shared/components/ui/console-primitives";
 import { OpportunityWorkspace } from "@v3/sales/components/sales/opportunity-workspace";
-import { loadOpportunityFile } from "@v3/sales/lib/opportunity-file";
+import { loadOpportunityFile } from "@v3/sales/utils/opportunity-file";
 
 export const Route = createFileRoute("/_authenticated/sales/opportunities/$oppId")({
   head: () => ({

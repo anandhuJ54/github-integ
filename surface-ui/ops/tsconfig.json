@@ -2,7 +2,7 @@
   "extends": "../tsconfig.base.json",
   "include": [
     "src",
-    "../app/.generated/routeTree.gen.ts",
-    "../app/src/router.tsx"
+    "../shell/.generated/routeTree.gen.ts",
+    "../shell/router.tsx"
   ]
 }

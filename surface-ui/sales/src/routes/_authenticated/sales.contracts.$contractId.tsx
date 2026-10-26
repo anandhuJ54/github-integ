@@ -3,15 +3,15 @@ import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { AlertTriangle, ArrowLeft, CheckCircle2, Circle, Copy, Download, Lock, Plus, Send, Upload, X } from "lucide-react";
-import { EmptyState, PageBody, Panel } from "@v3/ui/components/console/primitives";
-import { Button } from "@v3/ui/components/ui/button";
-import { Textarea } from "@v3/ui/components/ui/textarea";
-import { Input } from "@v3/ui/components/ui/input";
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@v3/ui/components/ui/dialog";
-import { supabase } from "@v3/ui/integrations/supabase/client";
+import { EmptyState, PageBody, Panel } from "@v3/shared/components/ui/console-primitives";
+import { Button } from "@v3/shared/components/ui/button";
+import { Textarea } from "@v3/shared/components/ui/textarea";
+import { Input } from "@v3/shared/components/ui/input";
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@v3/shared/components/ui/dialog";
+import { getCurrentUser } from "@v3/state/session/current-user";
 import { BillingTab, OrderFormDocument } from "@v3/sales/components/contracts/contract-billing";
 import { ContractDocument, productsFromTerms } from "@v3/sales/components/contracts/contract-document";
-import { hasCertificate } from "@v3/sales/lib/contract-print";
+import { hasCertificate } from "@v3/sales/utils/contract-print";
 import {
   createAddendum,
   generateRenewalNotice,
@@ -32,7 +32,7 @@ import {
   startRenewal,
   updateSpecialTerms,
   type ContractDetail,
-} from "@v3/sales/lib/contracts";
+} from "@v3/sales/utils/contracts";
 
 export const Route = createFileRoute("/_authenticated/sales/contracts/$contractId")({
   head: () => ({
@@ -49,7 +49,7 @@ export const Route = createFileRoute("/_authenticated/sales/contracts/$contractI
 });
 
 type Tab = "workspace" | "document" | "send-sign" | "billing" | "activity" | "versions";
-const actor = async () => (await supabase.auth.getUser()).data.user?.email ?? null;
+const actor = async () => (await getCurrentUser())?.email ?? null;
 
 function Pill({ s }: { s: string | null | undefined }) {
   const v = (s ?? "—").toLowerCase();

@@ -11,9 +11,9 @@ import {
   PageHeader,
   Panel,
   StatTile,
-} from "@v3/ui/components/console/primitives";
-import { loadGroupsOverview, type GroupOverview } from "@v3/sales/lib/category-groups";
-import { loadTerritoryRules, routingExplainer } from "@v3/sales/lib/territories";
+} from "@v3/shared/components/ui/console-primitives";
+import { loadGroupsOverview, type GroupOverview } from "@v3/sales/utils/category-groups";
+import { loadTerritoryRules, routingExplainer } from "@v3/sales/utils/territories";
 
 export const Route = createFileRoute("/_authenticated/sales/territories/")({
   head: () => ({

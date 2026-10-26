@@ -10,25 +10,25 @@ import {
   Trash2,
   Upload,
 } from "lucide-react";
-import { Button } from "@v3/ui/components/ui/button";
-import { Input } from "@v3/ui/components/ui/input";
-import { Textarea } from "@v3/ui/components/ui/textarea";
+import { Button } from "@v3/shared/components/ui/button";
+import { Input } from "@v3/shared/components/ui/input";
+import { Textarea } from "@v3/shared/components/ui/textarea";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@v3/ui/components/ui/select";
-import { FieldRow } from "@v3/ui/components/website/bits";
+} from "@v3/shared/components/ui/select";
+import { FieldRow } from "@v3/shared/public/components/website-bits";
 import { RichTextEditor } from "@v3/marketing/components/website/rich-text-editor";
-import { supabase } from "@v3/ui/integrations/supabase/client";
+import { supabase } from "@v3/state/auth/adapters/supabase/client";
 import {
   MARKETING_IMAGE_BUCKET,
   resolveSectionImage,
   sectionImageKeys,
-} from "@v3/ui/lib/marketing/section-images";
-import { ICON_CHOICES } from "@v3/ui/components/marketing/sections/premium/icon";
+} from "@v3/shared/public/utils/marketing/section-images";
+import { ICON_CHOICES } from "@v3/shared/components/icons/icon";
 import {
   ITEM_FIELD_LABEL,
   SECTION_SPECS,
@@ -36,7 +36,7 @@ import {
   blankSection,
   type ItemField,
 } from "@v3/marketing/components/website/section-schema";
-import type { Block, BlockCta, BlockItem } from "@v3/ui/lib/public-site";
+import type { Block, BlockCta, BlockItem } from "@v3/shared/public/utils/public-site";
 
 /* ───────────────────────── image field ───────────────────────── */
 

@@ -1,8 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { XmpShell, CoverageBar } from "@v3/xmp/components/enterprise/xmp-chrome";
-import { Panel, DataTable, EmptyState, type Column } from "@v3/ui/components/console/primitives";
-import { loadBrand, loadOverview, loadStateRollup, type StateRow } from "@v3/xmp/lib/enterprise-xmp";
+import { Panel, DataTable, EmptyState, type Column } from "@v3/shared/components/ui/console-primitives";
+import { loadBrand, loadOverview, loadStateRollup, type StateRow } from "@v3/xmp/utils/enterprise-xmp";
 
 export const Route = createFileRoute("/_authenticated/enterprise/$orgSlug/reporting")({
   ssr: false,

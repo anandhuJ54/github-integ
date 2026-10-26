@@ -1,9 +1,9 @@
 import { useQuery } from "@tanstack/react-query";
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@v3/ui/components/ui/sheet";
-import { Badge } from "@v3/ui/components/ui/badge";
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@v3/shared/components/ui/sheet";
+import { Badge } from "@v3/shared/components/ui/badge";
 import { PayloadFields } from "@v3/etl/components/discovery/pipeline-tab";
-import { cn } from "@v3/ui/lib/utils";
-import { api } from "@v3/ui/lib/server-fn";
+import { cn } from "@v3/shared/components/utils/utils";
+import { api } from "@v3/state/api/server-fn";
 import {
   REL_TYPES,
   TYPE_LABEL,

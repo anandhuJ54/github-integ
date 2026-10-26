@@ -11,14 +11,14 @@ import {
   PageHeader,
   Panel,
   StatTile,
-} from "@v3/ui/components/console/primitives";
-import { Button } from "@v3/ui/components/ui/button";
-import { Input } from "@v3/ui/components/ui/input";
-import { Label } from "@v3/ui/components/ui/label";
-import { Switch } from "@v3/ui/components/ui/switch";
-import { MARGIN_SKIN, pctFmt } from "@v3/sales/lib/margin";
-import { loadComp, saveCompRate, type CompDeal, type RepComp } from "@v3/sales/lib/comp";
-import { SELLER_ROLES, type SellerRole } from "@v3/sales/lib/sales";
+} from "@v3/shared/components/ui/console-primitives";
+import { Button } from "@v3/shared/components/ui/button";
+import { Input } from "@v3/shared/components/ui/input";
+import { Label } from "@v3/shared/components/ui/label";
+import { Switch } from "@v3/shared/components/ui/switch";
+import { MARGIN_SKIN, pctFmt } from "@v3/sales/utils/margin";
+import { loadComp, saveCompRate, type CompDeal, type RepComp } from "@v3/sales/utils/comp";
+import { SELLER_ROLES, type SellerRole } from "@v3/sales/utils/sales";
 
 export const Route = createFileRoute("/_authenticated/sales/comp")({
   head: () => ({

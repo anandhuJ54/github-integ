@@ -2,11 +2,11 @@ import { Fragment, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { ChevronDown, ChevronRight, RefreshCw } from "lucide-react";
-import { EmptyState, Panel } from "@v3/ui/components/console/primitives";
-import { Button } from "@v3/ui/components/ui/button";
-import { Input } from "@v3/ui/components/ui/input";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@v3/ui/components/ui/dropdown-menu";
-import { assembleDocument, day, generateInvoice, loadInvoices, loadUsage, money, recordUsage, type ContractDetail } from "@v3/sales/lib/contracts";
+import { EmptyState, Panel } from "@v3/shared/components/ui/console-primitives";
+import { Button } from "@v3/shared/components/ui/button";
+import { Input } from "@v3/shared/components/ui/input";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@v3/shared/components/ui/dropdown-menu";
+import { assembleDocument, day, generateInvoice, loadInvoices, loadUsage, money, recordUsage, type ContractDetail } from "@v3/sales/utils/contracts";
 
 /* Order form + exhibits rendered from exp_contract_documents.content (m4_assemble_document output). */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

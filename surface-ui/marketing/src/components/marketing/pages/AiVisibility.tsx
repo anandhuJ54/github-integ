@@ -1,4 +1,4 @@
-import { ogImageUrl } from "@v3/marketing/lib/marketing/seo";
+import { ogImageUrl } from "@v3/marketing/utils/marketing/seo";
 import { PageBreadcrumb } from "@v3/marketing/components/marketing/PageBreadcrumb";
 import {
   AiVisibilityHeroSection,
@@ -10,7 +10,7 @@ import {
 import { SRPOverviewSection } from "@v3/marketing/components/marketing/sections/parent/SRPOverviewSection";
 import { Search, PenTool, Radar } from "lucide-react";
 import synergyImg from "@v3/marketing/assets/ai-visibility/synergy.png";
-import { getSignUpUrl } from "@v3/marketing/lib/marketing/envUrls";
+import { getSignUpUrl } from "@v3/marketing/utils/marketing/envUrls";
 
 const aiVisibilitySchema = {
   "@context": "https://schema.org",

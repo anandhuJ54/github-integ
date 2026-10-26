@@ -8,8 +8,8 @@ import {
   PageHeader,
   Panel,
   StatTile,
-} from "@v3/ui/components/console/primitives";
-import { loadCategoryDashboard } from "@v3/sales/lib/sales-nav";
+} from "@v3/shared/components/ui/console-primitives";
+import { loadCategoryDashboard } from "@v3/sales/utils/sales-nav";
 
 export const Route = createFileRoute("/_authenticated/sales/categories/$gcid")({
   head: () => ({

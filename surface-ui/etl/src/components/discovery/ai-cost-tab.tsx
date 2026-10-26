@@ -1,10 +1,10 @@
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { RefreshCw } from "lucide-react";
-import { api } from "@v3/ui/lib/server-fn";
-import { Button } from "@v3/ui/components/ui/button";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@v3/ui/components/ui/dialog";
-import { cn } from "@v3/ui/lib/utils";
+import { api } from "@v3/state/api/server-fn";
+import { Button } from "@v3/shared/components/ui/button";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@v3/shared/components/ui/dialog";
+import { cn } from "@v3/shared/components/utils/utils";
 
 /* AI Cost (2026-10-22): the ETL AI cost log (exp_etl_cost_events) — one row per AI call or research step, written by
    the worker and by boundary generation. Filters by period, category, site and activity; totals and averages per

@@ -1,8 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
-import { api } from "@v3/ui/lib/server-fn";
-import { Card, CardContent, CardHeader, CardTitle } from "@v3/ui/components/ui/card";
-import { Badge } from "@v3/ui/components/ui/badge";
-import { cn } from "@v3/ui/lib/utils";
+import { api } from "@v3/state/api/server-fn";
+import { Card, CardContent, CardHeader, CardTitle } from "@v3/shared/components/ui/card";
+import { Badge } from "@v3/shared/components/ui/badge";
+import { cn } from "@v3/shared/components/utils/utils";
 
 type CheckRow = { check_code: string; passed: boolean; detail: string };
 

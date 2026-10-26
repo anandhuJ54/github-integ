@@ -20,25 +20,25 @@ import {
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from "@v3/ui/components/ui/tooltip";
+} from "@v3/shared/components/ui/tooltip";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@v3/ui/components/ui/dropdown-menu";
+} from "@v3/shared/components/ui/dropdown-menu";
 import { toast } from "sonner";
-import { Button } from "@v3/ui/components/ui/button";
-import { Input } from "@v3/ui/components/ui/input";
-import { Textarea } from "@v3/ui/components/ui/textarea";
+import { Button } from "@v3/shared/components/ui/button";
+import { Input } from "@v3/shared/components/ui/input";
+import { Textarea } from "@v3/shared/components/ui/textarea";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@v3/ui/components/ui/select";
+} from "@v3/shared/components/ui/select";
 import {
   DataTable,
   DetailDrawer,
@@ -47,14 +47,14 @@ import {
   PageHeader,
   Panel,
   StatTile,
-} from "@v3/ui/components/console/primitives";
-import { FieldRow, Pill } from "@v3/ui/components/website/bits";
+} from "@v3/shared/components/ui/console-primitives";
+import { FieldRow, Pill } from "@v3/shared/public/components/website-bits";
 import { SectionEditor } from "@v3/marketing/components/website/section-editor";
 import { TemplateManager } from "@v3/marketing/components/website/template-manager";
 import { NavManager } from "@v3/marketing/components/website/nav-manager";
-import { loadDeletedNavMenus, navMutations, siteLabel, type NavMenu } from "@v3/ui/lib/nav-menus";
+import { loadDeletedNavMenus, navMutations, siteLabel, type NavMenu } from "@v3/shared/public/utils/nav-menus";
 import { PagePreview } from "@v3/marketing/components/website/page-preview";
-import { Checkbox } from "@v3/ui/components/ui/checkbox";
+import { Checkbox } from "@v3/shared/components/ui/checkbox";
 import {
   Dialog,
   DialogContent,
@@ -62,10 +62,10 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@v3/ui/components/ui/dialog";
+} from "@v3/shared/components/ui/dialog";
 import { RadioGroup, RadioGroupItem } from "@v3/marketing/components/ui/radio-group";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@v3/ui/components/ui/tabs";
-import { blocksOf, type Block } from "@v3/ui/lib/public-site";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@v3/shared/components/ui/tabs";
+import { blocksOf, type Block } from "@v3/shared/public/utils/public-site";
 import {
   DESIGN_TAGS,
   DESIGN_TAG_LABEL,
@@ -81,8 +81,8 @@ import {
   type PageType,
   type WebPage,
   type WebPageTemplate,
-} from "@v3/marketing/lib/website";
-import { useOptionalRole } from "@v3/ui/lib/roles";
+} from "@v3/marketing/utils/website";
+import { useOptionalRole } from "@v3/state/access/roles";
 
 type CmsSection = "pages" | "templates" | "navigation" | "trash";
 

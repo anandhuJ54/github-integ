@@ -9,8 +9,8 @@ import {
   PageHeader,
   Panel,
   StatTile,
-} from "@v3/ui/components/console/primitives";
-import { InstrumentNote, Pill } from "@v3/ui/components/website/bits";
+} from "@v3/shared/components/ui/console-primitives";
+import { InstrumentNote, Pill } from "@v3/shared/public/components/website-bits";
 import {
   attribution,
   leadTotals,
@@ -19,7 +19,7 @@ import {
   loadLeads,
   loadPages,
   type AttributionRow,
-} from "@v3/marketing/lib/website";
+} from "@v3/marketing/utils/website";
 
 export const Route = createFileRoute("/_authenticated/website/")({
   head: () => ({

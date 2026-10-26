@@ -1,14 +1,14 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { Car, Coffee, Home, MoreHorizontal, PawPrint, SearchX, Sparkles, Stethoscope, Trees, Utensils, Waves, Wrench } from "lucide-react";
-import { Button } from "@v3/ui/components/ui/button";
-import { useArea } from "@v3/ui/components/public/area-picker";
-import { HomeHero } from "@v3/ui/components/public/home-hero";
-import { MapPanel, ResultCard } from "@v3/ui/components/search/serp-parts";
+import { Button } from "@v3/shared/components/ui/button";
+import { useArea } from "@v3/shared/public/components/area-picker";
+import { HomeHero } from "@v3/shared/public/components/home-hero";
+import { MapPanel, ResultCard } from "@v3/shared/public/components/serp-parts";
 import { CuratedCollections } from "@v3/search/components/search/consumer-search-experience";
-import type { HomeData } from "@v3/ui/lib/home.functions";
-import { DEFAULT_QUERY, runSearch, type SearchDoc } from "@v3/ui/lib/search";
-import { getSearchPresentation, type SearchPresentationData } from "@v3/ui/lib/search-presentation.functions";
+import type { HomeData } from "@v3/shared/public/utils/home.functions";
+import { DEFAULT_QUERY, runSearch, type SearchDoc } from "@v3/shared/public/utils/search";
+import { getSearchPresentation, type SearchPresentationData } from "@v3/shared/public/utils/search-presentation.functions";
 
 const EMPTY_PRESENTATION: SearchPresentationData = { facetGroups: [], enrichments: {} };
 

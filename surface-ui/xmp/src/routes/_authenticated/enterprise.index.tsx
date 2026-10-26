@@ -1,5 +1,5 @@
 import { createFileRoute, redirect } from "@tanstack/react-router";
-import { DEFAULT_BRAND_SLUG } from "@v3/xmp/lib/enterprise-xmp";
+import { DEFAULT_BRAND_SLUG } from "@v3/xmp/utils/enterprise-xmp";
 
 export const Route = createFileRoute("/_authenticated/enterprise/")({
   beforeLoad: () => {

@@ -4,8 +4,8 @@ import { useState } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { Search } from "lucide-react";
-import { Input } from "@v3/ui/components/ui/input";
-import { getSpace, searchWiki, spaceTree } from "@v3/ops/lib/build-wiki";
+import { Input } from "@v3/shared/components/ui/input";
+import { getSpace, searchWiki, spaceTree } from "@v3/ops/utils/build-wiki";
 
 export function Markdown({ source }: { source: string }) {
   if (!source.trim()) return <p className="text-sm italic text-[color:var(--color-ink-3)]">This page is empty.</p>;

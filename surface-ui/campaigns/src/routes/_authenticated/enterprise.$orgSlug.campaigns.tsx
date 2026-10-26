@@ -19,26 +19,26 @@ import {
   CheckCircle2,
   Send,
 } from "lucide-react";
-import { api } from "@v3/ui/lib/server-fn";
-import { Card } from "@v3/ui/components/ui/card";
-import { Badge } from "@v3/ui/components/ui/badge";
-import { Button } from "@v3/ui/components/ui/button";
-import { Input } from "@v3/ui/components/ui/input";
-import { Textarea } from "@v3/ui/components/ui/textarea";
+import { api } from "@v3/state/api/server-fn";
+import { Card } from "@v3/shared/components/ui/card";
+import { Badge } from "@v3/shared/components/ui/badge";
+import { Button } from "@v3/shared/components/ui/button";
+import { Input } from "@v3/shared/components/ui/input";
+import { Textarea } from "@v3/shared/components/ui/textarea";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@v3/ui/components/ui/select";
-import { Tabs, TabsList, TabsTrigger } from "@v3/ui/components/ui/tabs";
+} from "@v3/shared/components/ui/select";
+import { Tabs, TabsList, TabsTrigger } from "@v3/shared/components/ui/tabs";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
-} from "@v3/ui/components/ui/dialog";
+} from "@v3/shared/components/ui/dialog";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/enterprise/$orgSlug/campaigns")({

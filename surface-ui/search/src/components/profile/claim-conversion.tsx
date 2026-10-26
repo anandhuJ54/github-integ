@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Megaphone, ShieldQuestion } from "lucide-react";
-import { loadAdUnits, pickVariant, type AdUnit } from "@v3/search/lib/monetization";
-import type { ProfileBundle } from "@v3/search/lib/profile-render";
+import { loadAdUnits, pickVariant, type AdUnit } from "@v3/search/utils/monetization";
+import type { ProfileBundle } from "@v3/search/utils/profile-render";
 
 /** Loads the live unclaimed-profile ad units for this page's category + state. */
 export function useUnclaimedAdUnits(b: ProfileBundle) {

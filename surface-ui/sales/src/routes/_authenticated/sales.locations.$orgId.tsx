@@ -8,7 +8,7 @@ import {
   PageHeader,
   Panel,
   StatTile,
-} from "@v3/ui/components/console/primitives";
+} from "@v3/shared/components/ui/console-primitives";
 function DemoBadge() {
   return (
     <span className="inline-flex items-center gap-1 rounded-full bg-[color:var(--color-g-purple-soft)] px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-[#7b4ce0]">
@@ -17,7 +17,7 @@ function DemoBadge() {
   );
 }
 import { TerritoryChip } from "@v3/sales/components/sales/territory-chip";
-import { loadBrandRollup, loadEventsFor, loadOrg, loadScore } from "@v3/sales/lib/sales-nav";
+import { loadBrandRollup, loadEventsFor, loadOrg, loadScore } from "@v3/sales/utils/sales-nav";
 
 export const Route = createFileRoute("/_authenticated/sales/locations/$orgId")({
   head: () => ({

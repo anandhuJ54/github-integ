@@ -1,8 +1,8 @@
 // srp's own copy of the run chip and run detail the seat interview renders (surface audit §11 row 4,
 // 2026-10-25). Copied from surface-ui/skills/src/components/nora/{registry-tabs,skill-runs}.tsx;
 // keep the look in step with those.
-import { cn } from "@v3/ui/lib/utils";
-import type { SkillRun, TraceStep } from "@v3/srp/lib/nora/skill-run";
+import { cn } from "@v3/shared/components/utils/utils";
+import type { SkillRun, TraceStep } from "@v3/srp/utils/nora/skill-run";
 
 const STATUS_TONE: Record<string, string> = {
   draft: "bg-[color:var(--color-surface-3)] text-[color:var(--color-ink-2)]",

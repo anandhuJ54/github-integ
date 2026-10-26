@@ -4,7 +4,7 @@ Local constitution. Stricter-or-equal to the root `AGENTS.md`. This Surface span
 trees (polyglot: React + Python, plus its contract and its specs):
 
 - `surface-api/search/`   — FastAPI routers (top-level Python package `search`), mounted by `surface-api/app.py`.
-- `surface-ui/search/`       — React 19 UI; imports `@v3/ui` (= `surface-ui/_base`).
+- `surface-ui/search/`       — React 19 UI; imports `@v3/shared` (= `surface-ui/shared`).
 - `contracts/search/` — versioned events + capabilities (the seam both `surface-api` and `surface-ui` consume,
   and the interface other Surfaces depend on).
 - `surface-spec/search/`     — this file, `CONTEXT.md`, and one folder per increment

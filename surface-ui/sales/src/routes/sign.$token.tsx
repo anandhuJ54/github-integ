@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { api } from "@v3/ui/lib/server-fn";
-import { BrandWordmark } from "@v3/ui/components/brand/logo";
+import { api } from "@v3/state/api/server-fn";
+import { BrandWordmark } from "@v3/shared/components/icons/logo";
 import { ContractDocument, type DocContract } from "@v3/sales/components/contracts/contract-document";
 
 export const Route = createFileRoute("/sign/$token")({

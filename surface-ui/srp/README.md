@@ -1,7 +1,7 @@
 # SRP — Locations & Professionals — web (React SPA)
 
-React 19 + Vite + Tailwind + shadcn/Radix. Import shared components from `@v3/ui`
-(= `surface-ui/_base`). Call this Surface's API via the client generated from `contracts/srp`.
+React 19 + Vite + Tailwind + shadcn/Radix. Import shared components from `@v3/shared`
+(= `surface-ui/shared`). Call this Surface's API via the client generated from `contracts/srp`.
 
 Editing and creating only (surface audit 2026-10-25, `docs/SURFACE_AUDIT.md` §5): the claim page
 `/claim/$professional` (`/srp/claim-profile/{slug}`); the seat area `/seat/$kind/$id/*` (a

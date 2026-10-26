@@ -1,8 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { ArrowDownRight, ArrowUpRight, FlaskConical, Minus, TrendingUp } from "lucide-react";
-import { EmptyState, PageBody, PageHeader } from "@v3/ui/components/console/primitives";
-import { loadCategoryStory, PRICE_SIGNAL_META, type CategoryRow } from "@v3/sales/lib/sales-story";
+import { EmptyState, PageBody, PageHeader } from "@v3/shared/components/ui/console-primitives";
+import { loadCategoryStory, PRICE_SIGNAL_META, type CategoryRow } from "@v3/sales/utils/sales-story";
 
 export const Route = createFileRoute("/_authenticated/sales/pricing")({
   head: () => ({

@@ -3,17 +3,17 @@ import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { AlertTriangle, CheckCircle2, Clock, FlaskConical, Mail, Send } from "lucide-react";
 import { toast } from "sonner";
-import { Button } from "@v3/ui/components/ui/button";
-import { Input } from "@v3/ui/components/ui/input";
-import { Label } from "@v3/ui/components/ui/label";
-import { Textarea } from "@v3/ui/components/ui/textarea";
+import { Button } from "@v3/shared/components/ui/button";
+import { Input } from "@v3/shared/components/ui/input";
+import { Label } from "@v3/shared/components/ui/label";
+import { Textarea } from "@v3/shared/components/ui/textarea";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@v3/ui/components/ui/select";
+} from "@v3/shared/components/ui/select";
 import {
   ConsoleTabs,
   EmptyState,
@@ -21,8 +21,8 @@ import {
   PageHeader,
   Panel,
   StatTile,
-} from "@v3/ui/components/console/primitives";
-import { TRACK_META } from "@v3/ops/lib/dev-progress";
+} from "@v3/shared/components/ui/console-primitives";
+import { TRACK_META } from "@v3/ops/utils/dev-progress";
 import {
   WEEK_DAYS,
   composeDigest,
@@ -34,8 +34,8 @@ import {
   type DevConfig,
   type TeamWeekly,
   type WeeklyData,
-} from "@v3/ops/lib/dev-weekly";
-import { cn } from "@v3/ui/lib/utils";
+} from "@v3/ops/utils/dev-weekly";
+import { cn } from "@v3/shared/components/utils/utils";
 
 export const Route = createFileRoute("/_authenticated/dev/weekly")({
   head: () => ({

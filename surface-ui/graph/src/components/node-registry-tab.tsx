@@ -8,30 +8,30 @@ import {
   Plus,
   Trash2,
 } from "lucide-react";
-import { api } from "@v3/ui/lib/server-fn";
-import { Card, CardContent } from "@v3/ui/components/ui/card";
-import { Button } from "@v3/ui/components/ui/button";
-import { ModelLock } from "@v3/ui/components/model-lock";
-import { Input } from "@v3/ui/components/ui/input";
-import { Textarea } from "@v3/ui/components/ui/textarea";
-import { Label } from "@v3/ui/components/ui/label";
-import { Badge } from "@v3/ui/components/ui/badge";
-import { Checkbox } from "@v3/ui/components/ui/checkbox";
+import { api } from "@v3/state/api/server-fn";
+import { Card, CardContent } from "@v3/shared/components/ui/card";
+import { Button } from "@v3/shared/components/ui/button";
+import { ModelLock } from "@v3/shared/components/ui/model-lock";
+import { Input } from "@v3/shared/components/ui/input";
+import { Textarea } from "@v3/shared/components/ui/textarea";
+import { Label } from "@v3/shared/components/ui/label";
+import { Badge } from "@v3/shared/components/ui/badge";
+import { Checkbox } from "@v3/shared/components/ui/checkbox";
 import {
   Dialog,
   DialogContent,
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@v3/ui/components/ui/dialog";
+} from "@v3/shared/components/ui/dialog";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@v3/ui/components/ui/select";
-import { cn } from "@v3/ui/lib/utils";
+} from "@v3/shared/components/ui/select";
+import { cn } from "@v3/shared/components/utils/utils";
 
 type NodeRow = {
   id: string;

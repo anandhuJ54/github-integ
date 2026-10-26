@@ -3,9 +3,9 @@ import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ExternalLink, Newspaper, Rocket } from "lucide-react";
 import { toast } from "sonner";
-import { Button } from "@v3/ui/components/ui/button";
-import { Input } from "@v3/ui/components/ui/input";
-import { Switch } from "@v3/ui/components/ui/switch";
+import { Button } from "@v3/shared/components/ui/button";
+import { Input } from "@v3/shared/components/ui/input";
+import { Switch } from "@v3/shared/components/ui/switch";
 import {
   DataTable,
   PageBody,
@@ -13,12 +13,12 @@ import {
   Panel,
   StatTile,
   type Column,
-} from "@v3/ui/components/console/primitives";
-import { FieldRow, InstrumentNote, Pill } from "@v3/ui/components/website/bits";
-import { ReadOnlyLock } from "@v3/ui/components/model-lock";
-import { money, num } from "@v3/ui/lib/console-surfaces";
-import { useRole } from "@v3/ui/lib/roles";
-import { catLabel, loadLaunchedCategories } from "@v3/admin/lib/search-console";
+} from "@v3/shared/components/ui/console-primitives";
+import { FieldRow, InstrumentNote, Pill } from "@v3/shared/public/components/website-bits";
+import { ReadOnlyLock } from "@v3/shared/components/ui/model-lock";
+import { money, num } from "@v3/shared/public/utils/console-surfaces";
+import { useRole } from "@v3/state/access/roles";
+import { catLabel, loadLaunchedCategories } from "@v3/admin/utils/search-console";
 import {
   BOOST_PLACEMENTS,
   PLACEMENT_LABEL,
@@ -30,8 +30,8 @@ import {
   updateBoost,
   type BoostPlacement,
   type VoceArticle,
-} from "@v3/ui/lib/voce";
-import { cn } from "@v3/ui/lib/utils";
+} from "@v3/shared/public/utils/voce";
+import { cn } from "@v3/shared/components/utils/utils";
 
 export const Route = createFileRoute("/_authenticated/search/voce")({
   head: () => ({

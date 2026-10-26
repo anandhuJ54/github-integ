@@ -38,8 +38,11 @@ surface-api/              self-contained Python/FastAPI project (its own pyproje
   sales/ … ops/           one top-level Python package per Surface (snake_case: nora_os, conversion_agents)
     routers/              one module per capability
 
-surface-ui/               self-contained React SPA workspace (its own package.json, bun workspaces)
-  _base/                  shared design system (@v3/ui) ← no duplicated components
+surface-ui/               self-contained composed React SPA (one package.json, one Vite app)
+  shell/                  composition root: main, root, router, global routes
+  state/                  centralized store, API client, auth adapters (@v3/state)
+  shared/                 shared components (@v3/shared) ← no duplicated components
+  theme/                  design tokens and css (@v3/theme)
   sales/ … ops/           one React app per Surface (kebab-case: nora-os, conversion-agents)
 
 surface-spec/             governance docs (prose: human-authored increments)
@@ -53,12 +56,12 @@ surface-spec/             governance docs (prose: human-authored increments)
 - **Surface = domain across the trees. Deployable = composition of Surfaces.**
   A backend service mounts whichever `surface-api/<surface>` routers it ships; a frontend app
   bundles whichever `surface-ui/<surface>` apps it ships — so graph / sales / marketing can
-  deploy on independent cadences while sharing `surface-api/_base`, `surface-ui/_base`, and one database.
+  deploy on independent cadences while sharing `surface-api/_base`, `surface-ui/shared`, and one database.
 - **FE↔BE seam is the contract.** `surface-ui/<surface>` calls only its own `surface-api/<surface>`,
   via a client generated from `contracts/<surface>`. Cross-Surface reaction goes through the
   events/capabilities in `contracts/`, never a direct call or import.
 - **Internal imports.** Backend imports: `from _base.auth import ...`, `from surfaces.sales.health.router import ...`
-  (a Surface's code is `surface-api/<surface>/src`, imported as `surfaces.<surface>`). Frontend imports shared code from `@v3/ui` (= `surface-ui/_base`).
+  (a Surface's code is `surface-api/<surface>/src`, imported as `surfaces.<surface>`). Frontend imports shared code from `@v3/shared` (= `surface-ui/shared`), global state and the API client from `@v3/state`.
 - **Migrations are common.** One Postgres ⇒ one history under `surface-api/migrations`.
 - **Governed decisions stay deterministic + server-side:** auth, claims, pricing,
   compliance, send eligibility, scoring, persistence — in FastAPI or the DB, never the browser.

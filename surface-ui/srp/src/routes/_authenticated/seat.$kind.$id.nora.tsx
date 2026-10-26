@@ -1,9 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Sparkles } from "lucide-react";
-import { EmptyState, PageHeader, Panel, StatTile } from "@v3/ui/components/console/primitives";
+import { EmptyState, PageHeader, Panel, StatTile } from "@v3/shared/components/ui/console-primitives";
 import { ReadOnlyRow, ScoreCard, SeatLoading } from "@v3/srp/components/seat/pieces";
-import { Badge } from "@v3/ui/components/ui/badge";
-import { nextMoves, ringLabel, ringSummary, seatProName } from "@v3/srp/lib/seat";
+import { Badge } from "@v3/shared/components/ui/badge";
+import { nextMoves, ringLabel, ringSummary, seatProName } from "@v3/srp/utils/seat";
 import { useProfessionalSeat, useSeatParams } from "./seat.$kind.$id";
 
 export const Route = createFileRoute("/_authenticated/seat/$kind/$id/nora")({

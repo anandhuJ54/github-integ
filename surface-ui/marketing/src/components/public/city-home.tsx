@@ -1,14 +1,14 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { ArrowRight, MapPin } from "lucide-react";
-import { useArea } from "@v3/ui/components/public/area-picker";
-import { HomeHero } from "@v3/ui/components/public/home-hero";
+import { useArea } from "@v3/shared/public/components/area-picker";
+import { HomeHero } from "@v3/shared/public/components/home-hero";
 import { AskExperience, CityArticles, WhatIsExperience } from "@v3/marketing/components/public/city-aside";
 import { CityMap, type MapPin as Pin } from "@v3/marketing/components/public/city-map";
 import { CityResults } from "@v3/marketing/components/public/city-results";
-import { CompareBar, RecentlyViewed } from "@v3/ui/components/public/visitor-lists";
-import { getCityHome, getCityMapPins, type CityHomeData } from "@v3/marketing/lib/city-home.functions";
-import { DEFAULT_QUERY } from "@v3/ui/lib/search";
+import { CompareBar, RecentlyViewed } from "@v3/shared/public/components/visitor-lists";
+import { getCityHome, getCityMapPins, type CityHomeData } from "@v3/marketing/utils/city-home.functions";
+import { DEFAULT_QUERY } from "@v3/shared/public/utils/search";
 
 const COLLECTION_IMAGES = [
   "/search/collection-restaurants.jpg",

@@ -1,21 +1,21 @@
 import { ChevronDown, ChevronUp, GripVertical, Plus, Trash2 } from "lucide-react";
-import { Button } from "@v3/ui/components/ui/button";
-import { Input } from "@v3/ui/components/ui/input";
-import { Switch } from "@v3/ui/components/ui/switch";
+import { Button } from "@v3/shared/components/ui/button";
+import { Input } from "@v3/shared/components/ui/input";
+import { Switch } from "@v3/shared/components/ui/switch";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@v3/ui/components/ui/select";
+} from "@v3/shared/components/ui/select";
 import {
   type FooterNavData,
   type HeaderNavData,
   type NavGroup,
   type NavLink,
   type NavMenuType,
-} from "@v3/ui/lib/nav-menus";
+} from "@v3/shared/public/utils/nav-menus";
 
 /* Lenient parsers: unlike the strict normalizers used for rendering, these keep
    half-finished rows so a blank link doesn't vanish while it is being typed. */

@@ -16,13 +16,13 @@ import {
   EmptyState,
   DataTable,
   type Column,
-} from "@v3/ui/components/console/primitives";
+} from "@v3/shared/components/ui/console-primitives";
 import {
   loadBrand,
   loadOverview,
   loadStateRollup,
   type StateRow,
-} from "@v3/xmp/lib/enterprise-xmp";
+} from "@v3/xmp/utils/enterprise-xmp";
 
 export const Route = createFileRoute("/_authenticated/enterprise/$orgSlug/")({
   ssr: false,

@@ -2,9 +2,9 @@ import { Fragment, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ChevronDown, ChevronRight, Info, Network, Pause, Play, RefreshCw, SlidersHorizontal } from "lucide-react";
 import { toast } from "sonner";
-import { api } from "@v3/ui/lib/server-fn";
-import { Badge } from "@v3/ui/components/ui/badge";
-import { Button } from "@v3/ui/components/ui/button";
+import { api } from "@v3/state/api/server-fn";
+import { Badge } from "@v3/shared/components/ui/badge";
+import { Button } from "@v3/shared/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -12,27 +12,27 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@v3/ui/components/ui/dialog";
-import { Input } from "@v3/ui/components/ui/input";
-import { Label } from "@v3/ui/components/ui/label";
+} from "@v3/shared/components/ui/dialog";
+import { Input } from "@v3/shared/components/ui/input";
+import { Label } from "@v3/shared/components/ui/label";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@v3/ui/components/ui/select";
+} from "@v3/shared/components/ui/select";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from "@v3/ui/components/ui/tooltip";
-import { ReadOnlyLock } from "@v3/ui/components/model-lock";
-import { useRole } from "@v3/ui/lib/roles";
+} from "@v3/shared/components/ui/tooltip";
+import { ReadOnlyLock } from "@v3/shared/components/ui/model-lock";
+import { useRole } from "@v3/state/access/roles";
 import { CrawlMethodChip } from "@v3/etl/components/discovery/crawl-method";
 import { SourceActionsMenu, SourceStatusLine, useDiscoverMore, useSourceStates, MAPPABLE_METHODS } from "@v3/etl/components/discovery/source-actions";
-import { cn } from "@v3/ui/lib/utils";
+import { cn } from "@v3/shared/components/utils/utils";
 
 type SourceRow = {
   source_id: string;

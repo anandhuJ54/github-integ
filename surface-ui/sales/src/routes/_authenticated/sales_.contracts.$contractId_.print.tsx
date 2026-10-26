@@ -1,10 +1,10 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useSuspenseQuery, queryOptions } from "@tanstack/react-query";
 import { Download, ArrowLeft } from "lucide-react";
-import { Button } from "@v3/ui/components/ui/button";
+import { Button } from "@v3/shared/components/ui/button";
 import { ContractPrintDocument, CONTRACT_PRINT_CSS } from "@v3/sales/components/contracts/contract-print-document";
-import { getContract } from "@v3/sales/lib/contracts";
-import { printDoc } from "@v3/sales/lib/contract-print";
+import { getContract } from "@v3/sales/utils/contracts";
+import { printDoc } from "@v3/sales/utils/contract-print";
 
 const contractQuery = (id: string) => queryOptions({ queryKey: ["m4-contract", id], queryFn: () => getContract(id) });
 

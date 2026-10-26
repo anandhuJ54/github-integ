@@ -1,4 +1,4 @@
-import type { Block, BlockItem } from "@v3/ui/lib/public-site";
+import type { Block, BlockItem } from "@v3/shared/public/utils/public-site";
 
 /**
  * One schema table describing every marketing section type the public renderer

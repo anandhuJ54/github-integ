@@ -10,10 +10,10 @@ import {
   PageHeader,
   Panel,
   StatTile,
-} from "@v3/ui/components/console/primitives";
-import { Button } from "@v3/ui/components/ui/button";
-import { Input } from "@v3/ui/components/ui/input";
-import { Label } from "@v3/ui/components/ui/label";
+} from "@v3/shared/components/ui/console-primitives";
+import { Button } from "@v3/shared/components/ui/button";
+import { Input } from "@v3/shared/components/ui/input";
+import { Label } from "@v3/shared/components/ui/label";
 import {
   Dialog,
   DialogContent,
@@ -21,16 +21,16 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@v3/ui/components/ui/dialog";
+} from "@v3/shared/components/ui/dialog";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@v3/ui/components/ui/select";
-import { SELLER_ROLES, type SellerRole } from "@v3/sales/lib/sales";
-import { AvatarStack, BrandAvatar, PersonAvatar } from "@v3/ui/components/sales/entity-avatar";
+} from "@v3/shared/components/ui/select";
+import { SELLER_ROLES, type SellerRole } from "@v3/sales/utils/sales";
+import { AvatarStack, BrandAvatar, PersonAvatar } from "@v3/shared/components/ui/entity-avatar";
 import { SellerSetupSheet } from "@v3/sales/components/sales/seller-setup-dialog";
 
 import {
@@ -43,7 +43,7 @@ import {
   TIERS,
   TIER_LABEL,
   type TeamsSummary,
-} from "@v3/sales/lib/teams";
+} from "@v3/sales/utils/teams";
 
 export const Route = createFileRoute("/_authenticated/sales/teams/")({
   head: () => ({

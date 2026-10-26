@@ -1,7 +1,7 @@
 import { useNavigate } from "@tanstack/react-router";
 import { ChevronRight, Eye, LogOut, ShieldCheck } from "lucide-react";
-import { useImpersonation } from "@v3/ui/lib/impersonation";
-import { DemoChip } from "@v3/ui/components/sales/entity-avatar";
+import { useImpersonation } from "@v3/state/impersonation/impersonation";
+import { DemoChip } from "@v3/shared/components/ui/entity-avatar";
 
 /**
  * Sticky bar shown whenever an admin is acting as another entity.

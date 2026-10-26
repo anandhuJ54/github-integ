@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { Code2 } from "lucide-react";
-import { Button } from "@v3/ui/components/ui/button";
+import { Button } from "@v3/shared/components/ui/button";
 import {
   DataTable,
   EmptyState,
@@ -9,9 +9,9 @@ import {
   PageHeader,
   Panel,
   StatTile,
-} from "@v3/ui/components/console/primitives";
-import { InstrumentNote, Pill } from "@v3/ui/components/website/bits";
-import { loadPages } from "@v3/marketing/lib/website";
+} from "@v3/shared/components/ui/console-primitives";
+import { InstrumentNote, Pill } from "@v3/shared/public/components/website-bits";
+import { loadPages } from "@v3/marketing/utils/website";
 
 export const Route = createFileRoute("/_authenticated/website/developers")({
   head: () => ({

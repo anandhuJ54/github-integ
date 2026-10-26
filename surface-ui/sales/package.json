@@ -1,6 +1,0 @@
-{
-  "name": "web-sales",
-  "private": true,
-  "type": "module",
-  "description": "Sales Surface pages and components; bundled by surface-ui/app."
-}

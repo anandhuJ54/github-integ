@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { loadHub } from "@v3/search/lib/voce-hub";
+import { loadHub } from "@v3/search/utils/voce-hub";
 import { TopicHub } from "@v3/search/components/voce/topic-hub";
 
 export const Route = createFileRoute("/topic/$gcid")({

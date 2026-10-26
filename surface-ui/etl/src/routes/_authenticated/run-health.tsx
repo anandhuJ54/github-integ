@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { EmpLayout } from "@v3/ui/components/emp-layout";
-import { PageBody, PageHeader } from "@v3/ui/components/console/primitives";
+import { EmpLayout } from "@v3/shared/components/ui/emp-layout";
+import { PageBody, PageHeader } from "@v3/shared/components/ui/console-primitives";
 import { PipelineHealthTab } from "@v3/etl/components/discovery/pipeline-health-tab";
 
 // NORA OS → Run health: discovery jobs, engine counts and the ETL run monitor (the old /nora-os

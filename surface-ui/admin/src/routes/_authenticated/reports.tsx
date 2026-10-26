@@ -11,16 +11,16 @@ import {
   Info,
 } from "lucide-react";
 import type { ComponentType } from "react";
-import { EmpLayout } from "@v3/ui/components/emp-layout";
+import { EmpLayout } from "@v3/shared/components/ui/emp-layout";
 import {
   PageBody,
   PageHeader,
   Panel,
   StatTile,
   EmptyState,
-} from "@v3/ui/components/console/primitives";
-import { num } from "@v3/ui/lib/console-surfaces";
-import { loadReportMetrics } from "@v3/admin/lib/console-surfaces";
+} from "@v3/shared/components/ui/console-primitives";
+import { num } from "@v3/shared/public/utils/console-surfaces";
+import { loadReportMetrics } from "@v3/admin/utils/console-surfaces";
 
 export const Route = createFileRoute("/_authenticated/reports")({
   head: () => ({

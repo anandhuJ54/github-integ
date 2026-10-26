@@ -1,6 +1,6 @@
 import { createFileRoute, Link, Outlet, useRouterState } from "@tanstack/react-router";
-import { EmpLayout } from "@v3/ui/components/emp-layout";
-import { cn } from "@v3/ui/lib/utils";
+import { EmpLayout } from "@v3/shared/components/ui/emp-layout";
+import { cn } from "@v3/shared/components/utils/utils";
 
 export const Route = createFileRoute("/_authenticated/dev")({
   component: DevLayout,

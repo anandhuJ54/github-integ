@@ -22,11 +22,11 @@ import {
   Users,
 } from "lucide-react";
 import type { ReactNode } from "react";
-import { api } from "@v3/ui/lib/server-fn";
-import { EmpLayout } from "@v3/ui/components/emp-layout";
-import { PageBody, PageHeader, StatTile } from "@v3/ui/components/console/primitives";
-import { Button } from "@v3/ui/components/ui/button";
-import { cn } from "@v3/ui/lib/utils";
+import { api } from "@v3/state/api/server-fn";
+import { EmpLayout } from "@v3/shared/components/ui/emp-layout";
+import { PageBody, PageHeader, StatTile } from "@v3/shared/components/ui/console-primitives";
+import { Button } from "@v3/shared/components/ui/button";
+import { cn } from "@v3/shared/components/utils/utils";
 
 export const Route = createFileRoute("/_authenticated/console")({
   head: () => ({

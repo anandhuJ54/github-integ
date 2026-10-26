@@ -1,0 +1,272 @@
+@import "tailwindcss" source(none);
+/* Composed app: scan every Surface's sources plus shared/ and shell/ (paths relative to this file).
+   Tailwind does not expand a bare `*` directory segment, so the glob must reach the files. */
+@source "../*/src/**/*.{ts,tsx}";
+@source "../shared/**/*.{ts,tsx}";
+@source "../shell/**/*.{ts,tsx}";
+@import "tw-animate-css";
+@import "../theme/css/index.css";
+
+@layer base {
+  * {
+    border-color: var(--color-border);
+  }
+  html,
+  body {
+    font-family: Arial, "Arial Nova", "Helvetica Neue", Helvetica, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+  }
+  h1, h2, h3, h4 {
+    letter-spacing: -0.02em;
+  }
+}
+
+/* ───────────── Motion ───────────── */
+@keyframes gemini-drift {
+  0%   { background-position: 0% 50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+@keyframes orb-float {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33%      { transform: translate(40px, -30px) scale(1.08); }
+  66%      { transform: translate(-30px, 40px) scale(0.95); }
+}
+@keyframes shimmer-sweep {
+  0%   { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+@keyframes ribbon-spin {
+  to { transform: rotate(360deg); }
+}
+@keyframes pulse-ring {
+  0%   { box-shadow: 0 0 0 0 rgba(66,133,244,0.45); }
+  100% { box-shadow: 0 0 0 16px rgba(66,133,244,0); }
+}
+
+@utility gemini-ribbon {
+  background: var(--gradient-gemini);
+  background-size: 200% 200%;
+  animation: gemini-drift 12s ease infinite;
+}
+@utility gemini-text {
+  background: var(--gradient-gemini);
+  background-size: 200% 200%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: gemini-drift 8s ease infinite;
+}
+@utility shimmer {
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(66,133,244,0.15) 50%,
+    transparent 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer-sweep 2.4s linear infinite;
+}
+@utility hairline {
+  border: 1px solid var(--color-hairline);
+}
+@utility surface-card {
+  background: #ffffff;
+  border: 1px solid var(--color-hairline);
+  border-radius: 10px;
+  box-shadow: var(--shadow-sm);
+}
+
+/* ───────── Inspire co-branded landing page utilities ───────── */
+@utility pearl {
+  background-image:
+    radial-gradient(120% 90% at 0% 0%, oklch(0.965 0.021 30) 0%, transparent 55%),
+    radial-gradient(110% 90% at 100% 0%, oklch(0.955 0.025 285) 0%, transparent 55%),
+    linear-gradient(180deg, oklch(0.985 0.004 285) 0%, oklch(1 0 0) 100%);
+}
+@utility ai-gradient {
+  background-image: linear-gradient(
+    100deg,
+    var(--color-brand-violet) 0%,
+    var(--color-brand-blue) 100%
+  );
+}
+@utility text-ai-gradient {
+  background-image: linear-gradient(
+    100deg,
+    var(--color-brand-violet) 0%,
+    var(--color-brand-blue) 100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+@utility product-wash {
+  background-image: linear-gradient(135deg, transparent 15%, var(--color-product-surface) 100%);
+}
+@utility hero-float {
+  animation: hero-float 5s ease-in-out infinite;
+}
+@utility hero-float-delay {
+  animation: hero-float 5s ease-in-out 1.5s infinite;
+}
+@utility feature-fade {
+  animation: feature-fade 0.45s ease both;
+}
+@keyframes hero-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-5px); }
+}
+@keyframes feature-fade {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+
+/* ───────── Imported marketing pages (scoped: .mkt-scope) ─────────
+   Recreates the source marketing design system without altering console tokens. */
+@theme {
+  --color-accent-hover: hsl(20 95% 48%);
+  --color-highlight: hsl(0 0% 15%);
+  --color-highlight-foreground: hsl(0 0% 100%);
+  --color-primary-dark: hsl(250 55% 35%);
+
+  --animate-fade-in: mkt-fade-in 0.5s ease-out;
+  --animate-slide-up: mkt-slide-up 0.6s ease-out;
+  --animate-pulse-slow: mkt-pulse-slow 3s ease-in-out infinite;
+  --animate-float: mkt-float 4s ease-in-out infinite;
+}
+
+@keyframes mkt-fade-in {
+  0% { opacity: 0; transform: translateY(10px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+@keyframes mkt-slide-up {
+  0% { opacity: 0; transform: translateY(30px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+@keyframes mkt-pulse-slow {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.85; transform: scale(1.02); }
+}
+@keyframes mkt-float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-20px); }
+}
+@keyframes mkt-scroll {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+@keyframes mkt-marquee {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+@utility font-heading {
+  font-family: var(--font-mkt);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+@utility font-body-light {
+  font-family: var(--font-mkt);
+  font-weight: 300;
+  letter-spacing: 0.01em;
+}
+@utility bg-gradient-primary {
+  background-image: linear-gradient(135deg, hsl(250 70% 50%), hsl(280 65% 55%));
+}
+@utility bg-gradient-hero {
+  background-image: linear-gradient(135deg, hsl(245 70% 45%), hsl(270 75% 50%));
+}
+@utility bg-gradient-accent {
+  background-image: linear-gradient(135deg, hsl(20 95% 55%), hsl(30 95% 50%));
+}
+@utility shadow-card {
+  box-shadow: 0 4px 20px -2px hsl(245 60% 50% / 0.1);
+}
+@utility shadow-elevated {
+  box-shadow: 0 10px 40px -5px hsl(245 60% 50% / 0.15);
+}
+@utility shadow-glow {
+  box-shadow: 0 0 30px hsl(245 60% 50% / 0.3);
+}
+
+.mkt-scope {
+  --font-mkt: "SF Pro Display", "SF Pro Text", -apple-system, BlinkMacSystemFont,
+    "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-family: var(--font-mkt);
+
+  --background: hsl(0 0% 100%);
+  --foreground: hsl(235 20% 20%);
+  --card: hsl(0 0% 100%);
+  --card-foreground: hsl(235 20% 20%);
+  --popover: hsl(0 0% 100%);
+  --popover-foreground: hsl(235 20% 20%);
+  --primary: hsl(245 60% 50%);
+  --primary-foreground: hsl(0 0% 100%);
+  --secondary: hsl(240 10% 96%);
+  --secondary-foreground: hsl(235 20% 20%);
+  --muted: hsl(220 14% 93%);
+  --muted-foreground: hsl(235 15% 45%);
+  --accent: hsl(20 95% 55%);
+  --accent-foreground: hsl(0 0% 100%);
+  --destructive: hsl(0 84% 60%);
+  --destructive-foreground: hsl(0 0% 100%);
+  --border: hsl(240 10% 90%);
+  --input: hsl(240 10% 90%);
+  --ring: hsl(245 60% 50%);
+  --radius: 0.5rem;
+}
+
+.mkt-scope h1,
+.mkt-scope h2,
+.mkt-scope h3,
+.mkt-scope h4 {
+  font-family: var(--font-mkt);
+}
+
+.mkt-scope .container {
+  margin-inline: auto;
+  padding-inline: 2rem;
+  max-width: 1400px;
+}
+
+/* Tight shared geometry. Tailwind's named radii resolve through the theme above;
+   these selectors also rein in legacy one-off pixel radii across older surfaces. */
+[class*="rounded-[12px]"],
+[class*="rounded-[14px]"],
+[class*="rounded-[16px]"],
+[class*="rounded-[18px]"],
+[class*="rounded-[20px]"],
+[class*="rounded-[22px]"],
+[class*="rounded-[24px]"],
+[class*="rounded-[32px]"],
+[class*="rounded-[36px]"] {
+  border-radius: 10px !important;
+}
+
+/* Consumer discovery has its own warm editorial voice; business pages retain
+   their scoped blue SaaS tokens in .mkt-scope. */
+.consumer-search {
+  --color-g-blue: #b76514;
+  --color-g-blue-soft: #fff4dc;
+  --color-g-purple: #8a5a2b;
+  --color-g-purple-soft: #f6eadb;
+  --color-surface-2: #fbfaf7;
+  --color-surface-3: #f1eee7;
+}
+.consumer-search h1,
+.consumer-search h2,
+.consumer-search h3 {
+  font-family: var(--font-editorial);
+  letter-spacing: 0;
+}

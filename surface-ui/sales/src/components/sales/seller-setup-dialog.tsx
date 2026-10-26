@@ -8,21 +8,21 @@ import {
   SheetDescription,
   SheetHeader,
   SheetTitle,
-} from "@v3/ui/components/ui/sheet";
-import { Button } from "@v3/ui/components/ui/button";
-import { Input } from "@v3/ui/components/ui/input";
-import { Label } from "@v3/ui/components/ui/label";
-import { Switch } from "@v3/ui/components/ui/switch";
-import { Checkbox } from "@v3/ui/components/ui/checkbox";
+} from "@v3/shared/components/ui/sheet";
+import { Button } from "@v3/shared/components/ui/button";
+import { Input } from "@v3/shared/components/ui/input";
+import { Label } from "@v3/shared/components/ui/label";
+import { Switch } from "@v3/shared/components/ui/switch";
+import { Checkbox } from "@v3/shared/components/ui/checkbox";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@v3/ui/components/ui/select";
-import { PersonAvatar } from "@v3/ui/components/sales/entity-avatar";
-import { useOptionalRole } from "@v3/ui/lib/roles";
+} from "@v3/shared/components/ui/select";
+import { PersonAvatar } from "@v3/shared/components/ui/entity-avatar";
+import { useOptionalRole } from "@v3/state/access/roles";
 import {
   loadSellerSetup,
   quarterStarts,
@@ -30,8 +30,8 @@ import {
   SELLER_ROLE_OPTIONS,
   uploadSellerPhoto,
   type SellerSetupInput,
-} from "@v3/sales/lib/seller-setup";
-import { cn } from "@v3/ui/lib/utils";
+} from "@v3/sales/utils/seller-setup";
+import { cn } from "@v3/shared/components/utils/utils";
 
 /* ─────────── layout bits (light Google style) ─────────── */
 

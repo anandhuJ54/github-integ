@@ -3,11 +3,11 @@ import { useMemo, useState } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Plus, RefreshCw } from "lucide-react";
-import { EmptyState, PageBody, PageHeader, Panel } from "@v3/ui/components/console/primitives";
-import { Button } from "@v3/ui/components/ui/button";
-import { Input } from "@v3/ui/components/ui/input";
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@v3/ui/components/ui/dialog";
-import { supabase } from "@v3/ui/integrations/supabase/client";
+import { EmptyState, PageBody, PageHeader, Panel } from "@v3/shared/components/ui/console-primitives";
+import { Button } from "@v3/shared/components/ui/button";
+import { Input } from "@v3/shared/components/ui/input";
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@v3/shared/components/ui/dialog";
+import { useSession } from "@v3/state";
 import {
   bucketsFor,
   createContractFromQuote,
@@ -19,7 +19,7 @@ import {
   startRenewal,
   type Bucket,
   type ContractRow,
-} from "@v3/sales/lib/contracts";
+} from "@v3/sales/utils/contracts";
 
 export const Route = createFileRoute("/_authenticated/sales/contracts/")({
   head: () => ({
@@ -78,7 +78,8 @@ function ContractsPage() {
   const [open, setOpen] = useState(false);
   const [quoteId, setQuoteId] = useState("");
 
-  const actor = async () => (await supabase.auth.getUser()).data.user?.email ?? null;
+  const { user } = useSession();
+  const actor = async () => user?.email ?? null;
 
   const create = useMutation({
     mutationFn: async () => createContractFromQuote(quoteId.trim(), await actor()),

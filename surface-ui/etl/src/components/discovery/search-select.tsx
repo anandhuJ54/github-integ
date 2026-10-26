@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { Check, ChevronsUpDown, X } from "lucide-react";
-import { Popover, PopoverContent, PopoverTrigger } from "@v3/ui/components/ui/popover";
+import { Popover, PopoverContent, PopoverTrigger } from "@v3/shared/components/ui/popover";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@v3/etl/components/ui/command";
-import { cn } from "@v3/ui/lib/utils";
+import { cn } from "@v3/shared/components/utils/utils";
 
 export type Opt = { value: string; label: string; hint?: string };
 

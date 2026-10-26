@@ -1,4 +1,4 @@
-import { BrandWordmark } from "@v3/ui/components/brand/logo";
+import { BrandWordmark } from "@v3/shared/components/icons/logo";
 import { Link, useRouterState } from "@tanstack/react-router";
 import {
   Home,
@@ -14,10 +14,10 @@ import {
   Bell,
   Sparkles,
 } from "lucide-react";
-import { Avatar, AvatarFallback, AvatarImage } from "@v3/ui/components/ui/avatar";
-import { GeminiRibbon } from "@v3/ui/components/ai/gemini-gradient";
-import { AiBadge } from "@v3/ui/components/ai/ai-badge";
-import { cn } from "@v3/ui/lib/utils";
+import { Avatar, AvatarFallback, AvatarImage } from "@v3/shared/components/ui/avatar";
+import { GeminiRibbon } from "@v3/shared/components/icons/gemini-gradient";
+import { AiBadge } from "@v3/shared/components/ui/ai-badge";
+import { cn } from "@v3/shared/components/utils/utils";
 import type { ReactNode } from "react";
 
 const navItems = [

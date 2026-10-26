@@ -1,9 +1,9 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { BookOpen } from "lucide-react";
-import { EmptyState, PageBody, PageHeader } from "@v3/ui/components/console/primitives";
+import { EmptyState, PageBody, PageHeader } from "@v3/shared/components/ui/console-primitives";
 import { WikiSearch, accentOf } from "@v3/ops/components/build/wiki-bits";
-import { listSpaces } from "@v3/ops/lib/build-wiki";
+import { listSpaces } from "@v3/ops/utils/build-wiki";
 
 export const Route = createFileRoute("/_authenticated/build/spaces/")({
   head: () => ({

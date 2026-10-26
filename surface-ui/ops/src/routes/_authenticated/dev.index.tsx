@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
 import { CalendarClock, Flag, Rocket, Users2 } from "lucide-react";
-import { EmptyState, PageBody, PageHeader, Panel, StatTile } from "@v3/ui/components/console/primitives";
+import { EmptyState, PageBody, PageHeader, Panel, StatTile } from "@v3/shared/components/ui/console-primitives";
 import { NeedsYouBanner } from "@v3/ops/components/dev/needs-you-banner";
 import {
   PRIORITY_CHIP,
@@ -14,8 +14,8 @@ import {
   weightedProgress,
   type Priority,
   type Project,
-} from "@v3/ops/lib/dev-progress";
-import { cn } from "@v3/ui/lib/utils";
+} from "@v3/ops/utils/dev-progress";
+import { cn } from "@v3/shared/components/utils/utils";
 
 export const Route = createFileRoute("/_authenticated/dev/")({
   head: () => ({

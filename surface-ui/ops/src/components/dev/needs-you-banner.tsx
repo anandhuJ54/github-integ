@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { AlertTriangle, CheckCircle2 } from "lucide-react";
-import { loadOpenGates, type OpenGate } from "@v3/ops/lib/dev-progress";
+import { loadOpenGates, type OpenGate } from "@v3/ops/utils/dev-progress";
 
 /** Amber "needs Scott" gate badge, reused inline on sprint items. */
 export function GateBadge() {

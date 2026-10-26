@@ -1,9 +1,9 @@
 import { useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { Sparkles } from "lucide-react";
-import { BrandIcon } from "@v3/ui/components/brand/logo";
-import { Button } from "@v3/ui/components/ui/button";
-import type { CityArticle } from "@v3/marketing/lib/city-home.functions";
+import { BrandIcon } from "@v3/shared/components/icons/logo";
+import { Button } from "@v3/shared/components/ui/button";
+import type { CityArticle } from "@v3/marketing/utils/city-home.functions";
 
 /** Graph-grounded city Q&A. Shows the labelled stub until an AI method is wired. */
 export function AskExperience({ area }: { area: string }) {

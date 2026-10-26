@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ExternalLink, MapPin, Phone, Users } from "lucide-react";
-import { EmptyState, PageHeader, Panel, StatTile } from "@v3/ui/components/console/primitives";
+import { EmptyState, PageHeader, Panel, StatTile } from "@v3/shared/components/ui/console-primitives";
 import {
   CoverageBars,
   RatingSummary,
@@ -9,9 +9,9 @@ import {
   ScoreCard,
   SeatLoading,
 } from "@v3/srp/components/seat/pieces";
-import { BrandAvatar, PersonAvatar } from "@v3/ui/components/sales/entity-avatar";
-import { Badge } from "@v3/ui/components/ui/badge";
-import { nextMoves, ringSummary, rosterCoverage, seatProName } from "@v3/srp/lib/seat";
+import { BrandAvatar, PersonAvatar } from "@v3/shared/components/ui/entity-avatar";
+import { Badge } from "@v3/shared/components/ui/badge";
+import { nextMoves, ringSummary, rosterCoverage, seatProName } from "@v3/srp/utils/seat";
 import { useLocationSeat, useProfessionalSeat, useSeatParams } from "./seat.$kind.$id";
 
 export const Route = createFileRoute("/_authenticated/seat/$kind/$id/")({

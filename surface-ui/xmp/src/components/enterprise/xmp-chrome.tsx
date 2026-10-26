@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import { EnterpriseShell } from "@v3/xmp/components/enterprise/enterprise-shell";
-import type { Brand } from "@v3/xmp/lib/enterprise-xmp";
+import type { Brand } from "@v3/xmp/utils/enterprise-xmp";
 
 /**
  * Legacy alias — every enterprise.$orgSlug.* route mounts through this and now

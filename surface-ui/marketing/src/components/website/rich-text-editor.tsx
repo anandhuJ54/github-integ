@@ -13,10 +13,10 @@ import {
   Eraser,
   Code2,
 } from "lucide-react";
-import { cn } from "@v3/ui/lib/utils";
-import { Button } from "@v3/ui/components/ui/button";
-import { Textarea } from "@v3/ui/components/ui/textarea";
-import { sanitizeHtml } from "@v3/ui/lib/public-site";
+import { cn } from "@v3/shared/components/utils/utils";
+import { Button } from "@v3/shared/components/ui/button";
+import { Textarea } from "@v3/shared/components/ui/textarea";
+import { sanitizeHtml } from "@v3/shared/public/utils/public-site";
 
 type Cmd = {
   icon: typeof Bold;

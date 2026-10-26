@@ -6,10 +6,10 @@ Surfaces that haven't been migrated yet keep calling Supabase directly, still pr
 **How each Surface is done:** reads are built with the SQLAlchemy Core query builder (no ORM) in
 `surface-api/<surface>/queries/`. Response shapes are Pydantic models and are published to
 `contracts/<surface>/openapi.json`. The UI calls the API through `api.get/post` from
-`@v3/ui/lib/server-fn` and keeps the same react-query keys.
+`@v3/state/api/server-fn` and keeps the same react-query keys.
 
 **Done means** every box below is ticked, including **parity**: the legacy browser function
-and the new endpoint return the same JSON for the same signed-in user (`surface-ui/parity`).
+and the new endpoint return the same JSON for the same signed-in user (`tools/parity`).
 
 Counts are (reads/writes/rpc) as measured on 2026-10-23.
 
@@ -23,7 +23,7 @@ Counts are (reads/writes/rpc) as measured on 2026-10-23.
 4. Run pytest with a fake connection, and a live read-only smoke test against GCP.
 5. Publish the contract: `uv run python -m app.contracts <surface>`.
 6. Switch the UI to `api.get/post`, keep the query keys, and check that `tsc` passes.
-7. Add a parity case in `surface-ui/parity/cases/<surface>.ts`; `bun run.ts <surface>` must PASS.
+7. Add a parity case in `tools/parity/cases/<surface>.ts`; `bun run.ts <surface>` must PASS.
 8. Click through the screen in the app.
 9. Lint ratchet that blocks direct Supabase calls in this Surface. This is a separate PR, because a new lint rule needs one.
 

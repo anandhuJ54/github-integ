@@ -1,13 +1,13 @@
-import { BrandWordmark } from "@v3/ui/components/brand/logo";
+import { BrandWordmark } from "@v3/shared/components/icons/logo";
 import { createFileRoute, notFound } from "@tanstack/react-router";
 import { useSuspenseQuery, queryOptions } from "@tanstack/react-query";
-import { api } from "@v3/ui/lib/server-fn";
-import type { Database, Tables } from "@v3/ui/integrations/supabase/types";
-import { Badge } from "@v3/ui/components/ui/badge";
-import { Button } from "@v3/ui/components/ui/button";
-import { Card, CardContent } from "@v3/ui/components/ui/card";
-import { Avatar, AvatarFallback, AvatarImage } from "@v3/ui/components/ui/avatar";
-import { Separator } from "@v3/ui/components/ui/separator";
+import { api } from "@v3/state/api/server-fn";
+import type { Database, Tables } from "@v3/state/auth/adapters/supabase/types";
+import { Badge } from "@v3/shared/components/ui/badge";
+import { Button } from "@v3/shared/components/ui/button";
+import { Card, CardContent } from "@v3/shared/components/ui/card";
+import { Avatar, AvatarFallback, AvatarImage } from "@v3/shared/components/ui/avatar";
+import { Separator } from "@v3/shared/components/ui/separator";
 import {
   BadgeCheck,
   Star,
@@ -18,8 +18,8 @@ import {
   MapPin,
   TrendingUp,
 } from "lucide-react";
-import { buildProfileGraph, type GraphInput } from "@v3/search/lib/profile-graph";
-import { getCachedSchema, cacheSchema } from "@v3/search/lib/schema-cache.functions";
+import { buildProfileGraph, type GraphInput } from "@v3/search/utils/profile-graph";
+import { getCachedSchema, cacheSchema } from "@v3/search/utils/schema-cache.functions";
 
 function slugify(s: string | null | undefined): string {
   return (s ?? "")

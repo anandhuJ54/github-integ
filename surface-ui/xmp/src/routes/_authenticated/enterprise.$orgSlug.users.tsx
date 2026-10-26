@@ -11,28 +11,29 @@ import {
   Upload,
   ArrowLeft,
 } from "lucide-react";
-import { supabase } from "@v3/ui/integrations/supabase/client";
-import { api } from "@v3/ui/lib/server-fn";
-import { Card } from "@v3/ui/components/ui/card";
-import { Badge } from "@v3/ui/components/ui/badge";
-import { Button } from "@v3/ui/components/ui/button";
-import { Input } from "@v3/ui/components/ui/input";
-import { Avatar, AvatarFallback, AvatarImage } from "@v3/ui/components/ui/avatar";
+import { supabase } from "@v3/state/auth/adapters/supabase/client";
+import { getCurrentUser } from "@v3/state/session/current-user";
+import { api } from "@v3/state/api/server-fn";
+import { Card } from "@v3/shared/components/ui/card";
+import { Badge } from "@v3/shared/components/ui/badge";
+import { Button } from "@v3/shared/components/ui/button";
+import { Input } from "@v3/shared/components/ui/input";
+import { Avatar, AvatarFallback, AvatarImage } from "@v3/shared/components/ui/avatar";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@v3/ui/components/ui/select";
+} from "@v3/shared/components/ui/select";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogFooter,
-} from "@v3/ui/components/ui/dialog";
-import { Textarea } from "@v3/ui/components/ui/textarea";
+} from "@v3/shared/components/ui/dialog";
+import { Textarea } from "@v3/shared/components/ui/textarea";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/enterprise/$orgSlug/users")({
@@ -116,8 +117,8 @@ function EnterpriseUsersPage() {
   const [submitting, setSubmitting] = useState(false);
 
   const load = async () => {
-    const { data: { session } } = await supabase.auth.getSession();
-    setAdminUserId(session?.user.id ?? null);
+    const user = await getCurrentUser();
+    setAdminUserId(user?.id ?? null);
 
     // the org, the orgs under it (hierarchy_path), their roster (1000-row cap), roles,
     // invitations, the signed-in user's own roles there and the roster's accounts (server side;

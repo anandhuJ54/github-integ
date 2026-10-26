@@ -2,8 +2,8 @@ import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { CopyPlus, Eye, FilePlus2, LayoutTemplate, Pencil, Trash2 } from "lucide-react";
 import { toast } from "sonner";
-import { Button } from "@v3/ui/components/ui/button";
-import { Checkbox } from "@v3/ui/components/ui/checkbox";
+import { Button } from "@v3/shared/components/ui/button";
+import { Checkbox } from "@v3/shared/components/ui/checkbox";
 import {
   Dialog,
   DialogContent,
@@ -11,13 +11,13 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@v3/ui/components/ui/dialog";
-import { Input } from "@v3/ui/components/ui/input";
+} from "@v3/shared/components/ui/dialog";
+import { Input } from "@v3/shared/components/ui/input";
 import { RadioGroup, RadioGroupItem } from "@v3/marketing/components/ui/radio-group";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@v3/ui/components/ui/select";
-import { DataTable, EmptyState, Panel } from "@v3/ui/components/console/primitives";
-import { FieldRow, Pill } from "@v3/ui/components/website/bits";
-import { blocksOf, type Block } from "@v3/ui/lib/public-site";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@v3/shared/components/ui/select";
+import { DataTable, EmptyState, Panel } from "@v3/shared/components/ui/console-primitives";
+import { FieldRow, Pill } from "@v3/shared/public/components/website-bits";
+import { blocksOf, type Block } from "@v3/shared/public/utils/public-site";
 import {
   DESIGN_TAG_LABEL,
   PAGE_TYPES,
@@ -25,8 +25,8 @@ import {
   webMutations,
   type WebPage,
   type WebPageTemplate,
-} from "@v3/marketing/lib/website";
-import { useRole } from "@v3/ui/lib/roles";
+} from "@v3/marketing/utils/website";
+import { useRole } from "@v3/state/access/roles";
 
 function blockLabel(block: Block, index: number) {
   return block.headline || block.eyebrow || block.items?.[0]?.title || `${String(block.type).replaceAll("_", " ")} section ${index + 1}`;

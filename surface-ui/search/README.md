@@ -1,7 +1,7 @@
 # Online Search — web (React SPA)
 
-React 19 + Vite + Tailwind + shadcn/Radix. Import shared components from `@v3/ui`
-(= `surface-ui/_base`). Call this Surface's API via the client generated from `contracts/search`.
+React 19 + Vite + Tailwind + shadcn/Radix. Import shared components from `@v3/shared`
+(= `surface-ui/shared`). Call this Surface's API via the client generated from `contracts/search`.
 
 The public serving pages, moved here from `surface-ui/srp` by surface audit 2026-10-25
 (ruling in `docs/SURFACE_AUDIT.md` §5), at the same URLs:

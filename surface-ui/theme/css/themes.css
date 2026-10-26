@@ -1,0 +1,113 @@
+:root {
+  /* Growth Hub surface tokens; consumed only by scoped sales styles. */
+  --gh-canvas: oklch(from #f6f8fb l c h);
+  --gh-surface: oklch(1 0 0);
+  --gh-print-ink: oklch(0 0 0);
+  --gh-ink: oklch(from #101a2e l c h);
+  --gh-slate: oklch(from #243b57 l c h);
+  --gh-muted: oklch(from #6b7688 l c h);
+  --gh-line: oklch(from #e7ebf1 l c h);
+  --gh-blue: oklch(from #2f6bff l c h);
+  --gh-blue-top: oklch(from #3f78ff l c h);
+  --gh-green: oklch(from #12b76a l c h);
+  --gh-purple: oklch(from #8a5cf6 l c h);
+  --gh-amber: oklch(from #c07a12 l c h);
+  --gh-red: oklch(from #e0533d l c h);
+  --gh-teal: oklch(from #119e98 l c h);
+  --gh-header: oklch(from #fafbfd l c h);
+  --gh-hover: oklch(from #f7f9fe l c h);
+  --gh-control-hover: oklch(from #f3f7ff l c h);
+  --gh-shadow: 0 1px 2px rgba(16,26,46,.05), 0 8px 24px -16px rgba(16,26,46,.18);
+  --gh-control-shadow: 0 6px 14px rgba(47,107,255,.28);
+  --gh-primary-gradient: linear-gradient(180deg,var(--gh-blue-top),var(--gh-blue));
+  --background: #ffffff;
+  --foreground: #202124;
+  --card: #ffffff;
+  --card-foreground: #202124;
+  --popover: #ffffff;
+  --popover-foreground: #202124;
+  --primary: #1a73e8;
+  --primary-foreground: #ffffff;
+  --secondary: #f1f3f4;
+  --secondary-foreground: #202124;
+  --muted: #f8f9fa;
+  --muted-foreground: #5f6368;
+  --accent: #e8f0fe;
+  --accent-foreground: #1a73e8;
+  --destructive: #ea4335;
+  --destructive-foreground: #ffffff;
+  --border: #e8eaed;
+  --input: #e8eaed;
+  --ring: #4285f4;
+  --radius: 0.5rem;
+
+  --sidebar: #ffffff;
+  --sidebar-foreground: #202124;
+  --sidebar-primary: #1a73e8;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #e8f0fe;
+  --sidebar-accent-foreground: #1a73e8;
+  --sidebar-border: #e8eaed;
+  --sidebar-ring: #4285f4;
+
+  /* Signature Gemini ribbon */
+  --gradient-gemini: linear-gradient(
+    135deg,
+    #4285f4 0%,
+    #9b72f2 35%,
+    #ea4335 65%,
+    #fbbc04 100%
+  );
+  --gradient-gemini-soft: linear-gradient(
+    135deg,
+    #e8f0fe 0%,
+    #f3e8fd 50%,
+    #fef7e0 100%
+  );
+  --gradient-gemini-ribbon: linear-gradient(
+    90deg,
+    #4285f4 0%,
+    #9b72f2 25%,
+    #ea4335 50%,
+    #fbbc04 75%,
+    #34a853 100%
+  );
+
+  /* Tinted elevation */
+  --shadow-xs: 0 1px 2px rgba(60, 64, 67, 0.06);
+  --shadow-sm: 0 1px 3px rgba(60, 64, 67, 0.08), 0 1px 2px rgba(60, 64, 67, 0.04);
+  --shadow-md: 0 4px 12px rgba(66, 133, 244, 0.08), 0 2px 4px rgba(60, 64, 67, 0.04);
+  --shadow-lg: 0 12px 32px rgba(66, 133, 244, 0.12), 0 4px 12px rgba(60, 64, 67, 0.06);
+  --shadow-rainbow: 0 12px 40px rgba(66, 133, 244, 0.18),
+    0 4px 16px rgba(234, 67, 53, 0.08);
+}
+
+.dark {
+  --background: #0b0d10;
+  --foreground: #f8f9fa;
+  --card: #15171b;
+  --card-foreground: #f8f9fa;
+  --popover: #15171b;
+  --popover-foreground: #f8f9fa;
+  --primary: #8ab4f8;
+  --primary-foreground: #0b0d10;
+  --secondary: #1f2125;
+  --secondary-foreground: #f8f9fa;
+  --muted: #1f2125;
+  --muted-foreground: #9aa0a6;
+  --accent: #1f2937;
+  --accent-foreground: #8ab4f8;
+  --destructive: #f28b82;
+  --destructive-foreground: #0b0d10;
+  --border: #2a2d31;
+  --input: #2a2d31;
+  --ring: #8ab4f8;
+  --sidebar: #0b0d10;
+  --sidebar-foreground: #f8f9fa;
+  --sidebar-primary: #8ab4f8;
+  --sidebar-primary-foreground: #0b0d10;
+  --sidebar-accent: #1f2937;
+  --sidebar-accent-foreground: #8ab4f8;
+  --sidebar-border: #2a2d31;
+  --sidebar-ring: #8ab4f8;
+}

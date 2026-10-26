@@ -12,12 +12,12 @@ import {
   Search,
 } from "lucide-react";
 import { toast } from "sonner";
-import { api } from "@v3/ui/lib/server-fn";
-import { Button } from "@v3/ui/components/ui/button";
-import { Input } from "@v3/ui/components/ui/input";
-import { Label } from "@v3/ui/components/ui/label";
-import { Badge } from "@v3/ui/components/ui/badge";
-import { Switch } from "@v3/ui/components/ui/switch";
+import { api } from "@v3/state/api/server-fn";
+import { Button } from "@v3/shared/components/ui/button";
+import { Input } from "@v3/shared/components/ui/input";
+import { Label } from "@v3/shared/components/ui/label";
+import { Badge } from "@v3/shared/components/ui/badge";
+import { Switch } from "@v3/shared/components/ui/switch";
 import {
   Dialog,
   DialogContent,
@@ -25,16 +25,16 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@v3/ui/components/ui/dialog";
+} from "@v3/shared/components/ui/dialog";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from "@v3/ui/components/ui/tooltip";
-import { ReadOnlyLock } from "@v3/ui/components/model-lock";
-import { useRole } from "@v3/ui/lib/roles";
-import { cn } from "@v3/ui/lib/utils";
+} from "@v3/shared/components/ui/tooltip";
+import { ReadOnlyLock } from "@v3/shared/components/ui/model-lock";
+import { useRole } from "@v3/state/access/roles";
+import { cn } from "@v3/shared/components/utils/utils";
 
 type ControlNode = {
   node_id: string;

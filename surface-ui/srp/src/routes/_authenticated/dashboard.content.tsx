@@ -10,11 +10,11 @@ import {
   ExternalLink,
   FileText,
 } from "lucide-react";
-import { supabase } from "@v3/ui/integrations/supabase/client";
-import { api } from "@v3/ui/lib/server-fn";
-import { Button } from "@v3/ui/components/ui/button";
-import { Card } from "@v3/ui/components/ui/card";
-import { Badge } from "@v3/ui/components/ui/badge";
+import { getCurrentUser } from "@v3/state/session/current-user";
+import { api } from "@v3/state/api/server-fn";
+import { Button } from "@v3/shared/components/ui/button";
+import { Card } from "@v3/shared/components/ui/card";
+import { Badge } from "@v3/shared/components/ui/badge";
 import { DashboardShell } from "@v3/srp/components/dashboard-shell";
 
 export const Route = createFileRoute("/_authenticated/dashboard/content")({
@@ -74,8 +74,8 @@ function ContentPage() {
 
   useEffect(() => {
     (async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
+      const user = await getCurrentUser();
+      if (!user) {
         navigate({ to: "/auth" as any });
         return;
       }

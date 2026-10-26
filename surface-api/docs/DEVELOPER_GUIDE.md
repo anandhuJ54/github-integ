@@ -176,7 +176,7 @@ uv run pytest tests/test_migrations.py
 - The guards in `tests/` fail when a Surface imports another's internals, when a Surface is
   missing a standard file or is not registered, when a route is mounted twice, or when a
   migration is on the wrong branch.
-- Browser-vs-API **parity** runs live against the DB from `surface-ui/parity/` (see
+- Browser-vs-API **parity** runs live against the DB from `tools/parity/` (see
   `docs/BROWSER_TO_API_TODO.md`).
 
 ## 7. Checklist before a PR

@@ -1,0 +1,14 @@
+{
+  "extends": "./tsconfig.base.json",
+  "include": [
+    "shell",
+    "shared",
+    "state",
+    "theme",
+    "*/src",
+    "vite.config.ts"
+  ],
+  "exclude": [
+    "**/*.test.ts"
+  ]
+}

@@ -1,9 +1,9 @@
 import { useState, type ReactNode } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { api, useServerFn } from "@v3/ui/lib/server-fn";
+import { api, useServerFn } from "@v3/state/api/server-fn";
 import { toast } from "sonner";
-import { Badge } from "@v3/ui/components/ui/badge";
-import { Button } from "@v3/ui/components/ui/button";
+import { Badge } from "@v3/shared/components/ui/badge";
+import { Button } from "@v3/shared/components/ui/button";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -13,10 +13,10 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@v3/ui/components/ui/alert-dialog";
-import { useOptionalRole } from "@v3/ui/lib/roles";
-import { cn } from "@v3/ui/lib/utils";
-import { acceptSiteProposal } from "@v3/etl/lib/site-proposal.functions";
+} from "@v3/shared/components/ui/alert-dialog";
+import { useOptionalRole } from "@v3/state/access/roles";
+import { cn } from "@v3/shared/components/utils/utils";
+import { acceptSiteProposal } from "@v3/etl/utils/site-proposal.functions";
 import { ContractPreview } from "@v3/etl/components/discovery/contract-preview";
 
 /* G2 (contract review, 2026-10-13): a map result that did not save itself (save rule D1: only a site's first
