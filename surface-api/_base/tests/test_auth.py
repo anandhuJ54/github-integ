@@ -9,7 +9,7 @@ from cryptography.hazmat.primitives.asymmetric import ec
 from fastapi import HTTPException
 from fastapi.security import HTTPAuthorizationCredentials
 
-from _base.core import auth
+from _base import auth
 
 _EC_KEY = ec.generate_private_key(ec.SECP256R1())
 _OTHER_EC_KEY = ec.generate_private_key(ec.SECP256R1())

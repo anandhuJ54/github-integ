@@ -17,8 +17,8 @@ from typing import Any
 import psycopg
 from sqlalchemy import select
 
-from _base.core.sql import fetch_all, fetch_many
-from _base.schema import tables as T
+from _base.db import tables as T
+from _base.db.sql import fetch_all, fetch_many
 from skills.queries.registry import adapt, execute, maybe_one
 
 state = T.t_exp_nora_state

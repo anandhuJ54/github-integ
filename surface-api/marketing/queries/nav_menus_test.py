@@ -10,9 +10,9 @@ import pytest
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
-from _base.core import db as core_db
-from _base.core.auth import current_user
-from _base.core.server_fn import optional_user
+from _base.auth import current_user
+from _base.db import session as core_db
+from _base.server_fn import optional_user
 from marketing.queries.website_test import FakeConn, values, writes
 from marketing.routers.website_data import router
 

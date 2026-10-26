@@ -29,8 +29,8 @@ from typing import Any
 import psycopg
 from sqlalchemy import func, or_, select
 
-from _base.core.sql import fetch_many, typed
-from _base.schema import tables as T
+from _base.db import tables as T
+from _base.db.sql import fetch_many, typed
 from sales.queries.cpq import cols, execute, insert, now, update
 
 reps = T.t_exp_sales_reps

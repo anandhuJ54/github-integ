@@ -8,7 +8,7 @@ import uuid
 import pytest
 from sqlalchemy import column, func, insert, select, table
 
-from _base.core.sql import MAX_ROWS, capped, compile_sql, jsonish, typed
+from _base.db.sql import MAX_ROWS, capped, compile_sql, jsonish, typed
 
 UTC = dt.UTC
 
@@ -57,8 +57,8 @@ def test_cap_can_be_lifted_and_leaves_writes_alone():
 
 
 def test_typed_binds_iso_strings_as_dates_not_varchar():
-    from _base.schema.tables import t_exp_dev_weekly_updates as w
-    from _base.schema.tables import t_professionals as p
+    from _base.db.tables import t_exp_dev_weekly_updates as w
+    from _base.db.tables import t_professionals as p
 
     raw, _ = compile_sql(select(p.c.id).where(p.c.created_at >= "2026-10-16T00:00:00+00:00"))
     assert "::VARCHAR" in raw  # the trap typed() exists for

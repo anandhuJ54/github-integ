@@ -37,8 +37,8 @@ import psycopg
 from psycopg.types.json import Jsonb
 from sqlalchemy import and_, func, or_, select
 
-from _base.core.sql import fetch_all, fetch_many
-from _base.schema import tables as T
+from _base.db import tables as T
+from _base.db.sql import fetch_all, fetch_many
 from sales.queries.contracts import call, rpc_call
 from sales.queries.cpq import cols, execute, maybe_single, now, single
 

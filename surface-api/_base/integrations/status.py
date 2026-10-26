@@ -10,7 +10,7 @@ from typing import Any, TypeVar
 
 import psycopg
 
-from _base.core.db import role_connection
+from _base.db.session import role_connection
 from _base.integrations.catalog import (
     INTEGRATION_KEYS,
     INTEGRATIONS,

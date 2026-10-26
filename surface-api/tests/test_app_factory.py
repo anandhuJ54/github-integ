@@ -6,7 +6,7 @@ from fastapi import APIRouter
 from fastapi.testclient import TestClient
 from psycopg_pool import PoolTimeout
 
-from _base.app_factory import create_app
+from app.main import create_app
 
 router = APIRouter()
 

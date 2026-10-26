@@ -12,8 +12,8 @@ from typing import Any
 import psycopg
 from sqlalchemy import select
 
-from _base.core.sql import fetch_many
-from _base.schema import tables as T
+from _base.db import tables as T
+from _base.db.sql import fetch_many
 from sales.queries.catalog import cols
 
 org_t = T.t_organizations

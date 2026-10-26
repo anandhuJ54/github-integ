@@ -26,8 +26,8 @@ from psycopg.types.json import Jsonb
 from sqlalchemy import func, select
 from sqlalchemy.dialects.postgresql import insert as pg_insert
 
-from _base.core.sql import fetch_all, fetch_many
-from _base.schema import tables as T
+from _base.db import tables as T
+from _base.db.sql import fetch_all, fetch_many
 from sales.queries.cpq import cols, execute, now, single
 
 reps = T.t_exp_sales_reps

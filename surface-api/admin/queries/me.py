@@ -15,8 +15,8 @@ import psycopg
 from psycopg.types.json import Jsonb
 from sqlalchemy import Uuid, case, cast, insert, select
 
-from _base.core.sql import compile_sql, fetch_many
-from _base.schema import tables as T
+from _base.db import tables as T
+from _base.db.sql import compile_sql, fetch_many
 
 grants_t, entity_t, nodes_t, audit_t = (T.t_exp_control_grants, T.t_exp_entity,
                                         T.t_exp_control_nodes, T.t_exp_admin_audit)

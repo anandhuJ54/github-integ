@@ -12,8 +12,8 @@ from typing import Any, Literal
 from fastapi import Depends, HTTPException
 from pydantic import BaseModel, ConfigDict, Field, ValidationError, field_validator
 
-from _base.core.auth import current_user
-from _base.core.server_fn import FnCall, bad_input, fn_router, forbidden
+from _base.auth import current_user
+from _base.server_fn import FnCall, bad_input, fn_router, forbidden
 from nora_os.capabilities import capability_handlers
 from nora_os.db import Db, DbError
 from nora_os.runner_server import execute_skill_run

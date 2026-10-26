@@ -10,7 +10,7 @@ import pytest
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
-from _base.core.auth import current_user
+from _base.auth import current_user
 from _base.integrations import status
 from admin.router import router
 from admin.routers import google_oauth_callback, google_workspace_fn, integrations_fn

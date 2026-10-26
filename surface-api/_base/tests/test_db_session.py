@@ -1,4 +1,4 @@
-"""Unit tests for the read/write split in _base.core.db.
+"""Unit tests for the read/write split in _base.db.session.
 
 No live database: pools and leases are faked so these assert *routing* and *RLS wiring*
 only (acceptance criteria 1-6 of surface-spec/_base/db-read-write-split). Integration against
@@ -12,13 +12,13 @@ from typing import ClassVar
 
 import pytest
 
-from _base.core import db
+from _base.db import session as db
 
 
 @pytest.fixture(autouse=True)
 def _clean_pools():
     """Each test starts with no cached pools and freshly-resolved settings."""
-    from _base.core.config import get_settings
+    from _base.config import get_settings
 
     db._pools.clear()
     get_settings.cache_clear()

@@ -12,8 +12,8 @@ from typing import Any
 import psycopg
 from sqlalchemy import delete, func, insert, select, update
 
-from _base.core.sql import fetch_many
-from _base.schema import tables as T
+from _base.db import tables as T
+from _base.db.sql import fetch_many
 from ops.queries.dev import _exec
 
 spaces_t, docs_t = T.t_exp_wiki_spaces, T.t_exp_wiki_docs

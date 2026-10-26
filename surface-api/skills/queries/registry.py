@@ -25,8 +25,8 @@ from sqlalchemy import Table, select
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.sql import ClauseElement
 
-from _base.core.sql import compile_sql, fetch_all, jsonish
-from _base.schema import tables as T
+from _base.db import tables as T
+from _base.db.sql import compile_sql, fetch_all, jsonish
 
 skills = T.t_exp_skill_registry
 caps = T.t_exp_capability_registry

@@ -20,8 +20,8 @@ import psycopg
 from sqlalchemy import func, select, true
 from sqlalchemy.sql import ColumnElement
 
-from _base.core.sql import fetch_many
-from _base.schema import tables as T
+from _base.db import tables as T
+from _base.db.sql import fetch_many
 
 orgs = T.t_organizations
 jobs = T.t_disco_jobs

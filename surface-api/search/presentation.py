@@ -7,7 +7,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from _base.core.db import role_connection
+from _base.db.session import role_connection
 from search.pg import safe
 
 

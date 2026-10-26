@@ -14,10 +14,10 @@ import psycopg
 from psycopg.types.json import Jsonb
 from sqlalchemy import delete, func, insert, literal, select, update
 
-from _base.core.sql import MAX_ROWS, compile_sql, fetch_all
-from _base.schema.tables import t_audit_log as audit_t
-from _base.schema.tables import t_plg_events as ev_t
-from _base.schema.tables import t_plg_rules as rules_t
+from _base.db.sql import MAX_ROWS, compile_sql, fetch_all
+from _base.db.tables import t_audit_log as audit_t
+from _base.db.tables import t_plg_events as ev_t
+from _base.db.tables import t_plg_rules as rules_t
 
 log = logging.getLogger(__name__)
 

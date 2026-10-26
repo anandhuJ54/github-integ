@@ -23,9 +23,9 @@ from urllib.parse import urlsplit
 
 from fastapi import Depends
 
-from _base.core.auth import current_user
-from _base.core.db import role_connection
-from _base.core.server_fn import FnCall, bad_input, fn_router, forbidden
+from _base.auth import current_user
+from _base.db.session import role_connection
+from _base.server_fn import FnCall, bad_input, fn_router, forbidden
 from etl.routers._sql import maybe_single
 
 log = logging.getLogger(__name__)

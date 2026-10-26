@@ -3,13 +3,13 @@
 Pattern for every Surface capability:
 - one router module per capability, mounted by this Surface's `router.py`
 - auth via the shared `current_user` dependency (verified Supabase JWT)
-- governed DB access via `_base.core` — never a raw table write
+- governed DB access via `_base.db` — never a raw table write
 """
 from __future__ import annotations
 
 from fastapi import APIRouter, Depends
 
-from _base.core.auth import current_user
+from _base.auth import current_user
 
 router = APIRouter(prefix="/search", tags=["search"])
 

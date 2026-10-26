@@ -15,8 +15,8 @@ from typing import Any
 import psycopg
 from sqlalchemy import func, nulls_last, select
 
-from _base.core.sql import fetch_many
-from _base.schema import tables as T
+from _base.db import tables as T
+from _base.db.sql import fetch_many
 from xmp.queries.common import cols, single, soft_all
 
 crm = T.t_crm_integrations

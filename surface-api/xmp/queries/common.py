@@ -15,7 +15,7 @@ from typing import Any
 import psycopg
 from sqlalchemy.sql import ClauseElement
 
-from _base.core.sql import MAX_ROWS, compile_sql, fetch_many, jsonish
+from _base.db.sql import MAX_ROWS, compile_sql, fetch_many, jsonish
 
 _log = logging.getLogger(__name__)
 

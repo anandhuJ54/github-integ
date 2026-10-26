@@ -13,8 +13,8 @@ import psycopg
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel, ConfigDict, Field
 
-from _base.core import db
-from _base.core.server_fn import optional_user
+from _base.db import session as db
+from _base.server_fn import optional_user
 from search.queries import geo as q
 
 log = logging.getLogger(__name__)

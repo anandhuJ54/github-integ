@@ -8,8 +8,8 @@ from typing import Any
 import psycopg
 from sqlalchemy import and_, func, select
 
-from _base.core.sql import fetch_all, fetch_one
-from _base.schema.tables import t_organizations as org_t
+from _base.db.sql import fetch_all, fetch_one
+from _base.db.tables import t_organizations as org_t
 
 PAGE_SIZE = 50
 # ORG_COLUMNS in surface-ui/_base/src/lib/console-surfaces.ts

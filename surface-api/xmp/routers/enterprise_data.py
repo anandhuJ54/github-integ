@@ -19,9 +19,9 @@ import psycopg
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from pydantic import BaseModel, ConfigDict, Field
 
-from _base.core import db
-from _base.core.auth import current_user
-from _base.core.sql import fetch_all
+from _base.auth import current_user
+from _base.db import session as db
+from _base.db.sql import fetch_all
 from xmp.queries import common, enterprise, enterprise_ops
 
 router = APIRouter(prefix="/xmp", tags=["xmp"])

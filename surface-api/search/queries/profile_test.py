@@ -8,8 +8,8 @@ import pytest
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
-from _base.core import db as core_db
-from _base.core.server_fn import optional_user
+from _base.db import session as core_db
+from _base.server_fn import optional_user
 from search.router import router
 
 USER = {"sub": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa", "role": "authenticated"}
@@ -181,7 +181,7 @@ def test_rpcs_are_tolerant_and_page_view_never_fails(dbfake):
 def test_fetch_many_one_pipeline_and_tolerant_fallback():
     from sqlalchemy import column, select, table
 
-    from _base.core.sql import fetch_many
+    from _base.db.sql import fetch_many
 
     t = table("t", column("a"))
     log: list = []

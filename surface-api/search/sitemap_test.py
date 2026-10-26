@@ -182,7 +182,7 @@ def test_sitemap_index_on(fake_db):
 
 
 def test_site_origin_setting_wins_over_the_request_host(fake_db, monkeypatch):
-    from _base.core.config import get_settings
+    from _base.config import get_settings
 
     monkeypatch.setenv("SITE_ORIGIN", "https://site.test/")
     get_settings.cache_clear()

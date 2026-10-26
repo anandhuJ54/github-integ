@@ -1,6 +1,6 @@
 """Write a Surface's published API shapes to contracts/<surface>/openapi.json.
 
-    uv run python -m _base.contracts nora-os
+    uv run python -m app.contracts nora-os
 
 Takes the app's OpenAPI and keeps the Surface's own endpoints (`/<surface>/...`, server
 functions under `/<api_surface>/fn/` excluded) plus the schemas they reference. The React
@@ -52,7 +52,7 @@ def surface_openapi(spec: dict, surface: str) -> dict:
 
 def main(argv: list[str]) -> int:
     if len(argv) != 1:
-        print("usage: python -m _base.contracts <surface>", file=sys.stderr)
+        print("usage: python -m app.contracts <surface>", file=sys.stderr)
         return 2
     from app import app
 

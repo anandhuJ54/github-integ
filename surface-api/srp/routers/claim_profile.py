@@ -6,8 +6,8 @@ from typing import Any
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel
 
-from _base.core import db
-from _base.core.auth import current_user
+from _base.auth import current_user
+from _base.db import session as db
 from srp.queries.claim_profile import MultipleRows, claim_profile
 
 router = APIRouter(prefix="/srp", tags=["srp"])

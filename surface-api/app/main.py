@@ -1,8 +1,8 @@
-"""Shared FastAPI application factory.
+"""Where the app starts: the FastAPI application factory and the dev app built from it.
 
-A deployable `services/<name>` composes a subset of Surfaces by mounting each
-Surface's router. This factory wires the cross-cutting concerns (CORS, auth,
-error shape, liveness/readiness) once so every service is consistent.
+A deployable service composes a subset of Surfaces by mounting each Surface's router. This
+factory wires the cross-cutting concerns (CORS, auth, error shape, liveness/readiness) once so
+every service is consistent. The dev app below mounts every Surface (`app/routes.py`).
 """
 from __future__ import annotations
 
@@ -17,8 +17,9 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from psycopg_pool import PoolTimeout
 
-from _base.core.config import get_settings
-from _base.core.db import close_pools
+from _base.config import get_settings
+from _base.db.session import close_pools
+from app.routes import ROUTERS
 
 _log = logging.getLogger(__name__)
 
@@ -77,7 +78,7 @@ def create_app(title: str, routers: Iterable[APIRouter]) -> FastAPI:
         reach the DB)? Checks the read path, which falls back to the primary when no
         replica is configured. Returns 503 so an orchestrator holds traffic off a worker
         that can't serve yet."""
-        from _base.core.db import read_connection
+        from _base.db.session import read_connection
 
         try:
             with read_connection() as conn, conn.cursor() as cur:
@@ -91,3 +92,6 @@ def create_app(title: str, routers: Iterable[APIRouter]) -> FastAPI:
         return {"status": "ready", "service": title}
 
     return app
+
+
+app = create_app("api", routers=ROUTERS)

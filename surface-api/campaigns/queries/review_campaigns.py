@@ -16,8 +16,8 @@ import psycopg
 from sqlalchemy import select
 from sqlalchemy.sql import ClauseElement
 
-from _base.core.sql import compile_sql, fetch_many
-from _base.schema import tables as T
+from _base.db import tables as T
+from _base.db.sql import compile_sql, fetch_many
 
 org_t, camp_t, rules_t = T.t_organizations, T.t_review_campaigns, T.t_content_compliance_rules
 

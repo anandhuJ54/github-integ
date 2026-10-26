@@ -6,7 +6,7 @@ from typing import Any
 import psycopg
 from sqlalchemy import func, literal_column, select
 
-from _base.core.sql import fetch_many, jsonish
+from _base.db.sql import fetch_many, jsonish
 
 
 def one_of(rows: list[dict[str, Any]]) -> dict[str, Any] | None:

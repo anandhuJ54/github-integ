@@ -12,7 +12,7 @@ import pytest
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
-from _base.core.auth import current_user
+from _base.auth import current_user
 from sales.queries import core_test as ct
 from sales.queries import seller_setup as q
 from sales.queries.cpq_test import RID, RID2, values, writes

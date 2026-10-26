@@ -7,8 +7,8 @@ import psycopg
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel, Field
 
-from _base.core import db
-from _base.core.auth import current_user
+from _base.auth import current_user
+from _base.db import session as db
 from admin.queries import claims as q
 
 router = APIRouter(prefix="/admin/claims", tags=["admin"])

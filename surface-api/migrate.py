@@ -34,7 +34,7 @@ def _pending(conn) -> list[Path]:
 
 
 def status() -> None:
-    from _base.core.db import connection
+    from _base.db.session import connection
 
     with connection() as conn:
         pending = _pending(conn)
@@ -47,7 +47,7 @@ def status() -> None:
 
 
 def apply() -> None:
-    from _base.core.db import connection
+    from _base.db.session import connection
 
     with connection() as conn:
         for f in _pending(conn):

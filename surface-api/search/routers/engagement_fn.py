@@ -10,7 +10,7 @@ from concurrent.futures import ThreadPoolExecutor
 from decimal import Decimal
 from typing import Any
 
-from _base.core.server_fn import FnCall, bad_input, fn_router
+from _base.server_fn import FnCall, bad_input, fn_router
 from search.routers._sql import safe_rows
 
 router = fn_router("search")

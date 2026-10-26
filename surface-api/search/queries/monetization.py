@@ -6,7 +6,7 @@ from typing import Any
 
 import psycopg
 
-from _base.core.sql import MAX_ROWS, jsonish
+from _base.db.sql import MAX_ROWS, jsonish
 
 
 def _call(conn: psycopg.Connection, sql: str, params: dict[str, Any]) -> list[dict[str, Any]]:

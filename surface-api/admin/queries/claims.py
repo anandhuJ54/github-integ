@@ -12,10 +12,10 @@ from typing import Any
 import psycopg
 from sqlalchemy import func, select
 
-from _base.core.sql import fetch_all, fetch_one
-from _base.schema.tables import t_claim_queue as cq_t
-from _base.schema.tables import t_organizations as org_t
-from _base.schema.tables import t_professionals as pro_t
+from _base.db.sql import fetch_all, fetch_one
+from _base.db.tables import t_claim_queue as cq_t
+from _base.db.tables import t_organizations as org_t
+from _base.db.tables import t_professionals as pro_t
 
 log = logging.getLogger(__name__)
 

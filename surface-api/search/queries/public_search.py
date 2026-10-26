@@ -12,7 +12,7 @@ from typing import Any
 
 import psycopg
 
-from _base.core.sql import MAX_ROWS, jsonish
+from _base.db.sql import MAX_ROWS, jsonish
 
 _FILTERS = [("p_q", "text"), ("p_gcid", "text"), ("p_loc", "text"),
             ("p_min_rating", "numeric"), ("p_claimed", "boolean")]

@@ -5,7 +5,7 @@ from __future__ import annotations
 import pytest
 from psycopg.types.json import Jsonb
 
-from _base.core.sql import capped, compile_sql
+from _base.db.sql import capped, compile_sql
 from xmp.queries import common, enterprise
 
 PID = "11111111-1111-4111-8111-111111111111"

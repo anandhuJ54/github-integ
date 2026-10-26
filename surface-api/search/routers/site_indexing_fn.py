@@ -6,7 +6,7 @@ app/src/root.tsx). The super-admin write `setSiteIndexing` moved to the admin Su
 """
 from __future__ import annotations
 
-from _base.core.server_fn import FnCall, fn_router
+from _base.server_fn import FnCall, fn_router
 from search import site_indexing
 
 router = fn_router("search")

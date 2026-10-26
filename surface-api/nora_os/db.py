@@ -16,8 +16,8 @@ from typing import Any
 
 from psycopg.types.json import Jsonb
 
-from _base.core import db as _core_db
-from _base.core.sql import jsonish
+from _base.db import session as _core_db
+from _base.db.sql import jsonish
 
 
 class DbError(RuntimeError):

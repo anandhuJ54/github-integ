@@ -10,7 +10,7 @@ import re
 from fastapi import APIRouter, Request
 from fastapi.responses import PlainTextResponse, Response
 
-from _base.core.config import get_settings
+from _base.config import get_settings
 from search import site_indexing, sitemap
 from search.robots import robots_txt
 

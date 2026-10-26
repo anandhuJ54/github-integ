@@ -5,7 +5,7 @@ from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field, ValidationError
 
-from _base.core.server_fn import FnCall, bad_input, fn_router
+from _base.server_fn import FnCall, bad_input, fn_router
 from search.presentation import load_search_presentation
 
 router = fn_router("search")

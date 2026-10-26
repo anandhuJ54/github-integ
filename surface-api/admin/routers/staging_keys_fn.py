@@ -6,8 +6,8 @@ from __future__ import annotations
 
 from fastapi import Depends
 
-from _base.core.auth import current_user
-from _base.core.server_fn import FnCall, fn_router
+from _base.auth import current_user
+from _base.server_fn import FnCall, fn_router
 
 router = fn_router("admin")
 

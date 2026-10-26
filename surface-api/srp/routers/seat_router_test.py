@@ -10,8 +10,8 @@ import pytest
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
-from _base.core import db as core_db
-from _base.core.auth import current_user
+from _base.auth import current_user
+from _base.db import session as core_db
 from srp.routers.seat_data import router
 
 UID = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa"

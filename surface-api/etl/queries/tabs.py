@@ -15,8 +15,8 @@ import psycopg
 from psycopg.types.json import Jsonb
 from sqlalchemy import func, select
 
-from _base.core.sql import typed
-from _base.schema import tables as T
+from _base.db import tables as T
+from _base.db.sql import typed
 from etl.queries.common import fetch_many, rpc_rows, rpc_value
 
 stg = T.t_exp_etl_staging

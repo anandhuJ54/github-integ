@@ -13,8 +13,8 @@ from fastapi import FastAPI
 from fastapi.testclient import TestClient
 from psycopg.types.json import Jsonb
 
-from _base.core import db as core_db
-from _base.core.auth import current_user
+from _base.auth import current_user
+from _base.db import session as core_db
 from sales.routers.catalog_data import router
 
 CLAIMS = {"sub": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa", "role": "authenticated"}

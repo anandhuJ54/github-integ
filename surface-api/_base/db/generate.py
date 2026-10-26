@@ -1,8 +1,8 @@
-"""Regenerate `_base/schema/tables.py` from the live database.
+"""Regenerate `_base/db/tables.py` from the live database.
 
 Run from inside surface-api/ (introspection only, nothing is written to the DB):
 
-    uv run --env-file .env python -m _base.schema.generate
+    uv run --env-file .env python -m _base.db.generate
 
 The browser-to-API migration adds the tables each Surface's queries use to TABLES, then
 reruns this. Never hand-edit tables.py; regenerate it when the schema changes.
@@ -14,7 +14,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-# Tables read or written through SQLAlchemy Core (`_base.schema.tables`). Keep sorted.
+# Tables read or written through SQLAlchemy Core (`_base.db.tables`). Keep sorted.
 TABLES = [
     "aggregate_ratings",
     "audit_log",
@@ -207,7 +207,7 @@ OUT = Path(__file__).with_name("tables.py")
 
 HEADER = '''"""SQLAlchemy Core table definitions, generated from the live database. Do not edit.
 
-Regenerate with `uv run --env-file .env python -m _base.schema.generate` (see generate.py).
+Regenerate with `uv run --env-file .env python -m _base.db.generate` (see generate.py).
 """
 # ruff: noqa
 '''

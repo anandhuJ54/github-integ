@@ -13,8 +13,8 @@ import pytest
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
-from _base.core import db as core_db
-from _base.core.auth import current_user
+from _base.auth import current_user
+from _base.db import session as core_db
 from sales.queries import core as q
 from sales.queries.cpq_test import RID, RID2, UID, FakeConn, values, writes
 from sales.routers.core_data import router

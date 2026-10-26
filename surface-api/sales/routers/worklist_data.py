@@ -12,8 +12,8 @@ from typing import Any
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import Field
 
-from _base.core import db
-from _base.core.auth import current_user
+from _base.auth import current_user
+from _base.db import session as db
 from sales.queries import worklist as q
 from sales.queries.contracts import UnknownRpc
 from sales.routers.cpq_data import _Body, _guard

@@ -27,7 +27,7 @@ from typing import Any, TypeVar
 
 import httpx
 
-from _base.core.db import role_connection
+from _base.db.session import role_connection
 from _base.disco import ai_cost, webscraper
 from _base.disco.site_contract._js import JsURL, js_number, js_str, json_stringify, try_url
 

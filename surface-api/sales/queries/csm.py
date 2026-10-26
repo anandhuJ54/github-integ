@@ -13,8 +13,8 @@ from typing import Any
 import psycopg
 from sqlalchemy import select
 
-from _base.core.sql import MAX_ROWS, fetch_all, jsonish
-from _base.schema import tables as T
+from _base.db import tables as T
+from _base.db.sql import MAX_ROWS, fetch_all, jsonish
 from sales.queries.cpq import execute, maybe_single
 
 csm = T.t_exp_csm_assignments

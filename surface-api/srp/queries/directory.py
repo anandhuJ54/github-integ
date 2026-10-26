@@ -15,8 +15,8 @@ from typing import Any
 import psycopg
 from sqlalchemy import select
 
-from _base.core.sql import fetch_all
-from _base.schema import tables as T
+from _base.db import tables as T
+from _base.db.sql import fetch_all
 from srp.queries.common import single_or_raise
 
 pros = T.t_professionals

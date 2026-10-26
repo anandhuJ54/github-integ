@@ -9,7 +9,7 @@ from __future__ import annotations
 
 from fastapi import APIRouter, Depends
 
-from _base.core.auth import current_user
+from _base.auth import current_user
 
 router = APIRouter(prefix="/sales", tags=["sales"])
 

@@ -17,7 +17,7 @@ from fastapi import APIRouter, Request
 from fastapi.responses import RedirectResponse
 from psycopg.types.json import Jsonb
 
-from _base.core.db import role_connection
+from _base.db.session import role_connection
 from _base.integrations.google_workspace import secret_by_ref
 from admin.sqlutil import fetch_all, maybe_one, soft_execute
 

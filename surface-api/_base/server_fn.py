@@ -12,7 +12,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from pydantic import BaseModel
 
-from _base.core.auth import verify_jwt
+from _base.auth import verify_jwt
 
 _optional_bearer = HTTPBearer(auto_error=False)
 

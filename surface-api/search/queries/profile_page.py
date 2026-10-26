@@ -13,8 +13,8 @@ from typing import Any
 import psycopg
 from sqlalchemy import or_, select
 
-from _base.core.sql import fetch_all, fetch_many
-from _base.schema import tables as T
+from _base.db import tables as T
+from _base.db.sql import fetch_all, fetch_many
 
 profile_v = T.t_v_professional_profile
 reviews_t, content_t, creds_t = T.t_reviews, T.t_content_items, T.t_credentials

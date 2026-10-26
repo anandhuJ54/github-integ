@@ -12,7 +12,7 @@ import pytest
 from fastapi import FastAPI, HTTPException
 from fastapi.testclient import TestClient
 
-from _base.core.auth import current_user
+from _base.auth import current_user
 from etl.routers.site_proposal_fn import (
     crawl_method_for,
     given_url_problem,

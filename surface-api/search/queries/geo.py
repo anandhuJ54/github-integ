@@ -11,8 +11,8 @@ from typing import Any
 import psycopg
 from sqlalchemy import select
 
-from _base.core.sql import fetch_all
-from _base.schema.tables import t_exp_us_cities as cities_t
+from _base.db.sql import fetch_all
+from _base.db.tables import t_exp_us_cities as cities_t
 
 
 def centroids_stmt(cities: list[str]) -> Any:

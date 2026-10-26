@@ -24,8 +24,8 @@ from psycopg.types.json import Jsonb
 from sqlalchemy import select
 from sqlalchemy.sql import ClauseElement
 
-from _base.core.sql import compile_sql, fetch_all, jsonish
-from _base.schema import tables as T
+from _base.db import tables as T
+from _base.db.sql import compile_sql, fetch_all, jsonish
 
 quotes = T.t_exp_quotes
 accounts = T.t_exp_accounts

@@ -11,7 +11,7 @@ from typing import Any
 
 import psycopg
 
-from _base.core.sql import MAX_ROWS, jsonish
+from _base.db.sql import MAX_ROWS, jsonish
 
 
 def cols(t: Any, names: str) -> list[Any]:

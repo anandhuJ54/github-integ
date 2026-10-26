@@ -16,7 +16,7 @@ from typing import Any
 import psycopg
 from sqlalchemy import exists, func, select
 
-from _base.schema import tables as T
+from _base.db import tables as T
 from etl.queries.common import fetch_many, one_of, rpc_value
 
 src, stg, runs_t = T.t_exp_etl_sources, T.t_exp_etl_staging, T.t_exp_etl_runs

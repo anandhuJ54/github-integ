@@ -18,7 +18,7 @@ import httpx
 from fastapi import APIRouter
 from fastapi.responses import JSONResponse
 
-from _base.core.db import role_connection
+from _base.db.session import role_connection
 
 router = APIRouter(tags=["etl"])
 

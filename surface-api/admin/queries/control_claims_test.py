@@ -9,9 +9,9 @@ import pytest
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
-from _base.core import db as core_db
-from _base.core.auth import current_user
-from _base.core.sql import capped, compile_sql
+from _base.auth import current_user
+from _base.db import session as core_db
+from _base.db.sql import capped, compile_sql
 from admin.queries import control_claims as q
 from admin.routers.control_claims import router
 

@@ -11,7 +11,7 @@ from datetime import UTC, date, datetime
 from decimal import ROUND_HALF_UP, Decimal
 from typing import Any
 
-from _base.core.db import role_connection
+from _base.db.session import role_connection
 from search.pg import safe
 
 # Held-below-floor pages are never emitted into an indexable sitemap.

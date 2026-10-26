@@ -11,9 +11,9 @@ from typing import Any
 import psycopg
 from fastapi import APIRouter, Depends, HTTPException, status
 
-from _base.core import db
-from _base.core.auth import current_user
-from _base.core.sql import fetch_all
+from _base.auth import current_user
+from _base.db import session as db
+from _base.db.sql import fetch_all
 from search.queries import profile_page as q
 
 router = APIRouter(prefix="/search", tags=["search"])

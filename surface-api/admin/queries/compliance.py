@@ -9,13 +9,13 @@ from typing import Any
 import psycopg
 from sqlalchemy import select
 
-from _base.core.sql import fetch_all
-from _base.schema.tables import t_content_compliance_rules as rules_t
-from _base.schema.tables import t_entity_compliance as ec_t
-from _base.schema.tables import t_exp_category_compliance as comp_t
-from _base.schema.tables import t_gbp_categories as cat_t
-from _base.schema.tables import t_organizations as org_t
-from _base.schema.tables import t_professionals as pro_t
+from _base.db.sql import fetch_all
+from _base.db.tables import t_content_compliance_rules as rules_t
+from _base.db.tables import t_entity_compliance as ec_t
+from _base.db.tables import t_exp_category_compliance as comp_t
+from _base.db.tables import t_gbp_categories as cat_t
+from _base.db.tables import t_organizations as org_t
+from _base.db.tables import t_professionals as pro_t
 
 log = logging.getLogger(__name__)
 

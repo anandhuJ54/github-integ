@@ -5,7 +5,7 @@ from __future__ import annotations
 
 import pytest
 
-from _base.core.sql import capped, compile_sql
+from _base.db.sql import capped, compile_sql
 from srp.queries import common, dashboard, seat
 
 PID = "11111111-1111-4111-8111-111111111111"

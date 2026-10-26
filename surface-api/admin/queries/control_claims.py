@@ -7,7 +7,7 @@ Moved from the graph Surface (graph/queries/entities.py), surface audit 2026-10-
 Reads run on the caller's role connection (RLS unchanged); the one write goes through an
 allow-list (ADMIN_CONTROL_RPCS) with each parameter cast to its database type, and the function
 checks roles itself, as it did for the browser. Reads keep the 1000-row PostgREST cap
-(`_base.core.sql.MAX_ROWS`).
+(`_base.db.sql.MAX_ROWS`).
 """
 from __future__ import annotations
 
@@ -16,8 +16,8 @@ from typing import Any
 import psycopg
 from sqlalchemy import select
 
-from _base.core.sql import jsonish
-from _base.schema import tables as T
+from _base.db import tables as T
+from _base.db.sql import jsonish
 
 entity_t, claim_t = T.t_exp_entity, T.t_exp_claim
 

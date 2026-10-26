@@ -16,7 +16,7 @@ import datetime as dt
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from pydantic import Field
 
-from _base.core.auth import current_user
+from _base.auth import current_user
 from sales.queries import nav as q
 from sales.routers.cpq_data import _Body, _read_with
 

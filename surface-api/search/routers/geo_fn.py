@@ -5,7 +5,7 @@ import math
 
 from fastapi import Request
 
-from _base.core.server_fn import FnCall, fn_router
+from _base.server_fn import FnCall, fn_router
 from search import geo
 from search.pg import js_number
 

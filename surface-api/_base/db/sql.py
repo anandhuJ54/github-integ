@@ -1,6 +1,6 @@
-"""Run SQLAlchemy Core statements on the psycopg connections from `_base.core.db`.
+"""Run SQLAlchemy Core statements on the psycopg connections from `_base.db.session`.
 
-Queries are built with the Core query builder against `_base.schema.tables` (no ORM: no
+Queries are built with the Core query builder against `_base.db.tables` (no ORM: no
 mapped classes, no session). They compile to psycopg's `%(name)s` paramstyle and run on a
 leased `role_connection` / `read_connection`, so the RLS context and role set there apply.
 Rows come back JSON-shaped (`nora_os.db.jsonish` semantics), as PostgREST returned them.

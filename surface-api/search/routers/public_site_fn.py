@@ -9,8 +9,8 @@ from __future__ import annotations
 
 from typing import Any
 
-from _base.core.db import role_connection
-from _base.core.server_fn import FnCall, fn_router
+from _base.db.session import role_connection
+from _base.server_fn import FnCall, fn_router
 from search.pg import rows
 
 router = fn_router("search")

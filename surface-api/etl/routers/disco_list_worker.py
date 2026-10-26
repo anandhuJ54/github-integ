@@ -27,7 +27,7 @@ from typing import Any
 from fastapi import APIRouter, Request
 from starlette.concurrency import run_in_threadpool
 
-from _base.core.db import role_connection
+from _base.db.session import role_connection
 from _base.disco import agent_engine as E
 from etl.disco import contract_row as cr
 from etl.routers._worker import is_invalid, jresp, read_json, worker_key_ok

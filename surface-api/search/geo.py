@@ -16,7 +16,7 @@ from urllib.parse import quote, unquote
 
 import httpx
 
-from _base.core.db import role_connection
+from _base.db.session import role_connection
 from search.pg import rpc_args, safe
 
 log = logging.getLogger(__name__)

@@ -19,9 +19,9 @@ from fastapi import Depends, HTTPException
 from psycopg.types.json import Jsonb
 from pydantic import BaseModel, ConfigDict, StringConstraints
 
-from _base.core.auth import current_user
-from _base.core.db import role_connection
-from _base.core.server_fn import FnCall, bad_input, fn_router
+from _base.auth import current_user
+from _base.db.session import role_connection
+from _base.server_fn import FnCall, bad_input, fn_router
 from graph.sqlutil import execute, parse_input, soft_execute, soft_maybe_one
 
 router = fn_router("graph")

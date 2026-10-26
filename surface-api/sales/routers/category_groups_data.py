@@ -12,7 +12,7 @@ from __future__ import annotations
 
 from fastapi import APIRouter, Depends, Query
 
-from _base.core.auth import current_user
+from _base.auth import current_user
 from sales.queries import category_groups as q
 from sales.routers.cpq_data import _Body, _read_with, _write_with
 

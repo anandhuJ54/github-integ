@@ -17,9 +17,9 @@ import psycopg
 from fastapi import Depends, HTTPException
 from pydantic import BaseModel, ConfigDict, Field, ValidationError
 
-from _base.core.auth import current_user
-from _base.core.db import role_connection
-from _base.core.server_fn import FnCall, bad_input, fn_router
+from _base.auth import current_user
+from _base.db.session import role_connection
+from _base.server_fn import FnCall, bad_input, fn_router
 from srp.pg import maybe_single, rows, safe
 
 log = logging.getLogger(__name__)

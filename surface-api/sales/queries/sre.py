@@ -22,8 +22,8 @@ import psycopg
 from psycopg.types.json import Jsonb
 from sqlalchemy import select
 
-from _base.core.sql import fetch_all, fetch_many
-from _base.schema import tables as T
+from _base.db import tables as T
+from _base.db.sql import fetch_all, fetch_many
 from sales.queries.core import insert_rows
 from sales.queries.cpq import cols, execute, maybe_single, now
 

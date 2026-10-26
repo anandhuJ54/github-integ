@@ -18,8 +18,8 @@ from typing import Any
 import psycopg
 from sqlalchemy import exists, func, not_, or_, select
 
-from _base.core.sql import MAX_ROWS
-from _base.schema import tables as T
+from _base.db import tables as T
+from _base.db.sql import MAX_ROWS
 from etl.queries.common import fetch_many, json_row, json_rows, one_of
 
 ent, rel = T.t_exp_entity, T.t_exp_rel

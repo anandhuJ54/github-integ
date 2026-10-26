@@ -16,9 +16,9 @@ import psycopg
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel, Field
 
-from _base.core import db
-from _base.core.auth import current_user
-from _base.core.sql import fetch_all
+from _base.auth import current_user
+from _base.db import session as db
+from _base.db.sql import fetch_all
 from admin.queries import control_claims as q
 
 router = APIRouter(prefix="/admin/control-claims", tags=["admin"])

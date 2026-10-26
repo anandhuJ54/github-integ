@@ -22,8 +22,8 @@ from sqlalchemy import func, select
 from sqlalchemy.dialects.postgresql import insert as pg_insert
 from sqlalchemy.sql import ClauseElement
 
-from _base.core.sql import compile_sql, fetch_many, jsonish
-from _base.schema import tables as T
+from _base.db import tables as T
+from _base.db.sql import compile_sql, fetch_many, jsonish
 
 orgs = T.t_organizations
 pros = T.t_professionals

@@ -9,7 +9,7 @@ import pytest
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
-from _base.core.auth import current_user
+from _base.auth import current_user
 from search.routers import schema_cache_fn
 
 CLAIMS = {"sub": "u-1", "role": "authenticated", "email": "a@x.com"}

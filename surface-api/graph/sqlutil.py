@@ -7,7 +7,7 @@ from typing import Any, TypeVar
 import psycopg
 from pydantic import BaseModel, ValidationError
 
-from _base.core.server_fn import bad_input
+from _base.server_fn import bad_input
 
 M = TypeVar("M", bound=BaseModel)
 

@@ -13,8 +13,8 @@ from typing import Any
 import psycopg
 from sqlalchemy import or_, select
 
-from _base.core.sql import fetch_all, typed
-from _base.schema.tables import t_exp_voce_article as voce_t
+from _base.db.sql import fetch_all, typed
+from _base.db.tables import t_exp_voce_article as voce_t
 
 COLS = ("id, title, slug, body_excerpt, author_entity_type, author_entity_id, author_name, gcid, "
         "topic, knows_about, published_on, boosted, boost_placements, boost_starts_on, "

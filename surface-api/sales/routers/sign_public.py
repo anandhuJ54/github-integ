@@ -13,7 +13,7 @@ from typing import Any
 from fastapi import APIRouter
 from pydantic import Field
 
-from _base.core import db
+from _base.db import session as db
 from sales.queries import sign as q
 from sales.routers.cpq_data import _Body, _guard
 

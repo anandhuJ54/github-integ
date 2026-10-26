@@ -14,21 +14,21 @@ from typing import Any
 import psycopg
 from sqlalchemy import select
 
-from _base.core.sql import fetch_many
-from _base.schema.tables import t_aggregate_ratings as ratings_t
-from _base.schema.tables import t_content_items as content_t
-from _base.schema.tables import t_credentials as creds_t
-from _base.schema.tables import t_exp_category_page_template as template_t
-from _base.schema.tables import t_exp_category_profile_config as config_t
-from _base.schema.tables import t_exp_ring as ring_t
-from _base.schema.tables import t_exp_taxonomy as taxonomy_t
-from _base.schema.tables import t_gbp_categories as cat_t
-from _base.schema.tables import t_graph_edges as edges_t
-from _base.schema.tables import t_graph_nodes as nodes_t
-from _base.schema.tables import t_media_items as media_t
-from _base.schema.tables import t_organizations as org_t
-from _base.schema.tables import t_professionals as pro_t
-from _base.schema.tables import t_reviews as reviews_t
+from _base.db.sql import fetch_many
+from _base.db.tables import t_aggregate_ratings as ratings_t
+from _base.db.tables import t_content_items as content_t
+from _base.db.tables import t_credentials as creds_t
+from _base.db.tables import t_exp_category_page_template as template_t
+from _base.db.tables import t_exp_category_profile_config as config_t
+from _base.db.tables import t_exp_ring as ring_t
+from _base.db.tables import t_exp_taxonomy as taxonomy_t
+from _base.db.tables import t_gbp_categories as cat_t
+from _base.db.tables import t_graph_edges as edges_t
+from _base.db.tables import t_graph_nodes as nodes_t
+from _base.db.tables import t_media_items as media_t
+from _base.db.tables import t_organizations as org_t
+from _base.db.tables import t_professionals as pro_t
+from _base.db.tables import t_reviews as reviews_t
 
 # EXTRA_NODE_TYPES in profile-render.ts: the node types the page sections read.
 EXTRA_NODE_TYPES = (

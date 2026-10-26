@@ -17,8 +17,8 @@ import psycopg
 from psycopg.types.json import Jsonb
 from sqlalchemy import select
 
-from _base.core.sql import fetch_all, fetch_many
-from _base.schema import tables as T
+from _base.db import tables as T
+from _base.db.sql import fetch_all, fetch_many
 from xmp.queries.common import call_rpc, cols, execute, single, soft
 
 org_t, pro_t, nodes_t = T.t_organizations, T.t_professionals, T.t_graph_nodes

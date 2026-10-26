@@ -17,8 +17,8 @@ from typing import Any
 import psycopg
 from sqlalchemy import func, select
 
-from _base.core.sql import fetch_all, fetch_many
-from _base.schema import tables as T
+from _base.db import tables as T
+from _base.db.sql import fetch_all, fetch_many
 from xmp.queries.common import cols
 
 pros = T.t_professionals

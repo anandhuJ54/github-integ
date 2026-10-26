@@ -15,8 +15,8 @@ from psycopg import errors as pg_errors
 from sqlalchemy import Table, delete, func, insert, select, update
 from sqlalchemy.dialects.postgresql import insert as pg_insert
 
-from _base.core.sql import compile_sql, fetch_many, jsonish, typed
-from _base.schema import tables as T
+from _base.db import tables as T
+from _base.db.sql import compile_sql, fetch_many, jsonish, typed
 
 launch_t, teams_t, projects_t = T.t_exp_dev_launch, T.t_exp_dev_teams, T.t_exp_dev_projects
 members_t, demos_t, sprints_t = T.t_exp_dev_members, T.t_exp_dev_demo_days, T.t_exp_dev_sprints

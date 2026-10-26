@@ -13,11 +13,11 @@ from typing import Any
 import psycopg
 from sqlalchemy import func, nulls_last, select
 
-from _base.core.sql import fetch_all, fetch_one
-from _base.schema.tables import t_exp_etl_field_floors as floors_t
-from _base.schema.tables import t_exp_etl_staging as stg_t
-from _base.schema.tables import t_graph_nodes as nodes_t
-from _base.schema.tables import t_professionals as pro_t
+from _base.db.sql import fetch_all, fetch_one
+from _base.db.tables import t_exp_etl_field_floors as floors_t
+from _base.db.tables import t_exp_etl_staging as stg_t
+from _base.db.tables import t_graph_nodes as nodes_t
+from _base.db.tables import t_professionals as pro_t
 
 AGENT_GCID = "gcid:insurance_agent"
 AGENCY_GCID = "gcid:insurance_agency"

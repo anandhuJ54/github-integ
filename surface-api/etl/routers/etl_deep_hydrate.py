@@ -23,7 +23,7 @@ from fastapi import APIRouter, Request
 from fastapi.encoders import jsonable_encoder
 from fastapi.responses import JSONResponse, PlainTextResponse
 
-from _base.core.db import role_connection
+from _base.db.session import role_connection
 from etl import deep_hydrate as mod
 
 router = APIRouter(tags=["etl"])

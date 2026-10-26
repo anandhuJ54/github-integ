@@ -7,9 +7,9 @@ from typing import Any
 import psycopg
 from sqlalchemy import select
 
-from _base.core.sql import fetch_all
-from _base.schema.tables import t_exp_category_compliance as comp_t
-from _base.schema.tables import t_professionals as pro_t
+from _base.db.sql import fetch_all
+from _base.db.tables import t_exp_category_compliance as comp_t
+from _base.db.tables import t_professionals as pro_t
 
 PROFILE_COLUMNS = (
     "id", "first_name", "last_name", "display_name", "slug", "headline", "photo_url",

@@ -8,8 +8,8 @@ import pytest
 from fastapi import Depends, FastAPI
 from fastapi.testclient import TestClient
 
-from _base.core import db
-from _base.core.server_fn import FnCall, fn_router, not_implemented, optional_user
+from _base.db import session as db
+from _base.server_fn import FnCall, fn_router, not_implemented, optional_user
 
 
 def _app() -> FastAPI:

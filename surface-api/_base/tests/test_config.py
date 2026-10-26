@@ -1,9 +1,9 @@
-"""Unit tests for _base.core.config — the environment-driven runtime settings."""
+"""Unit tests for _base.config — the environment-driven runtime settings."""
 from __future__ import annotations
 
 import pytest
 
-from _base.core.config import Settings, get_settings
+from _base.config import Settings, get_settings
 
 
 @pytest.fixture(autouse=True)

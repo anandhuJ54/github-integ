@@ -14,7 +14,7 @@ import threading
 import time
 from typing import Any
 
-from _base.core.db import role_connection
+from _base.db.session import role_connection
 
 log = logging.getLogger(__name__)
 

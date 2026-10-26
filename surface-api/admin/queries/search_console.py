@@ -15,8 +15,8 @@ import psycopg
 from sqlalchemy import delete, func, insert, select, update
 from sqlalchemy.dialects.postgresql import insert as pg_insert
 
-from _base.core.sql import compile_sql, fetch_many, jsonish
-from _base.schema import tables as T
+from _base.db import tables as T
+from _base.db.sql import compile_sql, fetch_many, jsonish
 
 cats_t, rollup_t = T.t_gbp_categories, T.t_exp_page_views_rollup
 agent_t, queue_t, part_t = T.t_exp_index_agent, T.t_exp_index_queue, T.t_exp_sitemap_partition

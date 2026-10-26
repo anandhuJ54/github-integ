@@ -15,8 +15,8 @@ from fastapi import FastAPI
 from fastapi.testclient import TestClient
 from psycopg.types.json import Jsonb
 
-from _base.core import db as core_db
-from _base.core.auth import current_user
+from _base.auth import current_user
+from _base.db import session as core_db
 from admin.queries import accounts as q
 from admin.routers.accounts_data import router
 

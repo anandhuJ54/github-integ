@@ -5,7 +5,7 @@ No DB / no network — asserts route *wiring* only (each Surface exposes its bas
 """
 from __future__ import annotations
 
-import app
+from app import main as app
 
 # Prefix each Surface's base router mounts (hyphenated for multiword packages).
 SURFACES = [

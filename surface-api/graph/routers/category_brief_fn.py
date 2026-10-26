@@ -10,9 +10,9 @@ from typing import Annotated, Any
 from fastapi import Depends
 from pydantic import BaseModel, ConfigDict, StringConstraints
 
-from _base.core.auth import current_user
-from _base.core.db import role_connection
-from _base.core.server_fn import FnCall, fn_router
+from _base.auth import current_user
+from _base.db.session import role_connection
+from _base.server_fn import FnCall, fn_router
 from graph.category_brief import compile_category_brief
 from graph.sqlutil import fetch_all, parse_input, soft_fetch_all, soft_maybe_one
 

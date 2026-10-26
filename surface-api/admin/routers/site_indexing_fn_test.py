@@ -9,7 +9,7 @@ import pytest
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
-from _base.core.auth import current_user
+from _base.auth import current_user
 from admin.routers import site_indexing_fn
 from admin.routers.site_indexing_fn import router
 

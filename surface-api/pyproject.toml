@@ -42,3 +42,6 @@ ignore = ["B008", "N999"]
 [tool.pytest.ini_options]
 testpaths = ["."]
 python_files = ["*_test.py", "test_*.py"]
+# Same-named test files live in many `<name>/tests/` folders; importlib mode keeps them apart.
+addopts = ["--import-mode=importlib"]
+pythonpath = ["."]

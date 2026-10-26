@@ -14,8 +14,8 @@ from typing import Any
 import psycopg
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 
-from _base.core import db
-from _base.core.server_fn import optional_user
+from _base.db import session as db
+from _base.server_fn import optional_user
 from search.queries import voce as q
 
 log = logging.getLogger(__name__)

@@ -14,8 +14,8 @@ import psycopg
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from pydantic import BaseModel, ConfigDict
 
-from _base.core import db
-from _base.core.auth import current_user
+from _base.auth import current_user
+from _base.db import session as db
 from skills.queries import registry as reg
 from skills.queries import sandbox as sbx
 

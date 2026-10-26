@@ -10,8 +10,8 @@ import psycopg
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from pydantic import BaseModel, Field
 
-from _base.core import db
-from _base.core.auth import current_user
+from _base.auth import current_user
+from _base.db import session as db
 from etl.queries import hierarchy, sources, tabs
 
 router = APIRouter(prefix="/etl/console", tags=["etl"])

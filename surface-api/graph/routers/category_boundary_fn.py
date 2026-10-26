@@ -15,9 +15,9 @@ import httpx
 import psycopg
 from fastapi import Depends, HTTPException
 
-from _base.core.auth import current_user
-from _base.core.db import role_connection
-from _base.core.server_fn import FnCall, bad_input, fn_router, forbidden
+from _base.auth import current_user
+from _base.db.session import role_connection
+from _base.server_fn import FnCall, bad_input, fn_router, forbidden
 from graph.sqlutil import maybe_one
 
 router = fn_router("graph")

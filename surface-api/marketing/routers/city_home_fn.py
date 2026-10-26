@@ -13,8 +13,8 @@ from zoneinfo import ZoneInfo
 
 from fastapi import Request
 
-from _base.core.db import role_connection
-from _base.core.server_fn import FnCall, fn_router
+from _base.db.session import role_connection
+from _base.server_fn import FnCall, fn_router
 from marketing import geo
 from marketing.pg import as_int_if_whole, js_number, num, safe
 from marketing.search_docs import (

@@ -22,8 +22,8 @@ from typing import Any
 import psycopg
 from sqlalchemy import select
 
-from _base.core.sql import fetch_many, typed
-from _base.schema import tables as T
+from _base.db import tables as T
+from _base.db.sql import fetch_many, typed
 from sales.queries.cpq import cols, execute, single
 from sales.queries.teams import one
 

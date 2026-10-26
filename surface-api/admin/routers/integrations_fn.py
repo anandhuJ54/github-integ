@@ -12,15 +12,15 @@ from fastapi import Depends, HTTPException
 from psycopg.types.json import Jsonb
 from pydantic import AfterValidator, BaseModel, ConfigDict, StringConstraints
 
-from _base.core.auth import current_user
-from _base.core.db import role_connection
-from _base.core.server_fn import FnCall, bad_input, fn_router
+from _base.auth import current_user
+from _base.db.session import role_connection
 from _base.integrations.catalog import INTEGRATIONS, SECRET_REF_PATTERN
 from _base.integrations.status import (
     get_integration_status,
     is_missing_table,
     list_integration_statuses,
 )
+from _base.server_fn import FnCall, bad_input, fn_router
 from admin.routers.google_workspace_fn import audit, require_super_admin
 from admin.sqlutil import execute, parse_input
 

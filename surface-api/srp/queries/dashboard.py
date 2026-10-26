@@ -15,8 +15,8 @@ from typing import Any
 import psycopg
 from sqlalchemy import select
 
-from _base.core.sql import fetch_many
-from _base.schema import tables as T
+from _base.db import tables as T
+from _base.db.sql import fetch_many
 from srp.queries.common import cols, single
 
 pro_t, scores_t, subs_t, plg_t = T.t_professionals, T.t_search_rank_scores, T.t_subscriptions, \

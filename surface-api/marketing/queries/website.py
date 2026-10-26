@@ -28,8 +28,8 @@ from psycopg.types.json import Jsonb
 from sqlalchemy import select
 from sqlalchemy.sql import ClauseElement
 
-from _base.core.sql import compile_sql, fetch_all, fetch_many, jsonish
-from _base.schema import tables as T
+from _base.db import tables as T
+from _base.db.sql import compile_sql, fetch_all, fetch_many, jsonish
 
 _log = logging.getLogger(__name__)
 

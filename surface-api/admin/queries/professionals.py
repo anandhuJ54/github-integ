@@ -12,12 +12,12 @@ from typing import Any
 import psycopg
 from sqlalchemy import and_, func, or_, select
 
-from _base.core.sql import fetch_all, fetch_one
-from _base.schema.tables import t_gbp_categories as cat_t
-from _base.schema.tables import t_graph_nodes as nodes_t
-from _base.schema.tables import t_organizations as org_t
-from _base.schema.tables import t_professionals as pro_t
-from _base.schema.tables import t_search_rank_scores as score_t
+from _base.db.sql import fetch_all, fetch_one
+from _base.db.tables import t_gbp_categories as cat_t
+from _base.db.tables import t_graph_nodes as nodes_t
+from _base.db.tables import t_organizations as org_t
+from _base.db.tables import t_professionals as pro_t
+from _base.db.tables import t_search_rank_scores as score_t
 
 PAGE_SIZE = 50
 NO_MATCH = "00000000-0000-0000-0000-000000000000"

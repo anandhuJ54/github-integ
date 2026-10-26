@@ -10,10 +10,10 @@ from fastapi import FastAPI
 from fastapi.testclient import TestClient
 from psycopg.types.json import Jsonb
 
-from _base.core import db as core_db
-from _base.core.auth import current_user
-from _base.core.server_fn import optional_user
-from _base.core.sql import capped, compile_sql
+from _base.auth import current_user
+from _base.db import session as core_db
+from _base.db.sql import capped, compile_sql
+from _base.server_fn import optional_user
 from admin.queries import me as q
 from admin.routers.me import router
 

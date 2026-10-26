@@ -11,8 +11,8 @@ from __future__ import annotations
 import psycopg
 from fastapi import APIRouter, Depends, HTTPException, status
 
-from _base.core import db
-from _base.core.auth import current_user
+from _base.auth import current_user
+from _base.db import session as db
 from xmp.queries import directory as q
 
 router = APIRouter(prefix="/xmp/directory", tags=["xmp"])

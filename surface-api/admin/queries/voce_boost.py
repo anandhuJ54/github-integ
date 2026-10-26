@@ -12,8 +12,8 @@ import psycopg
 from psycopg.types.json import Jsonb
 from sqlalchemy import update
 
-from _base.core.sql import compile_sql, typed
-from _base.schema.tables import t_exp_voce_article as voce_t
+from _base.db.sql import compile_sql, typed
+from _base.db.tables import t_exp_voce_article as voce_t
 
 
 def update_boost_stmt(article_id: str, patch: dict[str, Any]) -> Any:

@@ -11,8 +11,8 @@ from __future__ import annotations
 import psycopg
 from fastapi import APIRouter, Depends, HTTPException, status
 
-from _base.core import db
-from _base.core.auth import current_user
+from _base.auth import current_user
+from _base.db import session as db
 from srp.queries import common
 from srp.queries import directory as q
 

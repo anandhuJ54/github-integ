@@ -1,6 +1,6 @@
 """SQLAlchemy Core table definitions, generated from the live database. Do not edit.
 
-Regenerate with `uv run --env-file .env python -m _base.schema.generate` (see generate.py).
+Regenerate with `uv run --env-file .env python -m _base.db.generate` (see generate.py).
 """
 # ruff: noqa
 from sqlalchemy import BigInteger, Boolean, CheckConstraint, Column, Computed, Date, DateTime, Double, ForeignKeyConstraint, Identity, Index, Integer, MetaData, Numeric, PrimaryKeyConstraint, SmallInteger, String, Table, Text, UniqueConstraint, Uuid, text

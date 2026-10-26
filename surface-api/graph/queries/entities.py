@@ -5,7 +5,7 @@ The page logic stays in TypeScript. Reads run on the caller's role connection (R
 RPCs go through one allow-list (GRAPH_RPCS) with each parameter cast to its database type, and
 the functions check roles themselves, as they did for the browser.
 
-Caps: every read keeps the 1000-row PostgREST cap (`_base.core.sql.MAX_ROWS`), except the
+Caps: every read keeps the 1000-row PostgREST cap (`_base.db.sql.MAX_ROWS`), except the
 expertise graph's node, edge and external-node reads, which return everything (ruling
 2026-10-24: the largest professional has 2,644 active nodes).
 
@@ -22,8 +22,8 @@ from typing import Any
 import psycopg
 from sqlalchemy import func, or_, select, union
 
-from _base.core.sql import fetch_all, fetch_many, jsonish
-from _base.schema import tables as T
+from _base.db import tables as T
+from _base.db.sql import fetch_all, fetch_many, jsonish
 
 reviews_t = T.t_reviews
 pro_t, org_t, nodes_t, edges_t = T.t_professionals, T.t_organizations, T.t_graph_nodes, \

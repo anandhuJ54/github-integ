@@ -9,8 +9,8 @@ from typing import Any
 import psycopg
 from sqlalchemy import delete, insert, select
 
-from _base.core.sql import compile_sql, fetch_all, jsonish
-from _base.schema.tables import t_exp_control_grants as grants_t
+from _base.db.sql import compile_sql, fetch_all, jsonish
+from _base.db.tables import t_exp_control_grants as grants_t
 
 
 def control_users(conn: psycopg.Connection) -> list[dict[str, Any]]:

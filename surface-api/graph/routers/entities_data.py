@@ -19,10 +19,10 @@ import psycopg
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel, Field
 
-from _base.core import db
-from _base.core.auth import current_user
-from _base.core.server_fn import optional_user
-from _base.core.sql import fetch_all
+from _base.auth import current_user
+from _base.db import session as db
+from _base.db.sql import fetch_all
+from _base.server_fn import optional_user
 from graph.queries import entities as q
 
 router = APIRouter(prefix="/graph", tags=["graph"])

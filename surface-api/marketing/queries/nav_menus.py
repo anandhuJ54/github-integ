@@ -21,8 +21,8 @@ import psycopg
 from psycopg.types.json import Jsonb
 from sqlalchemy import select
 
-from _base.core.sql import fetch_all
-from _base.schema import tables as T
+from _base.db import tables as T
+from _base.db.sql import fetch_all
 from marketing.queries.website import MultipleRows, execute, now
 
 menus = T.t_exp_web_nav_menus

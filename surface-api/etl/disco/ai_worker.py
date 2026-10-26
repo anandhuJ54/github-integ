@@ -25,7 +25,7 @@ from typing import Any
 
 from psycopg.types.json import Jsonb
 
-from _base.core.db import role_connection
+from _base.db.session import role_connection
 from _base.disco import ai_cost, boundary, extra_keys
 from etl.disco import ai_worker_classify as cl
 from etl.disco import ai_worker_discover as dc

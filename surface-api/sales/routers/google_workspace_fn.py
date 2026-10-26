@@ -25,10 +25,10 @@ from pydantic import (
     ValidationError,
 )
 
-from _base.core.auth import current_user
-from _base.core.db import role_connection
-from _base.core.server_fn import FnCall, bad_input, fn_router
+from _base.auth import current_user
+from _base.db.session import role_connection
 from _base.integrations import google_workspace as gw
+from _base.server_fn import FnCall, bad_input, fn_router
 
 router = fn_router("sales")
 

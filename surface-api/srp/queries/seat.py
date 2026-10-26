@@ -16,8 +16,8 @@ from typing import Any, Literal
 import psycopg
 from sqlalchemy import select
 
-from _base.core.sql import fetch_all, fetch_many
-from _base.schema import tables as T
+from _base.db import tables as T
+from _base.db.sql import fetch_all, fetch_many
 from srp.queries.common import cols, single, single_or_raise
 
 org_t, pro_t, nodes_t, reviews_t = T.t_organizations, T.t_professionals, T.t_graph_nodes, \

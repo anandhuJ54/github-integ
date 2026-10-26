@@ -11,8 +11,8 @@ from typing import Any
 
 from fastapi import APIRouter, Depends, Query
 
-from _base.core import db
-from _base.core.server_fn import optional_user
+from _base.db import session as db
+from _base.server_fn import optional_user
 from search.queries import public_search as q
 
 router = APIRouter(prefix="/search/public", tags=["search"])
