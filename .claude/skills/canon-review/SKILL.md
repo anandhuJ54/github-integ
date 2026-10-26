@@ -11,7 +11,7 @@ Check, and report each item as PASS / CONFLICT / N/A with file:line evidence:
 2. **Extend, never duplicate** — no new table/function/route/role system/outbox/entitlement table/price constant without the `extend-never-duplicate` result.
 3. **Identifiers** — `gcid:` stored exactly; record ids never used as entity ids; no new link table.
 4. **Governed writes** — no direct writes to `graph_nodes`, `search_documents` or category tables; category changes only via `exp_category_proposals`.
-5. **Security** — RLS enabled + forced on new tables; no `(true)` policies for non-service roles; no grants to `anon`/`PUBLIC`; SECURITY DEFINER has pinned `search_path`; no secrets.
+5. **Security** — new tables: no RLS, access by grants only (anon / PUBLIC get nothing); no `(true)` policies for non-service roles; no grants to `anon`/`PUBLIC`; SECURITY DEFINER has pinned `search_path`; no secrets.
 6. **Model vs code** — model handles language only; deterministic code decides auth, claims, pricing, compliance, send eligibility, score rules, persistence; `not_implemented` instead of faked output.
 7. **Gated actions** — no crons, indexing, enrichment engine, dirty-queue draining.
 8. **Compliance** — server-side category compliance before publish/send.
