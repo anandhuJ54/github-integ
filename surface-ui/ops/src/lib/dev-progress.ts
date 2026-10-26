@@ -1,4 +1,5 @@
 import { supabase } from "@v3/ui/integrations/supabase/client";
+import { api } from "@v3/ui/lib/server-fn";
 
 /* ───────────── Types (mirror exp_dev_* tables) ───────────── */
 
@@ -209,11 +210,7 @@ export function daysToLaunch(launch: Launch | null) {
 }
 
 /* ───────────── Loaders ───────────── */
-
-function unwrap<T>(res: { data: T[] | null; error: { message: string } | null }): T[] {
-  if (res.error) throw new Error(res.error.message);
-  return res.data ?? [];
-}
+/* Reads go through GET /ops/dev/* (surface-api/ops/queries/dev.py), as the signed-in user. */
 
 export type OverviewData = {
   launch: Launch | null;
@@ -223,21 +220,8 @@ export type OverviewData = {
   demos: DemoDay[];
 };
 
-export async function loadOverview(): Promise<OverviewData> {
-  const [launchRes, teamsRes, projectsRes, membersRes, demosRes] = await Promise.all([
-    supabase.from("exp_dev_launch").select("*").order("launch_date").limit(1),
-    supabase.from("exp_dev_teams").select("*").order("sort_order", { ascending: true }),
-    supabase.from("exp_dev_projects").select("*").order("priority").order("deadline"),
-    supabase.from("exp_dev_members").select("*").order("name"),
-    supabase.from("exp_dev_demo_days").select("*").order("demo_date"),
-  ]);
-  return {
-    launch: (unwrap<Launch>(launchRes as never)[0] ?? null) as Launch | null,
-    teams: unwrap<Team>(teamsRes as never),
-    projects: unwrap<Project>(projectsRes as never),
-    members: unwrap<Member>(membersRes as never),
-    demos: unwrap<DemoDay>(demosRes as never),
-  };
+export function loadOverview(): Promise<OverviewData> {
+  return api.get<OverviewData>("/ops/dev/overview");
 }
 
 export type TeamData = {
@@ -253,94 +237,22 @@ export type TeamData = {
   myVotes: string[];
 };
 
-export async function loadTeam(teamId: string): Promise<TeamData> {
-  const [
-    launchRes,
-    teamRes,
-    membersRes,
-    projectsRes,
-    sprintsRes,
-    demosRes,
-    docsRes,
-    ideasRes,
-    userRes,
-  ] = await Promise.all([
-    supabase.from("exp_dev_launch").select("*").order("launch_date").limit(1),
-    supabase.from("exp_dev_teams").select("*").eq("id", teamId).maybeSingle(),
-    supabase.from("exp_dev_members").select("*").eq("team_id", teamId).order("name"),
-    supabase.from("exp_dev_projects").select("*").eq("team_id", teamId).order("priority"),
-    supabase.from("exp_dev_sprints").select("*").eq("team_id", teamId).order("start_date"),
-    supabase.from("exp_dev_demo_days").select("*").eq("team_id", teamId).order("demo_date"),
-    supabase.from("exp_dev_docs").select("*").eq("team_id", teamId).order("updated_at", { ascending: false }),
-    supabase.from("exp_dev_ideas").select("*").eq("team_id", teamId).order("votes", { ascending: false }),
-    supabase.auth.getUser(),
-  ]);
-
-  const sprints = unwrap<Sprint>(sprintsRes as never);
-  let items: SprintItem[] = [];
-  if (sprints.length) {
-    items = unwrap<SprintItem>(
-      (await supabase
-        .from("exp_dev_sprint_items")
-        .select("*")
-        .in("sprint_id", sprints.map((s) => s.id))) as never,
-    );
-  }
-
-  const ideas = unwrap<Idea>(ideasRes as never);
-  const voter = userRes.data?.user?.email ?? userRes.data?.user?.id ?? "";
-  let myVotes: string[] = [];
-  if (voter && ideas.length) {
-    const votes = unwrap<{ idea_id: string }>(
-      (await supabase
-        .from("exp_dev_idea_votes")
-        .select("idea_id")
-        .eq("voter", voter)
-        .in("idea_id", ideas.map((i) => i.id))) as never,
-    );
-    myVotes = votes.map((v) => v.idea_id);
-  }
-
-  return {
-    launch: (unwrap<Launch>(launchRes as never)[0] ?? null) as Launch | null,
-    team: (teamRes.data as Team | null) ?? null,
-    members: unwrap<Member>(membersRes as never),
-    projects: unwrap<Project>(projectsRes as never),
-    sprints,
-    items,
-    demos: unwrap<DemoDay>(demosRes as never),
-    docs: unwrap<DevDoc>(docsRes as never),
-    ideas,
-    myVotes,
-  };
+/** The team's rows; `myVotes` are the signed-in user's votes (the API knows who that is). */
+export function loadTeam(teamId: string): Promise<TeamData> {
+  return api.get<TeamData>(`/ops/dev/teams/${encodeURIComponent(teamId)}`);
 }
 
 /** Live gate items (is_gate = true) that are not done, or blocked items flagged as gates. */
 export async function loadOpenGates(teamId?: string): Promise<OpenGate[]> {
-  const itemsRes = await supabase
-    .from("exp_dev_sprint_items")
-    .select("id,title,status,canon_ref,deep_instructions,sprint_id,is_gate")
-    .eq("is_gate", true);
-  const rows = unwrap<
-    SprintItem & { sprint_id: string | null }
-  >(itemsRes as never).filter((r) => (r.status ?? "todo") !== "done");
+  // gate items, plus the sprints and teams they belong to, in one request
+  const raw = await api.get<{
+    items: (SprintItem & { sprint_id: string | null })[];
+    sprints: { id: string; name: string; team_id: string | null }[];
+    teams: { id: string; name: string }[];
+  }>("/ops/dev/open-gates");
+  const rows = raw.items.filter((r) => (r.status ?? "todo") !== "done");
   if (!rows.length) return [];
-
-  const sprintIds = Array.from(new Set(rows.map((r) => r.sprint_id).filter(Boolean))) as string[];
-  const sprints = sprintIds.length
-    ? unwrap<{ id: string; name: string; team_id: string | null }>(
-        (await supabase
-          .from("exp_dev_sprints")
-          .select("id,name,team_id")
-          .in("id", sprintIds)) as never,
-      )
-    : [];
-  const teamIds = Array.from(new Set(sprints.map((s) => s.team_id).filter(Boolean))) as string[];
-  const teams = teamIds.length
-    ? unwrap<{ id: string; name: string }>(
-        (await supabase.from("exp_dev_teams").select("id,name").in("id", teamIds)) as never,
-      )
-    : [];
+  const { sprints, teams } = raw;
 
   const gates = rows.map((r) => {
     const sprint = sprints.find((s) => s.id === r.sprint_id) ?? null;
@@ -365,106 +277,72 @@ export async function currentVoter() {
 }
 
 /* ───────────── Mutations ───────────── */
+/*
+ * Writes go through /ops/dev/{entity} (an allow-listed create/update/delete per tracker table),
+ * as the signed-in user. The API sets updated_by / submitted_by / voter from the login.
+ * Document files stay in Supabase Storage for now (storage gets its own design).
+ */
 
-async function run(p: PromiseLike<{ error: { message: string } | null }>) {
-  const { error } = await p;
-  if (error) throw new Error(error.message);
-}
+const dev = (entity: string, id?: string) =>
+  `/ops/dev/${entity}${id ? `/${encodeURIComponent(id)}` : ""}`;
+const add = (entity: string, row: Record<string, unknown>) =>
+  api.post<{ id: string }>(dev(entity), row).then(() => undefined);
+const patch = (entity: string, id: string, row: Record<string, unknown>) =>
+  api.patch(dev(entity, id), row).then(() => undefined);
+const remove = (entity: string, id: string) => api.delete(dev(entity, id)).then(() => undefined);
 
 export const devMutations = {
-  setLeader: (teamId: string, leader: string | null) =>
-    run(supabase.from("exp_dev_teams").update({ leader }).eq("id", teamId)),
+  setLeader: (teamId: string, leader: string | null) => patch("teams", teamId, { leader }),
 
   addMember: (
     teamId: string,
     row: { name: string; role: string; email?: string | null; is_lead?: boolean },
   ) =>
-    run(
-      supabase.from("exp_dev_members").insert({
-        team_id: teamId,
-        name: row.name,
-        role: row.role,
-        email: row.email?.trim() || null,
-        is_lead: !!row.is_lead,
-      } as never),
-    ),
+    add("members", {
+      team_id: teamId,
+      name: row.name,
+      role: row.role,
+      email: row.email?.trim() || null,
+      is_lead: !!row.is_lead,
+    }),
 
-  updateMember: (id: string, patch: Partial<Member>) =>
-    run(supabase.from("exp_dev_members").update(patch).eq("id", id)),
-  removeMember: (id: string) => run(supabase.from("exp_dev_members").delete().eq("id", id)),
+  updateMember: (id: string, p: Partial<Member>) => patch("members", id, p),
+  removeMember: (id: string) => remove("members", id),
 
-  addProject: (teamId: string, row: Partial<Project>) =>
-    run(supabase.from("exp_dev_projects").insert({ team_id: teamId, ...row } as never)),
-  updateProject: (id: string, patch: Partial<Project>) =>
-    run(
-      supabase
-        .from("exp_dev_projects")
-        .update({ ...patch, updated_at: new Date().toISOString() } as never)
-        .eq("id", id),
-    ),
-  removeProject: (id: string) => run(supabase.from("exp_dev_projects").delete().eq("id", id)),
+  addProject: (teamId: string, row: Partial<Project>) => add("projects", { team_id: teamId, ...row }),
+  updateProject: (id: string, p: Partial<Project>) =>
+    patch("projects", id, { ...p, updated_at: new Date().toISOString() }),
+  removeProject: (id: string) => remove("projects", id),
 
-  addSprint: (teamId: string, row: Partial<Sprint>) =>
-    run(supabase.from("exp_dev_sprints").insert({ team_id: teamId, ...row } as never)),
-  removeSprint: (id: string) => run(supabase.from("exp_dev_sprints").delete().eq("id", id)),
+  addSprint: (teamId: string, row: Partial<Sprint>) => add("sprints", { team_id: teamId, ...row }),
+  removeSprint: (id: string) => remove("sprints", id),
 
   addItem: (sprintId: string, row: Partial<SprintItem>) =>
-    run(supabase.from("exp_dev_sprint_items").insert({ sprint_id: sprintId, ...row } as never)),
-  updateItem: (id: string, patch: Partial<SprintItem>) =>
-    run(supabase.from("exp_dev_sprint_items").update(patch as never).eq("id", id)),
-  removeItem: (id: string) => run(supabase.from("exp_dev_sprint_items").delete().eq("id", id)),
+    add("sprint-items", { sprint_id: sprintId, ...row }),
+  updateItem: (id: string, p: Partial<SprintItem>) => patch("sprint-items", id, p),
+  removeItem: (id: string) => remove("sprint-items", id),
 
-  addDemo: (teamId: string, row: Partial<DemoDay>) =>
-    run(supabase.from("exp_dev_demo_days").insert({ team_id: teamId, ...row } as never)),
-  removeDemo: (id: string) => run(supabase.from("exp_dev_demo_days").delete().eq("id", id)),
+  addDemo: (teamId: string, row: Partial<DemoDay>) => add("demo-days", { team_id: teamId, ...row }),
+  removeDemo: (id: string) => remove("demo-days", id),
 
-  saveWiki: async (
-    teamId: string,
-    row: { id?: string; title: string; body: string },
-  ) => {
-    const updated_by = await currentVoter();
-    if (row.id) {
-      await run(
-        supabase
-          .from("exp_dev_docs")
-          .update({
-            title: row.title,
-            body: row.body,
-            updated_by,
-            updated_at: new Date().toISOString(),
-          })
-          .eq("id", row.id),
-      );
-      return;
-    }
-    await run(
-      supabase.from("exp_dev_docs").insert({
-        team_id: teamId,
-        title: row.title,
-        body: row.body,
-        doc_type: "wiki",
-        updated_by,
-        updated_at: new Date().toISOString(),
-      } as never),
-    );
+  saveWiki: async (teamId: string, row: { id?: string; title: string; body: string }) => {
+    const stamp = { title: row.title, body: row.body, updated_at: new Date().toISOString() };
+    if (row.id) return patch("docs", row.id, stamp);
+    return add("docs", { team_id: teamId, doc_type: "wiki", ...stamp });
   },
-  removeDoc: (id: string) => run(supabase.from("exp_dev_docs").delete().eq("id", id)),
+  removeDoc: (id: string) => remove("docs", id),
 
   uploadDoc: async (teamId: string, file: File) => {
-    const updated_by = await currentVoter();
     const path = `${teamId}/${Date.now()}-${file.name.replace(/[^\w.\-]+/g, "_")}`;
     const up = await supabase.storage.from(DOCS_BUCKET).upload(path, file);
     if (up.error) throw new Error(up.error.message);
-    await run(
-      supabase.from("exp_dev_docs").insert({
-        team_id: teamId,
-        title: file.name,
-        doc_type: "doc",
-        storage_path: path,
-        updated_by,
-        updated_at: new Date().toISOString(),
-      } as never),
-    );
+    await add("docs", {
+      team_id: teamId,
+      title: file.name,
+      doc_type: "doc",
+      storage_path: path,
+      updated_at: new Date().toISOString(),
+    });
   },
 
   docUrl: async (path: string) => {
@@ -473,36 +351,14 @@ export const devMutations = {
     return data.signedUrl;
   },
 
-  addIdea: async (teamId: string, title: string, description: string) => {
-    const submitted_by = await currentVoter();
-    await run(
-      supabase.from("exp_dev_ideas").insert({
-        team_id: teamId,
-        title,
-        description,
-        submitted_by,
-        votes: 0,
-        status: "parked",
-      } as never),
-    );
-  },
-  removeIdea: (id: string) => run(supabase.from("exp_dev_ideas").delete().eq("id", id)),
+  addIdea: (teamId: string, title: string, description: string) =>
+    add("ideas", { team_id: teamId, title, description, votes: 0, status: "parked" }),
+  removeIdea: (id: string) => remove("ideas", id),
 
   /** One vote per voter per idea; votes column is recomputed from the vote rows. */
-  voteIdea: async (ideaId: string) => {
-    const voter = await currentVoter();
-    const ins = await supabase.from("exp_dev_idea_votes").insert({ idea_id: ideaId, voter });
-    if (ins.error && !/duplicate|unique/i.test(ins.error.message)) {
-      throw new Error(ins.error.message);
-    }
-    const { count, error } = await supabase
-      .from("exp_dev_idea_votes")
-      .select("id", { count: "exact", head: true })
-      .eq("idea_id", ideaId);
-    if (error) throw new Error(error.message);
-    await run(supabase.from("exp_dev_ideas").update({ votes: count ?? 0 }).eq("id", ideaId));
-    return ins.error ? "already" : "voted";
-  },
+  voteIdea: async (ideaId: string) =>
+    (await api.post<{ result: "voted" | "already" }>(`/ops/dev/ideas/${encodeURIComponent(ideaId)}/vote`))
+      .result,
 };
 
 /* ───────────── AI partner: deterministic build-prompt composer ───────────── */

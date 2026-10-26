@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { CheckCircle2, MinusCircle, Circle } from "lucide-react";
-import { supabase } from "@v3/ui/integrations/supabase/client";
+import { api } from "@v3/ui/lib/server-fn";
 
 /** Operations tab — the category's operational layer at a glance.
  *  Groups the universal + class-scoped operational families and shows which
@@ -65,8 +65,10 @@ export function OperationsTab({ gcid }: { gcid: string }) {
   const [nodes, setNodes] = useState<{ node_name: string; ring: string }[] | null>(null);
   useEffect(() => {
     let live = true;
-    supabase.from("exp_vertical_node_registry").select("node_name,ring").eq("gcid", gcid).limit(1000)
-      .then(({ data }) => { if (live) setNodes(data ?? []); });
+    // the read's error was ignored (no nodes)
+    api.get<{ node_name: string; ring: string }[]>("/graph/categories/operations/nodes", { params: { gcid } })
+      .catch(() => null)
+      .then((data) => { if (live) setNodes(data ?? []); });
     return () => { live = false; };
   }, [gcid]);
 

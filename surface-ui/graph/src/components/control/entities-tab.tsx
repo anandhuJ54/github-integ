@@ -1,7 +1,7 @@
 import { Fragment, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { ChevronDown, ChevronRight, Network } from "lucide-react";
-import { supabase } from "@v3/ui/integrations/supabase/client";
+import { api } from "@v3/ui/lib/server-fn";
 import { Badge } from "@v3/ui/components/ui/badge";
 import { Input } from "@v3/ui/components/ui/input";
 import { Label } from "@v3/ui/components/ui/label";
@@ -63,18 +63,8 @@ function fmtDate(v: string | null) {
 function RelationshipRows({ entityId, nameFor }: { entityId: string; nameFor: (id: string | null) => string }) {
   const { data, isLoading } = useQuery({
     queryKey: ["exp_rel", entityId],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("exp_rel")
-        .select(
-          "rel_id, relationship_type, object_entity_id, object_gcid, status, is_primary, valid_from, valid_to, confidence",
-        )
-        .eq("subject_entity_id", entityId)
-        .order("created_at", { ascending: false })
-        .limit(200);
-      if (error) throw error;
-      return (data ?? []) as RelRow[];
-    },
+    queryFn: () =>
+      api.get<RelRow[]>(`/graph/control/entities/${encodeURIComponent(entityId)}/relationships`),
   });
 
   if (isLoading) return <div className="px-6 py-3 text-xs text-slate-500">Loading relationships…</div>;
@@ -125,15 +115,7 @@ export function EntitiesTab() {
 
   const { data, isLoading } = useQuery({
     queryKey: ["exp_entity", "all"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("exp_entity")
-        .select("entity_id, display_name, entity_type, status, claim_state, confidence, created_at, is_demo")
-        .order("created_at", { ascending: false })
-        .limit(1000);
-      if (error) throw error;
-      return (data ?? []) as EntityRow[];
-    },
+    queryFn: () => api.get<EntityRow[]>("/graph/control/entities"),
   });
 
   const rows = data ?? [];

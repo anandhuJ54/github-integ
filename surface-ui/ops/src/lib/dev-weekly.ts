@@ -1,4 +1,4 @@
-import { supabase } from "@v3/ui/integrations/supabase/client";
+import { api } from "@v3/ui/lib/server-fn";
 import {
   expectedPct,
   trackOf,
@@ -82,24 +82,21 @@ export type TeamWeekly = {
 };
 
 export async function loadWeekly(weekStart = weekStartIso()): Promise<WeeklyData> {
-  const [launchRes, cfgRes, teamsRes, membersRes, projectsRes, updRes, mailRes] = await Promise.all([
-    supabase.from("exp_dev_launch").select("*").order("launch_date").limit(1),
-    supabase.from("exp_dev_config").select("*").limit(1),
-    supabase.from("exp_dev_teams").select("*").order("sort_order"),
-    supabase.from("exp_dev_members").select("*").order("name"),
-    supabase.from("exp_dev_projects").select("*"),
-    supabase.from("exp_dev_weekly_updates").select("*").eq("week_start", weekStart),
+  const [rows, mailRes] = await Promise.all([
+    api.get<{
+      launch: Launch | null;
+      config: DevConfig | null;
+      teams: Team[];
+      members: Member[];
+      projects: Project[];
+      updates: WeeklyUpdate[];
+    }>("/ops/dev/weekly", { params: { week_start: weekStart } }),
     fetch("/api/public/dev-weekly-status").then((r) => r.json()).catch(() => ({ emailConfigured: false })),
   ]);
 
   return {
     weekStart,
-    launch: (launchRes.data?.[0] as Launch | undefined) ?? null,
-    config: (cfgRes.data?.[0] as DevConfig | undefined) ?? null,
-    teams: (teamsRes.data ?? []) as Team[],
-    members: (membersRes.data ?? []) as Member[],
-    projects: (projectsRes.data ?? []) as Project[],
-    updates: (updRes.data ?? []) as WeeklyUpdate[],
+    ...rows,
     emailConfigured: !!(mailRes as { emailConfigured?: boolean })?.emailConfigured,
   };
 }
@@ -138,11 +135,6 @@ export function weeklyTotals(groups: TeamWeekly[]) {
 
 /* ───────────── Mutations ───────────── */
 
-async function run(p: PromiseLike<{ error: { message: string } | null }>) {
-  const { error } = await p;
-  if (error) throw new Error(error.message);
-}
-
 export const weeklyMutations = {
   submit: async (args: {
     teamId: string;
@@ -153,34 +145,27 @@ export const weeklyMutations = {
     blockers: string;
     next_week: string;
   }) => {
-    await run(
-      supabase.from("exp_dev_weekly_updates").upsert(
-        {
-          team_id: args.teamId,
-          member_id: args.memberId,
-          week_start: args.weekStart,
-          status: "submitted",
-          self_progress_pct: args.self_progress_pct,
-          highlights: args.highlights.trim() || null,
-          blockers: args.blockers.trim() || null,
-          next_week: args.next_week.trim() || null,
-          submitted_at: new Date().toISOString(),
-        } as never,
-        { onConflict: "member_id,week_start" },
-      ),
-    );
+    // upsert on (member_id, week_start)
+    await api.put("/ops/dev/weekly-updates", {
+      team_id: args.teamId,
+      member_id: args.memberId,
+      week_start: args.weekStart,
+      status: "submitted",
+      self_progress_pct: args.self_progress_pct,
+      highlights: args.highlights.trim() || null,
+      blockers: args.blockers.trim() || null,
+      next_week: args.next_week.trim() || null,
+      submitted_at: new Date().toISOString(),
+    });
   },
 
   reopen: (id: string) =>
-    run(
-      supabase
-        .from("exp_dev_weekly_updates")
-        .update({ status: "pending", submitted_at: null })
-        .eq("id", id),
-    ),
+    api
+      .patch(`/ops/dev/weekly-updates/${encodeURIComponent(id)}`, { status: "pending", submitted_at: null })
+      .then(() => undefined),
 
   saveConfig: (id: string, patch: Partial<DevConfig>) =>
-    run(supabase.from("exp_dev_config").update(patch as never).eq("id", id)),
+    api.patch(`/ops/dev/config/${encodeURIComponent(id)}`, patch).then(() => undefined),
 };
 
 /* ───────────── Digest composer (same shape the email sends) ───────────── */

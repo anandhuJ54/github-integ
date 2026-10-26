@@ -56,7 +56,7 @@ import {
   unassignTerritory,
   type TerritoryRep,
   type TerritorySlot,
-} from "@v3/ui/lib/territories";
+} from "@v3/sales/lib/territories";
 
 export const Route = createFileRoute("/_authenticated/sales/territories/$groupKey")({
   head: () => ({

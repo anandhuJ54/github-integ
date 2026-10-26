@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { supabase } from "@v3/ui/integrations/supabase/client";
+import { api } from "@v3/ui/lib/server-fn";
 import { BrandWordmark } from "@v3/ui/components/brand/logo";
 import { ContractDocument, type DocContract } from "@v3/sales/components/contracts/contract-document";
 
@@ -21,6 +21,9 @@ export const Route = createFileRoute("/sign/$token")({
 });
 
 type Fetched = { signer: Record<string, any>; contract: DocContract & Record<string, any> };
+// Public, no sign-in: surface-api/sales/routers/sign_public.py runs both calls as anon (the
+// token is the credential).
+const SIGN = "/sales/sign";
 const usd = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 });
 const dt = (s: unknown) => (s ? new Date(String(s)).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "—");
 
@@ -36,8 +39,13 @@ function SignPage() {
 
   useEffect(() => {
     void (async () => {
-      const { data: d, error } = await (supabase as any).rpc("m4_signer_fetch", { p_token: token });
-      if (error || !d || !d.contract) return setState("invalid");
+      let d: any = null;
+      try {
+        d = await api.post<any>(`${SIGN}/fetch`, { token });
+      } catch {
+        return setState("invalid");
+      }
+      if (!d || !d.contract) return setState("invalid");
       setData(d as Fetched);
       if ((d.signer?.status ?? "") === "signed") {
         setResult({ document_hash: d.contract?.document_hash, signed_at: d.signer?.signed_at });
@@ -49,9 +57,15 @@ function SignPage() {
   const sign = async () => {
     setBusy(true);
     setErr(null);
-    const { data: r, error } = await (supabase as any).rpc("m4_record_signature", {
-      p_token: token, p_type: "typed", p_data: typed.trim(), p_identity: "email_link", p_ip: null, p_ua: navigator.userAgent,
-    });
+    let r: any = null;
+    let error: { message: string } | null = null;
+    try {
+      r = await api.post<any>(`${SIGN}/record`, {
+        token, type: "typed", data: typed.trim(), identity: "email_link", ip: null, ua: navigator.userAgent,
+      });
+    } catch (e) {
+      error = { message: (e as Error).message };
+    }
     setBusy(false);
     if (error || (r && r.ok === false)) return setErr(error?.message ?? r?.error ?? "Signature could not be recorded.");
     setResult(r ?? {});

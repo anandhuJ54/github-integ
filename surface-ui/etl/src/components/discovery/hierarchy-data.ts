@@ -1,8 +1,7 @@
-import { supabase } from "@v3/ui/integrations/supabase/client";
+import { api } from "@v3/ui/lib/server-fn";
 
-/* eslint-disable @typescript-eslint/no-explicit-any */
-// Untyped handle: dynamic embed aliases/filters would explode supabase-js select-string type parsing.
-export const db = supabase as any;
+/* Hierarchy reads go through /etl/console/hierarchy/* (surface-api/etl/queries/hierarchy.py),
+   which rebuilds the PostgREST embed filters this file used to send. */
 
 export const PAGE_SIZE = 50;
 export const REL_TYPES = [
@@ -40,68 +39,11 @@ export type EntityRow = {
 export const ENTITY_COLS =
   "entity_id, entity_type, display_name, confidence, claim_state, source, status, created_at";
 
-const SUBJ = "exp_rel!exp_rel_subject_entity_id_fkey";
-
-/** Builds the select string (embeds needed for filters) and applies every filter server-side. */
-export function entityQuery(
-  f: HierFilters,
-  opts: { cols?: string; head?: boolean; typeOverride?: string | null } = {},
-) {
-  const embeds: string[] = [];
-  if (f.gcid) embeds.push(`cls:${SUBJ}!inner(object_gcid)`);
-  if (f.brand) embeds.push(`br:${SUBJ}(object_entity_id)`);
-  if (f.office) embeds.push(`of:${SUBJ}!inner(object_entity_id)`);
-  const sel = [opts.cols ?? ENTITY_COLS, ...embeds].join(", ");
-  let q = db
-    .from("exp_entity")
-    .select(sel, { count: "exact", head: !!opts.head })
-    .neq("status", "merged")
-    .eq("is_demo", false);
-  if (f.gcid)
-    q = q
-      .eq("cls.relationship_type", "CLASSIFIED_AS")
-      .eq("cls.status", "current")
-      .eq("cls.object_gcid", f.gcid);
-  if (f.brand)
-    q = q
-      .in("br.relationship_type", ["OPERATES_UNDER", "REPRESENTS"])
-      .eq("br.status", "current")
-      .eq("br.object_entity_id", f.brand)
-      .or(`entity_id.eq.${f.brand},br.not.is.null`);
-  if (f.office)
-    q = q
-      .eq("of.relationship_type", "WORKS_AT")
-      .eq("of.status", "current")
-      .eq("of.object_entity_id", f.office);
-  if (f.source) q = q.eq("source", f.source);
-  const type = opts.typeOverride !== undefined ? opts.typeOverride : f.type;
-  if (type) q = q.eq("entity_type", type);
-  if (f.claim) q = q.eq("claim_state", f.claim);
-  if (f.q) q = q.ilike("display_name", `%${f.q.replace(/[%_,()]/g, " ")}%`);
-  return q;
-}
-
-export async function incomingCount(objectId: string, relType: string): Promise<number> {
-  const { count, error } = await db
-    .from("exp_rel")
-    .select("subject_entity_id", { count: "exact", head: true })
-    .eq("object_entity_id", objectId)
-    .eq("relationship_type", relType)
-    .eq("status", "current");
-  if (error) throw error;
-  return count ?? 0;
-}
 
 export async function gcidLabels(gcids: string[]): Promise<Record<string, string>> {
   const uniq = [...new Set(gcids.filter(Boolean))];
   if (!uniq.length) return {};
-  const { data, error } = await db
-    .from("gbp_categories")
-    .select("gcid, display_name")
-    .in("gcid", uniq)
-    .limit(uniq.length);
-  if (error) throw error;
-  return Object.fromEntries((data ?? []).map((r: any) => [r.gcid, r.display_name]));
+  return api.post<Record<string, string>>("/etl/console/hierarchy/category-labels", { gcids: uniq });
 }
 
 export function decodeEntities(s: string | null | undefined): string {

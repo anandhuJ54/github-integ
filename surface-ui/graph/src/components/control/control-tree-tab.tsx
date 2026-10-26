@@ -12,7 +12,7 @@ import {
   Search,
 } from "lucide-react";
 import { toast } from "sonner";
-import { supabase } from "@v3/ui/integrations/supabase/client";
+import { api } from "@v3/ui/lib/server-fn";
 import { Button } from "@v3/ui/components/ui/button";
 import { Input } from "@v3/ui/components/ui/input";
 import { Label } from "@v3/ui/components/ui/label";
@@ -175,29 +175,12 @@ export function ControlTreeTab() {
 
   const { data: nodes, isLoading } = useQuery({
     queryKey: ["exp_control_nodes"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("exp_control_nodes")
-        .select("node_id, name, node_type, parent_id, is_billing_container, linked_entity_id, status, created_at")
-        .order("name");
-      if (error) throw error;
-      return (data ?? []) as ControlNode[];
-    },
+    queryFn: () => api.get<ControlNode[]>("/graph/control/nodes"),
   });
 
   const { data: brands } = useQuery({
     queryKey: ["exp_entity", "brands"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("exp_entity")
-        .select("entity_id, display_name, entity_type")
-        .eq("entity_type", "brand")
-        .not("status", "in", "(merged,deactivated)")
-        .order("display_name")
-        .limit(500);
-      if (error) throw error;
-      return (data ?? []) as BrandEntity[];
-    },
+    queryFn: () => api.get<BrandEntity[]>("/graph/control/brands"),
   });
 
   const rows = nodes ?? [];
@@ -229,14 +212,15 @@ export function ControlTreeTab() {
       billing: boolean;
       linked: string | null;
     }) => {
-      const { error } = await supabase.rpc("exp_ctrl_create_node", {
-        p_name: v.name,
-        p_node_type: v.nodeType,
-        p_parent: v.parentId ?? undefined,
-        p_billing: v.billing,
-        p_linked_entity: v.linked ?? undefined,
+      await api.post("/graph/control/rpc/exp_ctrl_create_node", {
+        args: {
+          p_name: v.name,
+          p_node_type: v.nodeType,
+          p_parent: v.parentId ?? undefined,
+          p_billing: v.billing,
+          p_linked_entity: v.linked ?? undefined,
+        },
       });
-      if (error) throw error;
     },
     onSuccess: () => {
       toast.success("Node created");
@@ -257,16 +241,17 @@ export function ControlTreeTab() {
       move?: boolean;
       status?: string;
     }) => {
-      const { error } = await supabase.rpc("exp_ctrl_update_node", {
-        p_id: v.nodeId,
-        ...(v.name !== undefined ? { p_name: v.name } : {}),
-        ...(v.nodeType !== undefined ? { p_node_type: v.nodeType } : {}),
-        ...(v.billing !== undefined ? { p_billing: v.billing } : {}),
-        ...(v.linked !== undefined ? { p_linked_entity: v.linked ?? undefined } : {}),
-        ...(v.move ? { p_move: true, p_parent: v.parentId ?? undefined } : {}),
-        ...(v.status !== undefined ? { p_status: v.status } : {}),
+      await api.post("/graph/control/rpc/exp_ctrl_update_node", {
+        args: {
+          p_id: v.nodeId,
+          ...(v.name !== undefined ? { p_name: v.name } : {}),
+          ...(v.nodeType !== undefined ? { p_node_type: v.nodeType } : {}),
+          ...(v.billing !== undefined ? { p_billing: v.billing } : {}),
+          ...(v.linked !== undefined ? { p_linked_entity: v.linked ?? undefined } : {}),
+          ...(v.move ? { p_move: true, p_parent: v.parentId ?? undefined } : {}),
+          ...(v.status !== undefined ? { p_status: v.status } : {}),
+        },
       });
-      if (error) throw error;
     },
     onSuccess: () => {
       toast.success("Node updated");

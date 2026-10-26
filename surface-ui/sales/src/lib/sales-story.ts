@@ -1,4 +1,4 @@
-import { supabase } from "@v3/ui/integrations/supabase/client";
+import { api } from "@v3/ui/lib/server-fn";
 import { SELLER_ROLES, type SellerRole } from "@v3/sales/lib/sales";
 import {
   computeStatus,
@@ -79,6 +79,9 @@ export type CategoryRow = {
   closings: number;
 };
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type Raw = Record<string, any>;
+
 /* ─────────── Helpers ─────────── */
 
 function roleLabel(role: string): string {
@@ -147,21 +150,25 @@ export async function loadRoster(now = new Date()): Promise<{
 }> {
   const period = currentMonthInfo(now);
 
-  const [repsRes, metricsRes, quotaRes, statsRes] = await Promise.all([
-    supabase.from("exp_sales_reps").select("id,name,role,group_key,is_demo").order("name"),
-    supabase.from("exp_sales_rep_metrics").select("*").order("period_start", { ascending: false }),
-    supabase
-      .from("exp_sales_quotas")
-      .select("rep_id,period_type,period_start,target,actual,is_demo")
-      .eq("period_type", "month")
-      .order("period_start", { ascending: false }),
-    supabase.from("exp_sales_category_stats").select("group_key,label"),
-  ]);
+  // FastAPI: GET /sales/boards/roster (surface-api/sales/routers/boards_data.py)
+  const res = await api.get<{
+    reps: { id: string; name: string; role: string; group_key: string | null; is_demo: boolean | null }[];
+    metrics: Raw[];
+    quotas: {
+      rep_id: string;
+      period_type: string;
+      period_start: string;
+      target: number | null;
+      actual: number | null;
+      is_demo: boolean | null;
+    }[];
+    stats: { group_key: string; label: string | null }[];
+  }>("/sales/boards/roster");
 
-  const reps = repsRes.data ?? [];
-  const metrics = metricsRes.data ?? [];
-  const quotas = quotaRes.data ?? [];
-  const labels = new Map((statsRes.data ?? []).map((s) => [s.group_key as string, s.label as string]));
+  const reps = res.reps ?? [];
+  const metrics = res.metrics ?? [];
+  const quotas = res.quotas ?? [];
+  const labels = new Map((res.stats ?? []).map((s) => [s.group_key as string, s.label as string]));
 
   const base = reps.map((rep) => {
     const m = metrics.find((x) => x.rep_id === rep.id);
@@ -263,15 +270,14 @@ export async function loadRoster(now = new Date()): Promise<{
 /* ─────────── Categories ─────────── */
 
 export async function loadCategoryStory(): Promise<{ rows: CategoryRow[]; allDemo: boolean }> {
-  const [statsRes, metricsRes, repsRes] = await Promise.all([
-    supabase.from("exp_sales_category_stats").select("*"),
-    supabase.from("exp_sales_rep_metrics").select("*"),
-    supabase.from("exp_sales_reps").select("id,group_key"),
-  ]);
+  // FastAPI: GET /sales/boards/category-story (surface-api/sales/routers/boards_data.py)
+  const res = await api.get<{ stats: Raw[]; metrics: Raw[]; reps: { id: string; group_key: string | null }[] }>(
+    "/sales/boards/category-story",
+  );
 
-  const stats = statsRes.data ?? [];
-  const metrics = metricsRes.data ?? [];
-  const reps = repsRes.data ?? [];
+  const stats = res.stats ?? [];
+  const metrics = res.metrics ?? [];
+  const reps = res.reps ?? [];
 
   const rows: CategoryRow[] = stats.map((s) => {
     const mine = metrics.filter((m) => m.group_key === s.group_key);

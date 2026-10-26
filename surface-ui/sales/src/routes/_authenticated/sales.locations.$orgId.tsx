@@ -16,7 +16,7 @@ function DemoBadge() {
     </span>
   );
 }
-import { TerritoryChip } from "@v3/ui/components/sales/territory-chip";
+import { TerritoryChip } from "@v3/sales/components/sales/territory-chip";
 import { loadBrandRollup, loadEventsFor, loadOrg, loadScore } from "@v3/sales/lib/sales-nav";
 
 export const Route = createFileRoute("/_authenticated/sales/locations/$orgId")({

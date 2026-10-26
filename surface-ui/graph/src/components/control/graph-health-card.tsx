@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@v3/ui/integrations/supabase/client";
+import { api } from "@v3/ui/lib/server-fn";
 import { Card, CardContent, CardHeader, CardTitle } from "@v3/ui/components/ui/card";
 import { Badge } from "@v3/ui/components/ui/badge";
 import { cn } from "@v3/ui/lib/utils";
@@ -10,11 +10,7 @@ type CheckRow = { check_code: string; passed: boolean; detail: string };
 export function GraphHealthCard() {
   const { data, isLoading } = useQuery({
     queryKey: ["exp_validate_graph"],
-    queryFn: async () => {
-      const { data, error } = await supabase.rpc("exp_validate_graph");
-      if (error) throw error;
-      return (data ?? []) as CheckRow[];
-    },
+    queryFn: () => api.get<CheckRow[]>("/graph/control/validate"),
   });
 
   const rows = data ?? [];

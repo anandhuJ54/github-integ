@@ -5,7 +5,7 @@ import {
   CustomerStoriesSuccessGrid,
   CustomerStoriesLogoSlider,
 } from "@v3/marketing/components/marketing/sections/customer-stories";
-import { ogImageUrl } from "@v3/ui/lib/marketing/seo";
+import { ogImageUrl } from "@v3/marketing/lib/marketing/seo";
 
 const pageTitle = "Customer Stories | Real Search & Reputation Results | Experience.com";
 const pageDescription =

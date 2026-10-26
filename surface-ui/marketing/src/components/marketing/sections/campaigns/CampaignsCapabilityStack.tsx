@@ -1,4 +1,4 @@
-import { Button } from "@v3/ui/components/marketing/ui/button";
+import { Button } from "@v3/marketing/components/marketing/ui/button";
 import { ArrowRight, Mail, CalendarClock, SmilePlus, Bell, Lock } from "lucide-react";
 import socialSchedulePost from "@v3/marketing/assets/campaigns/automate-outreach.png";
 import socialReviewsPost from "@v3/marketing/assets/campaigns/capture-feedback.png";

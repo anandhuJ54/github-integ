@@ -21,6 +21,7 @@ import { normalizePackageInclusions, type QuoteState } from "@v3/sales/lib/cpq-s
 import { buildLineItems, commitEntitlements, listAccounts, loadContractApproval, loadQuote, saveQuote, writeLocalDraft } from "@v3/sales/lib/sales-cpq";
 import { setMarginApproval } from "@v3/sales/lib/sales";
 import { cn } from "@v3/ui/lib/utils";
+import { api } from "@v3/ui/lib/server-fn";
 
 export const Route = createFileRoute("/_authenticated/sales/quotes/$quoteId")({
   head: ({ params }) => ({ meta: [
@@ -185,9 +186,9 @@ function QuoteContractButton({ quoteId }: { quoteId: string }) {
   const existing = useQuery({
     queryKey: ["m4-contract-for-quote", quoteId],
     queryFn: async () => {
-      const { data, error } = await (supabase as any).from("exp_contracts").select("id").eq("quote_id", quoteId).order("created_at", { ascending: false }).limit(1);
-      if (error) throw new Error(error.message);
-      return (data?.[0]?.id as string | undefined) ?? null;
+      // the quote's latest contract (surface-api/sales/routers/contracts_data.py)
+      const data = await api.get<{ id: string }[]>(`/sales/contracts/by-quote/${encodeURIComponent(quoteId)}`);
+      return data?.[0]?.id ?? null;
     },
   });
   const go = (contractId: string) => void navigate({ to: "/sales/contracts/$contractId", params: { contractId } });
@@ -196,7 +197,7 @@ function QuoteContractButton({ quoteId }: { quoteId: string }) {
     setBusy(true);
     try {
       const { data: u } = await supabase.auth.getUser();
-      const who = (u.user?.user_metadata?.full_name as string | undefined) ?? u.user?.email ?? "Scott Harris";
+      const who = u.user?.email ?? null; // the signed-in user, as the contracts page sends
       const id = await createContractFromQuote(quoteId, who);
       toast.success("Contract created from quote");
       go(id);

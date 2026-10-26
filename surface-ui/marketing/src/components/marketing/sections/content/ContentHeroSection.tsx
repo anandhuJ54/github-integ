@@ -1,7 +1,7 @@
-import { Button } from "@v3/ui/components/marketing/ui/button";
+import { Button } from "@v3/marketing/components/marketing/ui/button";
 import { ArrowRight, Play } from "lucide-react";
 import heroAsset from "@v3/marketing/assets/content/Content_Hero@2x.png";
-import { getSignUpUrl } from "@v3/ui/lib/marketing/envUrls";
+import { getSignUpUrl } from "@v3/marketing/lib/marketing/envUrls";
 
 export const ContentHeroSection = () => {
   return (

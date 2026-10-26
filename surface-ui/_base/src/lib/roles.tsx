@@ -9,6 +9,7 @@ import {
 } from "react";
 import type { User } from "@supabase/supabase-js";
 import { supabase } from "@v3/ui/integrations/supabase/client";
+import { api } from "@v3/ui/lib/server-fn";
 
 export type ControlRole = "super_admin" | "architect" | "analyst";
 
@@ -75,26 +76,19 @@ export function grantScopeLabel(g: Grant): string {
   return g.scope_type;
 }
 
-async function resolveScopeLabels(rows: Grant[]): Promise<Grant[]> {
-  const entityIds = rows.filter((r) => r.scope_type === "entity").map((r) => r.scope_id);
-  const nodeIds = rows.filter((r) => r.scope_type === "control_node").map((r) => r.scope_id);
+/** GET /admin/me/grants: the user's grants and the names of their entity / control-node scopes. */
+type GrantsPayload = {
+  grants: Grant[];
+  entities: { entity_id: string; display_name: string }[];
+  nodes: { node_id: string; name: string }[];
+};
 
+const NO_GRANTS: GrantsPayload = { grants: [], entities: [], nodes: [] };
+
+function resolveScopeLabels(rows: Grant[], payload: GrantsPayload): Grant[] {
   const names = new Map<string, string>();
-
-  if (entityIds.length > 0) {
-    const { data } = await supabase
-      .from("exp_entity")
-      .select("entity_id, display_name")
-      .in("entity_id", entityIds);
-    for (const e of data ?? []) names.set(e.entity_id as string, e.display_name as string);
-  }
-  if (nodeIds.length > 0) {
-    const { data } = await supabase
-      .from("exp_control_nodes")
-      .select("node_id, name")
-      .in("node_id", nodeIds);
-    for (const n of data ?? []) names.set(n.node_id as string, n.name as string);
-  }
+  for (const e of payload.entities) names.set(e.entity_id, e.display_name);
+  for (const n of payload.nodes) names.set(n.node_id, n.name);
 
   return rows.map((r) => ({
     ...r,
@@ -112,45 +106,39 @@ export function RoleProvider({ user, children }: { user: User; children: ReactNo
 
   const logAudit = useCallback(
     async (action: string, target?: string | null, details?: Record<string, unknown>, actingRole?: string | null) => {
-      await supabase.from("exp_admin_audit").insert({
-        user_id: user.id,
-        acting_role: (actingRole ??
-          (typeof window !== "undefined" ? window.localStorage.getItem(STORAGE_KEY) : null)) as
-          | string
-          | null,
-        action,
-        target: target ?? null,
-        details: (details ?? {}) as never,
-      });
+      // user_id is the token's user (the API sets it); errors are ignored, as before.
+      await api
+        .post("/admin/me/audit", {
+          acting_role: (actingRole ??
+            (typeof window !== "undefined" ? window.localStorage.getItem(STORAGE_KEY) : null)) as
+            | string
+            | null,
+          action,
+          target: target ?? null,
+          details: details ?? {},
+        })
+        .catch(() => undefined);
     },
-    [user.id],
+    [],
   );
 
   useEffect(() => {
     let cancelled = false;
 
     async function load() {
-      let { data } = await supabase
-        .from("exp_control_grants")
-        .select("id, role, scope_type, scope_id, is_primary")
-        .eq("user_id", user.id);
+      // Errors read as no grants, as the supabase-js calls did (`data ?? []`).
+      let payload = await api.get<GrantsPayload>("/admin/me/grants").catch(() => NO_GRANTS);
 
       // One-time bootstrap: the very first signed-in user becomes super_admin.
-      if (!data || data.length === 0) {
-        await supabase.rpc("bootstrap_control_super_admin");
-        const retry = await supabase
-          .from("exp_control_grants")
-          .select("id, role, scope_type, scope_id, is_primary")
-          .eq("user_id", user.id);
-        data = retry.data ?? [];
+      if (payload.grants.length === 0) {
+        payload = await api.post<GrantsPayload>("/admin/me/bootstrap").catch(() => NO_GRANTS);
       }
 
       if (cancelled) return;
 
-      let rows = (data ?? []) as Grant[];
+      let rows = [...payload.grants];
       rows.sort((a, b) => ROLE_RANK[b.role] - ROLE_RANK[a.role]);
-      rows = await resolveScopeLabels(rows);
-      if (cancelled) return;
+      rows = resolveScopeLabels(rows, payload);
       setGrants(rows);
 
       const storedGrant =

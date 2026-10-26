@@ -1,4 +1,4 @@
-// Client shim: the server implementation moved to FastAPI (surface-api/srp).
+// Client shim: the server implementation moved to FastAPI (surface-api/marketing).
 // Each export keeps the createServerFn call shape: fn({ data }) -> Promise<result>.
 import { serverFn } from "@v3/ui/lib/server-fn";
 import type { Facets, SearchDoc } from "@v3/ui/lib/search";
@@ -69,5 +69,5 @@ type Query = {
   claimed?: "any" | "yes" | "no";
 };
 
-export const getCityHome = serverFn<CityHomeData>("srp", "getCityHome");
-export const getCityMapPins = serverFn<{ pins: (SearchDoc & { categoryLabel: string | null })[] }>("srp", "getCityMapPins");
+export const getCityHome = serverFn<CityHomeData>("marketing", "getCityHome");
+export const getCityMapPins = serverFn<{ pins: (SearchDoc & { categoryLabel: string | null })[] }>("marketing", "getCityMapPins");

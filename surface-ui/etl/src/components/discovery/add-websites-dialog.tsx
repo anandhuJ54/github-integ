@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Plus } from "lucide-react";
 import { toast } from "sonner";
-import { supabase } from "@v3/ui/integrations/supabase/client";
+import { api } from "@v3/ui/lib/server-fn";
 import { Button } from "@v3/ui/components/ui/button";
 import { Textarea } from "@v3/ui/components/ui/textarea";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@v3/ui/components/ui/dialog";
@@ -25,11 +25,7 @@ export function AddWebsitesButton({ gcid }: { gcid: string }) {
   const lines = text.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
 
   const add = useMutation({
-    mutationFn: async () => {
-      const { data, error } = await (supabase as any).rpc("disco_add_companies_manual", { p_category: gcid, p_entries: lines });
-      if (error) throw error;
-      return data as Result;
-    },
+    mutationFn: () => api.post<Result>("/etl/console/companies/manual", { category: gcid, entries: lines }),
     onSuccess: async (r) => {
       setResult(r);
       if (r.added.length) {

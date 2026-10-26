@@ -1,4 +1,4 @@
-import { supabase } from "@v3/ui/integrations/supabase/client";
+import { api } from "@v3/ui/lib/server-fn";
 import {
   loadContracts,
   loadPriceBook,
@@ -25,17 +25,12 @@ export type CompPlan = {
 };
 
 export async function loadCompPlans(): Promise<CompPlan[]> {
-  const { data, error } = await supabase
-    .from("exp_comp_plans")
-    .select("id,name,role,rate_pct,basis,active,is_demo,notes")
-    .order("role");
-  if (error) throw error;
-  return (data ?? []) as CompPlan[];
+  // sales: GET /sales/catalog/comp-plans, as the signed-in user
+  return (await api.get<CompPlan[]>("/sales/catalog/comp-plans")) ?? [];
 }
 
 export async function saveCompRate(id: string, rate_pct: number) {
-  const { error } = await supabase.from("exp_comp_plans").update({ rate_pct }).eq("id", id);
-  if (error) throw error;
+  await api.patch(`/sales/catalog/comp-plans/${encodeURIComponent(id)}`, { rate_pct });
 }
 
 export type CompDeal = {

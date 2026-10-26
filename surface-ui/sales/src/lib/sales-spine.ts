@@ -1,4 +1,4 @@
-import { supabase } from "@v3/ui/integrations/supabase/client";
+import { api } from "@v3/ui/lib/server-fn";
 import { rollupClaimBuckets, type LogoClaimSignal } from "@v3/sales/lib/logo-intelligence";
 import { loadComp, commissionByRep } from "@v3/sales/lib/comp";
 import { loadSellerBoard, type SellerCard } from "@v3/sales/lib/seller-board";
@@ -6,7 +6,8 @@ import { loadActivity, loadContracts, loadPriceBook, loadReps, type PriceBookRow
 import { listPromos, type Promo } from "@v3/sales/lib/sales-cpq";
 import { loadTeamsSummary, loadGroupTeams, type TeamsSummary, type TeamRow } from "@v3/sales/lib/teams";
 
-const db = supabase as unknown as { from: (table: string) => any };
+/** FastAPI: surface-api/sales/routers/spine_data.py (runs as the signed-in user). */
+const SP = "/sales/spine";
 
 export type SalesScope = { kind: "all" } | { kind: "team"; teamId: string; label: string };
 export type ClaimEvent = {
@@ -78,28 +79,26 @@ const annualSubs = (book: PriceBookRow[], scope: string) =>
 
 export async function loadScopeDashboard(scope: SalesScope): Promise<ScopeDashboardData> {
   const groupKey = scope.kind === "team" ? scope.teamId : null;
-  const [claimsQ, territoriesQ, metricsQ, contractsQ, reps, summary, activity, pipelineQ] = await Promise.all([
-    db.from("exp_claim_events").select("id,entity_id,entity_label,entity_type,event_type,group_key,logo_org_id,nora_engagement,occurred_at,seller_id,state,contact_phone,contact_email,upgraded,is_demo").order("occurred_at", { ascending: true }).limit(10000),
-    groupKey
-      ? db.from("exp_territories").select("id,group_key,office_count,brand_count,agent_count,seller_id").eq("group_key", groupKey)
-      : db.from("exp_territories").select("id,group_key,office_count,brand_count,agent_count,seller_id"),
-    groupKey
-      ? db.from("exp_sales_rep_metrics").select("views,attempted_claims,claims,upgrades,revenue,group_key,period_start").eq("group_key", groupKey)
-      : db.from("exp_sales_rep_metrics").select("views,attempted_claims,claims,upgrades,revenue,group_key,period_start"),
-    db.from("exp_contracts").select("mrr,status,sold_by,org_id"),
+  const [scopeQ, reps, summary, activity] = await Promise.all([
+    // claims (the oldest 1000), territories, metrics, contracts, open pipeline: one request
+    api.get<{
+      claims: ClaimEvent[];
+      territories: { office_count: number | null; brand_count: number | null }[];
+      metrics: { views: number | null }[];
+      contracts: { mrr: number | null; status: string | null; sold_by: string | null; org_id?: string | null }[];
+      pipeline: { stage: string | null; value: number | null; owner: string | null }[];
+    }>(`${SP}/scope`, { params: { group_key: groupKey || undefined } }),
     loadReps(),
     loadTeamsSummary(),
     loadActivity(30),
-    db.from("exp_sales_pipeline").select("stage,value,owner").not("stage", "in", '("won","lost")'),
   ]);
-  for (const result of [claimsQ, territoriesQ, metricsQ, contractsQ]) if (result.error) throw result.error;
 
   const scopedReps = groupKey ? reps.filter((rep) => rep.group_key === groupKey) : reps;
   const repIds = new Set(scopedReps.map((rep) => rep.id));
-  const claims = ((claimsQ.data ?? []) as ClaimEvent[]).filter((row) => !groupKey || row.group_key === groupKey || (!!row.seller_id && repIds.has(row.seller_id)));
-  const territories = (territoriesQ.data ?? []) as { office_count: number | null; brand_count: number | null }[];
-  const metrics = (metricsQ.data ?? []) as { views: number | null }[];
-  const contracts = (contractsQ.data ?? []) as { mrr: number | null; status: string | null; sold_by: string | null }[];
+  const claims = ((scopeQ.claims ?? []) as ClaimEvent[]).filter((row) => !groupKey || row.group_key === groupKey || (!!row.seller_id && repIds.has(row.seller_id)));
+  const territories = (scopeQ.territories ?? []) as { office_count: number | null; brand_count: number | null }[];
+  const metrics = (scopeQ.metrics ?? []) as { views: number | null }[];
+  const contracts = (scopeQ.contracts ?? []) as { mrr: number | null; status: string | null; sold_by: string | null }[];
   const activeContracts = contracts.filter((row) => row.status === "active" && (!groupKey || (!!row.sold_by && repIds.has(row.sold_by))));
 
   const catMap = new Map<string, { key: string; attempted: number; successful: number; upgrades: number }>();
@@ -113,11 +112,10 @@ export async function loadScopeDashboard(scope: SalesScope): Promise<ScopeDashbo
   }
 
   const logoIds = [...new Set(claims.map((row) => row.logo_org_id).filter((id): id is string => !!id))];
-  const logoQ = logoIds.length
-    ? await db.from("organizations").select("id,name,logo_url").in("id", logoIds)
-    : { data: [], error: null };
-  if (logoQ.error) throw logoQ.error;
-  const logoInfo = new Map(((logoQ.data ?? []) as { id: string; name: string; logo_url: string | null }[]).map((row) => [row.id, row]));
+  const logoRows = logoIds.length
+    ? await api.post<{ id: string; name: string; logo_url: string | null }[]>(`${SP}/scope-logos`, { ids: logoIds })
+    : [];
+  const logoInfo = new Map(((logoRows ?? []) as { id: string; name: string; logo_url: string | null }[]).map((row) => [row.id, row]));
   const logos = logoIds.map((id) => {
     const rows = claims.filter((row) => row.logo_org_id === id);
     const info = logoInfo.get(id);
@@ -156,7 +154,7 @@ export async function loadScopeDashboard(scope: SalesScope): Promise<ScopeDashbo
     };
   }).sort((a, b) => b.successful - a.successful);
 
-  const pipelineRows = ((pipelineQ.data ?? []) as { stage: string | null; value: number | null; owner: string | null }[])
+  const pipelineRows = ((scopeQ.pipeline ?? []) as { stage: string | null; value: number | null; owner: string | null }[])
     .filter((row) => !groupKey || (!!row.owner && repIds.has(row.owner)));
   const stageMap = new Map<string, { value: number; count: number }>();
   for (const row of pipelineRows) {
@@ -233,17 +231,19 @@ export type WorklistData = {
 };
 
 export async function loadWorklist(repId: string | null): Promise<WorklistData> {
-  const [reps, sellerBoard, comp, promos, priceBook, claimsQ, contractBook, opportunitiesQ] = await Promise.all([
+  const [reps, sellerBoard, comp, promos, priceBook, worklistQ, contractBook] = await Promise.all([
     loadReps(),
     loadSellerBoard(),
     loadComp(),
     listPromos(),
     loadPriceBook(),
-    db.from("exp_claim_events").select("id,entity_id,entity_label,entity_type,event_type,group_key,logo_org_id,nora_engagement,occurred_at,seller_id,state,contact_phone,contact_email,upgraded,is_demo").order("occurred_at", { ascending: false }).limit(10000),
+    // claims (the newest 1000) and the 500 most recently updated open opportunities: one request
+    api.get<{
+      claims: ClaimEvent[];
+      opportunities: { id: string; name: string; stage: string; value: number | null; expected_close: string | null; owner: string | null }[];
+    }>(`${SP}/worklist`),
     loadContracts(),
-    db.from("exp_sales_pipeline").select("id,name,stage,value,expected_close,owner").not("stage", "in", '("won","lost")').order("updated_at", { ascending: false }).limit(500),
   ]);
-  if (claimsQ.error) throw claimsQ.error;
   const wonContracts = contractBook.contracts.filter((c) => WON.has(c.status));
   const ownedByOrg = new Map<string, Set<string>>();
   const spendByOrg = new Map<string, number>();
@@ -263,7 +263,7 @@ export async function loadWorklist(repId: string | null): Promise<WorklistData> 
   };
   const selectedRep = reps.find((rep) => rep.id === repId) ?? null;
   const sellerCard = sellerBoard.cards.find((card) => card.repId === repId) ?? null;
-  const allClaims = (claimsQ.data ?? []) as ClaimEvent[];
+  const allClaims = (worklistQ.claims ?? []) as ClaimEvent[];
   const claims = repId ? allClaims.filter((row) => row.seller_id === repId) : allClaims;
   const buckets = rollupClaimBuckets(claims as LogoClaimSignal[]);
   const claimed = claims.filter((row) => successTypes.has(row.event_type ?? ""));
@@ -273,39 +273,38 @@ export async function loadWorklist(repId: string | null): Promise<WorklistData> 
   // even when the claim events are attributed to the territory's SRE.
   const seatLogoIds = new Set<string>();
   if (repId) {
-    const [seatsQ, ownedQ] = await Promise.all([
-      db.from("exp_territory_seats").select("territory_id").eq("rep_id", repId),
-      db.from("exp_territories").select("id").eq("seller_id", repId),
-    ]);
-    const territoryIds = [...new Set([...((seatsQ.data ?? []) as { territory_id: string }[]).map((r) => r.territory_id), ...((ownedQ.data ?? []) as { id: string }[]).map((r) => r.id)])];
-    if (territoryIds.length) {
-      const brandQ = await db.from("exp_territory_brand").select("org_id").in("territory_id", territoryIds);
-      for (const r of (brandQ.data ?? []) as { org_id: string | null }[]) if (r.org_id) seatLogoIds.add(r.org_id);
-    }
+    // the rep's seat and owned territories, then their brands: one request
+    const tb = await api.get<{ seats: { territory_id: string }[]; owned: { id: string }[]; brands: { org_id: string | null }[] }>(
+      `${SP}/reps/${encodeURIComponent(repId)}/territory-brands`,
+    );
+    for (const r of tb.brands ?? []) if (r.org_id) seatLogoIds.add(r.org_id);
   }
   const logoIds = [...new Set([...claims.map((row) => row.logo_org_id).filter((id): id is string => !!id), ...seatLogoIds])];
-  const orgQ = logoIds.length
-    ? await db.from("organizations").select("id,name,logo_url,parent_org_id").in("id", logoIds)
-    : { data: [], error: null };
-  if (orgQ.error) throw orgQ.error;
-  const orgs = new Map(((orgQ.data ?? []) as { id: string; name: string; logo_url: string | null }[]).map((row) => [row.id, row]));
-  const logos = await Promise.all(logoIds.map(async (id) => {
+  const orgRows = logoIds.length
+    ? await api.post<{ id: string; name: string; logo_url: string | null; parent_org_id: string | null }[]>(`${SP}/worklist-logos`, { ids: logoIds })
+    : [];
+  // the per-logo location counts (one count per logo, null where it failed): one request
+  const locationCounts = logoIds.length
+    ? await api.post<Record<string, number | null>>(`${SP}/location-counts`, { ids: logoIds })
+    : {};
+  const orgs = new Map(((orgRows ?? []) as { id: string; name: string; logo_url: string | null }[]).map((row) => [row.id, row]));
+  const logos = logoIds.map((id) => {
     const rows = (seatLogoIds.has(id) ? allClaims : claims).filter((row) => row.logo_org_id === id);
-    const locationsQ = await db.from("organizations").select("id", { count: "exact", head: true }).eq("parent_org_id", id);
+    const locations = locationCounts[id] ?? null; // null: the count failed
     const org = orgs.get(id);
     return {
       id,
       name: org?.name ?? id,
       logoUrl: org?.logo_url ?? null,
-      locations: locationsQ.error ? null : locationsQ.count ?? 0,
+      locations,
       claimed: rows.filter((row) => successTypes.has(row.event_type ?? "")).length,
       warm: rollupClaimBuckets(rows as LogoClaimSignal[]).warmUp.length,
       upgraded: rollupClaimBuckets(rows as LogoClaimSignal[]).upgraded.length,
       revenue: spendByOrg.has(id) ? spendByOrg.get(id) ?? 0 : null,
-      headroom: locationsQ.error ? null : annualSubs(priceBook, "location").filter((p) => !(ownedByOrg.get(id)?.has(p.key))).reduce((s, p) => s + p.annual, 0) * (locationsQ.count ?? 0),
+      headroom: locations == null ? null : annualSubs(priceBook, "location").filter((p) => !(ownedByOrg.get(id)?.has(p.key))).reduce((s, p) => s + p.annual, 0) * locations,
       engagement: rows.reduce((sum, row) => sum + Number(row.nora_engagement ?? 0), 0),
     } satisfies WorklistLogo;
-  }));
+  });
   const commission = repId ? commissionByRep(comp)[repId]?.commission ?? null : null;
   const commercial: Record<string, RowCommercial> = {};
   for (const row of outside) { const c = commercialFor(row); if (c) commercial[row.id] = c; }
@@ -330,7 +329,7 @@ export async function loadWorklist(repId: string | null): Promise<WorklistData> 
     quotaPct: sellerCard?.pct ?? null,
     promos,
     priceBookAvailable: priceBook.length > 0,
-    opportunities: ((opportunitiesQ.data ?? []) as { id: string; name: string; stage: string; value: number | null; expected_close: string | null; owner: string | null }[])
+    opportunities: ((worklistQ.opportunities ?? []) as { id: string; name: string; stage: string; value: number | null; expected_close: string | null; owner: string | null }[])
       .filter((row) => !repId || row.owner === repId || row.owner === selectedRep?.name)
       .map(({ owner: _owner, ...row }) => row),
   };
@@ -343,15 +342,13 @@ async function loadProfileMeta(rows: ClaimEvent[]): Promise<Record<string, Profi
   if (!ids.length) return out;
   const scores = new Map<string, number>();
   const nodes = new Map<string, number>();
-  for (let i = 0; i < ids.length; i += 200) {
-    const chunk = ids.slice(i, i + 200);
-    const [s, n] = await Promise.all([
-      db.from("search_rank_scores").select("entity_id,total_score").in("entity_id", chunk),
-      db.from("graph_nodes").select("entity_id").in("entity_id", chunk).eq("is_active", true).limit(10000),
-    ]);
-    for (const r of (s.data ?? []) as { entity_id: string; total_score: number | null }[]) if (r.total_score != null) scores.set(r.entity_id, Number(r.total_score));
-    for (const r of (n.data ?? []) as { entity_id: string }[]) nodes.set(r.entity_id, (nodes.get(r.entity_id) ?? 0) + 1);
-  }
+  // per 200-id chunk: scores and active graph node rows, each chunk's read capped at 1000 on its own
+  const meta = await api.post<{ scores: { entity_id: string; total_score: number | null }[]; nodes: { entity_id: string }[] }>(
+    `${SP}/profile-meta`,
+    { ids },
+  );
+  for (const r of meta.scores ?? []) if (r.total_score != null) scores.set(r.entity_id, Number(r.total_score));
+  for (const r of meta.nodes ?? []) nodes.set(r.entity_id, (nodes.get(r.entity_id) ?? 0) + 1);
   for (const id of ids) out[id] = { score: scores.get(id) ?? null, nodes: nodes.get(id) ?? null };
   return out;
 }

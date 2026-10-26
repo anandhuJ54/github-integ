@@ -57,8 +57,8 @@ surface-spec/             governance docs (prose: human-authored increments)
 - **FE↔BE seam is the contract.** `surface-ui/<surface>` calls only its own `surface-api/<surface>`,
   via a client generated from `contracts/<surface>`. Cross-Surface reaction goes through the
   events/capabilities in `contracts/`, never a direct call or import.
-- **Internal imports.** Backend imports are top-level and internal: `from _base.core.auth import ...`,
-  `from sales.routers.health import ...`. Frontend imports shared code from `@v3/ui` (= `surface-ui/_base`).
+- **Internal imports.** Backend imports: `from _base.auth import ...`, `from surfaces.sales.health.router import ...`
+  (a Surface's code is `surface-api/<surface>/src`, imported as `surfaces.<surface>`). Frontend imports shared code from `@v3/ui` (= `surface-ui/_base`).
 - **Migrations are common.** One Postgres ⇒ one history under `surface-api/migrations`.
 - **Governed decisions stay deterministic + server-side:** auth, claims, pricing,
   compliance, send eligibility, scoring, persistence — in FastAPI or the DB, never the browser.

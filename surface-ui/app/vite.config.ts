@@ -1,5 +1,5 @@
 import path from "node:path";
-import { defineConfig } from "vite";
+import { defineConfig, loadEnv } from "vite";
 import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
 import { tanstackRouter } from "@tanstack/router-plugin/vite";
@@ -15,9 +15,10 @@ const SURFACES = [
   "graph",
   "sales",
   "xmp",
+  "campaigns",
   "etl",
   "nora-os",
-  "conversion-agents",
+  "skills",
   "admin",
   "ops",
 ];
@@ -32,7 +33,7 @@ const aliases = [
   })),
 ];
 
-export default defineConfig({
+export default defineConfig(({ mode }) => ({
   plugins: [
     tanstackRouter({
       target: "react",
@@ -52,11 +53,18 @@ export default defineConfig({
   server: {
     port: 5173,
     proxy: {
+      // Crawlers fetch robots.txt from the site root; the API generates it (it follows the
+      // site-indexing switch). The sitemap it points to is under /api/public/sitemap*, below.
+      // In production the site's reverse proxy must do the same for /robots.txt and /api.
+      "/robots.txt": {
+        target: loadEnv(mode, __dirname, "").API_PROXY_TARGET || "http://localhost:8000",
+      },
       "/api": {
-        target: "http://localhost:8000",
+        // Where `bun dev` forwards /api: API_PROXY_TARGET in app/.env, default the local uvicorn.
+        target: loadEnv(mode, __dirname, "").API_PROXY_TARGET || "http://localhost:8000",
         changeOrigin: true,
         rewrite: (p) => p.replace(/^\/api/, ""),
       },
     },
   },
-});
+}));

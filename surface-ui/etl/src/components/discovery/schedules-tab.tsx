@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { RefreshCw } from "lucide-react";
 import { toast } from "sonner";
-import { supabase } from "@v3/ui/integrations/supabase/client";
+import { api } from "@v3/ui/lib/server-fn";
 import { useRole } from "@v3/ui/lib/roles";
 import { Badge } from "@v3/ui/components/ui/badge";
 import { Button } from "@v3/ui/components/ui/button";
@@ -19,9 +19,6 @@ import {
   AlertDialogTitle,
 } from "@v3/ui/components/ui/alert-dialog";
 
-/* eslint-disable @typescript-eslint/no-explicit-any */
-// The two RPCs are newer than the generated Supabase types.
-const db = supabase as any;
 
 type CronRow = {
   jobid: number;
@@ -112,9 +109,8 @@ export function SchedulesTab() {
   const { data: rows = [], isLoading, error, refetch, isFetching } = useQuery({
     queryKey: ["etl_cron_list"],
     queryFn: async () => {
-      const { data, error } = await db.rpc("exp_etl_cron_list");
-      if (error) throw error;
-      return ((data ?? []) as CronRow[])
+      const data = await api.get<CronRow[]>("/etl/console/schedules");
+      return data
         .filter((r) => r.jobname in JOBS)
         .sort((a, b) => ORDER.indexOf(a.jobname) - ORDER.indexOf(b.jobname));
     },
@@ -123,11 +119,8 @@ export function SchedulesTab() {
 
   const toggle = useMutation({
     mutationFn: async ({ row, to }: { row: CronRow; to: boolean }) => {
-      const { error } = await db.rpc("exp_etl_cron_set_active", {
-        p_jobname: row.jobname,
-        p_active: to,
-      });
-      if (error) throw error;
+      // gated: the role-checked exp_etl_cron_set_active decides
+      await api.post("/etl/console/schedules/active", { jobname: row.jobname, active: to });
       return { row, to };
     },
     onSuccess: ({ row, to }) => {

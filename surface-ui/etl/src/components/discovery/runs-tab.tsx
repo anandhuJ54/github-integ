@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Info } from "lucide-react";
-import { supabase } from "@v3/ui/integrations/supabase/client";
+import { api } from "@v3/ui/lib/server-fn";
 import { cn } from "@v3/ui/lib/utils";
 
 type RunRow = {
@@ -31,17 +31,7 @@ function fmt(v: string | null) {
 export function RunsTab() {
   const { data: runs = [], isLoading } = useQuery({
     queryKey: ["exp_etl_runs"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("exp_etl_runs")
-        .select(
-          "run_id, source_id, started_at, finished_at, pages_fetched, pulled, staged, matched, created, conflicted, errors, entities_yielded",
-        )
-        .order("started_at", { ascending: false, nullsFirst: false })
-        .limit(200);
-      if (error) throw error;
-      return (data ?? []) as RunRow[];
-    },
+    queryFn: () => api.get<RunRow[]>("/etl/console/runs"),
   });
 
   const sourceIds = useMemo(
@@ -53,24 +43,19 @@ export function RunsTab() {
     enabled: sourceIds.length > 0,
     queryKey: ["exp_etl_runs_domains", sourceIds],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("exp_etl_sources")
-        .select("source_id, source_domain")
-        .in("source_id", sourceIds);
-      if (error) throw error;
+      const data = await api.post<{ source_id: string; source_domain: string }[]>("/etl/console/source-domains", {
+        ids: sourceIds,
+      });
       const map: Record<string, string> = {};
-      for (const r of data ?? []) map[r.source_id as string] = r.source_domain as string;
+      for (const r of data) map[r.source_id] = r.source_domain;
       return map;
     },
   });
 
   const { data: frontier = [] } = useQuery({
     queryKey: ["exp_etl_frontier_matrix"],
-    queryFn: async () => {
-      const { data, error } = await supabase.from("exp_etl_frontier").select("kind, status");
-      if (error) throw error;
-      return (data ?? []) as FrontierRow[];
-    },
+    // capped at 1000 rows, as the REST read was (docs/BROWSER_TO_API_FOLLOWUPS.md)
+    queryFn: () => api.get<FrontierRow[]>("/etl/console/frontier-matrix"),
   });
 
   const matrix = useMemo(() => {

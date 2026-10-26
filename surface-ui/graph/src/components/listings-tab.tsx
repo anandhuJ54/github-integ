@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { supabase } from "@v3/ui/integrations/supabase/client";
+import { api } from "@v3/ui/lib/server-fn";
 import { ChevronDown, ChevronRight, AlertTriangle } from "lucide-react";
 import { cn } from "@v3/ui/lib/utils";
 import { fetchCatalogs } from "@v3/graph/lib/listings/catalog";
@@ -89,7 +89,7 @@ export function ListingsTab({ gcid, entityType }: { gcid: string; entityType?: s
   const [catalogs, setCatalogs] = useState<PublisherCatalog[]>(PUBLISHER_CATALOGS);
   useEffect(() => {
     let live = true;
-    fetchCatalogs(supabase)
+    fetchCatalogs()
       .then(c => { if (live && c) setCatalogs(c); })
       .catch(() => { /* keep fallback */ });
     return () => { live = false; };
@@ -97,11 +97,14 @@ export function ListingsTab({ gcid, entityType }: { gcid: string; entityType?: s
   useEffect(() => {
     let live = true;
     (async () => {
-      const [o, x, f] = await Promise.all([
-        supabase.from("exp_listings_overlays").select("overlay").eq("gcid", gcid),
-        supabase.from("exp_listings_crosswalk").select("publisher_id,code,label,breadcrumb,confidence").eq("gcid", gcid),
-        supabase.from("exp_listings_category_status").select("family,present").eq("gcid", gcid),
-      ]);
+      // the three reads in one request; a failed one comes back null (its `data` on error)
+      const res = await api.get<{
+        overlays: { overlay: string }[] | null;
+        crosswalk: { publisher_id: string; code: string; label: string | null; breadcrumb: string | null; confidence: string | null }[] | null;
+        status: { family: string; present: boolean }[] | null;
+      }>("/graph/categories/listings", { params: { gcid } })
+        .catch(() => ({ overlays: null, crosswalk: null, status: null }));
+      const [o, x, f] = [{ data: res.overlays }, { data: res.crosswalk }, { data: res.status }];
       if (!live) return;
       setOverlays(o.data ? o.data.map(r => r.overlay) : null);
       const xm: any = {}; (x.data ?? []).forEach(r => { xm[r.publisher_id] = r; });

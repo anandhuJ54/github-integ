@@ -1,4 +1,4 @@
-import { supabase } from "@v3/ui/integrations/supabase/client";
+import { api } from "@v3/ui/lib/server-fn";
 
 /* ══════════════════ Roles ══════════════════ */
 
@@ -158,87 +158,55 @@ export type BoardData = {
 
 const n = (v: unknown) => Number(v ?? 0);
 
+/** FastAPI: surface-api/sales/routers/boards_data.py (runs as the signed-in user). */
+const B = "/sales/boards";
+
+type Raw = Record<string, any>; // eslint-disable-line @typescript-eslint/no-explicit-any
+
+/** One request: the ten reads, then the organizations of the adoption rows and claim logos. */
 export async function loadBoardData(): Promise<BoardData> {
-  const [repsR, evR, revR, demoR, noteR, quotaR, metricR, terrR, groupR, adoptR] =
-    await Promise.all([
-      supabase
-        .from("exp_sales_reps")
-        .select("id,name,email,role,group_key,on_duty,is_demo,photo_url")
-        .order("name"),
+  const raw = await api.get<{
+    reps: Raw[];
+    events: Raw[];
+    revenue: Raw[];
+    demos: Raw[];
+    notes: Raw[];
+    quotas: Raw[];
+    metrics: Raw[];
+    territories: Raw[];
+    groups: Raw[];
+    adoption: Raw[];
+    orgs: { id: string; name: string; logo_url: string | null; is_demo: boolean | null }[];
+  }>(`${B}/board`);
 
-      supabase
-        .from("exp_claim_events")
-        .select(
-          "id,entity_label,entity_type,group_key,seller_id,territory_id,logo_org_id,event_type,nora_engagement,upgraded,contact_phone,contact_email,state,is_demo,occurred_at",
-        )
-        .order("occurred_at", { ascending: false })
-        .limit(20000),
-      supabase
-        .from("exp_revenue_components")
-        .select("id,seller_id,territory_id,group_key,source,amount,period_start,is_demo"),
-      supabase
-        .from("exp_sales_demos")
-        .select("id,seller_id,prospect_label,contact_phone,contact_email,booked_at,attended,outcome,deal_value,is_demo"),
-      supabase
-        .from("exp_sales_notes")
-        .select("id,seller_id,subject_label,subject_type,body,callback_priority,callback_at,created_by,created_at,is_demo")
-        .order("created_at", { ascending: false }),
-      supabase
-        .from("exp_sales_quotas")
-        .select("rep_id,group_key,period_start,target,actual,period_type")
-        .eq("period_type", "month"),
-      supabase
-        .from("exp_sales_rep_metrics")
-        .select(
-          "rep_id,period_start,group_key,views,attempted_claims,claims,engaged_30d,demos_booked,demos_attended,upgrades,revenue,logos_assigned,profiles_assigned,is_demo",
-        ),
-      supabase
-        .from("exp_territories")
-        .select("id,label,tier,group_key,seller_id,brand_count,office_count,agent_count"),
-      supabase.from("exp_category_groups").select("group_key,label,is_catchall").order("label"),
-      supabase
-        .from("exp_brand_adoption")
-        .select("id,org_id,group_key,active_users,engaged_users,referral_marketing,referral_regional,referral_location,is_demo"),
-    ]);
-
-  const orgIds = [
-    ...new Set([
-      ...((adoptR.data ?? []).map((a) => a.org_id).filter(Boolean) as string[]),
-      ...((evR.data ?? []).map((e) => e.logo_org_id).filter(Boolean) as string[]),
-    ]),
-  ];
   let orgNames: Record<string, string> = {};
   let orgLogos: Record<string, string | null> = {};
   let orgDemo: Record<string, boolean> = {};
-  if (orgIds.length) {
-    const { data } = await supabase
-      .from("organizations")
-      .select("id,name,logo_url,is_demo")
-      .in("id", orgIds);
-    orgNames = Object.fromEntries((data ?? []).map((o) => [o.id, o.name as string]));
-    orgLogos = Object.fromEntries((data ?? []).map((o) => [o.id, (o.logo_url as string) ?? null]));
-    orgDemo = Object.fromEntries((data ?? []).map((o) => [o.id, !!o.is_demo]));
+  const data = raw.orgs ?? [];
+  if (data.length) {
+    orgNames = Object.fromEntries(data.map((o) => [o.id, o.name as string]));
+    orgLogos = Object.fromEntries(data.map((o) => [o.id, (o.logo_url as string) ?? null]));
+    orgDemo = Object.fromEntries(data.map((o) => [o.id, !!o.is_demo]));
   }
 
-
-  const events = (evR.data ?? []) as ClaimEvent[];
-  const revenue = (revR.data ?? []).map((r) => ({ ...r, amount: n(r.amount) })) as RevenueRow[];
-  const demos = (demoR.data ?? []).map((d) => ({ ...d, deal_value: n(d.deal_value) })) as DemoRow[];
+  const events = (raw.events ?? []) as ClaimEvent[];
+  const revenue = (raw.revenue ?? []).map((r) => ({ ...r, amount: n(r.amount) })) as RevenueRow[];
+  const demos = (raw.demos ?? []).map((d) => ({ ...d, deal_value: n(d.deal_value) })) as DemoRow[];
 
   return {
-    reps: (repsR.data ?? []) as RepRow[],
+    reps: (raw.reps ?? []) as RepRow[],
     events,
     revenue,
     demos,
-    notes: (noteR.data ?? []) as NoteRow[],
-    quotas: (quotaR.data ?? []).map((q) => ({
+    notes: (raw.notes ?? []) as NoteRow[],
+    quotas: (raw.quotas ?? []).map((q) => ({
       rep_id: q.rep_id,
       group_key: q.group_key,
       period_start: q.period_start,
       target: n(q.target),
       actual: n(q.actual),
     })),
-    metrics: (metricR.data ?? []).map((m) => ({
+    metrics: (raw.metrics ?? []).map((m) => ({
       ...m,
       views: n(m.views),
       attempted_claims: n(m.attempted_claims),
@@ -251,14 +219,14 @@ export async function loadBoardData(): Promise<BoardData> {
       logos_assigned: n(m.logos_assigned),
       profiles_assigned: n(m.profiles_assigned),
     })) as MetricRow[],
-    territories: (terrR.data ?? []).map((t) => ({
+    territories: (raw.territories ?? []).map((t) => ({
       ...t,
       brand_count: n(t.brand_count),
       office_count: n(t.office_count),
       agent_count: n(t.agent_count),
     })) as TerritoryRow[],
-    groups: (groupR.data ?? []) as GroupRow[],
-    adoption: (adoptR.data ?? []).map((a) => ({
+    groups: (raw.groups ?? []) as GroupRow[],
+    adoption: (raw.adoption ?? []).map((a) => ({
       ...a,
       active_users: n(a.active_users),
       engaged_users: n(a.engaged_users),
@@ -928,7 +896,7 @@ export async function addNote(input: {
   callbackAt?: string | null;
   createdBy?: string | null;
 }) {
-  const { error } = await supabase.from("exp_sales_notes").insert({
+  await api.post(`${B}/notes`, {
     seller_id: input.sellerId,
     subject_label: input.subjectLabel,
     subject_type: input.subjectType ?? "contact",
@@ -937,15 +905,10 @@ export async function addNote(input: {
     callback_at: input.callbackAt ?? null,
     created_by: input.createdBy ?? null,
   });
-  if (error) throw error;
 }
 
 export async function setCallbackPriority(noteId: string, on: boolean) {
-  const { error } = await supabase
-    .from("exp_sales_notes")
-    .update({ callback_priority: on })
-    .eq("id", noteId);
-  if (error) throw error;
+  await api.patch(`${B}/notes/${encodeURIComponent(noteId)}`, { callback_priority: on });
 }
 
 export const REFERRAL_TARGETS = [
@@ -964,14 +927,12 @@ export async function requestReferral(input: {
   createdBy?: string | null;
 }) {
   const targetLabel = REFERRAL_TARGETS.find((t) => t.key === input.target)?.label ?? input.target;
-  await addNote({
-    sellerId: input.sellerId,
-    subjectLabel: input.brandName,
-    subjectType: "referral_request",
+  // subject_type "referral_request", callback priority on, callback_at = the server's clock + 2 days
+  await api.post(`${B}/referral-requests`, {
+    seller_id: input.sellerId,
+    subject_label: input.brandName,
     body: `Referral requested from ${targetLabel}${input.contact ? ` (${input.contact})` : ""} — adoption evidence: ${input.adoptionNote}`,
-    callbackPriority: true,
-    callbackAt: new Date(Date.now() + 2 * DAY).toISOString(),
-    createdBy: input.createdBy ?? null,
+    created_by: input.createdBy ?? null,
   });
 }
 

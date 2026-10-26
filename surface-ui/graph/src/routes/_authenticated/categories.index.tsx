@@ -3,7 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { ArrowUpDown, Search, Pencil, ChevronRight, ChevronDown } from "lucide-react";
 import { EmpLayout } from "@v3/ui/components/emp-layout";
-import { supabase } from "@v3/ui/integrations/supabase/client";
+import { api } from "@v3/ui/lib/server-fn";
 import { cn } from "@v3/ui/lib/utils";
 import { getCategoryRelationships } from "@v3/graph/lib/category-relationships";
 import { PARENT, CHILDREN } from "@v3/graph/lib/category-relationships.data";
@@ -45,20 +45,7 @@ type CategoryStats = { total: number; active: number; launched: number; excluded
 // Exact counts via head queries — PostgREST caps row payloads (~1,000) so we must
 // not derive totals from a fetched list, or the stat cards under-report.
 async function fetchStats(): Promise<CategoryStats> {
-  const base = () =>
-    supabase.from("gbp_categories").select("*", { count: "exact", head: true });
-  const [t, a, e, l] = await Promise.all([
-    base(),
-    base().eq("status", "active"),
-    base().eq("status", "excluded"),
-    base().eq("is_launched", true),
-  ]);
-  return {
-    total: t.count ?? 0,
-    active: a.count ?? 0,
-    excluded: e.count ?? 0,
-    launched: l.count ?? 0,
-  };
+  return api.get<CategoryStats>("/graph/categories/stats");
 }
 
 // Server-side search so matches beyond the row cap resolve (e.g. "real estate"
@@ -68,17 +55,10 @@ async function fetchCategories(
   sortKey: SortKey,
   sortAsc: boolean,
 ): Promise<Row[]> {
-  let query = supabase
-    .from("gbp_categories")
-    .select("*")
-    .order(sortKey, { ascending: sortAsc, nullsFirst: false })
-    .limit(500);
-
-  const q = search.trim().replace(/[,%()]/g, "");
-  if (q) query = query.or(`display_name.ilike.%${q}%,gcid.ilike.%${q}%`);
-
-  const { data, error } = await query;
-  if (error) throw error;
+  // the API strips `,%()` from the search as the page did and builds the ilike filter
+  const data = await api.get<any[]>("/graph/categories/list", {
+    params: { search, sort: sortKey, asc: sortAsc },
+  });
   return (data ?? []).map((r: any) => ({
     gcid: r.gcid,
     display_name: r.display_name,
@@ -145,13 +125,10 @@ function CategoryRow({ row, depth, tree }: { row: Row; depth: number; tree: bool
     queryKey: ["cat-tree-kids", row.gcid],
     enabled: open && hasKids,
     queryFn: async () => {
-      const { data } = await (supabase as any)
-        .from("gbp_categories")
-        .select(
-          "gcid,display_name,entity_type,status,estimated_profiles,estimated_locations,supports_single_pro_office",
-        )
-        .in("gcid", childGcids)
-        .order("display_name", { ascending: true });
+      // the read's error was ignored (no rows)
+      const data = await api
+        .post<Row[]>("/graph/categories/children", { gcids: childGcids, view: "tree" })
+        .catch(() => null);
       return (data ?? []) as Row[];
     },
   });

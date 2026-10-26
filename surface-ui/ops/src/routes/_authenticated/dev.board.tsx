@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@v3/ui/integrations/supabase/client";
+import { api } from "@v3/ui/lib/server-fn";
 import { Lightbulb, LayoutGrid } from "lucide-react";
 import {
   Select,
@@ -67,16 +67,11 @@ type Card = {
 };
 
 async function loadBoard() {
-  const [overview, sprintsRes, itemsRes] = await Promise.all([
+  const [overview, board] = await Promise.all([
     loadOverview(),
-    supabase.from("exp_dev_sprints").select("*").order("start_date"),
-    supabase.from("exp_dev_sprint_items").select("*"),
+    api.get<{ sprints: Sprint[]; items: SprintItem[] }>("/ops/dev/board"),
   ]);
-  return {
-    ...overview,
-    sprints: (sprintsRes.data ?? []) as Sprint[],
-    items: (itemsRes.data ?? []) as SprintItem[],
-  };
+  return { ...overview, sprints: board.sprints, items: board.items };
 }
 
 const PRIO_RANK: Record<Priority, number> = { P0: 0, P1: 1, P2: 2, P3: 3 };

@@ -50,14 +50,17 @@
       "@v3/xmp/*": [
         "./xmp/src/*"
       ],
+      "@v3/campaigns/*": [
+        "./campaigns/src/*"
+      ],
       "@v3/etl/*": [
         "./etl/src/*"
       ],
+      "@v3/skills/*": [
+        "./skills/src/*"
+      ],
       "@v3/nora-os/*": [
         "./nora-os/src/*"
-      ],
-      "@v3/conversion-agents/*": [
-        "./conversion-agents/src/*"
       ],
       "@v3/admin/*": [
         "./admin/src/*"

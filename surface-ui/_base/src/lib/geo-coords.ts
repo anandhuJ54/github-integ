@@ -1,4 +1,5 @@
 import type { SearchDoc } from "@v3/ui/lib/search";
+import { api } from "@v3/ui/lib/server-fn";
 
 /**
  * Coordinate fallback for map pins.
@@ -12,22 +13,11 @@ export type MappedDoc<T extends SearchDoc = SearchDoc> = T & { coord_approx?: bo
 
 type CityRow = { city: string; state_abbr: string; lat: number; lng: number };
 
-type MinimalClient = {
-  from: (table: string) => {
-    select: (cols: string) => {
-      in: (col: string, values: string[]) => PromiseLike<{ data: CityRow[] | null }>;
-    };
-  };
-};
-
 const key = (city: string | null, state: string | null) =>
   `${(city ?? "").trim().toLowerCase()}|${(state ?? "").trim().toUpperCase()}`;
 
 /** Adds an approximate city-centroid coordinate to every doc that lacks one. */
-export async function withCoordinates<T extends SearchDoc>(
-  client: MinimalClient,
-  docs: T[],
-): Promise<MappedDoc<T>[]> {
+export async function withCoordinates<T extends SearchDoc>(docs: T[]): Promise<MappedDoc<T>[]> {
   const missing = docs.filter((doc) => doc.lat === null || doc.lng === null);
   if (missing.length === 0) return docs as MappedDoc<T>[];
 
@@ -41,10 +31,11 @@ export async function withCoordinates<T extends SearchDoc>(
   ).slice(0, 200);
   if (cities.length === 0) return docs as MappedDoc<T>[];
 
-  const { data } = await client
-    .from("exp_us_cities")
-    .select("city, state_abbr, lat, lng")
-    .in("city", cities);
+  // POST /search/geo/city-centroids (a read): every state's city of those names. A failed read
+  // means no centroids, as before.
+  const data = await api
+    .post<CityRow[]>("/search/geo/city-centroids", { cities })
+    .catch(() => [] as CityRow[]);
 
   const centroids = new Map<string, { lat: number; lng: number }>();
   for (const row of data ?? []) {

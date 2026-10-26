@@ -8,7 +8,7 @@ import {
   Plus,
   Trash2,
 } from "lucide-react";
-import { supabase } from "@v3/ui/integrations/supabase/client";
+import { api } from "@v3/ui/lib/server-fn";
 import { Card, CardContent } from "@v3/ui/components/ui/card";
 import { Button } from "@v3/ui/components/ui/button";
 import { ModelLock } from "@v3/ui/components/model-lock";
@@ -212,11 +212,8 @@ export function NodeRegistryTab({ gcid }: { gcid: string }) {
   const { data: canonRings = null } = useQuery({
     queryKey: ["exp-rings"],
     queryFn: async () => {
-      const { data, error } = await (supabase as any)
-        .from("exp_rings")
-        .select("position, ring_key, ring_name, legacy_key, seo_function, schema_types")
-        .order("position", { ascending: true });
-      if (error) return null;
+      // the read's error fell back to the legacy vocabulary (null)
+      const data = await api.get<unknown>("/graph/categories/rings").catch(() => null);
       return data as {
         position: number;
         ring_key: string;
@@ -234,8 +231,10 @@ export function NodeRegistryTab({ gcid }: { gcid: string }) {
   const { data: km = null } = useQuery({
     queryKey: ["category-entity-type", gcid],
     queryFn: async () => {
-      const { data } = await (supabase as any)
-        .from("exp_category_knowledge").select("entity_type").eq("gcid", gcid).maybeSingle();
+      // `.maybeSingle()` whose error was ignored: null (also when the category has 2 rows)
+      const data = await api
+        .get<unknown>("/graph/categories/entity-type", { params: { gcid } })
+        .catch(() => null);
       return (data as { entity_type: string | null } | null);
     },
     staleTime: 5 * 60 * 1000, retry: false,
@@ -245,12 +244,7 @@ export function NodeRegistryTab({ gcid }: { gcid: string }) {
   const { data: schemaType = null } = useQuery({
     queryKey: ["category-schema-type", gcid],
     queryFn: async () => {
-      const { data, error } = await (supabase as any)
-        .from("exp_category_schema_type")
-        .select("schema_type, confidence")
-        .eq("gcid", gcid)
-        .maybeSingle();
-      if (error) return null;
+      const data = await api.get<unknown>("/graph/categories/schema-type", { params: { gcid } }).catch(() => null);
       return data as { schema_type: string | null; confidence: string | null } | null;
     },
     staleTime: 5 * 60 * 1000,
@@ -293,11 +287,9 @@ export function NodeRegistryTab({ gcid }: { gcid: string }) {
     queryKey: ["schema-ring-map", schemaType?.schema_type],
     enabled: !!schemaType?.schema_type,
     queryFn: async () => {
-      const { data, error } = await (supabase as any)
-        .from("exp_schema_type_ring_map")
-        .select("ring_key, schema_property, inherited_from")
-        .eq("schema_type", schemaType!.schema_type);
-      if (error) return [];
+      const data = await api
+        .get<unknown[]>("/graph/categories/schema-ring-map", { params: { schema_type: schemaType!.schema_type! } })
+        .catch(() => [] as unknown[]);
       return (data ?? []) as { ring_key: string; schema_property: string; inherited_from: string }[];
     },
     staleTime: 5 * 60 * 1000,
@@ -316,12 +308,7 @@ export function NodeRegistryTab({ gcid }: { gcid: string }) {
   const { data: nodes = [], isLoading } = useQuery({
     queryKey: ["node-registry", gcid],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("exp_vertical_node_registry")
-        .select("*")
-        .eq("gcid", gcid)
-        .order("priority", { ascending: true });
-      if (error) throw error;
+      const data = await api.get<NodeRow[]>("/graph/categories/node-registry", { params: { gcid } });
       return (data ?? []) as NodeRow[];
     },
   });
@@ -360,24 +347,15 @@ export function NodeRegistryTab({ gcid }: { gcid: string }) {
 
   const reorder = useMutation({
     mutationFn: async (updates: { id: string; priority: number }[]) => {
-      for (const u of updates) {
-        const { error } = await supabase
-          .from("exp_vertical_node_registry")
-          .update({ priority: u.priority })
-          .eq("id", u.id);
-        if (error) throw error;
-      }
+      // one update per row, in order, stopping at the first error (server side)
+      await api.post("/graph/categories/node-registry/reorder", { updates });
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["node-registry", gcid] }),
   });
 
   const remove = useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase
-        .from("exp_vertical_node_registry")
-        .delete()
-        .eq("id", id);
-      if (error) throw error;
+      await api.delete(`/graph/categories/node-registry/${encodeURIComponent(id)}`);
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["node-registry", gcid] }),
   });
@@ -728,49 +706,42 @@ function NodeEditDialog({
     setError(null);
     try {
       if (row) {
-        const { error } = await supabase
-          .from("exp_vertical_node_registry")
-          .update({
-            node_name: form.node_name,
-            node_slug: form.node_slug,
-            node_description: form.node_description || null,
-            ring: form.ring,
-            connection_method: form.connection_method,
-            schema_type: form.schema_type || null,
-            schema_property: form.schema_property || null,
-            required_for_score: form.required_for_score,
-            score_points: form.score_points,
-            priority: form.priority,
-            url_pattern: form.url_pattern || null,
-            url_example: form.url_example || null,
-            compliance_notes: form.compliance_notes || null,
-            is_active: form.is_active,
-            notes: form.notes || null,
-          } as never)
-          .eq("id", row.id);
-        if (error) throw error;
+        await api.patch(`/graph/categories/node-registry/${encodeURIComponent(row.id)}`, {
+          node_name: form.node_name,
+          node_slug: form.node_slug,
+          node_description: form.node_description || null,
+          ring: form.ring,
+          connection_method: form.connection_method,
+          schema_type: form.schema_type || null,
+          schema_property: form.schema_property || null,
+          required_for_score: form.required_for_score,
+          score_points: form.score_points,
+          priority: form.priority,
+          url_pattern: form.url_pattern || null,
+          url_example: form.url_example || null,
+          compliance_notes: form.compliance_notes || null,
+          is_active: form.is_active,
+          notes: form.notes || null,
+        });
       } else {
-        const { error } = await supabase
-          .from("exp_vertical_node_registry")
-          .insert({
-            gcid,
-            node_name: form.node_name,
-            node_slug: form.node_slug,
-            node_description: form.node_description || null,
-            ring: form.ring,
-            connection_method: form.connection_method,
-            schema_type: form.schema_type || null,
-            schema_property: form.schema_property || null,
-            required_for_score: form.required_for_score,
-            score_points: form.score_points,
-            priority: form.priority,
-            url_pattern: form.url_pattern || null,
-            url_example: form.url_example || null,
-            compliance_notes: form.compliance_notes || null,
-            is_active: form.is_active,
-            notes: form.notes || null,
-          } as never);
-        if (error) throw error;
+        await api.post("/graph/categories/node-registry", {
+          gcid,
+          node_name: form.node_name,
+          node_slug: form.node_slug,
+          node_description: form.node_description || null,
+          ring: form.ring,
+          connection_method: form.connection_method,
+          schema_type: form.schema_type || null,
+          schema_property: form.schema_property || null,
+          required_for_score: form.required_for_score,
+          score_points: form.score_points,
+          priority: form.priority,
+          url_pattern: form.url_pattern || null,
+          url_example: form.url_example || null,
+          compliance_notes: form.compliance_notes || null,
+          is_active: form.is_active,
+          notes: form.notes || null,
+        });
       }
       onSaved();
     } catch (e) {

@@ -7,6 +7,7 @@ import { DataTable, EmptyState, PageBody, PageHeader, Panel } from "@v3/ui/compo
 import { Button } from "@v3/ui/components/ui/button";
 import { Input } from "@v3/ui/components/ui/input";
 import { createPromo, listPromos, redemptionCounts, setPromoActive, type Promo } from "@v3/sales/lib/sales-cpq";
+import { loadRepNames } from "@v3/sales/lib/teams";
 
 export const Route = createFileRoute("/_authenticated/sales/promos")({
   head: () => ({
@@ -43,12 +44,7 @@ function PromosPage() {
   const counts = useQuery({ queryKey: ["cpq-promo-redemptions"], queryFn: redemptionCounts });
   const reps = useQuery({
     queryKey: ["cpq-reps"],
-    queryFn: async () => {
-      const { supabase } = await import("@v3/ui/integrations/supabase/client");
-      const { data, error } = await supabase.from("exp_sales_reps").select("id,name");
-      if (error) throw error;
-      return data ?? [];
-    },
+    queryFn: loadRepNames,
   });
   const repName = (id: string | null) => reps.data?.find((r) => r.id === id)?.name ?? null;
   const [d, setD] = useState(blank);

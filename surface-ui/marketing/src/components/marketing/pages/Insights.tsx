@@ -1,4 +1,4 @@
-import { ogImageUrl } from "@v3/ui/lib/marketing/seo";
+import { ogImageUrl } from "@v3/marketing/lib/marketing/seo";
 import {
   InsightsHeroSection,
   InsightsStrategicBanner,
@@ -11,7 +11,7 @@ import { SRPOverviewSection } from "@v3/marketing/components/marketing/sections/
 import { PageBreadcrumb } from "@v3/marketing/components/marketing/PageBreadcrumb";
 import { Database, TrendingUp, Rocket } from "lucide-react";
 import placeholderImg from "@v3/marketing/assets/insights/overview.png";
-import { getSignUpUrl } from "@v3/ui/lib/marketing/envUrls";
+import { getSignUpUrl } from "@v3/marketing/lib/marketing/envUrls";
 
 const Insights = () => {
   return (

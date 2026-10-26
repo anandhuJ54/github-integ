@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Search, User } from "lucide-react";
-import { supabase } from "@v3/ui/integrations/supabase/client";
+import { api } from "@v3/ui/lib/server-fn";
 import { EmpLayout } from "@v3/ui/components/emp-layout";
 import { Button } from "@v3/ui/components/ui/button";
 import { Input } from "@v3/ui/components/ui/input";
@@ -14,7 +14,7 @@ import {
   SelectValue,
 } from "@v3/ui/components/ui/select";
 import { Avatar, AvatarFallback, AvatarImage } from "@v3/ui/components/ui/avatar";
-import { TerritoryChip } from "@v3/ui/components/sales/territory-chip";
+import { TerritoryChip } from "@v3/admin/components/territory-chip";
 import { cn } from "@v3/ui/lib/utils";
 
 function DepthBadges({
@@ -123,50 +123,16 @@ function ProfessionalsPage() {
 
   const { data: gcidOptions } = useQuery({
     queryKey: ["pro-gcids"],
-    queryFn: async () => {
-      // Fix (category filter, 2026-10-12): reading every row's gcid was capped at 1,000 rows, so newer
-      // categories never appeared. Walk the distinct values instead: one tiny indexed request per category.
-      const out: string[] = [];
-      let last: string | null = null;
-      for (let i = 0; i < 200; i++) {
-        let q = supabase.from("professionals").select("gcid").not("gcid", "is", null);
-        if (last !== null) q = q.gt("gcid", last);
-        const { data, error } = await q.order("gcid").limit(1);
-        if (error) throw error;
-        const g = data?.[0]?.gcid;
-        if (!g) break;
-        out.push(g);
-        last = g;
-      }
-      return out;
-    },
+    // Distinct categories, in order (the API does the walk the page used to do per request).
+    queryFn: () => api.get<string[]>("/admin/professionals/categories"),
   });
 
   const { data: stats } = useQuery({
     queryKey: ["pro-stats"],
-    queryFn: async () => {
-      const total = await supabase
-        .from("professionals")
-        .select("*", { count: "exact", head: true });
-      const active = await supabase
-        .from("professionals")
-        .select("*", { count: "exact", head: true })
-        .eq("is_active", true);
-      const claimed = await supabase
-        .from("professionals")
-        .select("*", { count: "exact", head: true })
-        .eq("claimed", true);
-      const verified = await supabase
-        .from("professionals")
-        .select("*", { count: "exact", head: true })
-        .eq("primary_license_verified", true);
-      return {
-        total: total.count ?? 0,
-        active: active.count ?? 0,
-        claimed: claimed.count ?? 0,
-        verified: verified.count ?? 0,
-      };
-    },
+    queryFn: () =>
+      api.get<{ total: number; active: number; claimed: number; verified: number }>(
+        "/admin/professionals/stats",
+      ),
   });
 
   const { data: prosResult, isLoading } = useQuery({
@@ -174,56 +140,19 @@ function ProfessionalsPage() {
       "professionals",
       { search, gcidFilter, locationFilter, claimedFilter, scoreRange, page },
     ],
-    queryFn: async () => {
-      // Scores live in search_rank_scores (the scoring engine's output), never on
-      // professionals.search_rank_score, which is a stale denormalized column.
-      let scopedIds: string[] | null = null;
-      let excludeIds: string[] | null = null;
-      if (scoreRange !== "all") {
-        let sq = supabase
-          .from("search_rank_scores")
-          .select("entity_id, total_score")
-          .eq("entity_type", "professional");
-        if (scoreRange === "0-300") sq = sq.gte("total_score", 0).lte("total_score", 300);
-        if (scoreRange === "300-600") sq = sq.gte("total_score", 300).lte("total_score", 600);
-        if (scoreRange === "600-850") sq = sq.gte("total_score", 600).lte("total_score", 850);
-        const { data: sd, error: se } = await sq;
-        if (se) throw se;
-        const ids = (sd ?? []).map((r) => r.entity_id);
-        if (scoreRange === "unscored") excludeIds = ids;
-        else scopedIds = ids;
-      }
-
-      let q = supabase
-        .from("professionals")
-        .select(
-          "id, first_name, last_name, display_name, slug, photo_url, gcid, job_title, address_city, address_state, primary_org_id, primary_license_number, primary_license_verified, claimed, bio, territory_id",
-          { count: "exact" },
-
-        )
-        .order("display_name", { ascending: true, nullsFirst: false })
-        .range(page * PAGE_SIZE, page * PAGE_SIZE + PAGE_SIZE - 1);
-
-      if (search.trim()) {
-        const s = `%${search.trim()}%`;
-        q = q.or(
-          `display_name.ilike.${s},first_name.ilike.${s},last_name.ilike.${s}`,
-        );
-      }
-      if (gcidFilter !== "all") q = q.eq("gcid", gcidFilter);
-      if (locationFilter.trim()) {
-        const l = `%${locationFilter.trim()}%`;
-        q = q.or(`address_city.ilike.${l},address_state.ilike.${l}`);
-      }
-      if (claimedFilter === "claimed") q = q.eq("claimed", true);
-      if (claimedFilter === "unclaimed") q = q.eq("claimed", false);
-      if (scopedIds) q = q.in("id", scopedIds.length ? scopedIds : ["00000000-0000-0000-0000-000000000000"]);
-      if (excludeIds?.length) q = q.not("id", "in", `(${excludeIds.join(",")})`);
-
-      const { data, error, count } = await q;
-      if (error) throw error;
-      return { rows: (data ?? []) as Pro[], count: count ?? 0 };
-    },
+    // Scores live in search_rank_scores (the scoring engine's output), never on
+    // professionals.search_rank_score, which is a stale denormalized column.
+    queryFn: () =>
+      api.get<{ rows: Pro[]; count: number }>("/admin/professionals", {
+        params: {
+          search,
+          gcid: gcidFilter,
+          location: locationFilter,
+          claimed: claimedFilter,
+          score: scoreRange,
+          page,
+        },
+      }),
   });
 
   const proIds = useMemo(() => (prosResult?.rows ?? []).map((p) => p.id), [prosResult]);
@@ -231,51 +160,21 @@ function ProfessionalsPage() {
   const { data: scores } = useQuery({
     queryKey: ["pro-scores", proIds],
     enabled: proIds.length > 0,
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("search_rank_scores")
-        .select("entity_id, total_score, max_possible, local_rank, local_rank_of, gaps")
-        .eq("entity_type", "professional")
-        .in("entity_id", proIds);
-      if (error) throw error;
-      const map: Record<
-        string,
-        { total: number; max: number; rank: number | null; rankOf: number | null }
-      > = {};
-      (data ?? []).forEach((r) => {
-        map[r.entity_id] = {
-          total: r.total_score,
-          max: r.max_possible ?? 850,
-          rank: r.local_rank ?? null,
-          rankOf: r.local_rank_of ?? null,
-        };
-      });
-      return map;
-    },
+    queryFn: () =>
+      api.post<Record<string, { total: number; max: number; rank: number | null; rankOf: number | null }>>(
+        "/admin/professionals/scores",
+        { ids: proIds },
+      ),
   });
   // Hydration depth straight from graph_nodes — real captured nodes only.
   const { data: depth } = useQuery({
     queryKey: ["pro-depth", proIds],
     enabled: proIds.length > 0,
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("graph_nodes")
-        .select("entity_id, node_type")
-        .eq("entity_type", "professional")
-        .eq("is_active", true)
-        .in("entity_id", proIds);
-      if (error) throw error;
-      const map: Record<string, { products: number; socials: number; credentials: number; total: number }> = {};
-      (data ?? []).forEach((r) => {
-        const d = (map[r.entity_id] ??= { products: 0, socials: 0, credentials: 0, total: 0 });
-        d.total += 1;
-        const t = r.node_type ?? "";
-        if (/product|service|offer/i.test(t)) d.products += 1;
-        else if (/social|same_?as/i.test(t)) d.socials += 1;
-        else if (/credential|license|certif/i.test(t)) d.credentials += 1;
-      });
-      return map;
-    },
+    queryFn: () =>
+      api.post<Record<string, { products: number; socials: number; credentials: number; total: number }>>(
+        "/admin/professionals/depth",
+        { ids: proIds },
+      ),
   });
 
 
@@ -307,21 +206,11 @@ function ProfessionalsPage() {
   const { data: extras } = useQuery({
     queryKey: ["pro-extras", orgIds, gcids],
     enabled: (orgIds.length > 0) || (gcids.length > 0),
-    queryFn: async () => {
-      const [orgsRes, catsRes] = await Promise.all([
-        orgIds.length
-          ? supabase.from("organizations").select("id, name").in("id", orgIds)
-          : Promise.resolve({ data: [] as { id: string; name: string }[] }),
-        gcids.length
-          ? supabase.from("gbp_categories").select("gcid, display_name").in("gcid", gcids)
-          : Promise.resolve({ data: [] as { gcid: string; display_name: string }[] }),
-      ]);
-      const orgs: Record<string, string> = {};
-      (orgsRes.data ?? []).forEach((o) => { orgs[o.id] = o.name; });
-      const cats: Record<string, string> = {};
-      (catsRes.data ?? []).forEach((c) => { cats[c.gcid] = c.display_name; });
-      return { orgs, cats };
-    },
+    queryFn: () =>
+      api.post<{ orgs: Record<string, string>; cats: Record<string, string> }>(
+        "/admin/professionals/extras",
+        { orgIds, gcids },
+      ),
   });
 
   const totalPages = Math.max(

@@ -1,4 +1,10 @@
-# Migrations — the shared database history
+# Migrations — the shared database history (closed SQL stream)
+
+> **Closed (2026-10-26).** New migrations are Alembic revisions in the owning Surface's
+> `surface-api/<surface>/db/migrations/` (see `surface-api/alembic.ini` and root `AGENTS.md` §4).
+> No new files here. The files below stay where they are; the `_base` baseline revision
+> (`_base/db/migrations/866c5f655041_base_baseline.py`) refuses to run until all of them are
+> recorded in `schema_migrations`. The rest of this page describes how this stream worked.
 
 **One Supabase Postgres ⇒ one migration history.** All Surfaces share this database, so
 there is a single, globally-numbered, linear migration stream here — never a per-Surface

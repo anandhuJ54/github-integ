@@ -1,4 +1,4 @@
-import { getRequestDemoUrl, getSignUpUrl } from "@v3/ui/lib/marketing/envUrls";
+import { getRequestDemoUrl, getSignUpUrl } from "@v3/marketing/lib/marketing/envUrls";
 
 export const SEARCH_RANKING_URLS = {
   signUpTop: getSignUpUrl(

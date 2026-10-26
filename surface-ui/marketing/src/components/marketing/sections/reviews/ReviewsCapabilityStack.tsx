@@ -1,4 +1,4 @@
-import { Button } from "@v3/ui/components/marketing/ui/button";
+import { Button } from "@v3/marketing/components/marketing/ui/button";
 import { ArrowRight, Send, Smartphone, Clock } from "lucide-react";
 import smsCampaignImg from "@v3/marketing/assets/reviews-collect-opt2.png";
 

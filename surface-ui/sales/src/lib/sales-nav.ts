@@ -1,5 +1,16 @@
-import { supabase } from "@v3/ui/integrations/supabase/client";
+import { api } from "@v3/ui/lib/server-fn";
 import { SELLER_ROLES, type SellerRole } from "@v3/sales/lib/sales";
+
+/** FastAPI: surface-api/sales/routers/nav_data.py (runs as the signed-in user). */
+const N = "/sales/nav";
+/** The Directory drill-downs' data moved to the data owners, surface audit 2026-10-25:
+ *  professional and organization rows → srp (surface-api/srp/routers/directory_data.py),
+ *  the brand rollup → xmp (surface-api/xmp/routers/directory_data.py). Same SQL and shapes. */
+const SRP_DIR = "/srp/directory";
+const XMP_DIR = "/xmp/directory";
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type Raw = Record<string, any>;
+const enc = encodeURIComponent;
 
 /* ─────────── Period scoping ─────────── */
 
@@ -67,50 +78,34 @@ export async function loadOverview(period: Period): Promise<Overview> {
   const since = periodStart(period);
   const sinceTs = `${since}T00:00:00Z`;
 
-  const [reps, quotas, contracts, cats, proClaims, orgClaims, events, assignments] = await Promise.all([
-    supabase.from("exp_sales_reps").select("id,name,email,role,group_key,is_demo"),
-    supabase
-      .from("exp_sales_quotas")
-      .select("id,rep_id,group_key,period_type,period_start,target,actual,is_demo")
-      .eq("period_type", period)
-      .eq("period_start", since),
-    supabase.from("exp_contracts").select("id,name,status,mrr,account_id,created_by,is_demo,created_at"),
-    supabase.from("gbp_categories").select("gcid", { count: "exact", head: true }).eq("status", "active"),
-    supabase
-      .from("professionals")
-      .select("id", { count: "exact", head: true })
-      .eq("is_demo", false)
-      .gte("claimed_at", sinceTs),
-    supabase
-      .from("organizations")
-      .select("id", { count: "exact", head: true })
-      .eq("is_demo", false)
-      .gte("claimed_at", sinceTs),
-    supabase
-      .from("exp_activity_events")
-      .select("id,event_type,account_id,logo,is_demo,occurred_at")
-      .gte("occurred_at", sinceTs)
-      .limit(5000),
-    supabase.from("exp_sales_assignments").select("rep_id,assignment_type,target_ref"),
-  ]);
+  const o = await api.get<{
+    reps: Raw[];
+    quotas: Raw[];
+    contracts: Raw[];
+    cats: number | null;
+    proClaims: number | null;
+    orgClaims: number | null;
+    events: Raw[];
+    assignments: Raw[];
+  }>(`${N}/overview`, { params: { period, since } });
 
-  const repRows = reps.data ?? [];
+  const repRows = o.reps ?? [];
   const teamKeys = Array.from(new Set(repRows.map((r) => r.group_key).filter(Boolean))) as string[];
   const roleByRep = new Map(repRows.map((r) => [r.id as string, r.role as string]));
   const repByAccount = new Map<string, string>();
   const repByLogo = new Map<string, string>();
-  for (const a of assignments.data ?? []) {
+  for (const a of o.assignments ?? []) {
     if (!a.rep_id || !a.target_ref) continue;
     if (a.assignment_type === "account") repByAccount.set(a.target_ref, a.rep_id);
     if (a.assignment_type === "logo") repByLogo.set(a.target_ref, a.rep_id);
   }
 
-  const contractRows = (contracts.data ?? []).filter(
+  const contractRows = (o.contracts ?? []).filter(
     (c) => c.status === "active" && (c.created_at == null || c.created_at >= sinceTs || period === "year"),
   );
   const real = contractRows.filter((c) => !c.is_demo);
   const demo = contractRows.filter((c) => c.is_demo);
-  const eventRows = events.data ?? [];
+  const eventRows = o.events ?? [];
   const realUpgrades = eventRows.filter((e) => e.event_type === "upgrade" && !e.is_demo).length;
 
   // Sold-by: attribute a contract/upgrade to the rep who owns that account (or logo).
@@ -139,7 +134,7 @@ export async function loadOverview(period: Period): Promise<Overview> {
     attribution.get(role)!.upgrades += 1;
   }
 
-  const quotaRows = (quotas.data ?? []) as QuotaRow[];
+  const quotaRows = (o.quotas ?? []) as QuotaRow[];
   const quotaReal = quotaRows.filter((q) => !q.is_demo);
   const quotaSource = quotaReal.length ? quotaReal : quotaRows;
 
@@ -147,8 +142,8 @@ export async function loadOverview(period: Period): Promise<Overview> {
     teams: teamKeys.length,
     teamKeys,
     sellers: repRows.filter((r) => !r.is_demo).length,
-    claims: (proClaims.count ?? 0) + (orgClaims.count ?? 0),
-    liveCategories: cats.count ?? 0,
+    claims: (o.proClaims ?? 0) + (o.orgClaims ?? 0),
+    liveCategories: o.cats ?? 0,
     realContracts: real.length,
     realMrr: real.reduce((s, c) => s + Number(c.mrr ?? 0), 0),
     realUpgrades,
@@ -204,18 +199,12 @@ const LOCATION_TYPES = ["office", "location", "branch", "firm"];
 export async function browse(args: BrowseArgs): Promise<BrowseResult> {
   const { tab, q, page, pageSize, gcid, includeDemo } = args;
   const from = (page - 1) * pageSize;
-  const to = from + pageSize - 1;
-  const like = `%${q.trim()}%`;
+
+  const { rows: data, count } = await api.get<{ rows: Raw[]; count: number | null }>(`${N}/browse`, {
+    params: { tab, q, page, page_size: pageSize, gcid: gcid || undefined, include_demo: !!includeDemo },
+  });
 
   if (tab === "categories") {
-    let query = supabase
-      .from("gbp_categories")
-      .select("gcid,display_name,status,entity_type,estimated_profiles", { count: "exact" })
-      .order("display_name")
-      .range(from, to);
-    if (q.trim()) query = query.ilike("display_name", like);
-    const { data, count, error } = await query;
-    if (error) throw error;
     return {
       count: count ?? 0,
       rows: (data ?? []).map((c) => ({
@@ -232,12 +221,6 @@ export async function browse(args: BrowseArgs): Promise<BrowseResult> {
   }
 
   if (tab === "teams" || tab === "sellers") {
-    const { data, error } = await supabase
-      .from("exp_sales_reps")
-      .select("id,name,email,role,group_key,is_demo")
-      .order("group_key")
-      .order("name");
-    if (error) throw error;
     const reps = data ?? [];
     if (tab === "teams") {
       const groups = new Map<string, { count: number; demo: number; roles: Set<string> }>();
@@ -286,19 +269,6 @@ export async function browse(args: BrowseArgs): Promise<BrowseResult> {
   }
 
   if (tab === "professionals") {
-    let query = supabase
-      .from("professionals")
-      .select(
-        "id,display_name,slug,job_title,address_city,address_state,gcid,claimed,is_demo,search_rank_score",
-        { count: "exact" },
-      )
-      .order("display_name")
-      .range(from, to);
-    if (!includeDemo) query = query.eq("is_demo", false);
-    if (gcid) query = query.eq("gcid", gcid);
-    if (q.trim()) query = query.ilike("display_name", like);
-    const { data, count, error } = await query;
-    if (error) throw error;
     return {
       count: count ?? 0,
       rows: (data ?? []).map((p) => ({
@@ -315,21 +285,6 @@ export async function browse(args: BrowseArgs): Promise<BrowseResult> {
   }
 
   // brands + locations both live in organizations
-  const types = tab === "brands" ? BRAND_TYPES : LOCATION_TYPES;
-  let query = supabase
-    .from("organizations")
-    .select(
-      "id,name,slug,entity_type,address_city,address_state,gcid,claimed,is_demo,parent_org_id,hierarchy_depth",
-      { count: "exact" },
-    )
-    .in("entity_type", types)
-    .order("name")
-    .range(from, to);
-  if (!includeDemo) query = query.eq("is_demo", false);
-  if (gcid) query = query.eq("gcid", gcid);
-  if (q.trim()) query = query.ilike("name", like);
-  const { data, count, error } = await query;
-  if (error) throw error;
   return {
     count: count ?? 0,
     rows: (data ?? []).map((o) => ({
@@ -359,144 +314,80 @@ export type ScoreRow = {
 };
 
 export async function loadScore(entityId: string): Promise<ScoreRow | null> {
-  const { data, error } = await supabase
-    .from("search_rank_scores")
-    .select("entity_id,total_score,max_possible,score_pct,local_rank,local_rank_of,gaps,calculated_at")
-    .eq("entity_id", entityId)
-    .order("calculated_at", { ascending: false })
-    .limit(1)
-    .maybeSingle();
-  if (error) throw error;
-  return (data as ScoreRow) ?? null;
+  const data = await api.get<ScoreRow | null>(`${N}/scores/${enc(entityId)}`);
+  return data ?? null;
 }
 
 export async function loadOrg(orgId: string) {
-  const { data, error } = await supabase.from("organizations").select("*").eq("id", orgId).maybeSingle();
-  if (error) throw error;
-  return data;
+  return api.get<Raw | null>(`${SRP_DIR}/organizations/${enc(orgId)}`);
 }
 
 export async function loadBrandRollup(orgId: string) {
-  const db = supabase as unknown as { from: (t: string) => any };
-  const [locations, children, direct, viaOffices, claims] = await Promise.all([
-    supabase
-      .from("organizations")
-      .select("id,name,entity_type,address_city,address_state,claimed,is_demo,search_rank_score")
-      .eq("parent_org_id", orgId)
-      .order("name")
-      .limit(500),
-    supabase.from("organizations").select("id", { count: "exact", head: true }).eq("parent_org_id", orgId),
-    supabase.from("professionals").select("id", { count: "exact", head: true }).eq("primary_org_id", orgId),
-    // Professionals attached to one of the brand's offices roll up to the brand.
-    db.from("professionals").select("id,organizations!professionals_primary_org_id_fkey!inner(parent_org_id)", { count: "exact", head: true }).eq("organizations.parent_org_id", orgId),
-    db.from("exp_claim_events").select("entity_id,entity_type,event_type").eq("logo_org_id", orgId).in("event_type", ["claimed", "engaged", "upgraded"]).limit(10000),
-  ]);
-  if (locations.error) throw locations.error;
-  const claimRows = (claims.data ?? []) as { entity_id: string | null; entity_type: string | null }[];
+  const r = await api.get<{
+    locations: Raw[];
+    childCount: number | null;
+    directCount: number | null;
+    viaOfficesCount: number | null;
+    claims: { entity_id: string | null; entity_type: string | null; event_type: string | null }[];
+  }>(`${XMP_DIR}/brands/${enc(orgId)}/rollup`);
+  const claimRows = r.claims ?? [];
   const claimedLocations = new Set(claimRows.filter((r) => r.entity_type === "location" && r.entity_id).map((r) => r.entity_id)).size;
   const claimedProfessionals = new Set(claimRows.filter((r) => r.entity_type === "professional" && r.entity_id).map((r) => r.entity_id)).size;
   return {
-    locations: locations.data ?? [],
-    childCount: children.count ?? 0,
-    proCount: (direct.count ?? 0) + (viaOffices.error ? 0 : viaOffices.count ?? 0),
+    locations: r.locations ?? [],
+    childCount: r.childCount ?? 0,
+    // a failed via-offices count adds 0
+    proCount: (r.directCount ?? 0) + (r.viaOfficesCount ?? 0),
     claimedLocations,
     claimedProfessionals,
   };
 }
 
 export async function loadProfessional(proId: string) {
-  const { data, error } = await supabase.from("professionals").select("*").eq("id", proId).maybeSingle();
-  if (error) throw error;
-  return data;
+  return api.get<Raw | null>(`${SRP_DIR}/professionals/${enc(proId)}`);
 }
 
 export async function loadEventsFor(opts: { accountId?: string; logo?: string; location?: string; subjectId?: string }) {
-  let query = supabase
-    .from("exp_activity_events")
-    .select("id,event_type,subject_type,subject_id,account_id,logo,location,actor,occurred_at,is_demo")
-    .order("occurred_at", { ascending: false })
-    .limit(200);
-  if (opts.subjectId) query = query.eq("subject_id", opts.subjectId);
-  else if (opts.accountId) query = query.eq("account_id", opts.accountId);
-  else if (opts.logo) query = query.eq("logo", opts.logo);
-  else if (opts.location) query = query.eq("location", opts.location);
-  const { data, error } = await query;
-  if (error) throw error;
+  const data = await api.get<Raw[]>(`${N}/events`, {
+    params: {
+      subject_id: opts.subjectId || undefined,
+      account_id: opts.accountId || undefined,
+      logo: opts.logo || undefined,
+      location: opts.location || undefined,
+    },
+  });
   return data ?? [];
 }
 
 export async function loadSeller(repId: string) {
-  const [rep, quotas, assignments] = await Promise.all([
-    supabase.from("exp_sales_reps").select("*").eq("id", repId).maybeSingle(),
-    supabase
-      .from("exp_sales_quotas")
-      .select("id,rep_id,group_key,period_type,period_start,target,actual,is_demo")
-      .eq("rep_id", repId)
-      .order("period_start", { ascending: false }),
-    supabase.from("exp_sales_assignments").select("*").eq("rep_id", repId),
-  ]);
-  if (rep.error) throw rep.error;
+  const r = await api.get<{ rep: Raw | null; quotas: QuotaRow[]; assignments: Raw[] }>(`${N}/sellers/${enc(repId)}`);
   return {
-    rep: rep.data,
-    quotas: (quotas.data ?? []) as QuotaRow[],
-    assignments: assignments.data ?? [],
+    rep: r.rep,
+    quotas: (r.quotas ?? []) as QuotaRow[],
+    assignments: r.assignments ?? [],
   };
 }
 
 export async function loadSellerBook(accountIds: string[]) {
   if (!accountIds.length) return { contracts: [], events: [] };
-  const [contracts, events] = await Promise.all([
-    supabase.from("exp_contracts").select("*").in("account_id", accountIds),
-    supabase
-      .from("exp_activity_events")
-      .select("id,event_type,account_id,logo,location,occurred_at,is_demo")
-      .in("account_id", accountIds)
-      .order("occurred_at", { ascending: false })
-      .limit(500),
-  ]);
-  if (contracts.error) throw contracts.error;
-  return { contracts: contracts.data ?? [], events: events.data ?? [] };
+  const r = await api.post<{ contracts: Raw[]; events: Raw[] }>(`${N}/seller-book`, { account_ids: accountIds });
+  return { contracts: r.contracts ?? [], events: r.events ?? [] };
 }
 
 export async function loadCategoryDashboard(gcid: string) {
-  const [cat, orgs, pros, locations] = await Promise.all([
-    supabase.from("gbp_categories").select("*").eq("gcid", gcid).maybeSingle(),
-    supabase
-      .from("organizations")
-      .select("id", { count: "exact", head: true })
-      .eq("gcid", gcid)
-      .eq("is_demo", false),
-    supabase
-      .from("professionals")
-      .select("id", { count: "exact", head: true })
-      .eq("gcid", gcid)
-      .eq("is_demo", false),
-    supabase
-      .from("organizations")
-      .select("id,name,entity_type,address_city,address_state,claimed")
-      .eq("gcid", gcid)
-      .eq("is_demo", false)
-      .order("name")
-      .limit(25),
-  ]);
-  if (cat.error) throw cat.error;
+  const r = await api.get<{ category: Raw | null; orgCount: number | null; proCount: number | null; sampleOrgs: Raw[] }>(
+    `${N}/category-dashboard`,
+    { params: { gcid } },
+  );
   return {
-    category: cat.data,
-    orgCount: orgs.count ?? 0,
-    proCount: pros.count ?? 0,
-    sampleOrgs: locations.data ?? [],
+    category: r.category,
+    orgCount: r.orgCount ?? 0,
+    proCount: r.proCount ?? 0,
+    sampleOrgs: r.sampleOrgs ?? [],
   };
 }
 
 export async function loadTeam(groupKey: string) {
-  const [reps, quotas, tiers] = await Promise.all([
-    supabase.from("exp_sales_reps").select("*").eq("group_key", groupKey).order("role"),
-    supabase
-      .from("exp_sales_quotas")
-      .select("id,rep_id,group_key,period_type,period_start,target,actual,is_demo")
-      .eq("group_key", groupKey),
-    supabase.from("exp_account_tier").select("*").eq("group_key", groupKey),
-  ]);
-  if (reps.error) throw reps.error;
-  return { reps: reps.data ?? [], quotas: (quotas.data ?? []) as QuotaRow[], tiers: tiers.data ?? [] };
+  const r = await api.get<{ reps: Raw[]; quotas: QuotaRow[]; tiers: Raw[] }>(`${N}/teams/${enc(groupKey)}`);
+  return { reps: r.reps ?? [], quotas: (r.quotas ?? []) as QuotaRow[], tiers: r.tiers ?? [] };
 }

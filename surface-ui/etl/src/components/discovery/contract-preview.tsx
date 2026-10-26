@@ -8,7 +8,7 @@ import { Textarea } from "@v3/ui/components/ui/textarea";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@v3/ui/components/ui/dialog";
 import { AddressValue, PayloadFields, isAddressObject } from "@v3/etl/components/discovery/pipeline-tab";
 import { previewSiteProposal, type ProposalPreviewRecord } from "@v3/etl/lib/site-proposal.functions";
-import { csvExport } from "@v3/ui/lib/enterprise-ops";
+import { csvExport } from "@v3/etl/lib/csv-export";
 
 /* Contract preview (2026-10-15): "Preview records" for a pending proposal or for the saved contract (re-check).
    Builds records live with the contract (previewSiteProposal, read-only), on the contract's sample pages or on up

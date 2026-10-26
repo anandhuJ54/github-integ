@@ -5,7 +5,7 @@
  * aggregate function. Nothing is estimated or fabricated. When a source is not
  * wired (e.g. review ingestion), the caller renders an honest empty state.
  */
-import { supabase } from "@v3/ui/integrations/supabase/client";
+import { api } from "@v3/ui/lib/server-fn";
 
 /** Default enterprise example brand — State Farm. */
 export const DEFAULT_BRAND_ID = "bbbbbbb1-0000-4000-8000-000000000001";
@@ -106,28 +106,22 @@ export const share = (part: number, whole: number) => (whole > 0 ? part / whole 
 
 /* ─────────── brand ─────────── */
 
+/** An allow-listed read-only RPC (FastAPI /xmp/rpc): its rows, or its jsonb value. */
+const rpc = <T>(name: string, args: Record<string, unknown>) =>
+  api.post<T>(`/xmp/rpc/${name}`, { args });
+
 export async function loadBrand(slug: string): Promise<Brand | null> {
-  const { data } = await supabase
-    .from("organizations")
-    .select("id,name,slug,logo_url,entity_type,address_city,address_state,search_rank_score")
-    .eq("slug", slug)
-    .maybeSingle();
-  return (data as Brand | null) ?? null;
+  // errors were ignored (no brand)
+  return api.get<Brand | null>(`/xmp/enterprise/brands/${encodeURIComponent(slug)}`).catch(() => null);
 }
 
 export async function loadOverview(brandId: string): Promise<BrandOverview> {
-  const { data, error } = await supabase.rpc("exp_xmp_brand_overview", { p_brand: brandId });
-  if (error) throw error;
-  return data as unknown as BrandOverview;
+  return rpc<BrandOverview>("exp_xmp_brand_overview", { p_brand: brandId });
 }
 
 export async function loadStateRollup(brandId: string, limit = 60): Promise<StateRow[]> {
-  const { data, error } = await supabase.rpc("exp_xmp_state_rollup", {
-    p_brand: brandId,
-    p_limit: limit,
-  });
-  if (error) throw error;
-  return (data as unknown as StateRow[]) ?? [];
+  const data = await rpc<StateRow[] | null>("exp_xmp_state_rollup", { p_brand: brandId, p_limit: limit });
+  return data ?? [];
 }
 
 /* ─────────── hierarchy explorer (paginated) ─────────── */
@@ -139,29 +133,22 @@ export async function loadOfficePage(args: {
   page: number;
   pageSize: number;
 }): Promise<{ rows: OfficeRow[]; total: number }> {
-  const { data, error } = await supabase.rpc("exp_xmp_offices_page", {
+  const data = await rpc<OfficeRow[] | null>("exp_xmp_offices_page", {
     p_brand: args.brandId,
     p_q: args.q ?? "",
     p_state: args.state ?? "",
     p_limit: args.pageSize,
     p_offset: args.page * args.pageSize,
   });
-  if (error) throw error;
-  const rows = (data as unknown as OfficeRow[]) ?? [];
+  const rows = data ?? [];
   return { rows, total: rows[0]?.total_count ?? 0 };
 }
 
 export async function loadOfficePros(officeId: string, limit = 50): Promise<ProRow[]> {
-  const { data, error } = await supabase
-    .from("professionals")
-    .select(
-      "id,display_name,first_name,last_name,slug,photo_url,bio,address_city,address_state,search_rank_score,claimed,primary_org_id",
-    )
-    .eq("primary_org_id", officeId)
-    .order("display_name", { nullsFirst: false })
-    .limit(limit);
-  if (error) throw error;
-  return (data as ProRow[]) ?? [];
+  const data = await api.get<ProRow[]>(`/xmp/enterprise/offices/${encodeURIComponent(officeId)}/pros`, {
+    params: { limit },
+  });
+  return data ?? [];
 }
 
 /** Distinct states present under the brand, for the filter control. */
@@ -176,42 +163,26 @@ export async function loadStateOptions(brandId: string): Promise<string[]> {
 /* ─────────── leaderboards ─────────── */
 
 export async function loadTopProsByScore(brandId: string, limit = 20): Promise<ProRow[]> {
-  const { data, error } = await supabase.rpc("exp_xmp_top_pros_score", {
-    p_brand: brandId,
-    p_limit: limit,
-  });
-  if (error) throw error;
-  return (data as unknown as ProRow[]) ?? [];
+  const data = await rpc<ProRow[] | null>("exp_xmp_top_pros_score", { p_brand: brandId, p_limit: limit });
+  return data ?? [];
 }
 
 export async function loadTopOfficesByScore(brandId: string, limit = 20): Promise<OfficeRow[]> {
-  const { data, error } = await supabase
-    .from("organizations")
-    .select("id,name,slug,address_city,address_state,search_rank_score,claimed")
-    .eq("parent_org_id", brandId)
-    .gt("search_rank_score", 0)
-    .order("search_rank_score", { ascending: false })
-    .limit(limit);
-  if (error) throw error;
-  return ((data as any[]) ?? []).map((r) => ({ ...r, pro_count: 0, total_count: 0 })) as OfficeRow[];
+  const data = await api.get<Omit<OfficeRow, "pro_count" | "total_count">[]>(
+    `/xmp/enterprise/brands/${encodeURIComponent(brandId)}/top-offices`,
+    { params: { limit } },
+  );
+  return (data ?? []).map((r) => ({ ...r, pro_count: 0, total_count: 0 })) as OfficeRow[];
 }
 
 export async function loadTopDepth(brandId: string, limit = 20): Promise<DepthRow[]> {
-  const { data, error } = await supabase.rpc("exp_xmp_top_depth", {
-    p_brand: brandId,
-    p_limit: limit,
-  });
-  if (error) throw error;
-  return (data as unknown as DepthRow[]) ?? [];
+  const data = await rpc<DepthRow[] | null>("exp_xmp_top_depth", { p_brand: brandId, p_limit: limit });
+  return data ?? [];
 }
 
 export async function loadTopReviews(brandId: string, limit = 20): Promise<ReviewLeaderRow[]> {
-  const { data, error } = await supabase.rpc("exp_xmp_top_reviews", {
-    p_brand: brandId,
-    p_limit: limit,
-  });
-  if (error) throw error;
-  return (data as unknown as ReviewLeaderRow[]) ?? [];
+  const data = await rpc<ReviewLeaderRow[] | null>("exp_xmp_top_reviews", { p_brand: brandId, p_limit: limit });
+  return data ?? [];
 }
 
 /* ─────────── view-as (read-only) ─────────── */
@@ -242,59 +213,21 @@ export type ViewAsLocation = {
 };
 
 export async function loadViewAsProfessional(id: string): Promise<ViewAsProfessional | null> {
-  const { data: pro } = await supabase
-    .from("professionals")
-    .select(
-      "id,display_name,first_name,last_name,slug,photo_url,bio,headline,job_title,email,phone,address_city,address_state,search_rank_score,claimed,primary_org_id",
-    )
-    .eq("id", id)
-    .maybeSingle();
-  if (!pro) return null;
-
-  const [officeRes, nodeRes, revRes] = await Promise.all([
-    pro.primary_org_id
-      ? supabase
-          .from("organizations")
-          .select("id,name,slug,address_city,address_state")
-          .eq("id", pro.primary_org_id)
-          .maybeSingle()
-      : Promise.resolve({ data: null } as any),
-    supabase
-      .from("graph_nodes")
-      .select("id,node_type,title,url,ring")
-      .eq("entity_id", id)
-      .eq("is_active", true)
-      .order("ring")
-      .limit(300),
-    supabase
-      .from("reviews")
-      .select("id,rating,reviewer_name,review_text,review_date")
-      .eq("entity_type", "professional")
-      .eq("entity_id", id)
-      .order("review_date", { ascending: false })
-      .limit(25),
-  ]);
-
-  return {
-    kind: "professional",
-    pro: pro as any,
-    office: (officeRes as any).data ?? null,
-    nodes: ((nodeRes.data as any[]) ?? []) as ViewAsProfessional["nodes"],
-    reviews: ((revRes.data as any[]) ?? []) as ViewAsProfessional["reviews"],
-  };
+  // the professional, its office, active nodes and reviews (server side; null when not readable)
+  const data = await api.get<Omit<ViewAsProfessional, "kind"> | null>(
+    `/xmp/enterprise/view-as/professional/${encodeURIComponent(id)}`,
+  );
+  if (!data) return null;
+  return { kind: "professional", ...data };
 }
 
 export async function loadViewAsLocation(id: string): Promise<ViewAsLocation | null> {
-  const { data: office } = await supabase
-    .from("organizations")
-    .select(
-      "id,name,slug,phone,address_street,address_city,address_state,address_zip,search_rank_score,claimed",
-    )
-    .eq("id", id)
-    .maybeSingle();
-  if (!office) return null;
-  const pros = await loadOfficePros(id, 100);
-  return { kind: "location", office: office as any, pros };
+  // the office and loadOfficePros(id, 100) (server side; null when the office isn't readable)
+  const data = await api.get<Omit<ViewAsLocation, "kind"> | null>(
+    `/xmp/enterprise/view-as/location/${encodeURIComponent(id)}`,
+  );
+  if (!data) return null;
+  return { kind: "location", office: data.office, pros: data.pros };
 }
 
 /* ─────────── moderation queue (scaffold) ─────────── */
@@ -328,15 +261,10 @@ export function screenText(text: string | null): string[] {
 }
 
 export async function loadModerationQueue(brandId: string, limit = 50): Promise<ModerationItem[]> {
-  const pros = await loadTopReviews(brandId, 200);
-  const ids = pros.map((p) => p.id);
-  if (!ids.length) return [];
-  const { data } = await supabase
-    .from("reviews")
-    .select("id,entity_id,rating,reviewer_name,review_text,review_date")
-    .eq("entity_type", "professional")
-    .in("entity_id", ids)
-    .order("review_date", { ascending: false })
-    .limit(limit);
-  return ((data as any[]) ?? []).map((r) => ({ ...r, flags: screenText(r.review_text) }));
+  // loadTopReviews(brand, 200), then those professionals' newest reviews (server side)
+  const data = await api.get<Omit<ModerationItem, "flags">[]>(
+    `/xmp/enterprise/brands/${encodeURIComponent(brandId)}/moderation`,
+    { params: { limit } },
+  );
+  return (data ?? []).map((r) => ({ ...r, flags: screenText(r.review_text) }));
 }

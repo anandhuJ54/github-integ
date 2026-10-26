@@ -1,5 +1,5 @@
-import { supabase } from "@v3/ui/integrations/supabase/client";
-import { currentPeriodStart, type TerritorySlot } from "@v3/ui/lib/territories";
+import { api } from "@v3/ui/lib/server-fn";
+import { currentPeriodStart, type TerritorySlot } from "@v3/sales/lib/territories";
 
 /* ────────────────────────────────────────────────────────────
    Category-group territory + team reporting data layer.
@@ -7,7 +7,10 @@ import { currentPeriodStart, type TerritorySlot } from "@v3/ui/lib/territories";
    not a single gcid. Everything here is read live — real-only.
    ──────────────────────────────────────────────────────────── */
 
-const db = supabase as unknown as { from: (t: string) => any; rpc: (fn: string, a?: any) => any };
+// FastAPI: surface-api/sales/routers/category_groups_data.py and territories_data.py (signed-in user).
+const G = "/sales/category-groups";
+const T = "/sales/territories";
+const enc = encodeURIComponent;
 
 export const CATCHALL_GROUP = "_catchall";
 
@@ -69,21 +72,20 @@ export type RepMetrics = {
 /* ─────────── Reads ─────────── */
 
 export async function loadCategoryGroups(): Promise<CategoryGroup[]> {
-  const { data, error } = await db.from("exp_category_groups").select("*").order("label");
-  if (error) throw error;
+  const data = await api.get<CategoryGroup[]>(G);
   return (data ?? []) as CategoryGroup[];
 }
 
 export async function loadGroupMembers(groupKey?: string): Promise<GroupMember[]> {
-  let q = db.from("exp_category_group_members").select("id,group_key,gcid").order("gcid");
-  if (groupKey) q = q.eq("group_key", groupKey);
-  const { data, error } = await q;
-  if (error) throw error;
+  // The members, then (only when there is one) their categories' names (that read's error ignored).
+  const { members: data, cats } = await api.get<{
+    members: { id: string; group_key: string; gcid: string }[];
+    cats: { gcid: string; display_name: string | null }[];
+  }>(`${G}/members`, { params: { group_key: groupKey || null } });
   const rows = (data ?? []) as { id: string; group_key: string; gcid: string }[];
   const gcids = [...new Set(rows.map((r) => r.gcid))];
   let names: Record<string, string> = {};
   if (gcids.length) {
-    const { data: cats } = await db.from("gbp_categories").select("gcid,display_name").in("gcid", gcids);
     names = Object.fromEntries(
       ((cats ?? []) as { gcid: string; display_name: string | null }[]).map((c) => [
         c.gcid,
@@ -95,29 +97,17 @@ export async function loadGroupMembers(groupKey?: string): Promise<GroupMember[]
 }
 
 export async function loadGroupTerritories(groupKey?: string): Promise<TerritorySlot[]> {
-  let q = db.from("exp_territories").select("*").order("tier").order("seq");
-  if (groupKey) q = q.eq("group_key", groupKey);
-  const { data, error } = await q;
-  if (error) throw error;
+  const data = await api.get<TerritorySlot[]>(`${T}/slots`, { params: { group_key: groupKey || null } });
   return (data ?? []) as TerritorySlot[];
 }
 
 export async function loadGroupQuotas(groupKey?: string): Promise<GroupQuota[]> {
-  let q = db
-    .from("exp_sales_quotas")
-    .select("id,rep_id,group_key,period_type,period_start,target,actual,is_demo")
-    .order("period_start", { ascending: false });
-  if (groupKey) q = q.eq("group_key", groupKey);
-  const { data, error } = await q;
-  if (error) throw error;
+  const data = await api.get<GroupQuota[]>(`${G}/quotas`, { params: { group_key: groupKey || null } });
   return (data ?? []) as GroupQuota[];
 }
 
 export async function loadGroupMetrics(groupKey?: string): Promise<RepMetrics[]> {
-  let q = db.from("exp_sales_rep_metrics").select("*").order("period_start", { ascending: false });
-  if (groupKey) q = q.eq("group_key", groupKey);
-  const { data, error } = await q;
-  if (error) throw error;
+  const data = await api.get<RepMetrics[]>(`${G}/metrics`, { params: { group_key: groupKey || null } });
   return (data ?? []) as RepMetrics[];
 }
 
@@ -162,12 +152,7 @@ export async function loadGroupsOverview(): Promise<GroupOverview[]> {
 export async function searchCategories(term: string): Promise<{ gcid: string; label: string }[]> {
   const t = term.trim();
   if (t.length < 2) return [];
-  const { data, error } = await db
-    .from("gbp_categories")
-    .select("gcid,display_name")
-    .or(`display_name.ilike.%${t}%,gcid.ilike.%${t}%`)
-    .limit(25);
-  if (error) throw error;
+  const data = await api.get<{ gcid: string; display_name: string | null }[]>(`${G}/search`, { params: { term: t } });
   return ((data ?? []) as { gcid: string; display_name: string | null }[]).map((c) => ({
     gcid: c.gcid,
     label: c.display_name ?? c.gcid,
@@ -211,15 +196,19 @@ export type GroupScorecard = {
 
 export async function loadGroupScorecard(groupKey: string): Promise<GroupScorecard> {
   const period = currentPeriodStart();
-  const [quotas, metrics, terrs, repsRes, pipeRes] = await Promise.all([
-    loadGroupQuotas(groupKey),
-    loadGroupMetrics(groupKey),
-    loadGroupTerritories(groupKey),
-    db.from("exp_sales_reps").select("id,name,role,group_key,is_demo").order("name"),
-    db.from("exp_sales_pipeline").select("owner,stage,value,is_demo"),
-  ]);
-  const reps = ((repsRes.data ?? []) as any[]).map((r) => r);
-  const pipeline = (pipeRes.data ?? []) as { owner: string; stage: string; value: number | null }[];
+  // One request: the group's quotas, metrics and territories, plus reps and pipeline (those two reads' errors ignored).
+  const sc = await api.get<{
+    quotas: GroupQuota[];
+    metrics: RepMetrics[];
+    territories: TerritorySlot[];
+    reps: any[];
+    pipeline: any[];
+  }>(`${G}/${enc(groupKey)}/scorecard`);
+  const quotas = sc.quotas ?? [];
+  const metrics = sc.metrics ?? [];
+  const terrs = sc.territories ?? [];
+  const reps = ((sc.reps ?? []) as any[]).map((r) => r);
+  const pipeline = (sc.pipeline ?? []) as { owner: string; stage: string; value: number | null }[];
 
   const repIds = new Set<string>();
   for (const q of quotas) if (q.rep_id && q.period_start === period) repIds.add(q.rep_id);
@@ -296,22 +285,24 @@ export async function loadGroupScorecard(groupKey: string): Promise<GroupScoreca
 /* ─────────── Writes ─────────── */
 
 export async function addGroupMember(groupKey: string, gcid: string) {
-  const { error } = await db.from("exp_category_group_members").insert({ group_key: groupKey, gcid });
-  if (error) throw error;
+  await api.post(`${G}/${enc(groupKey)}/members`, { gcid });
 }
 
 export async function removeGroupMember(id: string) {
-  const { error } = await db.from("exp_category_group_members").delete().eq("id", id);
-  if (error) throw error;
+  await api.delete(`${G}/members/${enc(id)}`);
 }
 
 /** Regenerate a group's territories from real volume across all member categories. */
 export async function generateGroupTerritories(groupKey: string) {
-  const { data, error } = await db.rpc("exp_generate_group_territories", { p_group_key: groupKey });
+  const rpc = (args: Record<string, unknown>) =>
+    api.post<unknown>(`${T}/rpc/exp_generate_group_territories`, { args }).then(
+      (data) => ({ data, error: null as unknown }),
+      (error: unknown) => ({ data: null as unknown, error }),
+    );
+  const { data, error } = await rpc({ p_group_key: groupKey });
   if (error) {
-    const { data: d2, error: e2 } = await db.rpc("exp_generate_group_territories", {
-      group_key: groupKey,
-    });
+    // The legacy retry with a `group_key` argument (the function takes only p_group_key: refused, so the first error is thrown).
+    const { data: d2, error: e2 } = await rpc({ group_key: groupKey });
     if (e2) throw error;
     return d2 as unknown;
   }
@@ -325,37 +316,10 @@ export async function assignGroupTerritory(input: {
   repId: string;
   quotaTarget?: number | null;
 }) {
-  const { error } = await db
-    .from("exp_territories")
-    .update({ seller_id: input.repId, status: "assigned" })
-    .eq("id", input.territoryId);
-  if (error) throw error;
+  await api.patch(`${T}/slots/${enc(input.territoryId)}`, { seller_id: input.repId, status: "assigned" });
 
   if (input.quotaTarget != null && Number.isFinite(input.quotaTarget)) {
-    const period_start = currentPeriodStart();
-    const { data: existing } = await db
-      .from("exp_sales_quotas")
-      .select("id")
-      .eq("rep_id", input.repId)
-      .eq("group_key", input.groupKey)
-      .eq("period_start", period_start)
-      .maybeSingle();
-    if (existing?.id) {
-      const { error: e2 } = await db
-        .from("exp_sales_quotas")
-        .update({ target: input.quotaTarget })
-        .eq("id", existing.id);
-      if (e2) throw e2;
-    } else {
-      const { error: e3 } = await db.from("exp_sales_quotas").insert({
-        rep_id: input.repId,
-        group_key: input.groupKey,
-        period_type: "month",
-        period_start,
-        target: input.quotaTarget,
-        actual: 0,
-      });
-      if (e3) throw e3;
-    }
+    // This month's quota row for the rep × group (server clock): update its target, else insert it (one request).
+    await api.put(`${T}/quotas`, { rep_id: input.repId, group_key: input.groupKey, target: input.quotaTarget });
   }
 }

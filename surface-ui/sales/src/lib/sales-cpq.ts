@@ -4,8 +4,8 @@
  * (exp_price_tiers) and promo codes (exp_promo_codes / exp_promo_redemptions).
  * Pricing is always computed by cpq-pricing — nothing here re-prices.
  */
-import { supabase } from "@v3/ui/integrations/supabase/client";
 import type { Json } from "@v3/ui/integrations/supabase/types";
+import { api } from "@v3/ui/lib/server-fn";
 import { CATALOG, catalogAnnualRate } from "./cpq-catalog";
 import type { PriceTier as EnterprisePriceTier, TierKind } from "./cpq-depth";
 import { initialState, normalizePackageInclusions, type QuoteState } from "./cpq-state";
@@ -20,6 +20,9 @@ import {
 
 const DRAFT_KEY = (id: string) => `cpq-draft:${id}`;
 
+// FastAPI: surface-api/sales/routers/cpq_data.py (runs as the signed-in user).
+const CPQ = "/sales/cpq";
+
 /* ─────────── Quotes ─────────── */
 export type QuoteRow = {
   id: string;
@@ -32,12 +35,7 @@ export type QuoteRow = {
 };
 
 export async function listQuotes(): Promise<QuoteRow[]> {
-  const { data, error } = await supabase
-    .from("exp_quotes")
-    .select("id,name,status,summary,updated_at,account_id,opportunity_id")
-    .order("updated_at", { ascending: false, nullsFirst: false });
-  if (error) throw error;
-  return data ?? [];
+  return api.get<QuoteRow[]>(`${CPQ}/quotes`);
 }
 
 export function newQuoteId() {
@@ -65,14 +63,7 @@ export function writeLocalDraft(state: QuoteState) {
 
 /** Reads the saved quote (keyed by exp_quotes.name = quoteId); falls back to a local draft, then initialState(). */
 export async function loadQuote(quoteId: string): Promise<{ state: QuoteState; saved: boolean }> {
-  const { data, error } = await supabase
-    .from("exp_quotes")
-    .select("state")
-    .eq("name", quoteId)
-    .order("updated_at", { ascending: false, nullsFirst: false })
-    .limit(1)
-    .maybeSingle();
-  if (error) throw error;
+  const data = await api.get<{ state: Json | null } | null>(`${CPQ}/quotes/state`, { params: { name: quoteId } });
   if (data?.state) return { state: { ...(data.state as unknown as QuoteState), quoteId }, saved: true };
   const local = readLocalDraft(quoteId);
   if (local) return { state: { ...local, quoteId }, saved: false };
@@ -81,7 +72,8 @@ export async function loadQuote(quoteId: string): Promise<{ state: QuoteState; s
 
 export async function saveQuote(state: QuoteState, summary: QuoteSummary, status = "draft") {
   writeLocalDraft(state);
-  const { data: auth } = await supabase.auth.getUser();
+  // Updates the quote with this name, else inserts it (created_by = the signed-in user); the
+  // server stamps updated_at.
   const payload = {
     name: state.quoteId,
     state: state as unknown as Json,
@@ -89,27 +81,9 @@ export async function saveQuote(state: QuoteState, summary: QuoteSummary, status
     status,
     account_id: state.accountId ?? null,
     opportunity_id: state.opportunityId ?? null,
-    updated_at: new Date().toISOString(),
   };
-  const { data: existing, error: e1 } = await supabase
-    .from("exp_quotes")
-    .select("id")
-    .eq("name", state.quoteId)
-    .limit(1)
-    .maybeSingle();
-  if (e1) throw e1;
-  if (existing) {
-    const { error } = await supabase.from("exp_quotes").update(payload).eq("id", existing.id);
-    if (error) throw error;
-    return existing.id;
-  }
-  const { data, error } = await supabase
-    .from("exp_quotes")
-    .insert({ ...payload, created_by: auth.user?.id ?? null })
-    .select("id")
-    .single();
-  if (error) throw error;
-  return data.id;
+  const { id } = await api.put<{ id: string }>(`${CPQ}/quotes`, payload);
+  return id;
 }
 
 export async function prepareOpportunityQuote(input: {
@@ -121,14 +95,9 @@ export async function prepareOpportunityQuote(input: {
   locationCount: number;
   productKeys: string[];
 }) {
-  const { data: existing, error } = await supabase
-    .from("exp_quotes")
-    .select("name")
-    .eq("opportunity_id", input.opportunityId)
-    .order("updated_at", { ascending: false, nullsFirst: false })
-    .limit(1)
-    .maybeSingle();
-  if (error) throw error;
+  const existing = await api.get<{ name: string | null } | null>(
+    `${CPQ}/quotes/by-opportunity/${encodeURIComponent(input.opportunityId)}`,
+  );
   if (existing?.name) return { quoteId: existing.name, created: false };
 
   const keys = [...new Set(input.productKeys)];
@@ -185,12 +154,7 @@ export type CpqAccount = {
 };
 
 export async function listAccounts(): Promise<CpqAccount[]> {
-  const { data, error } = await supabase
-    .from("exp_accounts")
-    .select("id,name,org_id,industry,account_type,city,region")
-    .order("name");
-  if (error) throw error;
-  return data ?? [];
+  return api.get<CpqAccount[]>(`${CPQ}/accounts`);
 }
 
 export type CpqLine = { productKey: string; label: string; qty: number; unitPrice: number; net: number; notes?: string; entityType?: "professional" | "location" | null };
@@ -275,48 +239,38 @@ export async function commitEntitlements(
   const summary = opts?.summary ?? calculateSummary(state);
   const lines = opts?.lines ?? buildLineItems(state);
   const approvalPatch = opts?.approval?.pending ? { approval_state: "pending", approval_note: opts.approval.note } : {};
-  const { data: auth } = await supabase.auth.getUser();
   let id = contractId ?? null;
+  // Each step is its own request (and transaction), in the order the browser always ran them.
   if (!id) {
-    const { data, error } = await supabase
-      .from("exp_contracts")
-      .insert({
-        name: `${state.accountName || "Quote"} · ${state.quoteId}`,
-        account_id: state.accountId ?? null,
-        org_id: state.accountOrgId ?? null,
-        status: "draft",
-        mrr: Math.round((summary.estimatedArr / 12) * 100) / 100,
-        net: summary.estimatedArr,
-        created_by: auth.user?.id ?? null,
-        terms: { quote_id: state.quoteId, summary, pricing_model: state.pricingModel ?? "ppu" } as unknown as Json,
-        ...approvalPatch,
-      })
-      .select("id")
-      .single();
-    if (error) throw error;
+    // created_by = the signed-in user (set by the server from the token)
+    const data = await api.post<{ id: string }>(`${CPQ}/contracts`, {
+      name: `${state.accountName || "Quote"} · ${state.quoteId}`,
+      account_id: state.accountId ?? null,
+      org_id: state.accountOrgId ?? null,
+      status: "draft",
+      mrr: Math.round((summary.estimatedArr / 12) * 100) / 100,
+      net: summary.estimatedArr,
+      terms: { quote_id: state.quoteId, summary, pricing_model: state.pricingModel ?? "ppu" } as unknown as Json,
+      ...approvalPatch,
+    });
     id = data.id;
   } else {
-    const { error: d } = await supabase.from("exp_contract_line_items").delete().eq("contract_id", id);
-    if (d) throw d;
-    const { error: u } = await supabase
-      .from("exp_contracts")
-      .update({
-        mrr: Math.round((summary.estimatedArr / 12) * 100) / 100,
-        net: summary.estimatedArr,
-        account_id: state.accountId ?? null,
-        ...(state.accountOrgId ? { org_id: state.accountOrgId } : {}),
-        ...approvalPatch,
-      })
-      .eq("id", id);
-    if (u) throw u;
+    await api.delete(`${CPQ}/contracts/${encodeURIComponent(id)}/line-items`);
+    await api.patch(`${CPQ}/contracts/${encodeURIComponent(id)}`, {
+      mrr: Math.round((summary.estimatedArr / 12) * 100) / 100,
+      net: summary.estimatedArr,
+      account_id: state.accountId ?? null,
+      ...(state.accountOrgId ? { org_id: state.accountOrgId } : {}),
+      ...approvalPatch,
+    });
   }
   const gross = summary.bundle + summary.addOns + summary.enterprise;
   const discPct = summary.writeDownPct != null ? Math.round(summary.writeDownPct * 100) / 100 : gross > 0 ? Math.round((summary.discount / gross) * 10000) / 100 : 0;
   const oneTime = opts?.oneTimeLines ?? [];
   if (lines.length || oneTime.length) {
-    const { error } = await supabase.from("exp_contract_line_items").insert(
-      [...lines.map((l) => ({ l, term: "annual", disc: discPct })), ...oneTime.map((l) => ({ l, term: "one_time", disc: 0 }))].map(({ l, term, disc }) => ({
-        contract_id: id,
+    // contract_id comes from the path; the server adds it to every row
+    await api.post(`${CPQ}/contracts/${encodeURIComponent(id!)}/line-items`, {
+      rows: [...lines.map((l) => ({ l, term: "annual", disc: discPct })), ...oneTime.map((l) => ({ l, term: "one_time", disc: 0 }))].map(({ l, term, disc }) => ({
         product_key: l.productKey,
         qty: l.qty,
         unit_price: l.unitPrice,
@@ -325,8 +279,7 @@ export async function commitEntitlements(
         discount_pct: disc,
         notes: [l.label, l.notes].filter(Boolean).join(" — "),
       })),
-    );
-    if (error) throw error;
+    });
   }
   const nextState = { ...state, contractId: id } as QuoteState & { contractId: string };
   if (opts?.approval?.pending) {
@@ -334,7 +287,14 @@ export async function commitEntitlements(
     await saveQuote(nextState, summary, "needs_approval");
     return { contractId: id!, lines: lines.length + oneTime.length, provisioned: null, provisionError: null, pendingApproval: true };
   }
-  const { data: provisioned, error: pErr } = await supabase.rpc("exp_contract_provision", { p_contract: id! });
+  // A provisioning error is reported, not thrown (as before): the quote is still saved.
+  let provisioned: number | null = null;
+  let pErr: { message: string } | null = null;
+  try {
+    provisioned = await api.post<number | null>(`${CPQ}/rpc/exp_contract_provision`, { args: { p_contract: id! } });
+  } catch (e) {
+    pErr = { message: (e as Error | null)?.message ?? String(e) };
+  }
   await saveQuote(nextState, summary, "entitlements_complete");
   return { contractId: id!, lines: lines.length + oneTime.length, provisioned: pErr ? null : (provisioned as number), provisionError: pErr?.message ?? null, pendingApproval: false };
 }
@@ -356,12 +316,7 @@ const numOrNull = (v: unknown) => (v == null || v === "" ? null : Number(v));
 
 /** All exp_price_tiers rows, numerics coerced, mapped to the cpq-depth PriceTier shape (+ id). */
 export async function listPriceTiers(): Promise<TierRow[]> {
-  const { data, error } = await supabase
-    .from("exp_price_tiers")
-    .select("*")
-    .order("product_key")
-    .order("min_qty");
-  if (error) throw error;
+  const data = await api.get<Record<string, unknown>[]>(`${CPQ}/price-tiers`);
   return ((data ?? []) as Record<string, unknown>[]).map((r) => ({
     id: String(r.id),
     effective_from: (r.effective_from as string | null) ?? null,
@@ -391,22 +346,17 @@ export function tiersFor<T extends EnterprisePriceTier>(rows: T[], productKey: s
 
 /** Per-row save for the Volume tiers tab (numeric schedule fields only). */
 export async function updateTierFields(id: string, patch: Partial<Record<"min_qty" | "max_qty" | "unit_price" | "discount_pct" | "platform_fee_annual" | "addl_user_monthly" | "setup_fee" | "included_campaigns" | "pooled_credits" | "overage_rate", number | null>>) {
-  const { error } = await supabase.from("exp_price_tiers").update(patch as never).eq("id", id);
-  if (error) throw error;
+  await api.patch(`${CPQ}/price-tiers/${encodeURIComponent(id)}`, patch);
 }
 
 export async function upsertPriceTier(t: Omit<PriceTier, "id"> & { id?: string }) {
   const { id, ...row } = t;
-  const q = id
-    ? supabase.from("exp_price_tiers").update(row).eq("id", id)
-    : supabase.from("exp_price_tiers").insert(row);
-  const { error } = await q;
-  if (error) throw error;
+  if (id) await api.patch(`${CPQ}/price-tiers/${encodeURIComponent(id)}`, row);
+  else await api.post(`${CPQ}/price-tiers`, row);
 }
 
 export async function deletePriceTier(id: string) {
-  const { error } = await supabase.from("exp_price_tiers").delete().eq("id", id);
-  if (error) throw error;
+  await api.delete(`${CPQ}/price-tiers/${encodeURIComponent(id)}`);
 }
 
 /* ─────────── Promo codes ─────────── */
@@ -428,27 +378,20 @@ export type Promo = {
 };
 
 export async function listPromos(): Promise<Promo[]> {
-  const { data, error } = await supabase
-    .from("exp_promo_codes")
-    .select("id,code,active,applies_to_products,discount_kind,amount,discount_pct,pricing_type,duration_months,starts_at,expires_at,scope_type,applies_to_scope,seller_id")
-    .order("created_at", { ascending: false, nullsFirst: false });
-  if (error) throw error;
-  return data ?? [];
+  return api.get<Promo[]>(`${CPQ}/promos`);
 }
 
 export async function createPromo(p: Omit<Promo, "id" | "active">) {
-  const { error } = await supabase.from("exp_promo_codes").insert({ ...p, active: true });
-  if (error) throw error;
+  // inserted with active: true by the server
+  await api.post(`${CPQ}/promos`, p);
 }
 
 export async function setPromoActive(id: string, active: boolean) {
-  const { error } = await supabase.from("exp_promo_codes").update({ active }).eq("id", id);
-  if (error) throw error;
+  await api.patch(`${CPQ}/promos/${encodeURIComponent(id)}`, { active });
 }
 
 export async function redemptionCounts(): Promise<Record<string, number>> {
-  const { data, error } = await supabase.from("exp_promo_redemptions").select("code");
-  if (error) throw error;
+  const data = await api.get<{ code: string | null }[]>(`${CPQ}/promo-redemptions`);
   const out: Record<string, number> = {};
   for (const r of data ?? []) if (r.code) out[r.code] = (out[r.code] ?? 0) + 1;
   return out;
@@ -456,14 +399,7 @@ export async function redemptionCounts(): Promise<Record<string, number>> {
 
 /** Finds an active, in-window promo by code (case-insensitive). */
 export async function findPromo(code: string): Promise<Promo | null> {
-  const { data, error } = await supabase
-    .from("exp_promo_codes")
-    .select("id,code,active,applies_to_products,discount_kind,amount,discount_pct,pricing_type,duration_months,starts_at,expires_at,scope_type,applies_to_scope,seller_id")
-    .ilike("code", code.trim())
-    .eq("active", true)
-    .limit(1)
-    .maybeSingle();
-  if (error) throw error;
+  const data = await api.get<Promo | null>(`${CPQ}/promos/find`, { params: { code: code.trim() } });
   if (!data) return null;
   const now = Date.now();
   if (data.starts_at && Date.parse(data.starts_at) > now) return null;
@@ -486,7 +422,7 @@ export function promoDiscount(promo: Promo, state: QuoteState): number {
 
 /** Approval state + note of a contract (read). */
 export async function loadContractApproval(contractId: string) {
-  const { data, error } = await supabase.from("exp_contracts").select("approval_state,approval_note").eq("id", contractId).maybeSingle();
-  if (error) throw error;
-  return data;
+  return api.get<{ approval_state: string; approval_note: string | null } | null>(
+    `${CPQ}/contracts/${encodeURIComponent(contractId)}/approval`,
+  );
 }

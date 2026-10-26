@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Lock, LockOpen } from "lucide-react";
-import { supabase } from "@v3/ui/integrations/supabase/client";
+import { api } from "@v3/ui/lib/server-fn";
 import { useRole } from "@v3/ui/lib/roles";
 import { Button } from "@v3/ui/components/ui/button";
 import { Input } from "@v3/ui/components/ui/input";
@@ -78,16 +78,24 @@ function KeyRow({ gcid, lane, scope, categoryLabel, internal, onSaved }: KeyRowP
     setSaving(true);
     setError(null);
     const internalValue = num * cfg.factor;
-    const { error: rpcError } = await (supabase.rpc as unknown as (fn: string, args: Record<string, unknown>) => Promise<{ error: { message: string } | null }>)("exp_set_expected_volume", {
-      p_gcid: gcid,
-      p_lane: lane,
-      p_scope: scope,
-      p_value: internalValue,
-      p_rationale: `Expected volume for ${lane}/${scope} set to ${num} ${cfg.unit} from the math view`,
-    });
+    // role-checked (super_admin / architect) in the function itself (surface-api/graph GRAPH_RPCS)
+    let rpcError: string | null = null;
+    try {
+      await api.post("/graph/control/rpc/exp_set_expected_volume", {
+        args: {
+          p_gcid: gcid,
+          p_lane: lane,
+          p_scope: scope,
+          p_value: internalValue,
+          p_rationale: `Expected volume for ${lane}/${scope} set to ${num} ${cfg.unit} from the math view`,
+        },
+      });
+    } catch (e) {
+      rpcError = (e as Error).message;
+    }
     setSaving(false);
     if (rpcError) {
-      setError(rpcError.message);
+      setError(rpcError);
       return;
     }
     await logAudit("set_expected_volume", gcid, {

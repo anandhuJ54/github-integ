@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@v3/ui/integrations/supabase/client";
+import { api } from "@v3/ui/lib/server-fn";
 import { EmpLayout } from "@v3/ui/components/emp-layout";
 import { Button } from "@v3/ui/components/ui/button";
 import { Input } from "@v3/ui/components/ui/input";
@@ -46,17 +46,16 @@ function CompliancePage() {
   const { data: section1, isLoading: l1 } = useQuery({
     queryKey: ["compliance-coverage"],
     queryFn: async () => {
-      const [cats, comp, rules] = await Promise.all([
-        supabase.from("gbp_categories").select("gcid, display_name").order("display_name").limit(5000),
-        supabase.from("exp_category_compliance").select("*"),
-        supabase.from("content_compliance_rules").select("gcid"),
-      ]);
-      if (cats.error) throw cats.error;
+      const { cats, comp, rules } = await api.get<{
+        cats: { gcid: string; display_name: string }[];
+        comp: ({ gcid: string } & Record<string, unknown>)[];
+        rules: { gcid: string | null }[];
+      }>("/admin/compliance/coverage");
       const compMap = new Map<string, Record<string, unknown>>();
-      (comp.data ?? []).forEach((c) => compMap.set(c.gcid, c as Record<string, unknown>));
+      comp.forEach((c) => compMap.set(c.gcid, c as Record<string, unknown>));
       const ruleCounts = new Map<string, number>();
-      (rules.data ?? []).forEach((r) => { if (r.gcid) ruleCounts.set(r.gcid, (ruleCounts.get(r.gcid) ?? 0) + 1); });
-      return (cats.data ?? []).map((cat) => {
+      rules.forEach((r) => { if (r.gcid) ruleCounts.set(r.gcid, (ruleCounts.get(r.gcid) ?? 0) + 1); });
+      return cats.map((cat) => {
         const c = compMap.get(cat.gcid);
         const disclaimers = (c?.required_disclaimers as unknown[] | undefined) ?? [];
         return {
@@ -87,32 +86,26 @@ function CompliancePage() {
   const { data: section2, isLoading: l2 } = useQuery({
     queryKey: ["entity-compliance"],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("entity_compliance")
-        .select("*")
-        .order("compliance_score", { ascending: true })
-        .limit(200);
-      if (error) throw error;
-      const rows = data ?? [];
-      const proIds = rows.filter((r) => r.entity_type === "professional").map((r) => r.entity_id);
-      const orgIds = rows.filter((r) => r.entity_type === "organization").map((r) => r.entity_id);
-      const [pros, orgs, cats] = await Promise.all([
-        proIds.length
-          ? supabase.from("professionals").select("id, display_name, first_name, last_name, gcid").in("id", proIds)
-          : Promise.resolve({ data: [] as Array<{ id: string; display_name: string | null; first_name: string | null; last_name: string | null; gcid: string | null }> }),
-        orgIds.length
-          ? supabase.from("organizations").select("id, name, gcid").in("id", orgIds)
-          : Promise.resolve({ data: [] as Array<{ id: string; name: string; gcid: string | null }> }),
-        supabase.from("gbp_categories").select("gcid, display_name"),
-      ]);
+      const { rows, pros, orgs, cats } = await api.get<{
+        rows: {
+          entity_type: string;
+          entity_id: string;
+          compliance_score: number | null;
+          missing_items: unknown;
+          last_reviewed: string | null;
+        }[];
+        pros: { id: string; display_name: string | null; first_name: string | null; last_name: string | null; gcid: string | null }[];
+        orgs: { id: string; name: string; gcid: string | null }[];
+        cats: { gcid: string; display_name: string }[];
+      }>("/admin/compliance/entities");
       const entMap = new Map<string, { name: string; gcid: string | null }>();
-      (pros.data ?? []).forEach((p) => entMap.set(p.id, {
+      pros.forEach((p) => entMap.set(p.id, {
         name: p.display_name || [p.first_name, p.last_name].filter(Boolean).join(" ") || "Unnamed",
         gcid: p.gcid,
       }));
-      (orgs.data ?? []).forEach((o) => entMap.set(o.id, { name: o.name, gcid: o.gcid }));
+      orgs.forEach((o) => entMap.set(o.id, { name: o.name, gcid: o.gcid }));
       const catMap = new Map<string, string>();
-      (cats.data ?? []).forEach((c) => catMap.set(c.gcid, c.display_name));
+      cats.forEach((c) => catMap.set(c.gcid, c.display_name));
       return rows.map((r) => {
         const ent = entMap.get(r.entity_id);
         return {

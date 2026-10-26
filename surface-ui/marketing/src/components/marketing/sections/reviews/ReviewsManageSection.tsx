@@ -1,4 +1,4 @@
-import { Button } from "@v3/ui/components/marketing/ui/button";
+import { Button } from "@v3/marketing/components/marketing/ui/button";
 import { Inbox, Sparkles, BarChart3, ArrowRight } from "lucide-react";
 import aiReplyImg from "@v3/marketing/assets/reviews-manage-opt2.png";
 

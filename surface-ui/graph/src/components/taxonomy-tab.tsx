@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Check, Plus, Sparkles, X, GripVertical } from "lucide-react";
-import { supabase } from "@v3/ui/integrations/supabase/client";
+import { api } from "@v3/ui/lib/server-fn";
 import { Button } from "@v3/ui/components/ui/button";
 import { ModelLock } from "@v3/ui/components/model-lock";
 import { Badge } from "@v3/ui/components/ui/badge";
@@ -90,14 +90,7 @@ export function TaxonomyTab({ gcid }: { gcid: string }) {
   const { data: rows = [], isLoading } = useQuery({
     queryKey: ["taxonomy", gcid],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("exp_taxonomy")
-        .select(
-          "id,gcid,level,term,term_display,term_slug,entity_scope,source,validated,priority,search_intent,search_volume_monthly,wikidata_id",
-        )
-        .eq("gcid", gcid)
-        .order("priority", { ascending: true });
-      if (error) throw error;
+      const data = await api.get<TaxonomyRow[]>("/graph/categories/taxonomy", { params: { gcid } });
       return (data ?? []) as TaxonomyRow[];
     },
   });
@@ -119,19 +112,9 @@ export function TaxonomyTab({ gcid }: { gcid: string }) {
 
   const reorder = useMutation({
     mutationFn: async (updates: { id: string; priority: number }[]) => {
-      for (const u of updates) {
-        const { error } = await supabase
-          .from("exp_taxonomy")
-          .update({ priority: u.priority })
-          .eq("id", u.id);
-        if (error) throw error;
-      }
-      await supabase.from("audit_log").insert({
-        action: "taxonomy.reorder",
-        entity_type: "exp_taxonomy",
-        entity_id: gcid,
-        metadata: { count: updates.length } as never,
-      } as never);
+      // one update per row, in order, stopping at the first error; then the audit_log insert
+      // whose error was ignored (server side)
+      await api.post("/graph/categories/taxonomy/reorder", { gcid, updates });
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["taxonomy", gcid] }),
   });
@@ -327,24 +310,12 @@ function EditDialog({
         source,
         validated,
       };
+      // insert / update, then the audit_log insert whose error was ignored (server side)
       if (isNew) {
-        const { error } = await supabase
-          .from("exp_taxonomy")
-          .insert(payload as never);
-        if (error) throw error;
+        await api.post("/graph/categories/taxonomy", payload);
       } else {
-        const { error } = await supabase
-          .from("exp_taxonomy")
-          .update(payload as never)
-          .eq("id", row!.id);
-        if (error) throw error;
+        await api.patch(`/graph/categories/taxonomy/${encodeURIComponent(row!.id)}`, payload);
       }
-      await supabase.from("audit_log").insert({
-        action: isNew ? "taxonomy.create" : "taxonomy.update",
-        entity_type: "exp_taxonomy",
-        entity_id: row?.id ?? gcid,
-        metadata: payload as never,
-      } as never);
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["taxonomy", gcid] });
@@ -355,16 +326,8 @@ function EditDialog({
   const remove = useMutation({
     mutationFn: async () => {
       if (!row) return;
-      const { error } = await supabase
-        .from("exp_taxonomy")
-        .delete()
-        .eq("id", row.id);
-      if (error) throw error;
-      await supabase.from("audit_log").insert({
-        action: "taxonomy.delete",
-        entity_type: "exp_taxonomy",
-        entity_id: row.id,
-      } as never);
+      // the delete, then the audit_log insert whose error was ignored (server side)
+      await api.delete(`/graph/categories/taxonomy/${encodeURIComponent(row.id)}`);
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["taxonomy", gcid] });

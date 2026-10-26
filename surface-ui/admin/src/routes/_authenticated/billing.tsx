@@ -11,13 +11,8 @@ import {
   EmptyState,
   type Column,
 } from "@v3/ui/components/console/primitives";
-import {
-  loadBilling,
-  money,
-  num,
-  type ContractRow,
-  type EntitlementRow,
-} from "@v3/ui/lib/console-surfaces";
+import { money, num } from "@v3/ui/lib/console-surfaces";
+import { loadBilling, type ContractRow, type EntitlementRow } from "@v3/admin/lib/console-surfaces";
 import { cn } from "@v3/ui/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/billing")({
