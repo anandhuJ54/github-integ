@@ -19,7 +19,7 @@ import pytest
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
-from _base.auth import current_user
+from _base.auth import current_srp_user, current_user
 
 # --- cursor-style fake: `fakedb` -------------------------------------------------------------
 
@@ -178,7 +178,9 @@ def surface_client() -> Callable[..., TestClient]:
         app = FastAPI()
         app.include_router(importlib.import_module(f"surfaces.{name}.router").router)
         if signed_in:
-            app.dependency_overrides[current_user] = lambda: {"sub": "user-1", "role": "authenticated"}
+            claims = {"sub": "user-1", "role": "authenticated"}
+            app.dependency_overrides[current_user] = lambda: claims
+            app.dependency_overrides[current_srp_user] = lambda: claims
         return TestClient(app)
 
     return make

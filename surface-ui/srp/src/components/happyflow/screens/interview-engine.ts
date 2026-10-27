@@ -5,6 +5,9 @@
  */
 import { createRef } from "react";
 import { prefersReducedMotion } from "../primitives";
+import { mergePersona, personalize, type HfPersona } from "../persona";
+
+const SAMPLE_PERSONA = mergePersona({});
 
 // Demo data (Happyflow prototype)
 export const C = { b: "#4285f4", p: "#9b72f2", a: "#fbbc04", g: "#34a853", r: "#ea4335" };
@@ -301,7 +304,7 @@ export const IV_INIT: IvState = {
 
 export const kept = (st: IvState) => ALLP.filter((n) => st.products[n]);
 
-export function lineText(st: IvState, k: LineKey, greet: string): string {
+export function lineText(st: IvState, k: LineKey, greet: string, persona: HfPersona = SAMPLE_PERSONA): string {
   const ph = st.phone || "(563) 555-0100";
   const ad = (st.addr || "100 Main St").split(",")[0];
   const n = kept(st).length;
@@ -326,7 +329,12 @@ export function lineText(st: IvState, k: LineKey, greet: string): string {
     fin1: `Not bad for two minutes, Alex. Your record went from [[298]] to [[384]] and **Riverbend** now has a target on its back.`,
     fin2: `I've already started: adding your Google category and services. I'll text you **Tuesday morning** with what I've done.`,
   };
-  return L[k];
+  return personalize(L[k], persona);
+}
+
+/** The interview's sources list, naming the real person when there is one. */
+export function sourcesFor(persona: HfPersona): [string, string][] {
+  return SOURCES.map(([v, label]) => [personalize(v, persona), label]);
 }
 
 /** NORA's reaction line to the sources / products the user changed ("" = nothing to say). */

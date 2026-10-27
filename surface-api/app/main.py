@@ -17,6 +17,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from psycopg_pool import PoolTimeout
 
+from _base.auth import require_local_auth_ready
 from _base.config import get_settings
 from _base.db.session import close_pools
 from app.routes import ROUTERS
@@ -26,6 +27,8 @@ _log = logging.getLogger(__name__)
 
 @asynccontextmanager
 async def _lifespan(app: FastAPI) -> AsyncIterator[None]:
+    # Local sign-in on with a missing or weak signing key: stop here, not on the first login.
+    require_local_auth_ready()
     # Pin the threadpool that runs sync routes to the DB pool size, so concurrent
     # DB-touching requests on this worker can't exceed the connections it can lease.
     anyio.to_thread.current_default_thread_limiter().total_tokens = (

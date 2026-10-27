@@ -2,6 +2,7 @@ import { useState } from "react";
 import { GRID, RIVALS } from "../demo-data";
 import { Ic, NoraFace } from "../primitives";
 import { HappyflowShell, useHf, type Think } from "../shell";
+import { usePersonalize } from "../persona-context";
 
 // Demo data (Happyflow prototype)
 const HEAD = ["Insights", "How buyers find you, and who they find first."] as const;
@@ -69,6 +70,7 @@ export function InsightsScreen() {
 }
 
 function InsightsBody() {
+  const t = usePersonalize();
   const hf = useHf();
   const { isD } = hf;
   const [tab, setTab] = useState("Competitors");
@@ -475,7 +477,8 @@ function InsightsBody() {
               <span>Rating</span>
               <span style={{ textAlign: "right" }}>Avg map</span>
             </div>
-            {COMPS.map(([r, n, rt, avg]) => {
+            {COMPS.map(([r, n0, rt, avg]) => {
+              const n = t(n0);
               const me = r === 6;
               return (
                 <div

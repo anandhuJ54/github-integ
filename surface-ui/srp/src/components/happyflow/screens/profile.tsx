@@ -13,6 +13,8 @@ import {
   type CSSProperties,
 } from "react";
 import { PERSONA, PRODUCTS } from "../demo-data";
+import { useHfPersona, usePersonalize } from "../persona-context";
+import type { HfPersona } from "../persona";
 import { HappyflowShell, useHf, type HfApi, type Think } from "../shell";
 import { Hov, Ic, NoraFace, ProBadge } from "../primitives";
 import { useSpeech } from "../use-speech";
@@ -76,6 +78,15 @@ function useProfile() {
 }
 
 const FIELDS = Object.keys(INITIAL) as ProfileField[];
+
+/** The profile's starting facts for this person: their name, title, phone and email in place of the sample ones. */
+const initialFor = (p: HfPersona): Record<ProfileField, string> => ({
+  ...INITIAL,
+  Name: p.name,
+  Title: p.title,
+  Mobile: p.mobile,
+  Email: p.email,
+});
 const isField = (k: string): k is ProfileField => (FIELDS as string[]).includes(k);
 
 const CARD_ORDER = Object.keys(CARD_FIELDS);
@@ -134,7 +145,7 @@ function editCard(
     {
       title: "Edit profile",
       input: true,
-      ph: `Started from ${t} — change anything in one go, e.g. “name Alex Rowe and phone 563 555 0177”`,
+      ph: `Started from ${t} — change anything in one go, e.g. “name Jamie Rowe and phone 563 555 0177”`,
       cta: "Continue",
       nora: "Change any fields across your profile at once, in your own words. I'll show you what I found before anything changes.",
       onSave: (text) =>
@@ -163,7 +174,7 @@ function openEdit(api: Pick<HfApi, "openSheet">, apply: Apply, k: string, v: str
   );
 }
 
-function openBio(api: Pick<HfApi, "openSheet">, apply: Apply) {
+function openBio(api: Pick<HfApi, "openSheet">, apply: Apply, bio: string = BIO_DRAFT) {
   api.openSheet(
     {
       title: "Your bio",
@@ -176,16 +187,16 @@ function openBio(api: Pick<HfApi, "openSheet">, apply: Apply) {
         if (val.trim()) apply({ Bio: val.trim() }, "Approved by you · just now");
       },
     },
-    BIO_DRAFT,
+    bio,
   );
 }
 
-const makeThinks = (apply: Apply): Think[] => [
+const makeThinks = (apply: Apply, bio: string): Think[] => [
   {
     t: "Your bio is thin.",
     d: "I drafted a fuller one from your website and LinkedIn. It's ready for your OK.",
     cta: "Review draft",
-    act: (api) => openBio(api, apply),
+    act: (api) => openBio(api, apply, bio),
   },
   {
     t: "Two things are missing.",
@@ -223,8 +234,12 @@ const row = (
 ): RowSpec => ({ k, v, src, ...o });
 
 export function ProfileScreen() {
-  const [stored] = useState(() => loadStored(INITIAL));
-  const [f, setF] = useState(stored?.f ?? INITIAL);
+  const persona = useHfPersona();
+  const t = usePersonalize();
+  const initial = useMemo(() => initialFor(persona), [persona]);
+  const bioDraft = t(BIO_DRAFT);
+  const [stored] = useState(() => loadStored(initial));
+  const [f, setF] = useState(stored?.f ?? initial);
   const [src, setSrc] = useState<Partial<Record<ProfileField, string>>>(stored?.src ?? {});
   const [recent, setRecent] = useState<ProfileField[]>([]);
 
@@ -248,12 +263,12 @@ export function ProfileScreen() {
     return keys;
   }, []);
   const reset = useCallback(() => {
-    setF(INITIAL);
+    setF(initial);
     setSrc({});
     setRecent([]);
-  }, []);
+  }, [initial]);
   const state = useMemo(() => ({ f, src, apply, recent, reset }), [f, src, apply, recent, reset]);
-  const thinks = useMemo(() => makeThinks(apply), [apply]);
+  const thinks = useMemo(() => makeThinks(apply, bioDraft), [apply, bioDraft]);
   return (
     <ProfileCtx.Provider value={state}>
       <HappyflowShell
@@ -301,6 +316,7 @@ function ResetDemoButton() {
 }
 
 function ProfileBody() {
+  const bioDraft = usePersonalize()(BIO_DRAFT);
   const hf = useHf();
   const { f, src, apply, recent } = useProfile();
   const from = (k: ProfileField, dflt: string) => src[k] ?? dflt;
@@ -395,7 +411,7 @@ function ProfileBody() {
           : row("Bio", f.Bio, "NORA draft ready", {
               nora: true,
               cta: "Review draft",
-              ctaOn: () => openBio(hf, apply),
+              ctaOn: () => openBio(hf, apply, bioDraft),
             }),
         row("Year started", f["Year started"], from("Year started", "")),
       ],

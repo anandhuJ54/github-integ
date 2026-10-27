@@ -19,6 +19,8 @@ dependencies = [
     "sqlalchemy>=2.0,<2.1",
     # Migrations per Surface: one Alembic branch per `<name>/db/migrations/` (alembic.ini).
     "alembic>=1.13",
+    # Password hashes for the local sign-in (srp/local-login-srp-home).
+    "bcrypt>=4.2",
 ]
 
 [build-system]

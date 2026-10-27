@@ -10,7 +10,7 @@ import pytest
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
-from _base.auth import current_user
+from _base.auth import current_srp_user, current_user
 from _base.db import session as core_db
 from surfaces.srp.seat.router import router
 
@@ -88,6 +88,7 @@ def client() -> TestClient:
     app = FastAPI()
     app.include_router(router)
     app.dependency_overrides[current_user] = lambda: CLAIMS
+    app.dependency_overrides[current_srp_user] = lambda: CLAIMS
     return TestClient(app)
 
 

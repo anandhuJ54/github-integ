@@ -3,7 +3,7 @@
  * What NORA does on her own, when she works, and what she can touch. All values are demo state.
  */
 import { useState, type ReactNode } from "react";
-import { PERSONA } from "../demo-data";
+import { useHfPersona, usePersonalize } from "../persona-context";
 import { HappyflowShell, Toggle, useHf, type Think } from "../shell";
 import { Ic, NoraFace, Tick } from "../primitives";
 import type { HfIconName } from "../icons";
@@ -168,11 +168,13 @@ export function SettingsScreen() {
 }
 
 function SettingsBody() {
+  const PERSONA = useHfPersona();
+  const t = usePersonalize();
   const hf = useHf();
   const { isD } = hf;
   const [sec, setSec] = useState<SecKey>("Autonomy");
   const [tip, setTip] = useState<"open" | "done" | "no">("open");
-  const [c, setC] = useState<Cfg>(CFG0);
+  const [c, setC] = useState<Cfg>(() => ({ ...CFG0, v_sign: t(CFG0.v_sign) }));
 
   const put = (k: StrKey, v: string) => setC((x) => ({ ...x, [k]: v }));
   const flip = (k: BoolKey) => setC((x) => ({ ...x, [k]: !x[k] }));
@@ -666,7 +668,7 @@ function SettingsBody() {
                 }}
               >
                 <span style={{ flex: 1, minWidth: 0, fontSize: 13, lineHeight: 1.4 }}>
-                  {MEM[i][0]}
+                  {t(MEM[i][0])}
                 </span>
                 <span style={{ fontSize: 11, color: "#80868b", whiteSpace: "nowrap" }}>
                   {MEM[i][1]}

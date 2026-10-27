@@ -19,6 +19,7 @@ the DB on one worker can never exceed the connections that worker can lease.
 from __future__ import annotations
 
 import os
+import re
 from dataclasses import dataclass, field
 from functools import lru_cache
 
@@ -41,6 +42,22 @@ def _float(name: str, default: float) -> float:
         return float(raw)
     except ValueError as exc:
         raise ValueError(f"{name} must be a number, got {raw!r}") from exc
+
+
+_TRUE = {"1", "true", "yes", "on"}
+_FALSE = {"0", "false", "no", "off", ""}
+
+
+def _bool(name: str, default: bool) -> bool:
+    raw = os.environ.get(name)
+    if raw is None:
+        return default
+    value = raw.strip().lower()
+    if value in _TRUE:
+        return True
+    if value in _FALSE:
+        return False
+    raise ValueError(f"{name} must be one of 1/true/yes/on or 0/false/no/off, got {raw!r}")
 
 
 def _csv(name: str, default: list[str]) -> list[str]:
@@ -75,6 +92,15 @@ class Settings:
     # The wildcard + credentials combination is rejected by browsers, so credentials are
     # only enabled when an explicit origin allowlist is configured (see effective_cors()).
 
+    # --- Local sign-in (srp/local-login-srp-home) ----------------------------------
+    # Off by default: unset, every environment behaves as before. The signing secret
+    # (LOCAL_AUTH_JWT_SECRET) is a secret, so it is read lazily in auth.py, not here.
+    local_auth_enabled: bool = False
+    local_auth_token_hours: int = 8
+    # Postgres schema holding the users and professionals the local sign-in reads. It is put
+    # in SQL, so its shape is checked here (never user input).
+    srp_local_schema: str = "srp_cleanup"
+
     def effective_threadpool(self) -> int:
         return self.http_threadpool if self.http_threadpool > 0 else self.db_pool_max
 
@@ -97,6 +123,10 @@ class Settings:
             raise ValueError("DB_POOL_MIN must be <= DB_POOL_MAX")
         if self.db_pool_timeout <= 0:
             raise ValueError("DB_POOL_TIMEOUT must be > 0")
+        if not 1 <= self.local_auth_token_hours <= 168:
+            raise ValueError("LOCAL_AUTH_TOKEN_HOURS must be between 1 and 168")
+        if not re.fullmatch(r"[a-z_][a-z0-9_]{0,62}", self.srp_local_schema):
+            raise ValueError("SRP_LOCAL_SCHEMA must be a lower-case schema name (letters, digits, _)")
         return self
 
 
@@ -115,4 +145,7 @@ def get_settings() -> Settings:
         http_threadpool=_int("HTTP_THREADPOOL", 0),
         cors_origins=_csv("CORS_ALLOW_ORIGINS", ["*"]),
         site_origin=(os.environ.get("SITE_ORIGIN") or "").strip().rstrip("/"),
+        local_auth_enabled=_bool("LOCAL_AUTH_ENABLED", False),
+        local_auth_token_hours=_int("LOCAL_AUTH_TOKEN_HOURS", 8),
+        srp_local_schema=(os.environ.get("SRP_LOCAL_SCHEMA") or "srp_cleanup").strip(),
     ).validate()

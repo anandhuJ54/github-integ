@@ -1,0 +1,82 @@
+mock.users.7    seat in the URL             shown=34                     sql=34                     match
+mock.users.7    name in the sidebar         shown=<name>               sql=<name>               match
+mock.users.7    score total (ring)          shown=20                     sql=20                     match
+mock.users.7    score maximum (ring label)  shown=OF 29                  sql=OF 29                  match
+mock.users.7    rank position               shown=2                      sql=2                      match
+mock.users.7    rank peers                  shown=14                     sql=14                     match
+mock.users.7    rank market                 shown=Denver                 sql=Denver                 match
+mock.users.7    website score               shown=91                     sql=91                     match
+mock.users.7    AI authority score          shown=49                     sql=49                     match
+mock.users.7    AI answers                  shown=5                      sql=5                      match
+mock.users.7    articles published          shown=3                      sql=3                      match
+mock.users.7    articles total              shown=4                      sql=4                      match
+mock.users.7    credentials                 shown=2                      sql=2                      match
+mock.users.7    year started (text)         shown=2008                   sql=2008                   match
+mock.users.7    year started (picker)       shown=2008                   sql=2008                   match
+mock.users.7    category 1                  shown=5 of 5                 sql=5 of 5                 match
+mock.users.7    category 2                  shown=3 of 7                 sql=3 of 7                 match
+mock.users.7    category 3                  shown=Unknown                sql=Unknown                match
+mock.users.7    category 4                  shown=4 of 6                 sql=4 of 6                 match
+mock.users.7    category 5                  shown=Unknown                sql=Unknown                match
+mock.users.7    category 6                  shown=Unknown                sql=Unknown                match
+mock.users.7    category 7                  shown=5 of 6                 sql=5 of 6                 match
+mock.users.7    category 8                  shown=Unknown                sql=Unknown                match
+mock.users.7    category 9                  shown=3 of 5                 sql=3 of 5                 match
+mock.users.7    category 10                 shown=0 of 0                 sql=0 of 0                 match
+mock.users.7    number of categories        shown=10                     sql=10                     match
+mock.users.7    demo figures on the page    shown=0                      sql=0                      match
+mock.users.4    seat in the URL             shown=19                     sql=19                     match
+mock.users.4    name in the sidebar         shown=<name>               sql=<name>               match
+mock.users.4    score total (ring)          shown=17                     sql=17                     match
+mock.users.4    score maximum (ring label)  shown=OF 29                  sql=OF 29                  match
+mock.users.4    rank position               shown=7                      sql=7                      match
+mock.users.4    rank peers                  shown=14                     sql=14                     match
+mock.users.4    rank market                 shown=Chicago                sql=Chicago                match
+mock.users.4    website score               shown=88                     sql=88                     match
+mock.users.4    AI authority score          shown=29                     sql=29                     match
+mock.users.4    AI answers                  shown=2                      sql=2                      match
+mock.users.4    articles published          shown=3                      sql=3                      match
+mock.users.4    articles total              shown=4                      sql=4                      match
+mock.users.4    credentials                 shown=0                      sql=0                      match
+mock.users.4    year started (text)         shown=2017                   sql=2017                   match
+mock.users.4    year started (picker)       shown=2017                   sql=2017                   match
+mock.users.4    category 1                  shown=5 of 5                 sql=5 of 5                 match
+mock.users.4    category 2                  shown=6 of 7                 sql=6 of 7                 match
+mock.users.4    category 3                  shown=Unknown                sql=Unknown                match
+mock.users.4    category 4                  shown=2 of 6                 sql=2 of 6                 match
+mock.users.4    category 5                  shown=Unknown                sql=Unknown                match
+mock.users.4    category 6                  shown=Unknown                sql=Unknown                match
+mock.users.4    category 7                  shown=2 of 6                 sql=2 of 6                 match
+mock.users.4    category 8                  shown=Unknown                sql=Unknown                match
+mock.users.4    category 9                  shown=2 of 5                 sql=2 of 5                 match
+mock.users.4    category 10                 shown=0 of 0                 sql=0 of 0                 match
+mock.users.4    number of categories        shown=10                     sql=10                     match
+mock.users.4    demo figures on the page    shown=0                      sql=0                      match
+mock.users.10   seat in the URL             shown=30                     sql=30                     match
+mock.users.10   name in the sidebar         shown=<name>               sql=<name>               match
+mock.users.10   score total (ring)          shown=13                     sql=13                     match
+mock.users.10   score maximum (ring label)  shown=OF 29                  sql=OF 29                  match
+mock.users.10   rank position               shown=10                     sql=10                     match
+mock.users.10   rank peers                  shown=13                     sql=13                     match
+mock.users.10   rank market                 shown=ZIP 52803              sql=ZIP 52803              match
+mock.users.10   website score               shown=93                     sql=93                     match
+mock.users.10   AI authority (no row)       shown=Not connected yet      sql=Not connected yet      match
+mock.users.10   articles published          shown=0                      sql=0                      match
+mock.users.10   articles total              shown=1                      sql=1                      match
+mock.users.10   credentials                 shown=0                      sql=0                      match
+mock.users.10   year started (text)         shown=2020                   sql=2020                   match
+mock.users.10   year started (picker)       shown=2020                   sql=2020                   match
+mock.users.10   category 1                  shown=3 of 5                 sql=3 of 5                 match
+mock.users.10   category 2                  shown=1 of 7                 sql=1 of 7                 match
+mock.users.10   category 3                  shown=Unknown                sql=Unknown                match
+mock.users.10   category 4                  shown=1 of 6                 sql=1 of 6                 match
+mock.users.10   category 5                  shown=Unknown                sql=Unknown                match
+mock.users.10   category 6                  shown=Unknown                sql=Unknown                match
+mock.users.10   category 7                  shown=4 of 6                 sql=4 of 6                 match
+mock.users.10   category 8                  shown=Unknown                sql=Unknown                match
+mock.users.10   category 9                  shown=4 of 5                 sql=4 of 5                 match
+mock.users.10   category 10                 shown=0 of 0                 sql=0 of 0                 match
+mock.users.10   number of categories        shown=10                     sql=10                     match
+mock.users.10   demo figures on the page    shown=0                      sql=0                      match
+
+80 items traced, 0 mismatches

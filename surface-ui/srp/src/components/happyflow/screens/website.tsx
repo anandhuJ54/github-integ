@@ -3,13 +3,12 @@
  * NORA can hand to her webmaster. Ported 1:1 from the Happyflow prototype (SRP App, `sWeb`).
  */
 import { createContext, useContext, useEffect, useRef, useState } from "react";
-import { PERSONA } from "../demo-data";
+import { usePersonalize, useHfPersona } from "../persona-context";
 import { HappyflowShell, useHf, type Think } from "../shell";
 import { HealthGauge, Hov, Ic, NoraFace } from "../primitives";
 import type { HfIconName } from "../icons";
 
 // Demo data (Happyflow prototype)
-const HEAD = ["Website Analytics", PERSONA.site] as const;
 
 const SENT_TOAST = "Sent to your webmaster with the code attached";
 
@@ -76,7 +75,7 @@ const TILES: [HfIconName, string, string, string, string, string, string][] = [
 /** Webmaster hand-off steps (demo): sent now, opened shortly after, then NORA re-checks the page nightly. */
 const HANDOFF = ["Sent", "Opened by webmaster", "Installed", "Verified on your page"];
 
-const CODE = `<script type="application/ld+json">
+const CODE_SAMPLE = `<script type="application/ld+json">
 { "@type": "FinancialService",
   "name": "Alex Sample – Demo Mortgage",
   "telephone": "(563) 555-0100",
@@ -103,6 +102,7 @@ const useScan = () => {
 };
 
 export function WebsiteScreen() {
+  const persona = useHfPersona();
   const [pct, setPct] = useState(0);
   const [running, setRunning] = useState(false);
   const [last, setLast] = useState("Oct 16");
@@ -136,8 +136,8 @@ export function WebsiteScreen() {
       <HappyflowShell
         screen="website"
         day={1}
-        title={HEAD[0]}
-        sub={HEAD[1]}
+        title="Website Analytics"
+        sub={persona.site}
         nora={{ thinks: THINKS }}
         headerRight={<RecheckButton />}
       >
@@ -231,6 +231,8 @@ function ScanStatus() {
 }
 
 function WebsiteBody() {
+  const t = usePersonalize();
+  const CODE = t(CODE_SAMPLE);
   const hf = useHf();
   const { isD, w } = hf;
   const wide = isD && w >= 1300;

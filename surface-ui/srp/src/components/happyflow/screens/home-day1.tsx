@@ -14,8 +14,11 @@ import {
   type CSSProperties,
   type ReactNode,
 } from "react";
-import { HappyflowShell, useHf, type Think, HF_NORA_UI } from "../shell";
-import { PERSONA, GRID, RIVERBEND_SCORE, SCORE_AT_LANDING } from "../demo-data";
+import { HappyflowShell, useHf, type HfAct, type Think, HF_NORA_UI } from "../shell";
+import { useHfPersona } from "../persona-context";
+import { useHomeModel } from "../home-context";
+import { chipsFor, launcherLabel, rankColor, type HomeModel } from "@v3/srp/utils/home-model";
+import { greeting } from "./greeting";
 import {
   Hov,
   Ic,
@@ -29,86 +32,8 @@ import {
 } from "../primitives";
 import type { HfIconName } from "../icons";
 
-// Demo data (Happyflow prototype)
-const SCORE_AT_CLAIM = 298;
-const TASK_POINTS = 6;
+// The page reads a HomeModel: the seat's data from the API, or the prototype's sample (../sample-home.ts) when there is none.
 const FACE_SHADOW = "0 6px 18px rgba(155,114,242,.35)";
-
-const MOVES: {
-  icon: HfIconName;
-  t: string;
-  sub: string;
-  rec: boolean;
-  to: "voce" | "website" | "profile";
-}[] = [
-  {
-    icon: "pen",
-    t: "Start publishing",
-    sub: "Your biggest gap: 0 articles to Riverbend's 14. Free VOCE credits.",
-    rec: true,
-    to: "voce",
-  },
-  {
-    icon: "wrench",
-    t: "Fix my website",
-    sub: "Markup is missing · health 40 of 102",
-    rec: false,
-    to: "website",
-  },
-  {
-    icon: "award",
-    t: "Add your credentials",
-    sub: "Certifications and awards for your profile",
-    rec: false,
-    to: "profile",
-  },
-];
-
-const DONE_BEFORE: [string, string][] = [
-  ["Fixed 4 places", "+19"],
-  ["Kept 9 loan products", "+13"],
-  ["Built your profile · 67 facts", "+54"],
-  ["Mapped 5 competitors", ""],
-];
-
-const LOCKED: { t: string; d: string; pts: string }[] = [
-  {
-    t: "Listings",
-    d: "22 directories are missing you or show your old phone. 42 points are waiting.",
-    pts: "+42",
-  },
-  { t: "VOCE", d: "No articles yet. 85 points are in Articles.", pts: "+85" },
-  { t: "Map Rank tracking", d: "See the week you pass Riverbend.", pts: "" },
-];
-
-const THINKS: Think[] = [
-  {
-    t: "Riverbend's lead is mostly content.",
-    d: "They have 14 articles to your 0 — 85 points are sitting in Articles. Publishing is the fastest way to close the gap.",
-    cta: "Start publishing",
-    act: "voce",
-  },
-  {
-    t: "Your reviews are better — there are just fewer.",
-    d: "Yours average 4.9 to their 4.7, but they have 412 to your 128.",
-    cta: "See reviews",
-    act: "reviews",
-  },
-  {
-    t: "AI barely knows you yet.",
-    d: "ChatGPT names you in 1 of 7 answers. Your website is missing the markup AI reads.",
-    cta: "Want to see why?",
-    act: "insights",
-  },
-];
-
-const CHIPS = [
-  "Where am I losing to Riverbend?",
-  "What should I fix first?",
-  "Write my first article",
-  "Why is my score 390?",
-  "Show my map",
-];
 
 const ORBS: [string, string, string, number][] = [
   ["#4285f4", "-8%", "-30%", 0],
@@ -117,34 +42,68 @@ const ORBS: [string, string, string, number][] = [
   ["#34a853", "18%", "65%", 6],
 ];
 
-const MINI = GRID.map((g) => ({
-  i: g.i,
-  bg: g.i === 24 ? "#1a73e8" : g.bg,
-  sh: g.i === 24 ? "0 0 0 1.5px #fff" : "none",
-}));
+/** The map tile's spots, row by row; a spot the data does not have is grey, the middle one (the office) is blue. */
+export function miniMap(cells: { row: number; col: number; rank: number | null }[]) {
+  const rows = Math.max(0, ...cells.map((c) => c.row)) + 1;
+  const cols = Math.max(0, ...cells.map((c) => c.col)) + 1;
+  const mid = Math.floor(rows / 2) * cols + Math.floor(cols / 2);
+  const rank = new Map(cells.map((c) => [c.row * cols + c.col, c.rank]));
+  const spots = Array.from({ length: rows * cols }, (_, i) => ({
+    i,
+    bg: i === mid ? "#1a73e8" : rank.has(i) ? rankColor(rank.get(i) ?? null) : "#eceef1",
+    sh: i === mid ? "0 0 0 1.5px #fff" : "none",
+  }));
+  return { cols, spots };
+}
 
 type Intro = "fly" | "land" | "done";
 
 type Task = { pct: number; done: boolean; smiling: boolean; score: number };
 
-const TASK_START: Task = { pct: 0, done: false, smiling: false, score: SCORE_AT_LANDING };
-
-function greeting() {
-  const hr = new Date().getHours();
-  return hr < 12 ? "Good morning" : hr < 17 ? "Good afternoon" : "Good evening";
+/** The Home: a real seat sees its own data (srp/home-page-schema); with no data this is the sample page, as it always was. */
+export function HomeDay1Screen() {
+  const persona = useHfPersona();
+  return <HomeDay1 model={useHomeModel(1, persona.first)} />;
 }
 
-export function HomeDay1Screen() {
+/** What the first task and NORA's panel say on Day 1, from the model: pure, so the tests can read it (the panel is not in the page's first render). */
+export function day1Facts(model: HomeModel) {
+  const start = model.score.startTotal;
+  const points = model.score.total - start;
+  const label = model.board.latest?.label ?? "Nothing running right now";
+  const doneNote = `Done · +${points} points`;
+  // A task the database says is still running is shown as running, never finished (second review).
+  const running = model.board.latest?.status === "doing";
+  return {
+    running,
+    note: (t: { done: boolean; pct: number }) => (running ? "In progress" : t.done ? doneNote : `${t.pct}%`),
+    start,
+    points,
+    label,
+    doneNote,
+    status: (done: boolean) => (done ? `All caught up · on for you ${model.day.trialDays} days` : "Working on 1 task"),
+    launcher: (done: boolean) => (done ? doneNote : launcherLabel(label)),
+    thinks: model.insights.map((i): Think => ({ t: i.title, d: i.body, cta: i.cta, act: i.action as HfAct })),
+    chips: chipsFor(model.score.total, model.rival?.short ?? null),
+  };
+}
+
+/** Day 1 from a model. `settled` starts after the first task and the arrival (what Replay and reduced motion end in); the tests use it. */
+export function HomeDay1({ model, settled = false }: { model: HomeModel; settled?: boolean }) {
+  const persona = useHfPersona();
   const [greet] = useState(greeting);
+  const { start, points: taskPoints, label: taskLabel, running, note, status, launcher, thinks, chips } = day1Facts(model);
+  const taskStart: Task = { pct: 0, done: false, smiling: false, score: start };
+  const taskDone: Task = { pct: 100, done: true, smiling: false, score: model.score.total };
   // With the NORA UI off there is no arrival flyer — the first task starts straight away.
-  const [intro, setIntro] = useState<Intro>(HF_NORA_UI ? "fly" : "done");
+  const [intro, setIntro] = useState<Intro>(HF_NORA_UI && !settled ? "fly" : "done");
   const [bubble, setBubble] = useState(false);
   const [introRun, setIntroRun] = useState(0);
   const [taskRun, setTaskRun] = useState(0);
-  const [task, setTask] = useState<Task>(TASK_START);
+  const [task, setTask] = useState<Task>(settled && !running ? taskDone : taskStart);
 
   const replay = useCallback(() => {
-    setTask(TASK_START);
+    setTask({ pct: 0, done: false, smiling: false, score: start });
     setBubble(false);
     if (!HF_NORA_UI) {
       setTaskRun((r) => r + 1);
@@ -152,7 +111,7 @@ export function HomeDay1Screen() {
     }
     setIntro("fly");
     setIntroRun((r) => r + 1);
-  }, []);
+  }, [start]);
 
   const onLand = useCallback(() => {
     setBubble(true);
@@ -161,14 +120,14 @@ export function HomeDay1Screen() {
   const onBubbleOff = useCallback(() => setBubble(false), []);
   const onArrived = useCallback(() => {
     setBubble(false);
-    setTask(TASK_START);
+    setTask({ pct: 0, done: false, smiling: false, score: start });
     setIntro("done");
     setTaskRun((r) => r + 1);
-  }, []);
+  }, [start]);
 
-  // First task: 0 → 100 % in 2 % steps every 70 ms, then the score counts 384 → 390.
+  // First task: 0 → 100 % in 2 % steps every 70 ms, then the score counts from the total before the task up to the total.
   useEffect(() => {
-    if (intro !== "done") return;
+    if (intro !== "done" || running || (settled && taskRun === 0)) return;
     const timers: ReturnType<typeof setTimeout>[] = [];
     let iv: ReturnType<typeof setInterval> | undefined;
     let raf = 0;
@@ -180,7 +139,7 @@ export function HomeDay1Screen() {
               pct: 100,
               done: true,
               smiling: false,
-              score: SCORE_AT_LANDING + TASK_POINTS,
+              score: start + taskPoints,
             }),
           0,
         ),
@@ -194,7 +153,7 @@ export function HomeDay1Screen() {
         const step = (now: number) => {
           const p = Math.min(1, (now - t0) / d);
           const e = 1 - Math.pow(1 - p, 3);
-          setTask((t) => ({ ...t, score: Math.round(SCORE_AT_LANDING + TASK_POINTS * e) }));
+          setTask((t) => ({ ...t, score: Math.round(start + taskPoints * e) }));
           if (p < 1) raf = requestAnimationFrame(step);
         };
         raf = requestAnimationFrame(step);
@@ -220,14 +179,14 @@ export function HomeDay1Screen() {
       if (iv) clearInterval(iv);
       cancelAnimationFrame(raf);
     };
-  }, [intro, taskRun]);
+  }, [intro, taskRun, settled, running, start, taskPoints]);
 
   const mode: NoraMood = !task.done ? "working" : task.smiling ? "done" : "idle";
   const liveBg = task.done ? "#e6f4ea" : "#eef3fe";
   const liveBd = task.done ? "#ceead6" : "#d2e3fc";
   const taskFg = task.done ? "#137333" : "#1967d2";
   const barBg = task.done ? "#34a853" : "linear-gradient(90deg,#4285f4,#9b72f2,#4285f4)";
-  const taskNote = task.done ? `Done · +${TASK_POINTS} points` : `${task.pct}%`;
+  const taskNote = note(task);
   const statusIc = <StatusIcon done={task.done} />;
 
   return (
@@ -235,11 +194,11 @@ export function HomeDay1Screen() {
       screen="home"
       day={1}
       home
-      title={`${greet}, ${PERSONA.first}`}
-      sub={<HomeSub />}
+      title={`${greet}, ${persona.first}`}
+      sub={<HomeSub day={model.day.n} of={model.day.trialDays} />}
       hideLauncher={intro !== "done"}
       nora={{
-        status: task.done ? "All caught up · on for you 30 days" : "Working on 1 task",
+        status: status(task.done),
         intro: (
           <div
             style={{
@@ -261,7 +220,7 @@ export function HomeDay1Screen() {
                 fontWeight: 700,
               }}
             >
-              {statusIc}Adding your Google category and services
+              {statusIc}{taskLabel}
             </span>
             <div
               style={{
@@ -274,7 +233,7 @@ export function HomeDay1Screen() {
               <div
                 style={{
                   height: "100%",
-                  width: `${task.pct}%`,
+                  width: running ? "100%" : `${task.pct}%`,
                   borderRadius: 3,
                   background: barBg,
                   transition: "width .25s linear",
@@ -284,7 +243,7 @@ export function HomeDay1Screen() {
             <b style={{ fontSize: 12, color: taskFg }}>{taskNote}</b>
           </div>
         ),
-        thinks: THINKS,
+        thinks,
         outro: (
           <>
             <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
@@ -305,7 +264,7 @@ export function HomeDay1Screen() {
               >
                 <NoraFace size={32} mood="idle" shadow={FACE_SHADOW} />
                 <span style={{ fontSize: 14, lineHeight: 1.4 }}>
-                  <b>Nothing needs you right now.</b>{" "}
+                  <b>{needsText(model.board.needsYouCount)}</b>{" "}
                   <span style={{ color: "#5f6368" }}>I&apos;m on it.</span>
                 </span>
               </div>
@@ -319,16 +278,16 @@ export function HomeDay1Screen() {
                 lineHeight: 1.5,
               }}
             >
-              For the next 30 days I&apos;m fully on for you. I&apos;ll text you{" "}
-              <b>Tuesday early morning</b> with what I&apos;ve done.
+              For the next {model.day.trialDays} days I&apos;m fully on for you. I&apos;ll text you{" "}
+              {model.noraTextDay ? <><b>{model.noraTextDay}</b> </> : null}with what I&apos;ve done.
             </div>
           </>
         ),
-        chips: CHIPS,
+        chips,
         launcherText: (
           <>
             {statusIc}
-            {task.done ? `Done · +${TASK_POINTS} points` : "Adding your Google category…"}
+            {launcher(task.done)}
           </>
         ),
         launcherFg: taskFg,
@@ -364,15 +323,18 @@ export function HomeDay1Screen() {
         </button>
       }
     >
-      <HomeBody task={task} mode={mode} taskRun={taskRun} onDeviceChange={replay} />
+      <HomeBody model={model} task={task} mode={mode} taskRun={taskRun} onDeviceChange={replay} />
     </HappyflowShell>
   );
 }
 
-function HomeSub() {
+function HomeSub({ day, of }: { day: number; of: number }) {
   const { isM } = useHf();
-  return <>{isM ? "Day 1 of 30 · NORA is on it" : "One mission this month. NORA is on it."}</>;
+  return <>{isM ? `Day ${day} of ${of} · NORA is on it` : "One mission this month. NORA is on it."}</>;
 }
+
+/** "Nothing needs you right now." or "2 things need you right now." */
+const needsText = (n: number) => (n === 0 ? "Nothing needs you right now." : `${n} ${n === 1 ? "thing needs" : "things need"} you right now.`);
 
 function StatusIcon({ done }: { done: boolean }) {
   if (done)
@@ -420,6 +382,7 @@ function Arrival({
   onArrived: () => void;
 }) {
   const { isD } = useHf();
+  const persona = useHfPersona();
   const wrapRef = useRef<HTMLDivElement>(null);
   const flyRef = useRef<HTMLDivElement>(null);
 
@@ -557,7 +520,7 @@ function Arrival({
                 animation: "hf-pop .45s cubic-bezier(.2,.8,.2,1) both",
               }}
             >
-              Hi Alex. <b>I&apos;m here when you need me.</b>
+              Hi {persona.first}. <b>I&apos;m here when you need me.</b>
             </div>
           </div>
         ) : null}
@@ -633,11 +596,13 @@ const ofSpan: CSSProperties = { fontSize: 14, fontWeight: 400, color: "#5f6368",
 const link: CSSProperties = { fontSize: 12, fontWeight: 700, color: "#1a73e8" };
 
 function HomeBody({
+  model,
   task,
   mode,
   taskRun,
   onDeviceChange,
 }: {
+  model: HomeModel;
   task: Task;
   mode: NoraMood;
   taskRun: number;
@@ -657,18 +622,28 @@ function HomeBody({
     }
   }, [isD, onDeviceChange]);
 
+  const persona = useHfPersona();
   const { score, done } = task;
-  const youP = (score / RIVERBEND_SCORE) * 100;
+  const { rival, peers, board, tiles, locked } = model;
+  const youP = rival ? Math.min(100, (score / rival.score) * 100) : 100;
   const youPct = youP.toFixed(1) + "%";
-  const delta = score - SCORE_AT_CLAIM;
-  const gap = RIVERBEND_SCORE - score;
+  // Since you claimed counts up with the score: the stored figure, less what the first task has not yet added.
+  const delta = model.score.sinceClaim === null ? null : model.score.sinceClaim + (score - model.score.total);
+  const gap = rival ? rival.score - score : 0;
+  const nextBand = model.score.nextBand;
+  const markerPct = nextBand && rival ? Math.min(100, Math.round((nextBand.min / rival.score) * 100)) : null;
+  const { label: taskLabel, running, note } = day1Facts(model);
   const kickFg = done ? "#137333" : "#7b4ce0";
-  const showPlan = plan && done;
+  const showPlan = plan && done && peers !== null;
   const sp = (d: string, m = "1 / -1") => (isD ? d : m);
-  const doneCount = done ? 10 : 9;
-  const doneList = (done ? [["Added your Google category", "+6"] as [string, string]] : [])
-    .concat(DONE_BEFORE)
+  const latestDone = board.latest?.status === "done";
+  const doneCount = done ? board.doneCount : board.doneCount - (latestDone ? 1 : 0);
+  const plus = (n: number | null) => (n === null ? "" : `+${n}`);
+  const doneBefore = (latestDone ? board.done.slice(1) : board.done).map((d): [string, string] => [d.label, plus(d.points)]);
+  const doneList = (done && latestDone && board.latest ? [[board.latest.label, plus(board.latest.points)] as [string, string]] : [])
+    .concat(doneBefore)
     .slice(0, 4);
+  const mini = tiles.map ? miniMap(tiles.map.cells) : null;
   const face = (size: number, m: NoraMood): ReactNode => (
     <NoraFace size={size} mood={m} shadow={FACE_SHADOW} burstKey={taskRun} />
   );
@@ -761,7 +736,7 @@ function HomeBody({
             }}
           >
             <Ic name="target" size={14} color="#7b4ce0" sw={2.4} />
-            YOUR MISSION · DAY 1 OF 30
+            YOUR MISSION · DAY {model.day.n} OF {model.day.trialDays}
           </span>
           <span
             style={{
@@ -772,22 +747,22 @@ function HomeBody({
               textWrap: "balance",
             }}
           >
-            Pass{" "}
-            <span
-              style={{
-                background: "linear-gradient(135deg,#4285f4,#9b72f2 40%,#ea4335 75%,#fbbc04)",
-                WebkitBackgroundClip: "text",
-                backgroundClip: "text",
-                color: "transparent",
-              }}
-            >
-              Riverbend Bank &amp; Trust
-            </span>
+            {rival ? "Pass " : `You lead ${model.rank?.city ?? "your market"}`}
+            {rival ? (
+              <span
+                style={{
+                  background: "linear-gradient(135deg,#4285f4,#9b72f2 40%,#ea4335 75%,#fbbc04)",
+                  WebkitBackgroundClip: "text",
+                  backgroundClip: "text",
+                  color: "transparent",
+                }}
+              >
+                {rival.name}
+              </span>
+            ) : null}
           </span>
-          <span style={{ fontSize: 14, lineHeight: 1.5, color: "#5f6368" }}>
-            Riverbend Bank &amp; Trust is #1 in Davenport — here&apos;s your gap. You&apos;re #6 of
-            41.
-          </span>
+          <span style={{ fontSize: 14, lineHeight: 1.5, color: "#5f6368" }}>{model.copy.heroSentence}</span>
+          {rival ? (
           <div style={{ display: "flex", flexDirection: "column", gap: 10, marginTop: 8 }}>
             <div
               style={{
@@ -799,14 +774,14 @@ function HomeBody({
             >
               <span style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13 }}>
                 <img
-                  src={PERSONA.photo}
+                  src={persona.photo}
                   alt=""
                   style={{
                     width: 30,
                     height: 30,
                     borderRadius: "50%",
                     objectFit: "cover",
-                    objectPosition: PERSONA.photoPos,
+                    objectPosition: persona.photoPos,
                     boxShadow: "0 0 0 2px #fff,0 0 0 3.5px #1a73e8",
                   }}
                 />
@@ -817,7 +792,7 @@ function HomeBody({
               </span>
               <span style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13 }}>
                 <span>
-                  Riverbend <b style={{ fontVariantNumeric: "tabular-nums" }}>{RIVERBEND_SCORE}</b>
+                  {rival.short} <b style={{ fontVariantNumeric: "tabular-nums" }}>{rival.score}</b>
                 </span>
                 <span
                   style={{
@@ -833,7 +808,7 @@ function HomeBody({
                     boxShadow: "0 0 0 2px #fff,0 0 0 3.5px #f6aea9",
                   }}
                 >
-                  R
+                  {rival.initial}
                 </span>
               </span>
             </div>
@@ -857,17 +832,19 @@ function HomeBody({
                   transition: "width .8s ease",
                 }}
               />
-              <span
-                style={{
-                  position: "absolute",
-                  left: "70%",
-                  top: -4,
-                  bottom: -4,
-                  width: 2,
-                  borderRadius: 1,
-                  background: "#137333",
-                }}
-              />
+              {markerPct !== null ? (
+                <span
+                  style={{
+                    position: "absolute",
+                    left: `${markerPct}%`,
+                    top: -4,
+                    bottom: -4,
+                    width: 2,
+                    borderRadius: 1,
+                    background: "#137333",
+                  }}
+                />
+              ) : null}
               <span
                 style={{
                   position: "absolute",
@@ -890,7 +867,9 @@ function HomeBody({
                 fontSize: 12,
               }}
             >
-              <span style={{ fontWeight: 700, color: "#137333" }}>400 · Established</span>
+              <span style={{ fontWeight: 700, color: "#137333" }}>
+                {nextBand ? `${nextBand.min} · ${nextBand.name}` : (model.score.band ?? "")}
+              </span>
               <span
                 style={{
                   display: "inline-block",
@@ -908,6 +887,7 @@ function HomeBody({
               </span>
             </div>
           </div>
+          ) : null}
         </div>
         <div
           style={{
@@ -923,35 +903,40 @@ function HomeBody({
             px={isD ? 196 : 190}
             ns={42}
             value={score}
-            label="OF 850"
+            label={model.score.max !== null ? `OF ${model.score.max}` : ""}
+            max={model.score.max}
             id="hfHomeDay1Ring"
           />
           <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "center", gap: 6 }}>
-            <span
-              style={{
-                borderRadius: 999,
-                background: "#fef7e0",
-                padding: "5px 12px",
-                fontSize: 13,
-                fontWeight: 700,
-                color: "#b06000",
-              }}
-            >
-              Building
-            </span>
-            <span
-              style={{
-                borderRadius: 999,
-                background: "#e6f4ea",
-                padding: "5px 12px",
-                fontSize: 13,
-                fontWeight: 700,
-                color: "#137333",
-                fontVariantNumeric: "tabular-nums",
-              }}
-            >
-              ▲ {delta} since you claimed
-            </span>
+            {model.score.band ? (
+              <span
+                style={{
+                  borderRadius: 999,
+                  background: "#fef7e0",
+                  padding: "5px 12px",
+                  fontSize: 13,
+                  fontWeight: 700,
+                  color: "#b06000",
+                }}
+              >
+                {model.score.band}
+              </span>
+            ) : null}
+            {delta !== null ? (
+              <span
+                style={{
+                  borderRadius: 999,
+                  background: "#e6f4ea",
+                  padding: "5px 12px",
+                  fontSize: 13,
+                  fontWeight: 700,
+                  color: "#137333",
+                  fontVariantNumeric: "tabular-nums",
+                }}
+              >
+                {delta < 0 ? "▼" : "▲"} {Math.abs(delta)} since you claimed
+              </span>
+            ) : null}
           </div>
         </div>
       </section>
@@ -995,19 +980,21 @@ function HomeBody({
             }}
           >
             <span style={{ display: "flex", gap: 3 }}>
-              {[0, 1, 2].map((i) => (
+              {Array.from({ length: board.moves.goal }, (_, i) => i < board.moves.done).map((filled, i) => (
                 <span
                   key={i}
+                  data-move={filled ? "done" : "open"}
                   style={{
                     width: 8,
                     height: 8,
                     borderRadius: "50%",
-                    border: "1.5px solid #c6dafc",
+                    border: filled ? "1.5px solid #4285f4" : "1.5px solid #c6dafc",
+                    background: filled ? "#4285f4" : undefined,
                   }}
                 />
               ))}
             </span>
-            0 of 3 moves this week
+            {board.moves.done} of {board.moves.goal} moves this week
           </span>
         </div>
         <div
@@ -1066,7 +1053,7 @@ function HomeBody({
               <div style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>
                 {face(28, mode)}
                 <span style={{ flex: 1, fontSize: 15, fontWeight: 700, lineHeight: 1.3 }}>
-                  Adding your Google category and services
+                  {taskLabel}
                 </span>
               </div>
               <div
@@ -1080,7 +1067,7 @@ function HomeBody({
                 <div
                   style={{
                     height: "100%",
-                    width: `${task.pct}%`,
+                    width: running ? "100%" : `${task.pct}%`,
                     borderRadius: 3,
                     background: done ? "#34a853" : "linear-gradient(90deg,#4285f4,#9b72f2,#4285f4)",
                     backgroundSize: "200% 100%",
@@ -1096,7 +1083,7 @@ function HomeBody({
                   fontVariantNumeric: "tabular-nums",
                 }}
               >
-                {done ? `Done · +${TASK_POINTS} points` : `${task.pct}%`}
+                {note(task)}
               </b>
             </div>
             <button type="button" onClick={() => hf.go("srs")} style={pointer}>
@@ -1105,22 +1092,24 @@ function HomeBody({
                 Your full gap list is in <b style={{ color: "#1a73e8" }}>SRS</b>.
               </span>
             </button>
-            <button type="button" onClick={() => hf.go("insights")} style={pointer}>
-              {arrow}
-              <span>
-                ChatGPT names you in 1 of 7 answers.{" "}
-                <b style={{ color: "#1a73e8" }}>Want to see why?</b>
-              </span>
-            </button>
+            {tiles.ai && tiles.ai.cited !== null ? (
+              <button type="button" onClick={() => hf.go("insights")} style={pointer}>
+                {arrow}
+                <span>
+                  ChatGPT names you in {tiles.ai.cited} of {tiles.ai.checked} answers.{" "}
+                  <b style={{ color: "#1a73e8" }}>Want to see why?</b>
+                </span>
+              </button>
+            ) : null}
           </div>
 
           {/* Up next */}
           <div style={card}>
             <span style={kicker}>UP NEXT</span>
-            {MOVES.map((m) => (
+            {board.nextMoves.map((m) => (
               <Hov
-                key={m.t}
-                onClick={() => hf.go(m.to)}
+                key={m.title}
+                onClick={() => hf.go(m.target)}
                 style={{
                   display: "flex",
                   flexDirection: "column",
@@ -1128,15 +1117,15 @@ function HomeBody({
                   borderRadius: 16,
                   borderWidth: 1.5,
                   borderStyle: "solid",
-                  borderColor: m.rec ? "#c6dafc" : "#eceef1",
-                  background: m.rec ? "#f5f9ff" : "#fff",
+                  borderColor: m.recommended ? "#c6dafc" : "#eceef1",
+                  background: m.recommended ? "#f5f9ff" : "#fff",
                   padding: 12,
                   textAlign: "left",
                   cursor: "pointer",
                 }}
                 hover={{ borderColor: "#a8c7fa" }}
               >
-                {m.rec ? (
+                {m.recommended ? (
                   <span
                     style={{
                       alignSelf: "flex-start",
@@ -1161,10 +1150,10 @@ function HomeBody({
                     color: "#202124",
                   }}
                 >
-                  <Ic name={m.icon} size={15} />
-                  {m.t}
+                  <Ic name={m.icon as HfIconName} size={15} />
+                  {m.title}
                 </span>
-                <span style={{ fontSize: 12, lineHeight: 1.4, color: "#5f6368" }}>{m.sub}</span>
+                <span style={{ fontSize: 12, lineHeight: 1.4, color: "#5f6368" }}>{m.subtitle}</span>
               </Hov>
             ))}
           </div>
@@ -1187,7 +1176,7 @@ function HomeBody({
               }}
             >
               {face(44, "idle")}
-              <span style={{ fontSize: 15, fontWeight: 700 }}>Nothing needs you right now.</span>
+              <span style={{ fontSize: 15, fontWeight: 700 }}>{needsText(board.needsYouCount)}</span>
               <span style={{ fontSize: 13, color: "#5f6368" }}>I&apos;m on it.</span>
             </div>
           </div>
@@ -1205,21 +1194,23 @@ function HomeBody({
             }}
           >
             <span style={{ ...kicker, color: "#137333" }}>DONE · {doneCount} THINGS</span>
-            <div style={{ display: "flex", alignItems: "baseline", gap: 8 }}>
-              <span
-                style={{
-                  fontSize: 32,
-                  fontWeight: 700,
-                  letterSpacing: "-0.03em",
-                  lineHeight: 1,
-                  color: "#137333",
-                  fontVariantNumeric: "tabular-nums",
-                }}
-              >
-                +{delta}
-              </span>
-              <span style={{ fontSize: 13, color: "#137333" }}>points since you claimed</span>
-            </div>
+            {delta !== null ? (
+              <div style={{ display: "flex", alignItems: "baseline", gap: 8 }}>
+                <span
+                  style={{
+                    fontSize: 32,
+                    fontWeight: 700,
+                    letterSpacing: "-0.03em",
+                    lineHeight: 1,
+                    color: "#137333",
+                    fontVariantNumeric: "tabular-nums",
+                  }}
+                >
+                  {delta < 0 ? "−" : "+"}{Math.abs(delta)}
+                </span>
+                <span style={{ fontSize: 13, color: "#137333" }}>points since you claimed</span>
+              </div>
+            ) : null}
             <svg viewBox="0 0 300 70" style={{ width: "100%", height: "auto" }} aria-hidden>
               <line
                 x1={0}
@@ -1285,6 +1276,7 @@ function HomeBody({
           ...(isD ? {} : { gridAutoColumns: 172 }),
         }}
       >
+        {tiles.map && mini ? (
         <Hov
           onClick={() => hf.go("insights")}
           style={{ ...tile, animation: "hf-rise .32s ease .1s both" }}
@@ -1296,17 +1288,17 @@ function HomeBody({
           </span>
           <div style={tileRow}>
             <span style={bigNum}>
-              9 <span style={ofSpan}>of 49</span>
+              {tiles.map.top3} <span style={ofSpan}>of {tiles.map.total}</span>
             </span>
             <div
               style={{
                 display: "grid",
-                gridTemplateColumns: "repeat(7,7px)",
+                gridTemplateColumns: `repeat(${mini.cols},7px)`,
                 gap: 2,
                 flex: "none",
               }}
             >
-              {MINI.map((g) => (
+              {mini.spots.map((g) => (
                 <span
                   key={g.i}
                   style={{
@@ -1322,6 +1314,8 @@ function HomeBody({
           </div>
           <span style={link}>See the map →</span>
         </Hov>
+        ) : null}
+        {tiles.ai ? (
         <Hov
           onClick={() => hf.go("insights")}
           style={{ ...tile, animation: "hf-rise .32s ease .14s both" }}
@@ -1333,17 +1327,17 @@ function HomeBody({
           </span>
           <div style={tileRow}>
             <span style={bigNum}>
-              1 <span style={ofSpan}>of 7</span>
+              {tiles.ai.cited ?? "—"} <span style={ofSpan}>of {tiles.ai.checked}</span>
             </span>
             <span style={{ display: "flex", gap: 3, paddingBottom: 4 }}>
-              {[0, 1, 2, 3, 4, 5, 6].map((i) => (
+              {Array.from({ length: tiles.ai.checked }, (_, i) => i).map((i) => (
                 <span
                   key={i}
                   style={{
                     width: 9,
                     height: 9,
                     borderRadius: "50%",
-                    background: i === 0 ? "#9b72f2" : "#eceef1",
+                    background: i < (tiles.ai?.cited ?? 0) ? "#9b72f2" : "#eceef1",
                   }}
                 />
               ))}
@@ -1351,6 +1345,7 @@ function HomeBody({
           </div>
           <span style={link}>Want to see why? →</span>
         </Hov>
+        ) : null}
         <Hov
           onClick={() => hf.go("reviews")}
           style={{ ...tile, animation: "hf-rise .32s ease .18s both" }}
@@ -1361,12 +1356,14 @@ function HomeBody({
             Reviews
           </span>
           <div style={tileRow}>
-            <span style={bigNum}>4.9</span>
+            <span style={bigNum}>{tiles.reviews.avg === null ? "—" : tiles.reviews.avg.toFixed(1)}</span>
             <span style={{ fontSize: 14, letterSpacing: 1, color: "#f9ab00", paddingBottom: 4 }}>
-              ★★★★★
+              {tiles.reviews.avg === null ? "" : "★".repeat(Math.round(tiles.reviews.avg))}
             </span>
           </div>
-          <span style={{ fontSize: 12, color: "#5f6368" }}>from 128 reviews</span>
+          {tiles.reviews.count !== null ? (
+            <span style={{ fontSize: 12, color: "#5f6368" }}>from {tiles.reviews.count} reviews</span>
+          ) : null}
         </Hov>
         <Hov
           onClick={() => hf.go("profile")}
@@ -1377,11 +1374,11 @@ function HomeBody({
             <Ic name="user" size={15} color="#1a73e8" />
             Profile strength
           </span>
-          <span style={bigNum}>64%</span>
+          <span style={bigNum}>{tiles.profileStrength.pct === null ? "—" : `${tiles.profileStrength.pct}%`}</span>
           <div style={{ height: 6, borderRadius: 3, background: "#eceef1", overflow: "hidden" }}>
             <div
               style={{
-                width: "64%",
+                width: `${tiles.profileStrength.pct ?? 0}%`,
                 height: "100%",
                 borderRadius: 3,
                 background: "linear-gradient(90deg,#4285f4,#9b72f2)",
@@ -1405,20 +1402,20 @@ function HomeBody({
         <div style={{ display: "flex", alignItems: "baseline", gap: 8 }}>
           <span style={{ fontSize: 15, fontWeight: 700 }}>What NORA found behind your plan</span>
           <b style={{ marginLeft: "auto", fontSize: 12, color: "#b06000", whiteSpace: "nowrap" }}>
-            127 points waiting
+            {locked.pointsWaiting} points waiting
           </b>
         </div>
         <div
           style={{
             display: "grid",
             gap: 10,
-            ...swipe("repeat(3,minmax(0,1fr))"),
+            ...swipe(`repeat(${Math.max(1, locked.features.length)},minmax(0,1fr))`),
             ...(isD ? {} : { gridAutoColumns: 260 }),
           }}
         >
-          {LOCKED.map((l) => (
+          {locked.features.map((l) => (
             <Hov
-              key={l.t}
+              key={l.key}
               onClick={() => hf.out("Billing")}
               style={{
                 scrollSnapAlign: "start",
@@ -1451,9 +1448,9 @@ function HomeBody({
                   <Ic name="lock" size={14} color="#b06000" sw={2.4} />
                 </span>
                 <span style={{ flex: 1, fontSize: 14, fontWeight: 700, color: "#202124" }}>
-                  {l.t}
+                  {l.title}
                 </span>
-                {l.pts ? (
+                {l.pointsWaiting !== null ? (
                   <b
                     style={{
                       borderRadius: 999,
@@ -1463,11 +1460,11 @@ function HomeBody({
                       color: "#b06000",
                     }}
                   >
-                    {l.pts}
+                    +{l.pointsWaiting}
                   </b>
                 ) : null}
               </span>
-              <span style={{ fontSize: 13, lineHeight: 1.45, color: "#5f6368" }}>{l.d}</span>
+              <span style={{ fontSize: 13, lineHeight: 1.45, color: "#5f6368" }}>{l.text}</span>
               <span style={{ fontSize: 12, fontWeight: 700, color: "#b06000" }}>Unlock →</span>
             </Hov>
           ))}
@@ -1475,7 +1472,7 @@ function HomeBody({
       </section>
 
       {/* Plan card — only after the first task shows Done (spec fix). */}
-      {showPlan ? (
+      {showPlan && peers ? (
         <section
           style={{
             gridColumn: sp("span 4"),
@@ -1502,28 +1499,28 @@ function HomeBody({
                 fontVariantNumeric: "tabular-nums",
               }}
             >
-              +61
+              +{peers.medianGain}
             </span>
-            <span style={{ fontSize: 13, color: "#5f6368" }}>median points in 90 days</span>
+            <span style={{ fontSize: 13, color: "#5f6368" }}>median points in {peers.horizonDays} days</span>
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13 }}>
             <span style={{ display: "flex", gap: 4 }}>
-              {[0, 1, 2, 3, 4].map((i) => (
+              {Array.from({ length: peers.of }, (_, i) => i).map((i) => (
                 <span
                   key={i}
                   style={{
                     width: 12,
                     height: 12,
                     borderRadius: "50%",
-                    background: i < 3 ? "#34a853" : "#e6f4ea",
+                    background: i < peers.reachedNextBand ? "#34a853" : "#e6f4ea",
                   }}
                 />
               ))}
             </span>
-            3 of 5 reached the next band.
+            {peers.reachedNextBand} of {peers.of} reached the next band.
           </div>
           <span style={{ fontSize: 11, lineHeight: 1.4, color: "#80868b" }}>
-            Based on 34 loan officers who started at Building, Jan–Sep 2026.
+            Based on {peers.cohortSize} loan officers who started at {peers.bandFrom}, {peers.cohortPeriod}.
           </span>
           <div style={{ display: "flex", gap: 8, marginTop: 4 }}>
             <Hov

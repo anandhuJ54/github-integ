@@ -19,7 +19,8 @@ import {
   type ReactNode,
 } from "react";
 import { HF_EMBED_HEIGHT, useHfNav } from "./seat-nav";
-import { PERSONA, GRID, HF_ASSETS, SCORE_BY_DAY, parseBold, type HfDay } from "./demo-data";
+import { PERSONA, GRID, HF_ASSETS, parseBold, type HfDay } from "./demo-data";
+import { chipsFor, type HomeModel } from "@v3/srp/utils/home-model";
 import {
   Hov,
   Ic,
@@ -33,6 +34,9 @@ import {
 } from "./primitives";
 import type { HfIconName } from "./icons";
 import { useHfDevice } from "./use-hf-device";
+import { bylineFor } from "./persona";
+import { useHomeModel } from "./home-context";
+import { useHfPersona } from "./persona-context";
 import { useSpeech } from "./use-speech";
 
 export type HfScreen =
@@ -232,11 +236,21 @@ export type HappyflowShellProps = {
   children: ReactNode;
 };
 
+/** The chip beside the title on a desktop Home: "Day 7 of 30". */
+export const dayChip = (m: HomeModel) => `Day ${m.day.n} of ${m.day.trialDays}`;
+
+/** NORA's quick questions when a page gives none: day 1 asks about the rival and the score, later days about the week. */
+export const defaultChips = (day: HfDay, m: HomeModel): string[] =>
+  day >= 7 ? ["What did you do this week?", "Fix my website", "Show my map"] : chipsFor(m.score.total, m.rival?.short ?? null);
+
 export function HappyflowShell(props: HappyflowShellProps) {
   const { screen, day = 1, home = false } = props;
+  const persona = useHfPersona();
+  // The trial chip, banner, plans, upgrade and recap read the Home model: the seat's own, or the prototype's sample.
+  const model = useHomeModel(day, persona.first);
   const { w, isD, isM, framed, setDev } = useHfDevice();
   const hfNav = useHfNav();
-  const score = SCORE_BY_DAY[day];
+  const score = model.score.total;
 
   const [toastMsg, setToastMsg] = useState<string | null>(null);
   const toastT = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -476,15 +490,7 @@ export function HappyflowShell(props: HappyflowShellProps) {
   const nora = props.nora ?? {};
   const chips =
     nora.chips ??
-    (day >= 7
-      ? ["What did you do this week?", "Fix my website", "Show my map"]
-      : [
-          "Where am I losing to Riverbend?",
-          "What should I fix first?",
-          "Write my first article",
-          "Why is my score 390?",
-          "Show my map",
-        ]);
+    defaultChips(day, model);
   const thinks = nora.thinks ?? [];
   const W = win;
   const launcherOn = HF_NORA_UI && isD && !W && !sheet && !props.hideLauncher;
@@ -626,14 +632,14 @@ export function HappyflowShell(props: HappyflowShellProps) {
                       whiteSpace: "nowrap",
                     }}
                   >
-                    Day {day} of 30
+                    {dayChip(model)}
                   </span>
                 ) : null}
               </header>
 
               {!planHidden ? (
                 <PlanBanner
-                  day={day}
+                  model={model}
                   onCompare={() => setWin("plans")}
                   onClose={() => setPlanHidden(true)}
                 />
@@ -1124,7 +1130,7 @@ export function HappyflowShell(props: HappyflowShellProps) {
                       {typing
                         ? "Thinking…"
                         : W === "plans"
-                          ? `Trial · day ${day} of 30`
+                          ? `Trial · day ${model.day.n} of ${model.day.trialDays}`
                           : W === "recap"
                             ? "Your day 24 recap"
                             : W === "voce"
@@ -1181,7 +1187,7 @@ export function HappyflowShell(props: HappyflowShellProps) {
                       >
                         {nora.greeting ?? (
                           <>
-                            Hi Alex.{" "}
+                            Hi {persona.first}.{" "}
                             <b>
                               {day >= 7
                                 ? "You crossed into Established this week."
@@ -1437,6 +1443,7 @@ export function HappyflowShell(props: HappyflowShellProps) {
                   {W === "plans" ? (
                     <PlansPanel
                       isD={isD}
+                      model={model}
                       onChoose={(plan) =>
                         toast(`${plan}: billing is not connected in this prototype`)
                       }
@@ -1444,12 +1451,13 @@ export function HappyflowShell(props: HappyflowShellProps) {
                   ) : null}
 
                   {W === "upgrade" ? (
-                    <UpgradePanel onCompare={() => setWin("plans")} onNotNow={() => setWin(null)} />
+                    <UpgradePanel model={model} onCompare={() => setWin("plans")} onNotNow={() => setWin(null)} />
                   ) : null}
 
                   {W === "recap" ? (
                     <RecapPanel
                       isD={isD}
+                      model={model}
                       onCompare={() => setWin("plans")}
                       onRemind={() => {
                         setWin(null);
@@ -1741,6 +1749,7 @@ function VocePanel({
   onEdit: () => void;
   onDone: () => void;
 }) {
+  const persona = useHfPersona();
   const shield = <Ic name="shield" size={12} color="#137333" sw={2.4} />;
   const spinner = busy ? (
     <span
@@ -1869,7 +1878,7 @@ function VocePanel({
             VA loans in Davenport: what veterans should know
           </h3>
           <span style={{ fontSize: 12, color: "#5f6368" }}>
-            Alex Sample · Senior Loan Officer · NMLS 482913
+            {bylineFor(persona)}
           </span>
           <p style={{ margin: 0, fontSize: 14, lineHeight: 1.6, color: "#3c4043" }}>
             If you've served, a VA loan can help you buy a home in Davenport without a down payment.
@@ -1966,7 +1975,8 @@ function VocePanel({
   );
 }
 
-function UpgradePanel({ onCompare, onNotNow }: { onCompare: () => void; onNotNow: () => void }) {
+export function UpgradePanel({ model, onCompare, onNotNow }: { model: HomeModel; onCompare: () => void; onNotNow: () => void }) {
+  const top = model.locked.features[0];
   return (
     <div
       style={{
@@ -2002,8 +2012,13 @@ function UpgradePanel({ onCompare, onNotNow }: { onCompare: () => void; onNotNow
           YOUR BIGGEST GAP IS LOCKED
         </span>
         <span style={{ fontSize: 16, lineHeight: 1.5 }}>
-          <b>22 directories are missing you or show your old phone. 42 points are waiting.</b>{" "}
-          Engage keeps your details right everywhere; Amplify includes it.
+          {top ? (
+            <>
+              <b>{top.text}</b> {model.locked.upgradeNote}
+            </>
+          ) : (
+            "Nothing is locked on your plan."
+          )}
         </span>
       </div>
       <div style={{ display: "flex", gap: 8 }}>
@@ -2043,22 +2058,33 @@ function UpgradePanel({ onCompare, onNotNow }: { onCompare: () => void; onNotNow
   );
 }
 
-function RecapPanel({
+export function RecapPanel({
   isD,
+  model,
   onCompare,
   onRemind,
 }: {
   isD: boolean;
+  model: HomeModel;
   onCompare: () => void;
   onRemind: () => void;
 }) {
+  const recap = model.recap;
+  if (!recap) return <span style={{ fontSize: 14, color: "#5f6368" }}>Your recap is not ready yet.</span>;
   const tiles: [string, string, string, string][] = [
-    ["Score", "384", "471", "+87"],
-    ["Rank in Davenport", "#6", "#4", ""],
-    ["Profile strength", "64%", "88%", ""],
-    ["Articles published", "", "3", ""],
-    ["Reviews answered", "", "12", ""],
+    ...recap.tiles.map((t): [string, string, string, string] =>
+      t.label === "Rank"
+        ? [`Rank in ${model.rank?.city ?? "your market"}`, `#${t.from}`, `#${t.to}`, ""]
+        : t.label === "Profile strength"
+          ? [t.label, `${t.from}%`, `${t.to}%`, ""]
+          : [t.label, `${t.from}`, `${t.to}`, `+${t.delta}`],
+    ),
+    ["Articles published", "", `${recap.articles}`, ""],
+    ["Reviews answered", "", `${recap.replies}`, ""],
   ];
+  const scoreGain = recap.tiles.find((t) => t.label === "Score")?.delta;
+  const peers = model.peers;
+  const stays = model.plans.find((p) => p.key === "core")?.items ?? [];
   const card: CSSProperties = {
     borderRadius: 18,
     border: "1px solid #e8eaed",
@@ -2083,7 +2109,7 @@ function RecapPanel({
           letterSpacing: "-0.01em",
         }}
       >
-        In 24 days I did{" "}
+        In {recap.days} days I did{" "}
         <span
           style={{
             background: "linear-gradient(135deg,#4285f4,#9b72f2 45%,#ea4335)",
@@ -2092,7 +2118,7 @@ function RecapPanel({
             color: "transparent",
           }}
         >
-          41 things
+          {recap.thingsDone} things
         </span>{" "}
         for you.
       </h2>
@@ -2150,7 +2176,8 @@ function RecapPanel({
         }}
       >
         <span style={{ flex: "1 1 260px", fontSize: 14, lineHeight: 1.5 }}>
-          <b>You: +87 in 24 days.</b> Loan officers like you on Amplify: median +61 in 90 days.
+          {scoreGain !== undefined ? <b>You: +{scoreGain} in {recap.days} days.</b> : null}
+          {peers ? ` Loan officers like you on Amplify: median +${peers.medianGain} in ${peers.horizonDays} days.` : null}
         </span>
         <span style={{ fontSize: 11, color: "#5f6368" }}>Illustrative</span>
       </div>
@@ -2159,15 +2186,9 @@ function RecapPanel({
       >
         <div style={card}>
           <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: ".12em", color: "#137333" }}>
-            ON DAY 31 · STAYS FREE
+            ON DAY {model.day.trialDays + 1} · STAYS FREE
           </span>
-          {[
-            "Your profile",
-            "Reviews",
-            "Referral network",
-            "Single social posts",
-            "Chat with NORA",
-          ].map((s) => (
+          {stays.map((s) => (
             <span key={s} style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 14 }}>
               <Tick size={14} color="#137333" />
               {s}
@@ -2176,7 +2197,7 @@ function RecapPanel({
         </div>
         <div style={card}>
           <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: ".12em", color: "#b06000" }}>
-            ON DAY 31 · PAUSES
+            ON DAY {model.day.trialDays + 1} · PAUSES
           </span>
           {["NORA's drafts, fixes and weekly brief", "Website audits"].map((s) => (
             <span key={s} style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 14 }}>
@@ -2574,15 +2595,16 @@ export function Toggle({
 }
 
 /** Trial limits + upgrade CTA shown to the claimed professional on every Happyflow page. */
-function PlanBanner({
-  day,
+export function PlanBanner({
+  model,
   onCompare,
   onClose,
 }: {
-  day: HfDay;
+  model: HomeModel;
   onCompare: () => void;
   onClose: () => void;
 }) {
+  if (!model.trial.showBanner) return null;
   return (
     <div
       role="region"
@@ -2612,8 +2634,14 @@ function PlanBanner({
         <Ic name="lock" size={16} color="#b06000" sw={2.4} />
       </span>
       <span style={{ flex: "1 1 260px", fontSize: 14, lineHeight: 1.45 }}>
-        <b>Trial · day {day} of 30.</b> Listings, VOCE articles, Map Rank tracking and AI-citation
-        monitoring are locked — <b>127 points</b> are waiting behind them.
+        <b>Trial · day {model.day.n} of {model.day.trialDays}.</b> {model.trial.lockedList} {model.trial.lockedCount === 1 ? "is" : "are"} locked
+        {model.trial.pointsWaiting > 0 ? (
+          <>
+            {" "}— <b>{model.trial.pointsWaiting} points</b> are waiting behind them.
+          </>
+        ) : (
+          "."
+        )}
       </span>
       <button
         type="button"
@@ -2652,39 +2680,9 @@ function PlanBanner({
   );
 }
 
-const PLANS: { name: string; tag: string; items: string[]; cta?: string; highlight?: boolean }[] = [
-  {
-    name: "Core",
-    tag: "Your trial today · stays free after day 30",
-    items: ["Your profile", "Reviews", "Referral network", "Single social posts", "Chat with NORA"],
-  },
-  {
-    name: "Engage",
-    tag: "Listings",
-    items: [
-      "Everything in Core",
-      "Publish your details to Apple Maps, Bing and 28 directories",
-      "Correct the 22 directories that miss you or show your old phone · +42 points",
-    ],
-    cta: "Choose Engage",
-  },
-  {
-    name: "Amplify",
-    tag: "Includes Engage",
-    items: [
-      "Everything in Engage",
-      "VOCE articles · 85 points open in Articles",
-      "Map Rank tracking · see the week you pass Riverbend",
-      "AI-citation monitoring",
-      "NORA's drafts, fixes and weekly brief",
-      "Website audits",
-    ],
-    cta: "Choose Amplify",
-    highlight: true,
-  },
-];
 
-function PlansPanel({ isD, onChoose }: { isD: boolean; onChoose: (plan: string) => void }) {
+export function PlansPanel({ isD, model, onChoose }: { isD: boolean; model: HomeModel; onChoose: (plan: string) => void }) {
+  const peers = model.peers;
   return (
     <div
       style={{
@@ -2698,12 +2696,12 @@ function PlansPanel({ isD, onChoose }: { isD: boolean; onChoose: (plan: string) 
         style={{
           display: "grid",
           gap: 10,
-          gridTemplateColumns: isD ? "repeat(3,minmax(0,1fr))" : "minmax(0,1fr)",
+          gridTemplateColumns: isD ? `repeat(${Math.max(1, model.plans.length)},minmax(0,1fr))` : "minmax(0,1fr)",
         }}
       >
-        {PLANS.map((p) => (
+        {model.plans.map((p) => (
           <div
-            key={p.name}
+            key={p.key}
             style={{
               borderRadius: 20,
               border: `1.5px solid ${p.highlight ? "#c6dafc" : "#e8eaed"}`,
@@ -2774,11 +2772,15 @@ function PlansPanel({ isD, onChoose }: { isD: boolean; onChoose: (plan: string) 
           padding: "12px 16px",
         }}
       >
-        <span style={{ flex: "1 1 260px", fontSize: 13, lineHeight: 1.5 }}>
-          <b>Loan officers like you on Amplify:</b> median +61 points in 90 days; 3 of 5 reached the
-          next band.
-        </span>
-        <span style={{ fontSize: 11, color: "#5f6368" }}>Illustrative</span>
+        {peers ? (
+          <>
+            <span style={{ flex: "1 1 260px", fontSize: 13, lineHeight: 1.5 }}>
+              <b>Loan officers like you on Amplify:</b> median +{peers.medianGain} points in {peers.horizonDays} days;{" "}
+              {peers.reachedNextBand} of {peers.of} reached the next band.
+            </span>
+            <span style={{ fontSize: 11, color: "#5f6368" }}>Illustrative</span>
+          </>
+        ) : null}
       </div>
     </div>
   );

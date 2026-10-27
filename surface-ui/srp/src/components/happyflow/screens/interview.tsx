@@ -10,6 +10,7 @@ import { PERSONA, GRID, HF_ASSETS } from "../demo-data";
 import { Hov, Ic, NoraFace, Tick, useReducedMotion } from "../primitives";
 import type { HfIconName } from "../icons";
 import { useHfDevice } from "../use-hf-device";
+import { useHfPersona, usePersonalize } from "../persona-context";
 import {
   B,
   CLUSTERS,
@@ -23,6 +24,7 @@ import {
   PH,
   RIVER,
   SOURCES,
+  sourcesFor,
   SRC6,
   dotCount,
   kept,
@@ -242,6 +244,8 @@ const pickStyle = (curV: string | null, v: string) => ({
 const FAKE_NAV = ["Home", "Profile", "SRS", "Insights", "Listings", "Reviews", "Connections"];
 
 export function InterviewScreen() {
+  const persona = useHfPersona();
+  const t = usePersonalize();
   const [st, setSt] = useState<IvState>(IV_INIT);
   const [eng] = useState(() => new InterviewEngine(setSt));
   const { isD, isM, framed } = useHfDevice();
@@ -502,7 +506,7 @@ export function InterviewScreen() {
       case "sources":
         return (
           <div key={key} style={{ ...CARD, padding: 12, gap: 6 }}>
-            {SOURCES.map(([n, src], i) => {
+            {sourcesFor(persona).map(([n, src], i) => {
               const on = st.checks[i];
               return (
                 <button
@@ -949,7 +953,7 @@ export function InterviewScreen() {
                     objectPosition: "50% 30%",
                   }}
                 />
-                <span style={{ fontSize: 13, fontWeight: 700 }}>Alex Sample</span>
+                <span style={{ fontSize: 13, fontWeight: 700 }}>{persona.name}</span>
                 <span style={{ fontSize: 11, color: "#5f6368" }}>
                   Real estate agent · <b style={{ color: "#1a73e8" }}>Tampa</b>
                 </span>
@@ -1569,7 +1573,7 @@ export function InterviewScreen() {
     if (b.w === "grid" && compareAt >= 0 && st.pos >= compareAt) continue;
     if (b.l || b.w === "srcReact" || b.w === "offerReact") {
       const txt = b.l
-        ? lineText(st, b.l, eng.greet)
+        ? lineText(st, b.l, eng.greet, persona)
         : reactText(st, b.w as "srcReact" | "offerReact");
       if (!txt) continue;
       const full = i < st.pos || !b.l || st.typed >= segLen(txt);
@@ -1743,7 +1747,7 @@ export function InterviewScreen() {
                     gap: 18,
                   }}
                 >
-                  <span style={{ fontSize: 24, fontWeight: 600 }}>Morning, Alex</span>
+                  <span style={{ fontSize: 24, fontWeight: 600 }}>{t("Morning, Alex")}</span>
                   <div style={{ display: "flex", gap: 16 }}>
                     <div style={{ flex: 2, height: 220, borderRadius: 20, background: "#fff" }} />
                     <div style={{ flex: 1, height: 220, borderRadius: 20, background: "#fff" }} />
@@ -1856,7 +1860,7 @@ export function InterviewScreen() {
                         gap: 2,
                       }}
                     >
-                      <span style={{ fontSize: 15, fontWeight: 700 }}>Alex Sample</span>
+                      <span style={{ fontSize: 15, fontWeight: 700 }}>{persona.name}</span>
                       <span
                         style={{
                           fontSize: 12,
@@ -2219,7 +2223,7 @@ export function InterviewScreen() {
                         gap: 3,
                       }}
                     >
-                      <span style={{ fontSize: 19, fontWeight: 700 }}>Alex Sample</span>
+                      <span style={{ fontSize: 19, fontWeight: 700 }}>{persona.name}</span>
                       <span style={{ fontSize: 13, color: "#5f6368" }}>
                         Senior Loan Officer · Demo Mortgage Co
                       </span>

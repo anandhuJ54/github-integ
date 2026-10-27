@@ -2,7 +2,7 @@
 
 Pattern for every Surface capability:
 - one router module per capability, mounted by this Surface's `router.py`
-- auth via the shared `current_user` dependency (verified Supabase JWT)
+- auth via the shared `current_user` dependency (verified Supabase JWT; a local sign-in token is refused)
 - governed DB access via `_base.db` — never a raw table write
 """
 from __future__ import annotations

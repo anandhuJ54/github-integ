@@ -11,6 +11,7 @@ import {
   createRouter,
 } from "@tanstack/react-router";
 import { describe, expect, test } from "bun:test";
+import { HfPersonaProvider } from "../persona-context";
 import { SampleData, SAMPLE_DATA_LABEL } from "../sample-data";
 import { HomeDay1Screen } from "./home-day1";
 import { HomeDay7Screen } from "./home-day7";
@@ -78,6 +79,52 @@ describe("Happyflow screens render", () => {
       const html = await render(Screen);
       expect(html.length).toBeGreaterThan(1000);
       expect(html).toContain("hf-root");
+    });
+  }
+});
+
+describe("the home shows the signed-in professional", () => {
+  const seat = { pro: { first_name: "Harper", last_name: "Jones", display_name: "Harper Jones", job_title: null }, office: null };
+  const withSeat = (Screen: ComponentType) => () =>
+    createElement(HfPersonaProvider, { seat: seat as never }, createElement(Screen));
+
+  test("day 1 greets by the real first name, not Alex", async () => {
+    const html = await render(withSeat(HomeDay1Screen));
+    expect(html).toMatch(/, Harper/);
+    expect(html).not.toMatch(/(Morning|afternoon|evening|Good \w+), Alex/i);
+  });
+
+  test("day 7 greets by the real first name, not Alex", async () => {
+    const html = await render(withSeat(() => createElement(HomeDay7Screen, { day: 7, events: false })));
+    expect(html).toMatch(/, Harper/);
+    expect(html).not.toMatch(/, Alex/);
+  });
+
+  test("without a seat the sample persona is still used", async () => {
+    const html = await render(HomeDay1Screen);
+    expect(html).toMatch(/, Alex/);
+  });
+
+  test("the notice says the name is real when it is", async () => {
+    const html = await render(() =>
+      createElement(HfPersonaProvider, { seat: seat as never }, createElement(SampleData, null, createElement(SettingsScreen))),
+    );
+    expect(html).toContain("Your name");
+  });
+});
+
+describe("no screen still says Alex for a real person", () => {
+  const seat = {
+    pro: { first_name: "Harper", last_name: "Jones", display_name: "Harper Jones", job_title: null, email: "harper@example.test", phone: null, slug: "harper-jones" },
+    office: null,
+  };
+  for (const [name, Screen] of SCREENS) {
+    test(name, async () => {
+      const html = await render(() =>
+        createElement(HfPersonaProvider, { seat: seat as never }, createElement(Screen)),
+      );
+      const text = html.replace(/<[^>]*>/g, " ").replace(/&[a-z#0-9]+;/g, " ");
+      expect(text).not.toMatch(/Alex/i); // also alex.sample@… and …/alex-sample
     });
   }
 });

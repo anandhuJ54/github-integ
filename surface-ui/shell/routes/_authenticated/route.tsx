@@ -1,4 +1,5 @@
 import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
+import { signInPath } from "@v3/state/auth";
 import { useSession } from "@v3/state/session/use-session";
 import { whenSessionReady } from "@v3/state/session/bootstrap";
 import { store } from "@v3/state/store";
@@ -9,7 +10,7 @@ export const Route = createFileRoute("/_authenticated")({
   beforeLoad: async () => {
     // Wait for the stored session to be restored, so a reload does not bounce a signed-in user.
     const session = await whenSessionReady(store);
-    if (session.status !== "authed" || !session.user) throw redirect({ to: "/auth" });
+    if (session.status !== "authed" || !session.user) throw redirect({ to: signInPath() as "/auth" });
     return { user: session.user };
   },
   component: AuthenticatedLayout,

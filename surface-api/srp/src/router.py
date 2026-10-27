@@ -10,6 +10,7 @@ from __future__ import annotations
 
 from fastapi import APIRouter
 
+from surfaces.srp.auth.router import router as auth_router
 from surfaces.srp.claim_profile.router import router as claim_profile_router
 from surfaces.srp.directory.router import router as directory_data_router
 from surfaces.srp.health.router import router as health_router
@@ -18,6 +19,7 @@ from surfaces.srp.seat.router import router as seat_data_router
 
 router = APIRouter()
 router.include_router(health_router)
+router.include_router(auth_router)  # local sign-in, off unless LOCAL_AUTH_ENABLED (srp/local-login-srp-home)
 router.include_router(reviews_fn_router)
 router.include_router(claim_profile_router)
 router.include_router(seat_data_router)

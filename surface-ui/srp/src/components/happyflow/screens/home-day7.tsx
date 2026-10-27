@@ -4,65 +4,60 @@
  * the shell renders the recap window and blurs the page).
  */
 import { useEffect, useState, type CSSProperties } from "react";
-import { HappyflowShell, useHf, type Think } from "../shell";
+import { HappyflowShell, useHf, type HfAct, type HfTarget, type Think } from "../shell";
 import { Ic, NoraFace, ScoreRing, Tick } from "../primitives";
 import type { HfIconName } from "../icons";
 import type { HfDay } from "../demo-data";
 import { useHfDevice } from "../use-hf-device";
+import { useHfPersona } from "../persona-context";
+import { useHomeModel } from "../home-context";
+import { SAMPLE_EVENTS, YEARS } from "../sample-home";
+import { monthDay, type HomeModel, type ModelEvent } from "@v3/srp/utils/home-model";
 
-// Demo data (Happyflow prototype)
-const THINKS: Think[] = [
-  {
-    t: "You crossed into Established.",
-    d: "418 now. Next is the website: 42 points, and the code is written.",
-    cta: "Fix my website",
-    act: "website",
-  },
-  {
-    t: "Two replies are waiting.",
-    d: "Both drafts are ready and compliant. Approve them and I'll post.",
-    cta: "Show me",
-    act: "close",
-  },
-];
-
-const DRAFTS: { n: string; s: number; t: string; d: string }[] = [
-  {
-    n: "Maria L.",
-    s: 5,
-    t: "Alex walked us through every step of our FHA loan. We closed in 28 days.",
-    d: "Thank you, Maria! It was a pleasure helping you and your family get into your new home.",
-  },
-  {
-    n: "James T.",
-    s: 4,
-    t: "Explained everything clearly. A couple of slow email replies.",
-    d: "Thanks, James — I appreciate the honest feedback, and I’m working on faster replies.",
-  },
-];
-
-const BRIEF: [string, string][] = [
-  ["Service areas added", "+6"],
-  ["Bio approved", "+8"],
-  ["First article published (VOCE free credits)", "+12"],
-  ["2 replies posted", "+2"],
-];
-
-const TILES: { icon: HfIconName; l: string; v: string; n: string; lk: boolean }[] = [
-  { icon: "pin", l: "Top-3 map spots", v: "9 of 49", n: "Last scan Oct 16", lk: true },
-  { icon: "spark", l: "AI citations", v: "1 of 7", n: "Last check Oct 16", lk: true },
-  { icon: "star", l: "Reviews", v: "4.9", n: "from 130 reviews", lk: false },
-  { icon: "user", l: "Profile strength", v: "72%", n: "up from 64%", lk: false },
-];
-
-const YEARS = Array.from({ length: 37 }, (_, i) => String(2026 - i));
+// The page reads a HomeModel: the seat's data from the API, or the prototype's sample (../sample-home.ts) when there is none.
 
 type EventKind = "review" | "fb";
+const AWAY = "While you were away:";
 
+/** Day 7 / 24: a real seat sees its own Home in this layout; with no data this is the sample page of the demo timeline. */
 export function HomeDay7Screen({ day, events }: { day: Exclude<HfDay, 1>; events: boolean }) {
+  const persona = useHfPersona();
+  const model = useHomeModel(day, persona.first);
+  // `?day=` can ask for a layout the seat's own dates do not say: the seat's data, shown in the asked layout.
+  const layout = day === 24 ? "day24" : "day7";
+  return <HomeDay7 model={model.layout === layout ? model : { ...model, layout }} events={events} />;
+}
+
+/** The four tiles of the page: map, AI, reviews, profile strength, from the model (a tile the data does not have is left out). */
+export function day7Tiles(model: HomeModel): { icon: HfIconName; l: string; v: string; n: string; lk: boolean }[] {
+  const { map, ai, reviews, profileStrength } = model.tiles;
+  const last = (label: string, iso: string | null) => (iso ? `${label} ${monthDay(iso)}` : "");
+  const tiles: { icon: HfIconName; l: string; v: string; n: string; lk: boolean }[] = [];
+  if (map) tiles.push({ icon: "pin", l: "Top-3 map spots", v: `${map.top3} of ${map.total}`, n: last("Last scan", map.scannedAt), lk: map.locked });
+  if (ai) tiles.push({ icon: "spark", l: "AI citations", v: `${ai.cited ?? "—"} of ${ai.checked}`, n: last("Last check", ai.checkedAt), lk: ai.locked });
+  tiles.push({
+    icon: "star", l: "Reviews", v: reviews.avg === null ? "—" : reviews.avg.toFixed(1), n: reviews.count === null ? "" : `from ${reviews.count} reviews`, lk: false,
+  });
+  tiles.push({
+    icon: "user", l: "Profile strength", v: profileStrength.pct === null ? "—" : `${profileStrength.pct}%`,
+    n: profileStrength.pct !== null && profileStrength.previousPct !== null && profileStrength.previousPct < profileStrength.pct ? `up from ${profileStrength.previousPct}%` : "", lk: false,
+  });
+  return tiles;
+}
+
+/** The line under the title: the trial day on mobile, what happened while away on desktop. */
+export const day7Sub = (model: HomeModel, isM: boolean) =>
+  isM ? `Day ${model.day.n} of ${model.day.trialDays} · NORA is on it` : "Here is what happened while you were away.";
+
+/** Day 7 / 24 from a model. */
+export function HomeDay7({ model, events }: { model: HomeModel; events: boolean }) {
+  const day: Exclude<HfDay, 1> = model.layout === "day24" ? 24 : 7;
   const { isM } = useHfDevice();
+  const persona = useHfPersona();
   const [greet, setGreet] = useState("Good morning");
-  const [banner, setBanner] = useState<EventKind | null>(null);
+  // A stored event shows at once; the demo's events (the `events` prop and the demo bar) are the sample's.
+  const [banner, setBanner] = useState<ModelEvent | null>(model.events[0] ?? null);
+  const showDemo = (kind: EventKind | null) => setBanner(kind ? SAMPLE_EVENTS[kind] : null);
 
   useEffect(() => {
     const hr = new Date().getHours();
@@ -74,21 +69,21 @@ export function HomeDay7Screen({ day, events }: { day: Exclude<HfDay, 1>; events
       screen="home"
       day={day}
       home
-      title={`${greet}, Alex`}
-      sub={isM ? `Day ${day} of 30 · NORA is on it` : "Here is what happened while you were away."}
-      banner={banner ? <EventBanner kind={banner} onClose={() => setBanner(null)} /> : null}
-      nora={{ thinks: THINKS }}
+      title={`${greet}, ${persona.first}`}
+      sub={day7Sub(model, isM)}
+      banner={banner ? <EventBanner event={banner} onClose={() => setBanner(null)} /> : null}
+      nora={{ thinks: model.insights.map((i): Think => ({ t: i.title, d: i.body, cta: i.cta, act: i.action as HfAct })) }}
       initialWin={day === 24 ? "recap" : null}
     >
-      <Day7Body events={events} setBanner={setBanner} />
+      <Day7Body model={model} events={events} setBanner={showDemo} />
     </HappyflowShell>
   );
 }
 
 /** Screen 14 banner: a 2★ review (red) or an expiring Facebook connection (yellow). */
-function EventBanner({ kind, onClose }: { kind: EventKind; onClose: () => void }) {
+function EventBanner({ event, onClose }: { event: ModelEvent; onClose: () => void }) {
   const hf = useHf();
-  const fb = kind === "fb";
+  const fb = event.kind === "facebook";
   return (
     <div
       style={{
@@ -105,9 +100,7 @@ function EventBanner({ kind, onClose }: { kind: EventKind; onClose: () => void }
     >
       <NoraFace size={32} />
       <span style={{ flex: "1 1 220px", fontSize: 14, lineHeight: 1.45, color: "#202124" }}>
-        {fb
-          ? "Your Facebook connection expires Friday. Reconnect to keep your social points."
-          : "A 2★ review from Kevin P. needs you today. I drafted a calm, compliant reply."}
+        {[event.title, event.body].filter(Boolean).join(" ")}
       </span>
       <button
         type="button"
@@ -129,7 +122,7 @@ function EventBanner({ kind, onClose }: { kind: EventKind; onClose: () => void }
           whiteSpace: "nowrap",
         }}
       >
-        {fb ? "Reconnect" : "Review the draft"}
+        {event.actionLabel}
       </button>
       <button
         type="button"
@@ -154,17 +147,23 @@ function EventBanner({ kind, onClose }: { kind: EventKind; onClose: () => void }
 }
 
 function Day7Body({
+  model,
   events,
   setBanner,
 }: {
+  model: HomeModel;
   events: boolean;
   setBanner: (k: EventKind | null) => void;
 }) {
   const hf = useHf();
   const { isD, openNora } = hf;
+  const { brief, board } = model;
+  const drafts = model.drafts.filter((d) => d.status === "draft");
+  const tiles = day7Tiles(model);
+  const years = model.person?.yearStarted && !YEARS.includes(String(model.person.yearStarted)) ? [String(model.person.yearStarted), ...YEARS] : YEARS;
   const [approved, setApproved] = useState<Record<number, boolean>>({});
   const [undo, setUndo] = useState<{ i: number; s: number } | null>(null);
-  const [year, setYear] = useState("2014");
+  const [year, setYear] = useState(model.person?.yearStarted ? String(model.person.yearStarted) : model.mode === "real" ? "" : "2014");
   const [yearSaved, setYearSaved] = useState(false);
 
   // Screen 14: the 2★ review arrives 900 ms after the page opens.
@@ -212,25 +211,33 @@ function Day7Body({
       }}
     >
       <div style={col}>
-        <section
-          style={{
-            order: o(1),
-            display: "flex",
-            gap: 12,
-            alignItems: "center",
-            borderRadius: 20,
-            background: "#e6f4ea",
-            border: "1.5px solid #ceead6",
-            padding: "14px 16px",
-            animation: "hf-rise .32s ease both",
-          }}
-        >
-          <NoraFace size={40} />
-          <span style={{ flex: 1, fontSize: 15, lineHeight: 1.5 }}>
-            <b>While you were away:</b> 2 new reviews, your bio went live and your first article is
-            published.
-          </span>
-        </section>
+        {brief ? (
+          <section
+            style={{
+              order: o(1),
+              display: "flex",
+              gap: 12,
+              alignItems: "center",
+              borderRadius: 20,
+              background: "#e6f4ea",
+              border: "1.5px solid #ceead6",
+              padding: "14px 16px",
+              animation: "hf-rise .32s ease both",
+            }}
+          >
+            <NoraFace size={40} />
+            <span style={{ flex: 1, fontSize: 15, lineHeight: 1.5 }}>
+              {brief.awayText.startsWith(AWAY) ? (
+                <>
+                  <b>{AWAY}</b>
+                  {brief.awayText.slice(AWAY.length)}
+                </>
+              ) : (
+                brief.awayText
+              )}
+            </span>
+          </section>
+        ) : null}
         <section
           style={{
             order: o(2),
@@ -249,7 +256,14 @@ function Day7Body({
             animation: "hf-rise .32s ease .05s both",
           }}
         >
-          <ScoreRing px={isD ? 180 : 170} ns={40} value={hf.score} id="hfRingDay7" />
+          <ScoreRing
+            px={isD ? 180 : 170}
+            ns={40}
+            value={model.score.total}
+            label={model.score.max !== null ? `/ ${model.score.max}` : ""}
+            max={model.score.max}
+            id="hfRingDay7"
+          />
           <div
             style={{
               flex: "1 1 220px",
@@ -259,31 +273,40 @@ function Day7Body({
               gap: 10,
             }}
           >
-            <span
-              style={{
-                alignSelf: "flex-start",
-                display: "inline-flex",
-                alignItems: "center",
-                gap: 6,
-                borderRadius: 999,
-                background: "#34a853",
-                padding: "6px 14px",
-                fontSize: 14,
-                fontWeight: 700,
-                color: "#fff",
-                animation: "hf-pop .5s cubic-bezier(.2,.8,.2,1) .4s both",
-              }}
-            >
-              <Tick size={14} />
-              You&apos;re Established
-            </span>
-            <span style={{ fontSize: 15, fontWeight: 700, color: "#1e8e3e" }}>▲ 28 this week</span>
-            <span style={{ fontSize: 15 }}>
-              <b>#5 of 41</b> in Davenport
-            </span>
-            <span style={{ fontSize: 13, color: "#5f6368" }}>
-              You crossed 400 on day 6. Next band target: Riverbend at 571.
-            </span>
+            {model.score.band ? (
+              <span
+                style={{
+                  alignSelf: "flex-start",
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 6,
+                  borderRadius: 999,
+                  background: "#34a853",
+                  padding: "6px 14px",
+                  fontSize: 14,
+                  fontWeight: 700,
+                  color: "#fff",
+                  animation: "hf-pop .5s cubic-bezier(.2,.8,.2,1) .4s both",
+                }}
+              >
+                <Tick size={14} />
+                You&apos;re {model.score.band}
+              </span>
+            ) : null}
+            {model.score.weekDelta !== null ? (
+              <span style={{ fontSize: 15, fontWeight: 700, color: model.score.weekDelta < 0 ? "#c5221f" : "#1e8e3e" }}>
+                {model.score.weekDelta < 0 ? "▼" : "▲"} {Math.abs(model.score.weekDelta)} this week
+              </span>
+            ) : null}
+            {model.rank ? (
+              <span style={{ fontSize: 15 }}>
+                <b>
+                  #{model.rank.position} of {model.rank.of}
+                </b>
+                {model.rank.city ? ` in ${model.rank.city}` : ""}
+              </span>
+            ) : null}
+            {model.copy.bandNote ? <span style={{ fontSize: 13, color: "#5f6368" }}>{model.copy.bandNote}</span> : null}
           </div>
         </section>
         <section
@@ -323,7 +346,8 @@ function Day7Body({
                   color: "#202124",
                 }}
               >
-                {YEARS.map((y) => (
+                {year === "" ? <option value="">Year</option> : null}
+                {years.map((y) => (
                   <option key={y} value={y}>
                     {y}
                   </option>
@@ -363,10 +387,11 @@ function Day7Body({
             gap: 12,
           }}
         >
-          {TILES.map((t) => (
+          {tiles.map((t) => (
             <button
               type="button"
               key={t.l}
+              data-locked={t.lk ? "true" : "false"}
               onClick={() =>
                 t.lk ? hf.out("Billing") : t.icon === "user" ? hf.go("profile") : hf.go("reviews")
               }
@@ -424,30 +449,41 @@ function Day7Body({
           }}
         >
           <span style={{ display: "flex", gap: 4 }}>
-            <span style={dot} />
-            <span style={dot} />
+            {Array.from({ length: board.moves.goal }, (_, i) => i < board.moves.done).map((filled, i) =>
+              filled ? (
+                <span key={i} data-move="done" style={dot} />
+              ) : (
+                <span
+                  key={i}
+                  data-move="open"
+                  style={{ width: 12, height: 12, borderRadius: "50%", border: "2px solid #c6dafc" }}
+                />
+              ),
+            )}
+          </span>
+          <b style={{ fontSize: 14 }}>
+            {board.moves.done} of {board.moves.goal} moves this week
+          </b>
+          {board.streakWeeks > 0 ? (
             <span
-              style={{ width: 12, height: 12, borderRadius: "50%", border: "2px solid #c6dafc" }}
-            />
-          </span>
-          <b style={{ fontSize: 14 }}>2 of 3 moves this week</b>
-          <span
-            style={{
-              marginLeft: "auto",
-              borderRadius: 999,
-              background: "#fef7e0",
-              padding: "4px 10px",
-              fontSize: 12,
-              fontWeight: 700,
-              color: "#b06000",
-            }}
-          >
-            Streak · 1 week
-          </span>
+              style={{
+                marginLeft: "auto",
+                borderRadius: 999,
+                background: "#fef7e0",
+                padding: "4px 10px",
+                fontSize: 12,
+                fontWeight: 700,
+                color: "#b06000",
+              }}
+            >
+              Streak · {board.streakWeeks} {board.streakWeeks === 1 ? "week" : "weeks"}
+            </span>
+          ) : null}
         </section>
       </div>
 
       <div style={col}>
+        {brief ? (
         <section
           style={{
             order: o(3),
@@ -476,11 +512,11 @@ function Day7Body({
               letterSpacing: "-0.01em",
             }}
           >
-            Up 28 this week
+            Up {brief.pointsTotal} this week
           </h2>
           <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-            {BRIEF.map(([t, p]) => (
-              <div key={t} style={{ display: "flex", alignItems: "center", gap: 10, fontSize: 14 }}>
+            {brief.items.map((it) => (
+              <div key={it.label} style={{ display: "flex", alignItems: "center", gap: 10, fontSize: 14 }}>
                 <span
                   style={{
                     width: 18,
@@ -494,14 +530,15 @@ function Day7Body({
                 >
                   <Tick size={9} />
                 </span>
-                <span style={{ flex: 1, minWidth: 0 }}>{t}</span>
-                <b style={{ color: "#137333", fontVariantNumeric: "tabular-nums" }}>{p}</b>
+                <span style={{ flex: 1, minWidth: 0 }}>{it.label}</span>
+                <b style={{ color: "#137333", fontVariantNumeric: "tabular-nums" }}>{it.points === null ? "" : `+${it.points}`}</b>
               </div>
             ))}
           </div>
+          {brief.nextMove.label ? (
           <button
             type="button"
-            onClick={() => hf.go("website")}
+            onClick={() => hf.go(brief.nextMove.target as HfTarget)}
             style={{
               display: "flex",
               alignItems: "center",
@@ -520,13 +557,17 @@ function Day7Body({
               >
                 NEXT MOVE
               </span>
-              <b style={{ fontSize: 15 }}>Fix my website · +42</b>
+              <b style={{ fontSize: 15 }}>
+                {brief.nextMove.label} · +{brief.nextMove.points}
+              </b>
             </span>
             <span style={{ display: "flex", transform: "rotate(180deg)" }}>
               <Ic name="back" size={16} color="#1a73e8" />
             </span>
           </button>
+          ) : null}
         </section>
+        ) : null}
         <section
           style={{
             order: o(4),
@@ -540,27 +581,30 @@ function Day7Body({
             style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 15, fontWeight: 700 }}
           >
             Needs you{" "}
-            <span
-              style={{
-                minWidth: 22,
-                height: 22,
-                borderRadius: 11,
-                background: "#ea4335",
-                display: "grid",
-                placeItems: "center",
-                fontSize: 12,
-                color: "#fff",
-              }}
-            >
-              2
-            </span>
+            {board.needsYouCount > 0 ? (
+              <span
+                style={{
+                  minWidth: 22,
+                  height: 22,
+                  borderRadius: 11,
+                  background: "#ea4335",
+                  display: "grid",
+                  placeItems: "center",
+                  fontSize: 12,
+                  color: "#fff",
+                }}
+              >
+                {board.needsYouCount}
+              </span>
+            ) : null}
           </span>
-          {DRAFTS.map((d, i) => {
+          {drafts.length === 0 ? <span style={{ fontSize: 13, color: "#5f6368" }}>Nothing needs you right now.</span> : null}
+          {drafts.map((d, i) => {
             const ok = !!approved[i];
             const undoTxt = undo && undo.i === i ? `Undo · ${undo.s}s` : "";
             return (
               <div
-                key={d.n}
+                key={d.id}
                 style={{
                   borderRadius: 20,
                   background: "rgba(255,255,255,.96)",
@@ -572,13 +616,13 @@ function Day7Body({
                 }}
               >
                 <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                  <b style={{ fontSize: 14 }}>{d.n}</b>
+                  <b style={{ fontSize: 14 }}>{d.reviewerLabel}</b>
                   <span style={{ fontSize: 13, letterSpacing: 1, color: "#f9ab00" }}>
-                    {"★★★★★".slice(0, d.s) + "☆☆☆☆☆".slice(0, 5 - d.s)}
+                    {"★★★★★".slice(0, d.rating) + "☆☆☆☆☆".slice(0, 5 - d.rating)}
                   </span>
                 </div>
                 <span style={{ fontSize: 13, lineHeight: 1.45, color: "#3c4043" }}>
-                  &quot;{d.t}&quot;
+                  &quot;{d.reviewText}&quot;
                 </span>
                 {!ok ? (
                   <>
@@ -602,7 +646,7 @@ function Day7Body({
                       >
                         NORA&apos;S DRAFT
                       </span>
-                      <span style={{ fontSize: 13, lineHeight: 1.45 }}>{d.d}</span>
+                      <span style={{ fontSize: 13, lineHeight: 1.45 }}>{d.draftText}</span>
                       <span
                         style={{
                           alignSelf: "flex-start",
@@ -610,15 +654,15 @@ function Day7Body({
                           alignItems: "center",
                           gap: 5,
                           borderRadius: 999,
-                          background: "#e6f4ea",
+                          background: d.compliant ? "#e6f4ea" : "#fef7e0",
                           padding: "2px 8px",
                           fontSize: 11,
                           fontWeight: 700,
-                          color: "#137333",
+                          color: d.compliant ? "#137333" : "#b06000",
                         }}
                       >
-                        <Ic name="shield" size={12} color="#137333" sw={2.4} />
-                        Compliant
+                        <Ic name="shield" size={12} color={d.compliant ? "#137333" : "#b06000"} sw={2.4} />
+                        {d.compliant ? "Compliant" : "Needs an edit"}
                       </span>
                     </div>
                     <div style={{ display: "flex", gap: 8 }}>
@@ -646,14 +690,14 @@ function Day7Body({
                         onClick={() =>
                           hf.openSheet(
                             {
-                              title: "Edit reply to " + d.n,
+                              title: "Edit reply to " + d.reviewerLabel,
                               ph: "Reply",
                               cta: "Approve reply",
                               nora: "Compliant · no rate promises · NMLS shown on your profile.",
                               input: true,
                               done: "Reply posted",
                             },
-                            d.d,
+                            d.draftText,
                           )
                         }
                         style={{

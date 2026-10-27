@@ -8,9 +8,14 @@
  * and the "Viewing as … — Return to …" bar are rendered.
  */
 import { createFileRoute, Outlet, useSearch } from "@tanstack/react-router";
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { ScopedShell } from "@v3/srp/components/seat/scoped-shell";
+import { SeatLoading } from "@v3/srp/components/seat/pieces";
+import { HfHomeModelProvider } from "@v3/srp/components/happyflow/home-context";
+import { HfPersonaProvider } from "@v3/srp/components/happyflow/persona-context";
+import { homeModel, useHomeApi } from "@v3/srp/utils/home-model";
+import { waitingForSeat } from "@v3/srp/utils/seat-wait";
 import { ROLE_FOR_KIND, useImpersonation } from "@v3/state/impersonation/impersonation";
 import { loadLocationSeat, loadProfessionalSeat, seatProName } from "@v3/srp/utils/seat";
 
@@ -73,6 +78,10 @@ function SeatLayout() {
     : [locQ.data?.office.address_city, locQ.data?.office.address_state].filter(Boolean).join(", ") ||
       null;
 
+  // The Home's data (srp/home-page-schema): read once per professional seat; a failure or a seat with no Home data falls back to the sample view.
+  const homeQ = useHomeApi(id, isPro);
+  const home = useMemo(() => homeModel(isPro ? homeQ.data : null), [isPro, homeQ.data]);
+
   const ready = isPro ? Boolean(proQ.data) : Boolean(locQ.data);
 
   // Direct-URL arrivals still register the seat on the impersonation stack.
@@ -100,7 +109,11 @@ function SeatLayout() {
       photoUrl={photoUrl}
       base={`/seat/${kind}/${id}`}
     >
-      <Outlet />
+      <HfPersonaProvider seat={isPro ? proQ.data : null}>
+        <HfHomeModelProvider model={home}>
+          {waitingForSeat(isPro, proQ.status, homeQ.status) ? <SeatLoading /> : <Outlet />}
+        </HfHomeModelProvider>
+      </HfPersonaProvider>
     </ScopedShell>
   );
 }

@@ -12,6 +12,7 @@ import {
   House,
   LayoutGrid,
   Lock,
+  LogOut,
   Network,
   Plug,
   Search,
@@ -23,6 +24,9 @@ import {
   Users,
 } from "lucide-react";
 import { BrandIcon } from "@v3/shared/components/icons/logo";
+import { getAuthProvider } from "@v3/state/auth";
+import { useSession } from "@v3/state/session/use-session";
+import { showSignOut } from "@v3/srp/utils/sign-in";
 import { PageBody } from "@v3/shared/components/ui/console-primitives";
 import { ActingAsBar } from "@v3/srp/components/impersonation/acting-as-bar";
 import { BrandAvatar, PersonAvatar } from "@v3/shared/components/ui/entity-avatar";
@@ -62,6 +66,7 @@ function ShellFrame({
   children: ReactNode;
 }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const { signOut } = useSession();
 
   return (
     <div className="min-h-screen bg-[color:var(--color-surface-2)]">
@@ -124,6 +129,15 @@ function ShellFrame({
             <span className="inline-flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.14em] text-[color:var(--color-ink-3)]">
               <BrandIcon size={16} /> Powered by Nora
             </span>
+            {showSignOut(getAuthProvider().name) ? (
+              <button
+                type="button"
+                onClick={() => void signOut()}
+                className="mt-3 flex w-full items-center gap-2 rounded-[10px] px-3 py-2 text-sm font-medium text-[color:var(--color-ink-2)] transition-colors hover:bg-[color:var(--color-surface-2)] hover:text-ink"
+              >
+                <LogOut className="h-4 w-4" /> Sign out
+              </button>
+            ) : null}
           </div>
         </aside>
 

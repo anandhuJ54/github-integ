@@ -12,14 +12,12 @@ import {
 import { BrandAvatar, PersonAvatar } from "@v3/shared/components/ui/entity-avatar";
 import { Badge } from "@v3/shared/components/ui/badge";
 import { rosterCoverage, seatProName } from "@v3/srp/utils/seat";
-import { HomeDay1Screen } from "@v3/srp/components/happyflow/screens/home-day1";
-import { HomeDay7Screen } from "@v3/srp/components/happyflow/screens/home-day7";
-import { SampleData } from "@v3/srp/components/happyflow/sample-data";
+import { HomeForSeat } from "@v3/srp/components/happyflow/home-page";
 import { validateOverviewSearch } from "@v3/srp/utils/overview-search";
 import { useLocationSeat, useSeatParams } from "./seat.$kind.$id";
 
 export const Route = createFileRoute("/_authenticated/seat/$kind/$id/")({
-  // Professional seats show the Happyflow NORA home (demo data): day 1, or ?day=7 (&events=1) / ?day=24.
+  // Professional seats show the Happyflow NORA home from the local database: the layout follows the trial dates, or ?day=7 (&events=1) / ?day=24.
   validateSearch: validateOverviewSearch,
   component: SeatOverview,
 });
@@ -28,11 +26,7 @@ function SeatOverview() {
   const { isPro } = useSeatParams();
   const { day, events } = Route.useSearch();
   if (!isPro) return <LocationOverview />;
-  return (
-    <SampleData>
-      {day === 7 || day === 24 ? <HomeDay7Screen key={day} day={day} events={!!events} /> : <HomeDay1Screen />}
-    </SampleData>
-  );
+  return <HomeForSeat day={day} events={!!events} />;
 }
 
 /* ─────────────────────────── LOCATION overview ─────────────────────────── */

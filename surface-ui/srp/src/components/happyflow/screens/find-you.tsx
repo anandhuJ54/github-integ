@@ -5,6 +5,7 @@
  */
 import {
   useEffect,
+  useMemo,
   useRef,
   useState,
   type CSSProperties,
@@ -14,6 +15,7 @@ import {
 import { HF_EMBED_HEIGHT, useHfNav } from "../seat-nav";
 import "../happyflow.css";
 import { HF_ASSETS } from "../demo-data";
+import { useHfPersona, usePersonalize } from "../persona-context";
 import { Hov, NoraFace, prefersReducedMotion } from "../primitives";
 import { useHfDevice } from "../use-hf-device";
 
@@ -56,10 +58,10 @@ const PEOPLE: Person[] = [
 ];
 const GREETING = "Hi, I'm NORA. Once you claim your profile, I'll set it up for you.";
 
-const match = (q: string) => {
+const match = (q: string, people: Person[]) => {
   const t = q.trim().toLowerCase().split(/\s+/).filter(Boolean);
   if (!t.length) return [];
-  return PEOPLE.filter((p) =>
+  return people.filter((p) =>
     t.every((x) =>
       p.name
         .toLowerCase()
@@ -137,10 +139,13 @@ const SSO_ALT: [string, SsoKey][] = [
 type Claim = null | "idle" | "opening";
 
 export function FindYouScreen() {
+  const persona = useHfPersona();
+  const tx = usePersonalize();
   const { isD, isM, framed } = useHfDevice();
   const hfNav = useHfNav();
 
-  const [q, setQState] = useState("Alex Sample");
+  const people = useMemo(() => PEOPLE.map((p) => ({ ...p, name: tx(p.name) })), [tx]);
+  const [q, setQState] = useState(() => persona.name);
   const [searching, setSearching] = useState(false);
   const [focus, setFocus] = useState(false);
   const [typed, setTyped] = useState(0);
@@ -210,7 +215,7 @@ export function FindYouScreen() {
     if (claim === "idle") setClaim(null);
   };
 
-  const res = match(q);
+  const res = match(q, people);
   const typing = typed < GREETING.length;
   const showResults = !searching && res.length > 0;
   const noResults = !searching && !!q.trim() && res.length === 0;
@@ -375,7 +380,7 @@ export function FindYouScreen() {
                   style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 3 }}
                 >
                   <span style={{ font: "700 20px Sora,sans-serif", letterSpacing: "-0.02em" }}>
-                    Alex Sample
+                    {persona.name}
                   </span>
                   <span
                     style={{
@@ -1002,7 +1007,7 @@ export function FindYouScreen() {
                                   setClaim("idle");
                                   setOpenPct(0);
                                 }
-                              : toast("The demo follows Alex in Davenport")
+                              : toast(tx("The demo follows Alex in Davenport"))
                           }
                           style={{
                             flex: "none",

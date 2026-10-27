@@ -1,15 +1,18 @@
 import type { ReactNode } from "react";
 import { HF_SAMPLE_BANNER_HEIGHT } from "./seat-nav";
+import { SAMPLE_DATA_NOTE, sampleNoticeFor } from "./persona";
+import { useHfPersona } from "./persona-context";
 
 export const SAMPLE_DATA_LABEL = "Sample data";
-export const SAMPLE_DATA_NOTE =
-  "These screens show example values, not your real profile, score or activity.";
+export { SAMPLE_DATA_NOTE };
 
 /**
  * Wraps a Happyflow screen in the seat. Every number, name and score on these screens is demo data
  * (see demo-data.ts), so each one carries this notice until it is wired to real data.
  */
-export function SampleData({ children }: { children: ReactNode }) {
+export function SampleData({ children, note }: { children: ReactNode; note?: string }) {
+  const { isReal } = useHfPersona();
+  const text = note ?? sampleNoticeFor(isReal);
   return (
     <div>
       <div
@@ -31,7 +34,9 @@ export function SampleData({ children }: { children: ReactNode }) {
         }}
       >
         <strong style={{ fontWeight: 700, flex: "none" }}>{SAMPLE_DATA_LABEL}</strong>
-        <span style={{ overflow: "hidden", textOverflow: "ellipsis" }}>{SAMPLE_DATA_NOTE}</span>
+        <span title={text} style={{ overflow: "hidden", textOverflow: "ellipsis" }}>
+          {text}
+        </span>
       </div>
       {children}
     </div>

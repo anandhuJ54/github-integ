@@ -1,5 +1,5 @@
 import { useCallback, useMemo } from "react";
-import { getAuthProvider } from "../auth";
+import { getAuthProvider, signInPath } from "../auth";
 import { useAppSelector } from "../hooks";
 
 /** The signed-in user and sign-out, the same for every Surface. */
@@ -9,7 +9,7 @@ export function useSession() {
 
   const signOut = useCallback(async () => {
     await getAuthProvider().signOut();
-    if (typeof window !== "undefined") window.location.href = "/auth";
+    if (typeof window !== "undefined") window.location.href = signInPath();
   }, []);
 
   return useMemo(() => ({ status, user, signOut }), [status, user, signOut]);

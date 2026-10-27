@@ -38,6 +38,7 @@ import { Route as ReviewsRouteImport } from './../../marketing/src/routes/review
 import { Route as ReviewsManagementRouteImport } from './../../marketing/src/routes/reviews-management'
 import { Route as SearchRankPlatformRouteImport } from './../../marketing/src/routes/search-rank-platform'
 import { Route as SearchRankingRouteImport } from './../../marketing/src/routes/search-ranking'
+import { Route as SignInRouteImport } from './../../srp/src/routes/sign-in'
 import { Route as SocialRouteImport } from './../../marketing/src/routes/social'
 import { Route as TopicsRouteImport } from './../../search/src/routes/topics'
 import { Route as VoceRouteImport } from './../../marketing/src/routes/voce'
@@ -322,6 +323,11 @@ const SearchRankPlatformRoute = SearchRankPlatformRouteImport.update({
 const SearchRankingRoute = SearchRankingRouteImport.update({
   id: '/search-ranking',
   path: '/search-ranking',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SignInRoute = SignInRouteImport.update({
+  id: '/sign-in',
+  path: '/sign-in',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SocialRoute = SocialRouteImport.update({
@@ -1157,6 +1163,7 @@ export interface FileRoutesByFullPath {
   '/reviews-management': typeof ReviewsManagementRoute
   '/search-rank-platform': typeof SearchRankPlatformRoute
   '/search-ranking': typeof SearchRankingRoute
+  '/sign-in': typeof SignInRoute
   '/social': typeof SocialRoute
   '/topics': typeof TopicsRoute
   '/voce': typeof VoceRoute
@@ -1327,6 +1334,7 @@ export interface FileRoutesByTo {
   '/reviews-management': typeof ReviewsManagementRoute
   '/search-rank-platform': typeof SearchRankPlatformRoute
   '/search-ranking': typeof SearchRankingRoute
+  '/sign-in': typeof SignInRoute
   '/social': typeof SocialRoute
   '/topics': typeof TopicsRoute
   '/voce': typeof VoceRoute
@@ -1488,6 +1496,7 @@ export interface FileRoutesById {
   '/reviews-management': typeof ReviewsManagementRoute
   '/search-rank-platform': typeof SearchRankPlatformRoute
   '/search-ranking': typeof SearchRankingRoute
+  '/sign-in': typeof SignInRoute
   '/social': typeof SocialRoute
   '/topics': typeof TopicsRoute
   '/voce': typeof VoceRoute
@@ -1660,6 +1669,7 @@ export interface FileRouteTypes {
     | '/reviews-management'
     | '/search-rank-platform'
     | '/search-ranking'
+    | '/sign-in'
     | '/social'
     | '/topics'
     | '/voce'
@@ -1830,6 +1840,7 @@ export interface FileRouteTypes {
     | '/reviews-management'
     | '/search-rank-platform'
     | '/search-ranking'
+    | '/sign-in'
     | '/social'
     | '/topics'
     | '/voce'
@@ -1990,6 +2001,7 @@ export interface FileRouteTypes {
     | '/reviews-management'
     | '/search-rank-platform'
     | '/search-ranking'
+    | '/sign-in'
     | '/social'
     | '/topics'
     | '/voce'
@@ -2162,6 +2174,7 @@ export interface RootRouteChildren {
   ReviewsManagementRoute: typeof ReviewsManagementRoute
   SearchRankPlatformRoute: typeof SearchRankPlatformRoute
   SearchRankingRoute: typeof SearchRankingRoute
+  SignInRoute: typeof SignInRoute
   SocialRoute: typeof SocialRoute
   TopicsRoute: typeof TopicsRoute
   VoceRoute: typeof VoceRoute
@@ -2384,6 +2397,13 @@ declare module '@tanstack/react-router' {
       path: '/search-ranking'
       fullPath: '/search-ranking'
       preLoaderRoute: typeof SearchRankingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sign-in': {
+      id: '/sign-in'
+      path: '/sign-in'
+      fullPath: '/sign-in'
+      preLoaderRoute: typeof SignInRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/social': {
@@ -3845,6 +3865,7 @@ const rootRouteChildren: RootRouteChildren = {
   ReviewsManagementRoute: ReviewsManagementRoute,
   SearchRankPlatformRoute: SearchRankPlatformRoute,
   SearchRankingRoute: SearchRankingRoute,
+  SignInRoute: SignInRoute,
   SocialRoute: SocialRoute,
   TopicsRoute: TopicsRoute,
   VoceRoute: VoceRoute,

@@ -11,17 +11,21 @@ PostgREST cap.
 """
 from __future__ import annotations
 
+import logging
 from typing import Any, Literal
 
 import psycopg
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 
-from _base.auth import current_user
+from _base.auth import current_srp_user, current_user
 from _base.db import session as db
+from _base.server_fn import not_implemented
 from surfaces.srp import internal
-from surfaces.srp.seat import dashboard
+from surfaces.srp.seat import dashboard, home, local
 from surfaces.srp.seat import services as seat
-from surfaces.srp.seat.schemas import SrpRpcArgs
+from surfaces.srp.seat.schemas import HomeResponse, SrpRpcArgs
+
+log = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/srp", tags=["srp"])
 
@@ -55,8 +59,12 @@ def _uid(claims: dict) -> str:
 # --- RPCs (lib/office-mode.ts) -----------------------------------------------------------------
 
 @router.post("/rpc/{name}")
-def call_rpc(name: str, body: SrpRpcArgs, claims: dict = Depends(current_user)) -> Any:
+def call_rpc(name: str, body: SrpRpcArgs, claims: dict = Depends(current_srp_user)) -> Any:
     """An allow-listed SECURITY INVOKER read (common.SRP_RPCS): rows, or the jsonb value."""
+    if local.is_local_session(claims):  # local sign-in: only exp_office_mode, and it has no mode
+        if name == "exp_office_mode":
+            return local.office_mode()
+        raise local.other_rpc(name)
     try:
         internal.rpc_sql(name, body.args)  # refuse before leasing a connection
     except internal.UnknownRpc as exc:
@@ -72,14 +80,34 @@ def location_seat(office_id: str, claims: dict = Depends(current_user)) -> dict 
 
 
 @router.get("/seat/professional/{pro_id}")
-def professional_seat(pro_id: str, claims: dict = Depends(current_user)) -> dict | None:
+def professional_seat(pro_id: str, claims: dict = Depends(current_srp_user)) -> dict | None:
+    if local.is_local_session(claims):  # local sign-in: its own seat, from srp_cleanup
+        return local.professional_seat(claims, pro_id)
     return _read_with(claims, seat.professional_seat, pro_id)
+
+
+@router.get(
+    "/seat/professional/{pro_id}/home",
+    response_model=HomeResponse,
+    responses={403: {"description": "not_your_seat"}, 501: {"description": "not_implemented (only a local sign-in session is served)"}},
+)
+def professional_home(pro_id: str, claims: dict = Depends(current_srp_user)) -> dict:
+    """The Home page's real data for the signed-in user's OWN seat, from the local schema (srp/home-page-data)."""
+    if not local.is_local_session(claims):  # a Supabase session's Home is unchanged: it has no read here
+        raise not_implemented("the Home read for a Supabase session")
+    try:
+        return home.home(claims, pro_id)
+    except psycopg.Error as exc:  # the database's own message can carry a host or a query: log the kind, answer plainly
+        log.warning("home read failed: %s", type(exc).__name__)
+        raise HTTPException(status.HTTP_503_SERVICE_UNAVAILABLE, "database_unavailable") from exc
 
 
 @router.get("/seat/listings")
 def seat_listings(entity_type: seat.Kind, entity_id: str,
-                  claims: dict = Depends(current_user)) -> list:
+                  claims: dict = Depends(current_srp_user)) -> list:
     """loadListings() for one record (errors ignored → [])."""
+    if local.is_local_session(claims):
+        return local.listings()
     return _read_with(claims, seat.listings, entity_type, entity_id)
 
 

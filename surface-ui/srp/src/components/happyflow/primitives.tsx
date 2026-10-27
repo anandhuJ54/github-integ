@@ -217,6 +217,7 @@ export function ScoreRing({
   label = "/ 850",
   dots = DOTC.length,
   id = "hfRing",
+  max = 850,
 }: {
   px: number;
   /** Number font size in SVG units. */
@@ -226,9 +227,11 @@ export function ScoreRing({
   dots?: number;
   /** Gradient id; must be unique on the page. */
   id?: string;
+  /** What the full arc stands for; null draws no progress (an unknown maximum). */
+  max?: number | null;
 }) {
   const rm = useReducedMotion();
-  const p = Math.max(0, Math.min(1, value / 850));
+  const p = max ? Math.max(0, Math.min(1, value / max)) : 0;
   const L = Math.PI * 40;
   const th = Math.PI * (1 - p);
   const R = 50;

@@ -1,8 +1,12 @@
 import { api } from "../api/server-fn";
+import { getAuthProvider } from "../auth";
 import { accessActions } from "../actions";
 import { readStored } from "../persist";
 import type { AppThunk } from "../store";
 import type { ControlRole, Grant } from "../types";
+
+/** The API sign-in (local database) has no Admin grants and never calls the Admin endpoints. */
+const usesApiSignIn = () => getAuthProvider().name === "api";
 
 export const ROLE_STORAGE_KEY = "exp.activeRole";
 export const GRANT_STORAGE_KEY = "exp.activeGrant";
@@ -44,6 +48,7 @@ export async function logAudit(
   details?: Record<string, unknown>,
   actingRole?: string | null,
 ): Promise<void> {
+  if (usesApiSignIn()) return; // the API sign-in has no Admin audit; the Admin endpoints do not take its token
   // user_id is the token's user (the API sets it); errors are ignored, as before.
   await api
     .post("/admin/me/audit", {
@@ -63,6 +68,13 @@ export const loadAccess =
   (isCurrent: () => boolean = () => true): AppThunk<Promise<void>> =>
   async (dispatch) => {
     dispatch(accessActions.loading());
+
+    // A person signed in through the API has no Admin workspace: no grants, and above all no call to
+    // /admin/me/bootstrap, which would make the first signed-in user a super_admin.
+    if (usesApiSignIn()) {
+      if (isCurrent()) dispatch(accessActions.loaded({ grants: [], activeGrantId: null }));
+      return;
+    }
 
     // Errors read as no grants, as the supabase-js calls did (`data ?? []`).
     let payload = await api.get<GrantsPayload>("/admin/me/grants").catch(() => NO_GRANTS);

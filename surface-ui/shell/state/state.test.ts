@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, test } from "bun:test";
 import { impersonationActions, sessionActions } from "@v3/state/actions";
-import { loadAccess, selectGrant } from "@v3/state/access/thunks";
+import { loadAccess, logAudit, selectGrant } from "@v3/state/access/thunks";
 import { setAuthProvider, type AuthEvent, type AuthProvider, type AuthSession } from "@v3/state/auth";
 import { persistOnChange } from "@v3/state/persist";
 import { appPersistRules } from "@v3/state/persist-rules";
@@ -107,6 +107,44 @@ describe("access", () => {
     stubGrants([g("a", "analyst")]);
     await store.dispatch(loadAccess(() => false));
     expect(store.getState().access.grants).toEqual([]);
+  });
+});
+
+describe("access with the api provider (srp/local-login-srp-home)", () => {
+  const apiProvider = () => ({ ...fakeProvider(null), name: "api" });
+  const spyFetch = () => {
+    const urls: string[] = [];
+    globalThis.fetch = (async (u: string) => {
+      urls.push(String(u));
+      return new Response("{}", { status: 500 });
+    }) as unknown as typeof fetch;
+    return urls;
+  };
+
+  test("loadAccess makes no request, never bootstraps, and loads no grants", async () => {
+    setAuthProvider(apiProvider());
+    store.dispatch(sessionActions.signedOut());
+    const urls = spyFetch();
+    await store.dispatch(loadAccess());
+    expect(urls).toEqual([]);
+    expect(store.getState().access.grants).toEqual([]);
+    expect(store.getState().access.activeGrantId).toBeNull();
+    expect(store.getState().access.loading).toBe(false);
+  });
+
+  test("logAudit makes no request", async () => {
+    setAuthProvider(apiProvider());
+    const urls = spyFetch();
+    await logAudit("workspace_switch", "x");
+    expect(urls).toEqual([]);
+  });
+
+  test("with the Supabase-style provider loadAccess still asks the Admin endpoints", async () => {
+    setAuthProvider(fakeProvider(session));
+    store.dispatch(sessionActions.signedOut());
+    const urls = spyFetch();
+    await store.dispatch(loadAccess());
+    expect(urls.some((u) => u.includes("/admin/me/grants"))).toBe(true);
   });
 });
 

@@ -1,6 +1,7 @@
 import { useState, type CSSProperties } from "react";
 import { Ic, NoraFace } from "../primitives";
 import { HappyflowShell, useHf, type Think } from "../shell";
+import { useHfPersona } from "../persona-context";
 
 // Demo data (Happyflow prototype)
 const HEAD = [
@@ -195,6 +196,7 @@ export function NetworkScreen() {
 }
 
 function NetworkBody() {
+  const persona = useHfPersona();
   const hf = useHf();
   const { isD } = hf;
   const [net, setNet] = useState<Record<string, PartnerState>>(INITIAL_NET);
@@ -294,7 +296,7 @@ function NetworkBody() {
         input: true,
         done: "Sent · I will follow up in 5 days",
       },
-      "Hi! It was a joy helping you with your home. If a friend is thinking about buying, I would love to help them too. — Alex",
+      `Hi! It was a joy helping you with your home. If a friend is thinking about buying, I would love to help them too. — ${persona.first}`,
     );
   const nudgeAll = () => {
     setNudged(true);
@@ -884,7 +886,7 @@ function NetworkBody() {
                   }}
                 >
                   &quot;Hi! Just checking in — if anyone you know is thinking about buying, I&apos;d
-                  love to help. — Alex&quot;
+                  love to help. — {persona.first}&quot;
                 </span>
                 <button
                   type="button"

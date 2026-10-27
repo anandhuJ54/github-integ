@@ -5,6 +5,73 @@
     "version": "1"
   },
   "paths": {
+    "/srp/auth/login": {
+      "post": {
+        "tags": [
+          "srp"
+        ],
+        "summary": "Login",
+        "operationId": "login_srp_auth_login_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LoginResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/srp/auth/me": {
+      "get": {
+        "tags": [
+          "srp"
+        ],
+        "summary": "Me",
+        "operationId": "me_srp_auth_me_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MeResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
     "/srp/claim-profile/{slug}": {
       "get": {
         "tags": [
@@ -886,6 +953,60 @@
           }
         }
       }
+    },
+    "/srp/seat/professional/{pro_id}/home": {
+      "get": {
+        "tags": [
+          "srp"
+        ],
+        "summary": "Professional Home",
+        "description": "The Home page's real data for the signed-in user's OWN seat, from the local schema (srp/home-page-data).",
+        "operationId": "professional_home_srp_seat_professional__pro_id__home_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "pro_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Pro Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HomeResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "not_your_seat"
+          },
+          "501": {
+            "description": "not_implemented (only a local sign-in session is served)"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -921,6 +1042,1837 @@
         },
         "type": "object",
         "title": "HTTPValidationError"
+      },
+      "HomeAiTile": {
+        "properties": {
+          "cited": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cited"
+          },
+          "checked": {
+            "type": "integer",
+            "title": "Checked"
+          },
+          "checked_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Checked At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "cited",
+          "checked",
+          "checked_at"
+        ],
+        "title": "HomeAiTile"
+      },
+      "HomeArticles": {
+        "properties": {
+          "published": {
+            "type": "integer",
+            "title": "Published"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          }
+        },
+        "type": "object",
+        "required": [
+          "published",
+          "total"
+        ],
+        "title": "HomeArticles"
+      },
+      "HomeAway": {
+        "properties": {
+          "new_reviews": {
+            "type": "integer",
+            "title": "New Reviews"
+          },
+          "bio_live": {
+            "type": "boolean",
+            "title": "Bio Live"
+          },
+          "first_article": {
+            "type": "boolean",
+            "title": "First Article"
+          }
+        },
+        "type": "object",
+        "required": [
+          "new_reviews",
+          "bio_live",
+          "first_article"
+        ],
+        "title": "HomeAway"
+      },
+      "HomeBand": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "min_points": {
+            "type": "integer",
+            "title": "Min Points"
+          },
+          "next": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/HomeBandRef"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "min_points",
+          "next"
+        ],
+        "title": "HomeBand"
+      },
+      "HomeBandRef": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "min_points": {
+            "type": "integer",
+            "title": "Min Points"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "min_points"
+        ],
+        "title": "HomeBandRef"
+      },
+      "HomeBoard": {
+        "properties": {
+          "latest": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/HomeLatest"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "done": {
+            "items": {
+              "$ref": "#/components/schemas/HomeDone"
+            },
+            "type": "array",
+            "title": "Done"
+          },
+          "done_count": {
+            "type": "integer",
+            "title": "Done Count"
+          },
+          "since_claim_points": {
+            "type": "integer",
+            "title": "Since Claim Points"
+          },
+          "next_moves": {
+            "items": {
+              "$ref": "#/components/schemas/HomeMove"
+            },
+            "type": "array",
+            "title": "Next Moves"
+          },
+          "moves": {
+            "$ref": "#/components/schemas/HomeMoves"
+          },
+          "streak_weeks": {
+            "type": "integer",
+            "title": "Streak Weeks"
+          },
+          "needs_you_count": {
+            "type": "integer",
+            "title": "Needs You Count"
+          }
+        },
+        "type": "object",
+        "required": [
+          "latest",
+          "done",
+          "done_count",
+          "since_claim_points",
+          "next_moves",
+          "moves",
+          "streak_weeks",
+          "needs_you_count"
+        ],
+        "title": "HomeBoard"
+      },
+      "HomeBrief": {
+        "properties": {
+          "week_start": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Week Start"
+          },
+          "points_total": {
+            "type": "integer",
+            "title": "Points Total"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/HomeBriefItem"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "next_move": {
+            "$ref": "#/components/schemas/HomeNextMove"
+          },
+          "away": {
+            "$ref": "#/components/schemas/HomeAway"
+          }
+        },
+        "type": "object",
+        "required": [
+          "week_start",
+          "points_total",
+          "items",
+          "next_move",
+          "away"
+        ],
+        "title": "HomeBrief"
+      },
+      "HomeBriefItem": {
+        "properties": {
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "points": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Points"
+          }
+        },
+        "type": "object",
+        "required": [
+          "label",
+          "points"
+        ],
+        "title": "HomeBriefItem"
+      },
+      "HomeCell": {
+        "properties": {
+          "row": {
+            "type": "integer",
+            "title": "Row"
+          },
+          "col": {
+            "type": "integer",
+            "title": "Col"
+          },
+          "rank": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rank"
+          }
+        },
+        "type": "object",
+        "required": [
+          "row",
+          "col",
+          "rank"
+        ],
+        "title": "HomeCell"
+      },
+      "HomeCompetitors": {
+        "properties": {
+          "count": {
+            "type": "integer",
+            "title": "Count"
+          }
+        },
+        "type": "object",
+        "required": [
+          "count"
+        ],
+        "title": "HomeCompetitors"
+      },
+      "HomeDay": {
+        "properties": {
+          "n": {
+            "type": "integer",
+            "title": "N"
+          },
+          "trial_days": {
+            "type": "integer",
+            "title": "Trial Days"
+          },
+          "layout": {
+            "type": "string",
+            "enum": [
+              "day1",
+              "day7",
+              "day24"
+            ],
+            "title": "Layout"
+          },
+          "over": {
+            "type": "boolean",
+            "title": "Over"
+          }
+        },
+        "type": "object",
+        "required": [
+          "n",
+          "trial_days",
+          "layout",
+          "over"
+        ],
+        "title": "HomeDay"
+      },
+      "HomeDone": {
+        "properties": {
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "points": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Points"
+          }
+        },
+        "type": "object",
+        "required": [
+          "label",
+          "points"
+        ],
+        "title": "HomeDone"
+      },
+      "HomeDraft": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "reviewer_label": {
+            "type": "string",
+            "title": "Reviewer Label"
+          },
+          "rating": {
+            "type": "integer",
+            "title": "Rating"
+          },
+          "review_text": {
+            "type": "string",
+            "title": "Review Text"
+          },
+          "draft_text": {
+            "type": "string",
+            "title": "Draft Text"
+          },
+          "compliance_status": {
+            "type": "string",
+            "enum": [
+              "passed",
+              "needs_edit"
+            ],
+            "title": "Compliance Status"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "draft",
+              "approved",
+              "posted"
+            ],
+            "title": "Status"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "reviewer_label",
+          "rating",
+          "review_text",
+          "draft_text",
+          "compliance_status",
+          "status"
+        ],
+        "title": "HomeDraft"
+      },
+      "HomeEvent": {
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "review",
+              "facebook"
+            ],
+            "title": "Kind"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "body": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Body"
+          },
+          "action_label": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Action Label"
+          },
+          "expires_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expires At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "kind",
+          "title",
+          "body",
+          "action_label",
+          "expires_at"
+        ],
+        "title": "HomeEvent"
+      },
+      "HomeInsight": {
+        "properties": {
+          "position": {
+            "type": "integer",
+            "title": "Position"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "body": {
+            "type": "string",
+            "title": "Body"
+          },
+          "cta": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cta"
+          },
+          "action": {
+            "type": "string",
+            "enum": [
+              "voce",
+              "reviews",
+              "insights"
+            ],
+            "title": "Action"
+          }
+        },
+        "type": "object",
+        "required": [
+          "position",
+          "title",
+          "body",
+          "cta",
+          "action"
+        ],
+        "title": "HomeInsight"
+      },
+      "HomeLane": {
+        "properties": {
+          "key": {
+            "type": "string",
+            "title": "Key"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "points": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Points"
+          },
+          "max": {
+            "type": "integer",
+            "title": "Max"
+          }
+        },
+        "type": "object",
+        "required": [
+          "key",
+          "name",
+          "points",
+          "max"
+        ],
+        "title": "HomeLane"
+      },
+      "HomeLatest": {
+        "properties": {
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "points": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Points"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "doing",
+              "done"
+            ],
+            "title": "Status"
+          },
+          "started_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Started At"
+          },
+          "completed_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Completed At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "label",
+          "points",
+          "status",
+          "started_at",
+          "completed_at"
+        ],
+        "title": "HomeLatest"
+      },
+      "HomeLocked": {
+        "properties": {
+          "features": {
+            "items": {
+              "$ref": "#/components/schemas/HomeLockedFeature"
+            },
+            "type": "array",
+            "title": "Features"
+          },
+          "points_waiting": {
+            "type": "integer",
+            "title": "Points Waiting"
+          }
+        },
+        "type": "object",
+        "required": [
+          "features",
+          "points_waiting"
+        ],
+        "title": "HomeLocked"
+      },
+      "HomeLockedFeature": {
+        "properties": {
+          "key": {
+            "type": "string",
+            "title": "Key"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "points_waiting": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Points Waiting"
+          },
+          "plan": {
+            "type": "string",
+            "title": "Plan"
+          }
+        },
+        "type": "object",
+        "required": [
+          "key",
+          "title",
+          "description",
+          "points_waiting",
+          "plan"
+        ],
+        "title": "HomeLockedFeature"
+      },
+      "HomeMap": {
+        "properties": {
+          "scanned_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Scanned At"
+          },
+          "top3": {
+            "type": "integer",
+            "title": "Top3"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          },
+          "cells": {
+            "items": {
+              "$ref": "#/components/schemas/HomeCell"
+            },
+            "type": "array",
+            "title": "Cells"
+          }
+        },
+        "type": "object",
+        "required": [
+          "scanned_at",
+          "top3",
+          "total",
+          "cells"
+        ],
+        "title": "HomeMap"
+      },
+      "HomeMove": {
+        "properties": {
+          "icon": {
+            "type": "string",
+            "title": "Icon"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "subtitle": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Subtitle"
+          },
+          "recommended": {
+            "type": "boolean",
+            "title": "Recommended"
+          },
+          "target": {
+            "type": "string",
+            "enum": [
+              "voce",
+              "website",
+              "profile"
+            ],
+            "title": "Target"
+          },
+          "points": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Points"
+          }
+        },
+        "type": "object",
+        "required": [
+          "icon",
+          "title",
+          "subtitle",
+          "recommended",
+          "target",
+          "points"
+        ],
+        "title": "HomeMove"
+      },
+      "HomeMoves": {
+        "properties": {
+          "done": {
+            "type": "integer",
+            "title": "Done"
+          },
+          "goal": {
+            "type": "integer",
+            "title": "Goal"
+          }
+        },
+        "type": "object",
+        "required": [
+          "done",
+          "goal"
+        ],
+        "title": "HomeMoves"
+      },
+      "HomeNextMove": {
+        "properties": {
+          "label": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Label"
+          },
+          "points": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Points"
+          },
+          "target": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Target"
+          }
+        },
+        "type": "object",
+        "required": [
+          "label",
+          "points",
+          "target"
+        ],
+        "title": "HomeNextMove"
+      },
+      "HomePeers": {
+        "properties": {
+          "band_from": {
+            "type": "string",
+            "title": "Band From"
+          },
+          "median_gain": {
+            "type": "integer",
+            "title": "Median Gain"
+          },
+          "horizon_days": {
+            "type": "integer",
+            "title": "Horizon Days"
+          },
+          "cohort_size": {
+            "type": "integer",
+            "title": "Cohort Size"
+          },
+          "cohort_period": {
+            "type": "string",
+            "title": "Cohort Period"
+          },
+          "reached_next_band": {
+            "type": "integer",
+            "title": "Reached Next Band"
+          },
+          "of": {
+            "type": "integer",
+            "title": "Of"
+          }
+        },
+        "type": "object",
+        "required": [
+          "band_from",
+          "median_gain",
+          "horizon_days",
+          "cohort_size",
+          "cohort_period",
+          "reached_next_band",
+          "of"
+        ],
+        "title": "HomePeers"
+      },
+      "HomePerson": {
+        "properties": {
+          "first_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "First Name"
+          },
+          "full_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Full Name"
+          },
+          "title": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Title"
+          },
+          "photo_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Photo Url"
+          },
+          "year_started": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Year Started"
+          },
+          "credentials": {
+            "type": "integer",
+            "title": "Credentials"
+          }
+        },
+        "type": "object",
+        "required": [
+          "first_name",
+          "full_name",
+          "title",
+          "photo_url",
+          "year_started",
+          "credentials"
+        ],
+        "title": "HomePerson"
+      },
+      "HomePlan": {
+        "properties": {
+          "key": {
+            "type": "string",
+            "title": "Key"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "tag": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Tag"
+          },
+          "highlight": {
+            "type": "boolean",
+            "title": "Highlight"
+          },
+          "items": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Items"
+          }
+        },
+        "type": "object",
+        "required": [
+          "key",
+          "name",
+          "tag",
+          "highlight",
+          "items"
+        ],
+        "title": "HomePlan"
+      },
+      "HomePlanRef": {
+        "properties": {
+          "key": {
+            "type": "string",
+            "title": "Key"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "tag": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Tag"
+          }
+        },
+        "type": "object",
+        "required": [
+          "key",
+          "name",
+          "tag"
+        ],
+        "title": "HomePlanRef"
+      },
+      "HomeProfileStrength": {
+        "properties": {
+          "pct": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Pct"
+          },
+          "previous_pct": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Previous Pct"
+          }
+        },
+        "type": "object",
+        "required": [
+          "pct",
+          "previous_pct"
+        ],
+        "title": "HomeProfileStrength"
+      },
+      "HomeRank": {
+        "properties": {
+          "position": {
+            "type": "integer",
+            "title": "Position"
+          },
+          "of": {
+            "type": "integer",
+            "title": "Of"
+          },
+          "city": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "City"
+          },
+          "first_position": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "First Position"
+          }
+        },
+        "type": "object",
+        "required": [
+          "position",
+          "of",
+          "city",
+          "first_position"
+        ],
+        "title": "HomeRank"
+      },
+      "HomeRecap": {
+        "properties": {
+          "days": {
+            "type": "integer",
+            "title": "Days"
+          },
+          "things_done": {
+            "type": "integer",
+            "title": "Things Done"
+          },
+          "tiles": {
+            "items": {
+              "$ref": "#/components/schemas/HomeRecapTile"
+            },
+            "type": "array",
+            "title": "Tiles"
+          },
+          "articles": {
+            "type": "integer",
+            "title": "Articles"
+          },
+          "replies": {
+            "type": "integer",
+            "title": "Replies"
+          }
+        },
+        "type": "object",
+        "required": [
+          "days",
+          "things_done",
+          "tiles",
+          "articles",
+          "replies"
+        ],
+        "title": "HomeRecap"
+      },
+      "HomeRecapTile": {
+        "properties": {
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "from": {
+            "type": "integer",
+            "title": "From"
+          },
+          "to": {
+            "type": "integer",
+            "title": "To"
+          },
+          "delta": {
+            "type": "integer",
+            "title": "Delta"
+          }
+        },
+        "type": "object",
+        "required": [
+          "label",
+          "from",
+          "to",
+          "delta"
+        ],
+        "title": "HomeRecapTile"
+      },
+      "HomeResponse": {
+        "properties": {
+          "as_of": {
+            "type": "string",
+            "title": "As Of"
+          },
+          "data": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "mock",
+                  "live"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Data"
+          },
+          "ready": {
+            "type": "boolean",
+            "title": "Ready"
+          },
+          "day": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/HomeDay"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "person": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/HomePerson"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "trial": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/HomeTrial"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "score": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/HomeScore"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "rank": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/HomeRank"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "rival": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/HomeRival"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "competitors": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/HomeCompetitors"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "board": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/HomeBoard"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "tiles": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/HomeTiles"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "locked": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/HomeLocked"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "peers": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/HomePeers"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "brief": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/HomeBrief"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "drafts": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/HomeDraft"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Drafts"
+          },
+          "events": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/HomeEvent"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Events"
+          },
+          "insights": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/HomeInsight"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Insights"
+          },
+          "recap": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/HomeRecap"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "plans": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/HomePlan"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Plans"
+          }
+        },
+        "type": "object",
+        "required": [
+          "as_of",
+          "data",
+          "ready",
+          "day",
+          "person",
+          "trial",
+          "score",
+          "rank",
+          "rival",
+          "competitors",
+          "board",
+          "tiles",
+          "locked",
+          "peers",
+          "brief",
+          "drafts",
+          "events",
+          "insights",
+          "recap",
+          "plans"
+        ],
+        "title": "HomeResponse"
+      },
+      "HomeReviewsTile": {
+        "properties": {
+          "avg": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Avg"
+          },
+          "count": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Count"
+          },
+          "as_of": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "As Of"
+          }
+        },
+        "type": "object",
+        "required": [
+          "avg",
+          "count",
+          "as_of"
+        ],
+        "title": "HomeReviewsTile"
+      },
+      "HomeRival": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "initial": {
+            "type": "string",
+            "title": "Initial"
+          },
+          "score": {
+            "type": "integer",
+            "title": "Score"
+          },
+          "points_to_first": {
+            "type": "integer",
+            "title": "Points To First"
+          },
+          "review_count": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Review Count"
+          },
+          "review_avg": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Review Avg"
+          },
+          "article_count": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Article Count"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "initial",
+          "score",
+          "points_to_first",
+          "review_count",
+          "review_avg",
+          "article_count"
+        ],
+        "title": "HomeRival"
+      },
+      "HomeScore": {
+        "properties": {
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          },
+          "max": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Max"
+          },
+          "band": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/HomeBand"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "as_of": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "As Of"
+          },
+          "since_claim": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Since Claim"
+          },
+          "week_delta": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Week Delta"
+          },
+          "lanes": {
+            "items": {
+              "$ref": "#/components/schemas/HomeLane"
+            },
+            "type": "array",
+            "title": "Lanes"
+          }
+        },
+        "type": "object",
+        "required": [
+          "total",
+          "max",
+          "band",
+          "as_of",
+          "since_claim",
+          "week_delta",
+          "lanes"
+        ],
+        "title": "HomeScore"
+      },
+      "HomeTiles": {
+        "properties": {
+          "map": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/HomeMap"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "ai": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/HomeAiTile"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "reviews": {
+            "$ref": "#/components/schemas/HomeReviewsTile"
+          },
+          "profile_strength": {
+            "$ref": "#/components/schemas/HomeProfileStrength"
+          },
+          "website": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/HomeWebsiteTile"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "articles": {
+            "$ref": "#/components/schemas/HomeArticles"
+          }
+        },
+        "type": "object",
+        "required": [
+          "map",
+          "ai",
+          "reviews",
+          "profile_strength",
+          "website",
+          "articles"
+        ],
+        "title": "HomeTiles"
+      },
+      "HomeTrial": {
+        "properties": {
+          "plan": {
+            "$ref": "#/components/schemas/HomePlanRef"
+          },
+          "started_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Started At"
+          },
+          "nora_text_day": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Nora Text Day"
+          }
+        },
+        "type": "object",
+        "required": [
+          "plan",
+          "started_at",
+          "nora_text_day"
+        ],
+        "title": "HomeTrial"
+      },
+      "HomeWebsiteTile": {
+        "properties": {
+          "score": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Score"
+          },
+          "max": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Max"
+          },
+          "url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Url"
+          }
+        },
+        "type": "object",
+        "required": [
+          "score",
+          "max",
+          "url"
+        ],
+        "title": "HomeWebsiteTile"
+      },
+      "Landing": {
+        "properties": {
+          "path": {
+            "type": "string",
+            "title": "Path"
+          }
+        },
+        "type": "object",
+        "required": [
+          "path"
+        ],
+        "title": "Landing"
+      },
+      "LoginRequest": {
+        "properties": {
+          "email": {
+            "type": "string",
+            "maxLength": 254,
+            "minLength": 3,
+            "title": "Email"
+          },
+          "password": {
+            "type": "string",
+            "maxLength": 128,
+            "minLength": 1,
+            "title": "Password"
+          }
+        },
+        "type": "object",
+        "required": [
+          "email",
+          "password"
+        ],
+        "title": "LoginRequest"
+      },
+      "LoginResponse": {
+        "properties": {
+          "access_token": {
+            "type": "string",
+            "title": "Access Token"
+          },
+          "token_type": {
+            "type": "string",
+            "title": "Token Type",
+            "default": "Bearer"
+          },
+          "expires_at": {
+            "type": "string",
+            "title": "Expires At"
+          },
+          "user": {
+            "$ref": "#/components/schemas/SessionUser"
+          },
+          "landing": {
+            "$ref": "#/components/schemas/Landing"
+          }
+        },
+        "type": "object",
+        "required": [
+          "access_token",
+          "expires_at",
+          "user",
+          "landing"
+        ],
+        "title": "LoginResponse"
+      },
+      "MeResponse": {
+        "properties": {
+          "user": {
+            "$ref": "#/components/schemas/SessionUser"
+          },
+          "landing": {
+            "$ref": "#/components/schemas/Landing"
+          }
+        },
+        "type": "object",
+        "required": [
+          "user",
+          "landing"
+        ],
+        "title": "MeResponse"
+      },
+      "SessionUser": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "email": {
+            "type": "string",
+            "title": "Email"
+          },
+          "first_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "First Name"
+          },
+          "last_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Name"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "email"
+        ],
+        "title": "SessionUser"
       },
       "SrpRpcArgs": {
         "properties": {

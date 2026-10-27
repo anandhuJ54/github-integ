@@ -42,13 +42,20 @@ const SCREEN_ROUTES = files(ROUTES).filter((f) =>
 
 describe("Happyflow port", () => {
   test("every route that shows a Happyflow screen wraps it in the sample-data notice", () => {
-    expect(SCREEN_ROUTES.length).toBe(10);
-    const missing = SCREEN_ROUTES.filter((f) => !/<SampleData>/.test(readFileSync(f, "utf8")));
+    expect(SCREEN_ROUTES.length).toBe(9); // the seat index shows the Home through components/happyflow/home-page.tsx, which is checked below
+    const missing = SCREEN_ROUTES.filter((f) => !/<SampleData[\s>]/.test(readFileSync(f, "utf8")));
     expect(missing.map((f) => f.replace(SRC, ""))).toEqual([]);
   });
 
+  test("the Home page component wraps both layouts in the sample-data notice", () => {
+    const src = readFileSync(join(SRC, "components", "happyflow", "home-page.tsx"), "utf8");
+    expect(/<SampleData[\s>]/.test(src)).toBe(true);
+    expect(/screens\/home-day1/.test(src) && /screens\/home-day7/.test(src)).toBe(true);
+    expect(/home-(day1|day7)/.test(readFileSync(join(ROUTES, "seat.$kind.$id.index.tsx"), "utf8"))).toBe(false);
+  });
+
   test("all Happyflow files are present", () => {
-    expect(hf.filter((f) => /\.tsx?$/.test(f)).length).toBe(22); // the clone's 20 plus screens/profile-store.ts and sample-data.tsx
+    expect(hf.filter((f) => /\.tsx?$/.test(f)).length).toBe(28); // the clone's 20 plus screens/profile-store.ts, sample-data.tsx, persona.ts, persona-context.tsx, home-context.tsx, screens/greeting.ts, home-page.tsx and sample-home.ts
     expect(hf.filter((f) => f.endsWith("happyflow.css")).length).toBe(1);
     for (const f of [...NEW_ROUTES, ...ASSETS]) expect(existsSync(f)).toBe(true);
   });
