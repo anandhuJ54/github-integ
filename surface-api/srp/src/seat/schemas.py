@@ -301,3 +301,351 @@ class HomeResponse(BaseModel):
     insights: list[HomeInsight] | None
     recap: HomeRecap | None
     plans: list[HomePlan] | None
+
+
+# --- the SRS page (srp/srs-page-schema) ---------------------------------------------------------------------
+
+class SrsBandNext(BaseModel):
+    name: str
+    min_points: int
+    points_needed: int
+
+
+class SrsBand(BaseModel):
+    name: str
+    min_points: int
+    next: SrsBandNext | None
+
+
+class SrsScore(BaseModel):
+    total: int
+    max: int | None
+    open_total: int | None
+    as_of: str | None
+    band: SrsBand | None
+
+
+class SrsRank(BaseModel):
+    position: int
+    of: int
+    city: str | None
+
+
+class SrsRival(BaseModel):
+    name: str
+    score: int
+    points_to_first: int
+    review_count: int | None
+    review_avg: float | None
+
+
+SrsStatus = Literal["Missing", "Fix", "Fix · locked", "Strong"]
+
+
+class SrsLane(BaseModel):
+    key: str
+    name: str
+    short_name: str | None
+    earned: int | None
+    max: int
+    open: int | None
+    status: SrsStatus | None
+    you_text: str | None
+    rival_text: str | None
+    note: str | None
+    action_label: str | None
+    action_target: Literal["profile", "voce", "website", "connections", "reviews", "chat", "billing"] | None
+
+
+class SrsCounts(BaseModel):
+    all: int
+    missing: int
+    fix: int
+    strong: int
+
+
+class SrsNote(BaseModel):
+    title: str
+    body: str
+    cta: str | None
+    action: str | None
+
+
+class SrsResponse(BaseModel):
+    as_of: str
+    data: Literal["mock", "live"] | None
+    ready: bool
+    score: SrsScore | None
+    rank: SrsRank | None
+    rival: SrsRival | None
+    lanes: list[SrsLane] | None
+    counts: SrsCounts | None
+    notes: list[SrsNote] | None
+
+
+# --- the Profile page (srp/profile-page-schema) -------------------------------------------------------------
+
+ProfileField = Literal["name", "title", "photo", "bio", "year_started", "office_phone", "mobile_phone", "email", "address", "hours", "nmls", "licensed_in",
+                       "products", "service_areas", "designations", "awards", "education", "company"]
+ProfileTier = Literal["self_declared", "imported", "platform_observed", "authority_verified", "owner_verified"]
+
+
+class ProfileFact(BaseModel):
+    field: ProfileField
+    present: bool
+    value: str | list[str] | None
+    source: str | None
+    trust_tier: ProfileTier | None
+    confirmed_at: str | None
+    source_line: str | None
+
+
+class ProfilePreview(BaseModel):
+    title: str | None
+    company: str | None
+    city: str | None
+    rating: float | None
+    reviews: int | None
+    nmls: str | None
+    strength_pct: int | None
+    photo_url: str | None
+
+
+class ProfileCredentials(BaseModel):
+    added: int
+    of: int
+
+
+class ProfileGraphGroup(BaseModel):
+    key: Literal["identity", "contact", "licence", "products", "reviews", "presence"]
+    facts: int
+
+
+class ProfileGraph(BaseModel):
+    groups: list[ProfileGraphGroup]
+    facts_total: int
+    sources: int
+
+
+class ProfileResponse(BaseModel):
+    as_of: str
+    data: Literal["mock", "live"] | None
+    ready: bool
+    facts: list[ProfileFact] | None
+    preview: ProfilePreview | None
+    credentials: ProfileCredentials | None
+    graph: ProfileGraph | None
+
+
+# --- the Insights page (srp/insights-page-schema) -----------------------------------------------------------
+
+InsightsMetric = Literal["search_views", "maps_views", "calls", "directions", "website_clicks", "profile_views"]
+InsightsEngineName = Literal["chatgpt", "gemini", "perplexity"]
+
+
+class InsightsVisibility(BaseModel):
+    metric: InsightsMetric
+    value: int
+    period_days: int
+    source: str
+    trust_tier: ProfileTier
+    source_line: str
+
+
+class InsightsLeader(BaseModel):
+    position: int
+    name: str | None
+    is_you: bool
+
+
+class InsightsCell(BaseModel):
+    row: int
+    col: int
+    rank: int | None
+    leaders: list[InsightsLeader]
+
+
+class InsightsMap(BaseModel):
+    address: str | None
+    scanned_at: str | None
+    spots: int
+    top3: int
+    cells: list[InsightsCell]
+
+
+class InsightsEngine(BaseModel):
+    engine: InsightsEngineName
+    cited: int
+    checked: int
+    note: str | None
+
+
+class InsightsAi(BaseModel):
+    cited: int
+    checked: int
+    engines: list[InsightsEngine]
+
+
+class InsightsCompetitor(BaseModel):
+    place: int
+    name: str
+    is_you: bool
+    rating: float | None
+    reviews: int | None
+    avg_position: float | None
+    is_leader: bool
+
+
+class InsightsTarget(BaseModel):
+    name: str
+
+
+class InsightsLocked(BaseModel):
+    key: Literal["map_rank_tracking", "ai_citation_monitoring"]
+    title: str
+    text: str
+
+
+class InsightsNote(BaseModel):
+    title: str
+    body: str
+    cta: str
+    action: str
+
+
+class InsightsResponse(BaseModel):
+    as_of: str
+    data: Literal["mock", "live"] | None
+    ready: bool
+    visibility: list[InsightsVisibility] | None
+    map: InsightsMap | None
+    ai: InsightsAi | None
+    competitors: list[InsightsCompetitor] | None
+    target: InsightsTarget | None
+    locked: list[InsightsLocked] | None
+    notes: list[InsightsNote] | None
+
+
+# --- the Web analytics page (srp/web-analytics-page-schema) -------------------------------------------------
+
+WebCheckKey = Literal["entity_markup", "nap", "indexing", "service_pages", "speed", "ai_readiness", "content", "conversion", "reviews_on_site", "security"]
+WebState = Literal["fail", "warn", "pass"]
+
+
+class WebSite(BaseModel):
+    url: str | None
+    last_checked: str | None
+
+
+class WebHealth(BaseModel):
+    earned: int
+    max: int
+    open: int
+
+
+class WebCheck(BaseModel):
+    key: WebCheckKey
+    group: str
+    state: WebState
+    result: str
+    points: int | None
+    max: int | None
+    points_text: str
+    source: str
+    trust_tier: ProfileTier
+
+
+class WebCounts(BaseModel):
+    all: int
+    fail: int
+    warn: int
+    pass_: int = Field(alias="pass")
+
+    model_config = ConfigDict(populate_by_name=True)
+
+
+class WebTile(BaseModel):
+    key: Literal["speed", "markup", "ai_readiness"]
+    label: str
+    value: str
+    note: str
+    state: WebState
+    check: WebCheckKey
+
+
+class WebTopFix(BaseModel):
+    open: int
+    snippet: str | None
+
+
+class WebNote(BaseModel):
+    title: str
+    body: str
+    cta: str
+    action: Literal["send", "close"]
+
+
+class WebFacts(BaseModel):
+    name: str | None
+    company: str | None
+    phone: str | None
+    address: str | None
+
+
+class WebAnalyticsResponse(BaseModel):
+    as_of: str
+    data: Literal["mock", "live"] | None
+    ready: bool
+    site: WebSite | None
+    health: WebHealth | None
+    checks: list[WebCheck] | None
+    counts: WebCounts | None
+    tiles: list[WebTile] | None
+    top_fix: WebTopFix | None
+    notes: list[WebNote] | None
+    facts: WebFacts | None
+
+
+ConnectionKey = Literal["google_business", "search_console", "youtube", "facebook", "instagram", "linkedin", "x", "zillow", "yelp", "website_cms", "loan_system"]
+
+
+class ConnectionAccount(BaseModel):
+    key: ConnectionKey
+    name: str
+    state: Literal["connected", "available", "matched", "partial"]
+    status: str
+    powers: str
+    synced_at: str | None
+
+
+class ConnectionSummary(BaseModel):
+    connected: int
+    matched: int
+
+
+class ConnectionSuggest(BaseModel):
+    key: ConnectionKey
+    name: str
+
+
+class ConnectionNote(BaseModel):
+    title: str
+    body: str
+    cta: str
+    connect: ConnectionKey
+
+
+class ConnectionLocked(BaseModel):
+    title: str
+    text: str
+
+
+class ConnectionsResponse(BaseModel):
+    as_of: str
+    data: Literal["mock", "live"] | None
+    ready: bool
+    accounts: list[ConnectionAccount] | None
+    summary: ConnectionSummary | None
+    suggest: list[ConnectionSuggest] | None
+    notes: list[ConnectionNote] | None
+    locked: ConnectionLocked | None

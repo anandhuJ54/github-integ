@@ -21,8 +21,11 @@ from psycopg.rows import dict_row
 from _base.config import get_settings
 from _base.db import session as db_session
 from surfaces.srp.seat import home
+from surfaces.srp.seat import seed_connections_plan as cpn
 from surfaces.srp.seat import seed_home as sh
 from surfaces.srp.seat import seed_home_plan as hp
+from surfaces.srp.seat import seed_profile_plan as pp
+from surfaces.srp.seat import seed_web_plan as wpn
 
 URL = os.environ.get("SRP_TEST_DATABASE_URL")
 pytestmark = pytest.mark.skipif(not URL, reason="SRP_TEST_DATABASE_URL is not set")
@@ -47,6 +50,12 @@ def schema(monkeypatch):
             c.execute(f"create table {name}.{t} (like srp_cleanup.{t} including all)")
         c.execute(re.sub(r"\bsrp_cleanup\b", name, SCRIPT.read_text()))
         c.execute(re.sub(r"\bsrp_cleanup\b", name, HARDENING.read_text()))   # the live database has the hardening too
+        c.execute(re.sub(r"\bsrp_cleanup\b", name, HARDENING.with_name("srs_schema.sql").read_text()))   # the seed also writes the SRS page's table
+        c.execute(re.sub(r"\bsrp_cleanup\b", name, HARDENING.with_name("profile_schema.sql").read_text()))   # and the Profile page's tables
+        c.execute(re.sub(r"\bsrp_cleanup\b", name, HARDENING.with_name("insights_schema.sql").read_text()))   # and the Insights page's tables
+        c.execute(re.sub(r"\bsrp_cleanup\b", name, HARDENING.with_name("web_analytics_schema.sql").read_text()))   # and the Web analytics page's table
+        c.execute(re.sub(r"\bsrp_cleanup\b", name, HARDENING.with_name("connections_schema.sql").read_text()))   # and the Connections page's table
+        c.execute(re.sub(r"\bsrp_cleanup\b", name, HARDENING.with_name("network_schema.sql").read_text()))   # and the Network page's tables
         for i in range(1, N + 1):
             c.execute(f"insert into {name}.users (id, email, first_name, last_name, password_digest, organization_id, created_at, updated_at) "
                       f"overriding system value values (%s, %s, %s, 'Example', 'x', 1, now(), now())", (i, f"it{i}@example.test", f"User{i}"))
@@ -87,10 +96,23 @@ def get(seat):
     return home.home({"sub": str(seat)}, str(seat))
 
 
+def _profile_title(seat):
+    """The seed corrects the mock title of every seeded seat (srp/profile-page-schema): it is the Profile plan's, not the one the fixture inserted."""
+    markets = {p.seat_id: p.zipcode for p in sh.build_plan(list(range(1, N + 1)), [sh.Category(1, 5)])}
+    return {x.seat_id: x for x in pp.build_profile_plan(list(range(1, N + 1)), TODAY, markets).seats}[seat].columns.title
+
+
 def planned():
+    """The Home plan as the seed writes it: its website gap, move and weekly brief aligned with the Web analytics checks (srp/web-analytics-page-schema, W4)."""
     seats = list(range(1, N + 1))
-    markets = {p.seat_id: p.zipcode for p in sh.build_plan(seats, [sh.Category(1, 5)])}   # the markets the seed gave them
-    return {s.seat_id: s for s in hp.build_home_plan(seats, TODAY, markets).seats}
+    plans = sh.build_plan(seats, [sh.Category(1, 5)])
+    markets = {p.seat_id: p.zipcode for p in plans}   # the markets the seed gave them
+    home_plan = hp.build_home_plan(seats, TODAY, markets)
+    published = {p.seat_id: sum(1 for a in p.articles if a["published"] and not a["archived"]) for p in plans}
+    web = wpn.build_web_plan(home_plan, pp.build_profile_plan(seats, TODAY, markets), published, {p.seat_id: p.website["website_url"] for p in plans})
+    home_plan = wpn.align_home(home_plan, web)
+    conns = cpn.build_connections_plan(home_plan, pp.build_profile_plan(seats, TODAY, markets), TODAY)
+    return {s.seat_id: s for s in cpn.align_home(home_plan, conns).seats}
 
 
 def with_a_week_of_history():
@@ -109,7 +131,7 @@ def test_every_value_is_the_stored_or_computed_one(schema, seat):
     n = (TODAY - exp.state.trial_started_at.date()).days + 1
     assert body["ready"] is True and body["data"] == "mock"
     assert body["day"] == {"n": n, "trial_days": 30, "layout": exp.layout, "over": False}
-    assert body["person"]["first_name"] == f"User{seat}" and body["person"]["full_name"] == f"User{seat} Example" and body["person"]["title"] == "Loan officer"
+    assert body["person"]["first_name"] == f"User{seat}" and body["person"]["full_name"] == f"User{seat} Example" and body["person"]["title"] == _profile_title(seat)
     assert body["person"]["year_started"] == int(q(schema, "select year_started from {s}.tier_agents where id = %s", seat)[0]["year_started"])
     assert body["trial"]["plan"]["key"] == exp.state.plan and body["trial"]["started_at"] == exp.state.trial_started_at.isoformat() + "Z"
     sc = body["score"]

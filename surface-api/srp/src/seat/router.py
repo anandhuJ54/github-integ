@@ -21,9 +21,26 @@ from _base.auth import current_srp_user, current_user
 from _base.db import session as db
 from _base.server_fn import not_implemented
 from surfaces.srp import internal
-from surfaces.srp.seat import dashboard, home, local
+from surfaces.srp.seat import (
+    connections,
+    dashboard,
+    home,
+    insights,
+    local,
+    profile,
+    srs,
+    web_analytics,
+)
 from surfaces.srp.seat import services as seat
-from surfaces.srp.seat.schemas import HomeResponse, SrpRpcArgs
+from surfaces.srp.seat.schemas import (
+    ConnectionsResponse,
+    HomeResponse,
+    InsightsResponse,
+    ProfileResponse,
+    SrpRpcArgs,
+    SrsResponse,
+    WebAnalyticsResponse,
+)
 
 log = logging.getLogger(__name__)
 
@@ -99,6 +116,86 @@ def professional_home(pro_id: str, claims: dict = Depends(current_srp_user)) -> 
         return home.home(claims, pro_id)
     except psycopg.Error as exc:  # the database's own message can carry a host or a query: log the kind, answer plainly
         log.warning("home read failed: %s", type(exc).__name__)
+        raise HTTPException(status.HTTP_503_SERVICE_UNAVAILABLE, "database_unavailable") from exc
+
+
+@router.get(
+    "/seat/professional/{pro_id}/srs",
+    response_model=SrsResponse,
+    responses={403: {"description": "not_your_seat"}, 501: {"description": "not_implemented (only a local sign-in session is served)"}},
+)
+def professional_srs(pro_id: str, claims: dict = Depends(current_srp_user)) -> dict:
+    """The SRS page's real data (SRS v5: 850 points, 10 lanes) for the signed-in user's OWN seat, from the local schema (srp/srs-page-schema)."""
+    if not local.is_local_session(claims):  # a Supabase session's SRS page is unchanged: it has no read here
+        raise not_implemented("the SRS read for a Supabase session")
+    try:
+        return srs.srs(claims, pro_id)
+    except psycopg.Error as exc:  # the database's own message can carry a host or a query: log the kind, answer plainly
+        log.warning("srs read failed: %s", type(exc).__name__)
+        raise HTTPException(status.HTTP_503_SERVICE_UNAVAILABLE, "database_unavailable") from exc
+
+
+@router.get(
+    "/seat/professional/{pro_id}/profile",
+    response_model=ProfileResponse,
+    responses={403: {"description": "not_your_seat"}, 501: {"description": "not_implemented (only a local sign-in session is served)"}},
+)
+def professional_profile(pro_id: str, claims: dict = Depends(current_srp_user)) -> dict:
+    """The Profile page's real data (the 18 facts with their sources, the preview, credentials and graph counts) for the signed-in user's OWN seat, read-only (srp/profile-page-schema)."""
+    if not local.is_local_session(claims):  # a Supabase session's Profile page is unchanged: it has no read here
+        raise not_implemented("the Profile read for a Supabase session")
+    try:
+        return profile.profile(claims, pro_id)
+    except psycopg.Error as exc:  # the database's own message can carry a host or a query: log the kind, answer plainly
+        log.warning("profile read failed: %s", type(exc).__name__)
+        raise HTTPException(status.HTTP_503_SERVICE_UNAVAILABLE, "database_unavailable") from exc
+
+
+@router.get(
+    "/seat/professional/{pro_id}/insights",
+    response_model=InsightsResponse,
+    responses={403: {"description": "not_your_seat"}, 501: {"description": "not_implemented (only a local sign-in session is served)"}},
+)
+def professional_insights(pro_id: str, claims: dict = Depends(current_srp_user)) -> dict:
+    """The Insights page's real data (visibility figures, map with the top 3 of each spot, AI engines, competitors, locked cards and NORA's notes) for the signed-in user's OWN seat, read-only (srp/insights-page-schema)."""
+    if not local.is_local_session(claims):  # a Supabase session's Insights page is unchanged: it has no read here
+        raise not_implemented("the Insights read for a Supabase session")
+    try:
+        return insights.insights(claims, pro_id)
+    except psycopg.Error as exc:  # the database's own message can carry a host or a query: log the kind, answer plainly
+        log.warning("insights read failed: %s", type(exc).__name__)
+        raise HTTPException(status.HTTP_503_SERVICE_UNAVAILABLE, "database_unavailable") from exc
+
+
+@router.get(
+    "/seat/professional/{pro_id}/website",
+    response_model=WebAnalyticsResponse,
+    responses={403: {"description": "not_your_seat"}, 501: {"description": "not_implemented (only a local sign-in session is served)"}},
+)
+def professional_website(pro_id: str, claims: dict = Depends(current_srp_user)) -> dict:
+    """The Web analytics page's real data (the site, the website-lane gauge, the ten audit checks, tiles, top fix with its JSON-LD snippet and NORA's notes) for the signed-in user's OWN seat, read-only (srp/web-analytics-page-schema)."""
+    if not local.is_local_session(claims):  # a Supabase session's Web analytics page is unchanged: it has no read here
+        raise not_implemented("the Web analytics read for a Supabase session")
+    try:
+        return web_analytics.web_analytics(claims, pro_id)
+    except psycopg.Error as exc:  # the database's own message can carry a host or a query: log the kind, answer plainly
+        log.warning("web analytics read failed: %s", type(exc).__name__)
+        raise HTTPException(status.HTTP_503_SERVICE_UNAVAILABLE, "database_unavailable") from exc
+
+
+@router.get(
+    "/seat/professional/{pro_id}/connections",
+    response_model=ConnectionsResponse,
+    responses={403: {"description": "not_your_seat"}, 501: {"description": "not_implemented (only a local sign-in session is served)"}},
+)
+def professional_connections(pro_id: str, claims: dict = Depends(current_srp_user)) -> dict:
+    """The Connections page's real data (the eleven accounts with their state, status and what each powers, the summary, NORA's notes and the directories card) for the signed-in user's OWN seat, read-only (srp/connections-page-schema)."""
+    if not local.is_local_session(claims):  # a Supabase session's Connections page is unchanged: it has no read here
+        raise not_implemented("the Connections read for a Supabase session")
+    try:
+        return connections.connections(claims, pro_id)
+    except psycopg.Error as exc:  # the database's own message can carry a host or a query: log the kind, answer plainly
+        log.warning("connections read failed: %s", type(exc).__name__)
         raise HTTPException(status.HTTP_503_SERVICE_UNAVAILABLE, "database_unavailable") from exc
 
 

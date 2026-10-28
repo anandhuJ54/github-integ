@@ -359,9 +359,11 @@ def test_no_person_is_named_anywhere(plan):
 
 def _varchar_limits() -> dict[str, int]:
     """The smallest varchar(n) of each column name across the Home tables in the DDL script (the script has been applied, so it is the limit)."""
-    sql = (Path(__file__).resolve().parents[1] / "db" / "local" / "home_schema.sql").read_text()
+    db = Path(__file__).resolve().parents[1] / "db" / "local"
+    sql = (db / "home_schema.sql").read_text() + (db / "srs_schema.sql").read_text()
     limits: dict[str, int] = {}
-    for column, n in re.findall(r"^\s+(\w+) varchar\((\d+)\)", sql, flags=re.MULTILINE):
+    pairs = re.findall(r"^\s+(\w+) varchar\((\d+)\)", sql, flags=re.MULTILINE) + re.findall(r"add column if not exists (\w+) varchar\((\d+)\)", sql)
+    for column, n in pairs:
         limits[column] = min(int(n), limits.get(column, 10**9))
     return limits
 
@@ -369,6 +371,7 @@ def _varchar_limits() -> dict[str, int]:
 def test_every_text_value_fits_its_column_in_the_applied_schema(plan):
     limits = _varchar_limits()
     assert limits["tag"] == 40 and limits["reviewer_label"] == 80
+    assert limits["you_text"] == 200 and limits["action_target"] == 16 and limits["short_name"] == 24 and limits["action_label"] <= 60  # (the smallest across tables)
 
     def walk(obj):
         if dataclasses.is_dataclass(obj) and not isinstance(obj, type):
@@ -382,3 +385,124 @@ def test_every_text_value_fits_its_column_in_the_applied_schema(plan):
                 walk(item)
 
     walk(plan)
+
+
+# --- the SRS page's lane gaps and short names (srp/srs-page-schema, task 3) -----------------------------------
+
+GAP_TARGETS = {"profile", "voce", "website", "connections", "reviews", "chat", "billing"}
+MISSABLE = {"articles", "qa", "videos", "audio"}
+SHORT = {"reviews": "Reviews", "completeness": "Completeness", "website": "Website", "articles": "Articles", "gbp": "GBP",
+         "directories": "Directories", "qa": "Q&A", "connections": "Connections", "videos": "Videos", "audio": "Audio"}
+
+
+def gaps_of(seat):
+    return {g.lane: g for g in seat.gaps}
+
+
+def test_every_lane_has_a_short_name(plan):
+    assert {l.key: l.short_name for l in plan.reference.lanes} == SHORT
+
+
+def test_every_seat_has_one_gap_per_lane_in_lane_order(plan):
+    for seat in plan.seats:
+        assert [g.lane for g in seat.gaps] == LANE_KEYS, seat.seat_id
+
+
+def test_every_gap_has_texts_a_label_and_a_known_target(plan):
+    for seat in plan.seats:
+        for g in seat.gaps:
+            assert g.you_text.strip() and g.rival_text.strip() and g.action_label.strip(), (seat.seat_id, g.lane)
+            assert g.action_target in GAP_TARGETS, (seat.seat_id, g)
+            assert g.note is None or g.note.strip()
+
+
+def test_only_lanes_that_can_be_absent_are_ever_missing(plan):
+    seen = set()
+    for seat in plan.seats:
+        for g in seat.gaps:
+            if g.is_missing:
+                assert g.lane in MISSABLE, (seat.seat_id, g.lane)
+                seen.add(g.lane)
+    assert seen == MISSABLE, "every absent-able lane is missing for some seat"
+    assert any(not g.is_missing for seat in plan.seats for g in seat.gaps if g.lane in MISSABLE)
+
+
+def test_the_reviews_gap_repeats_the_snapshot_and_leader_counts(plan):
+    for seat in plan.seats:
+        g, snap, leader = gaps_of(seat)["reviews"], seat.snapshots[-1], seat.competitors[0]
+        assert g.you_text == str(snap.review_count), seat.seat_id
+        assert g.rival_text == f"{leader.review_count} reviews", seat.seat_id
+        m = re.fullmatch(r"(\d+) in the last 12 months", g.note or "")
+        assert m and 1 <= int(m.group(1)) <= snap.review_count, (seat.seat_id, g.note)
+        assert g.action_target == "reviews"
+
+
+def test_the_articles_gap_repeats_the_leader_count_and_the_first_article_flag(plan):
+    for seat in plan.seats:
+        g, leader = gaps_of(seat)["articles"], seat.competitors[0]
+        assert g.rival_text == f"{leader.article_count} articles", seat.seat_id
+        assert (g.you_text == "0") == (not seat.brief.away_first_article), seat.seat_id
+        assert g.is_missing == (g.you_text == "0"), seat.seat_id
+        assert g.action_target == "voce"
+
+
+def test_the_completeness_gap_quotes_the_profile_strength(plan):
+    for seat in plan.seats:
+        g = gaps_of(seat)["completeness"]
+        assert f"{seat.snapshots[-1].profile_strength_pct}%" in g.you_text, seat.seat_id
+        assert g.action_target == "profile"
+
+
+def test_the_directories_action_follows_the_plan(plan):
+    plans = set()
+    for seat in plan.seats:
+        g = gaps_of(seat)["directories"]
+        plans.add(seat.state.plan)
+        if seat.state.plan == "core":
+            assert (g.action_label, g.action_target) == ("Unlock Listings", "billing"), seat.seat_id
+        else:
+            assert (g.action_label, g.action_target) == ("Fix my listings", "chat"), seat.seat_id
+    assert plans == {"core", "engage", "amplify"}
+
+
+def test_absent_qa_videos_and_audio_say_so(plan):
+    absent = {"qa": "0", "videos": "No videos", "audio": "No audio"}
+    for seat in plan.seats:
+        for lane, text in absent.items():
+            g = gaps_of(seat)[lane]
+            assert g.is_missing == (g.you_text == text), (seat.seat_id, lane, g)
+
+
+def test_the_connections_and_gbp_gaps_point_at_connections(plan):
+    for seat in plan.seats:
+        by = gaps_of(seat)
+        assert by["connections"].action_target == "connections" and by["gbp"].action_target == "connections"
+        assert re.fullmatch(r"\d+", by["connections"].you_text)
+        assert re.fullmatch(r"\d+ connected accounts", by["connections"].rival_text)
+        assert int(by["connections"].rival_text.split()[0]) > int(by["connections"].you_text)
+
+
+def test_gaps_of_a_seat_do_not_depend_on_the_other_seats(plan):
+    small = hp.build_home_plan([5, 17], AS_OF)
+    by_id = {s.seat_id: s for s in plan.seats}
+    assert [s.gaps for s in small.seats] == [by_id[5].gaps, by_id[17].gaps]
+
+
+def test_a_lane_the_seat_has_none_of_earns_no_points_in_any_snapshot(plan):
+    """Second review finding 1: a Missing lane used to earn up to its full budget, so the page showed it as Strong."""
+    seen = set()
+    for seat in plan.seats:
+        for g in seat.gaps:
+            if g.is_missing:
+                seen.add(g.lane)
+                assert all(snap.lanes[g.lane] == 0 for snap in seat.snapshots), (seat.seat_id, g.lane)
+    assert seen == MISSABLE
+
+
+def test_a_lane_with_a_measure_is_never_flagged_missing_and_the_points_still_add_up(plan):
+    for seat in plan.seats:
+        missing = {g.lane for g in seat.gaps if g.is_missing}
+        for snap in seat.snapshots:
+            assert sum(snap.lanes.values()) == snap.total, seat.seat_id
+            assert all(points <= next(x.max_points for x in plan.reference.lanes if x.key == k) for k, points in snap.lanes.items())
+            assert all(snap.lanes[k] == 0 for k in missing)

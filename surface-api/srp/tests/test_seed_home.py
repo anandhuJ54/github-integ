@@ -339,4 +339,10 @@ def test_a_dry_run_counts_the_home_rows_without_touching_the_database(monkeypatc
     report = sh.seed(dry_run=True, as_of=date(2026, 10, 27))
     assert report.dry_run and report.planned["home_score_lanes"] == 10 and report.planned["home_seat_state"] == 40
     assert report.planned["home_competitors"] == 200 and report.planned["home_map_cells"] == 49 * 40
+    assert report.planned["srs_lane_gaps"] == 10 * 40
+    assert report.planned["profile_graph_groups"] == 6 * 40 and report.planned["profile_facts"] > 40 * 8
+    assert report.planned["insights_ai_engines"] == 3 * 40 and report.planned["insights_competitor_positions"] == 5 * 40
+    assert report.planned["web_checks"] == 10 * 40 and report.planned["connected_accounts"] == 11 * 40
+    assert report.planned["network_partners"] > 40 and report.planned["network_referrals"] > 40
+    assert report.planned["insights_spot_leaders"] == 147 * 40 and 5 * 40 <= report.planned["insights_visibility"] <= 6 * 40
     assert not [q for q in seen if q.startswith(("insert", "update", "delete"))]

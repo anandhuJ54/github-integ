@@ -200,33 +200,45 @@ def _recap(day: dict, snaps: list[dict], board: dict, tiles: dict, drafts: list[
 
 # --- the read ----------------------------------------------------------------------------------------------
 
-def home(claims: dict, pro_id: str) -> dict[str, Any]:
-    """The Home data for the signed-in user's own seat; 403 for any other id."""
+def parse_ids(claims: dict, pro_id: str) -> tuple[int, int]:
+    """(seat id, user id) from the path id and the token; 403 when either is not a plain number."""
     sub = str(claims.get("sub") or "")
     if not _ID.fullmatch(pro_id) or not _ID.fullmatch(sub):
         raise _forbidden()
-    seat, user = int(pro_id), int(sub)
+    return int(pro_id), int(sub)
+
+
+def owner_of(conn: Any, s: str, seat: int, user: int) -> dict:
+    """The signed-in user's own live seat (with the person fields the Home shows); 403 for anything else, whether or not it exists.
+    Shared with the SRS read (`seat/srs.py`), so both pages apply the same ownership rule."""
+    owner = conn.execute(
+        f"""select ta.id, ta.title, ta.profile_photo, ta.year_started, u.first_name, u.last_name,
+                   case when jsonb_typeof(d.certifications) = 'array'
+                        then jsonb_array_length(d.certifications) else 0 end as credentials
+            from {s}.tier_agents ta
+            join {s}.users u on u.id = ta.user_id
+            left join lateral (
+                select certifications from {s}.tier_agent_details
+                where tier_agent_id = ta.id order by id limit 1
+            ) d on true
+            where ta.id = %s and ta.user_id = %s and ta.deleted_at is null
+              and u.deleted_at is null and u.deactivated_at is null
+              and not coalesce(u.is_manual_deactivated, false)""",
+        (seat, user),
+    ).fetchone()
+    if owner is None:  # the ownership check comes first: nothing else is read for a seat that is not theirs
+        raise _forbidden()
+    return owner
+
+
+def home(claims: dict, pro_id: str) -> dict[str, Any]:
+    """The Home data for the signed-in user's own seat; 403 for any other id."""
+    seat, user = parse_ids(claims, pro_id)
     s = get_settings().srp_local_schema
     now = datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ")
     with connection() as conn:
         conn.execute("set transaction read only")  # the first statement: the database refuses any write from here on
-        owner = conn.execute(
-            f"""select ta.id, ta.title, ta.profile_photo, ta.year_started, u.first_name, u.last_name,
-                       case when jsonb_typeof(d.certifications) = 'array'
-                            then jsonb_array_length(d.certifications) else 0 end as credentials
-                from {s}.tier_agents ta
-                join {s}.users u on u.id = ta.user_id
-                left join lateral (
-                    select certifications from {s}.tier_agent_details
-                    where tier_agent_id = ta.id order by id limit 1
-                ) d on true
-                where ta.id = %s and ta.user_id = %s and ta.deleted_at is null
-                  and u.deleted_at is null and u.deactivated_at is null
-                  and not coalesce(u.is_manual_deactivated, false)""",
-            (seat, user),
-        ).fetchone()
-        if owner is None:  # the ownership check comes first: nothing else is read for a seat that is not theirs
-            raise _forbidden()
+        owner = owner_of(conn, s, seat, user)
         state = conn.execute(
             f"""select st.trial_started_at, st.trial_days, st.nora_text_day, st.is_mock, st.claim_snapshot_id, st.moves_done, st.moves_goal, st.streak_weeks,
                        p.key as plan_key, p.name as plan_name, p.tag as plan_tag, p.position as plan_position

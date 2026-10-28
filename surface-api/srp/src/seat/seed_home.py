@@ -9,7 +9,9 @@ maximum; an unknown maximum stays unknown), a zipcode and vertical shared with a
 a year started. Everything is labelled "Mock", names nobody, and uses fixed dates (never the clock), so running it twice
 on the same seats leaves the database exactly as running it once, ids included.
 
-In the same run it fills the 17 `home_*` tables (created by `srp/db/local/home_schema.sql`): the reference rows (score lanes, bands, plans,
+In the same run it fills the Insights page's four tables (`srp/db/local/insights_schema.sql`: visibility figures, AI engine rows, competitor positions and the top 3 of
+every map spot, as planned by `seed_insights_plan` from the Home plan; they need the Home rows, so they are written last), the Profile page's `profile_facts` and `profile_graph_groups` (`srp/db/local/profile_schema.sql`) and corrects the mock `title`, `description`,
+`phone_number`, `mobile_number` and `profile_photo` of the seeded seats' `tier_agents` rows (as planned by `seed_profile_plan`), the SRS page's `srs_lane_gaps` (10 rows per seat; `srp/db/local/srs_schema.sql`) and the lanes' `short_name`, and the 17 `home_*` tables (created by `srp/db/local/home_schema.sql`): the reference rows (score lanes, bands, plans,
 peer benchmarks) and, for every seat, its trial and plan, score snapshots with lane points and a map, competitors, activity, next moves, locked
 features, weekly brief, review drafts, events and insights, as planned by `seed_home_plan`. Their dates are relative to `--as-of` (default: today,
 UTC, printed): the same date twice changes nothing; a later date moves the dates and keeps the per-seat rows (snapshots are keyed by their date, so
@@ -29,6 +31,7 @@ Connects with DATABASE_URL like the API does.
 from __future__ import annotations
 
 import argparse
+import dataclasses
 import hashlib
 import json
 import os
@@ -45,7 +48,12 @@ from psycopg.types.json import Jsonb
 
 from _base.config import get_settings
 from _base.db.session import close_pools, connection  # tests replace these names
+from surfaces.srp.seat import seed_connections_plan as cpn
 from surfaces.srp.seat import seed_home_plan as hp
+from surfaces.srp.seat import seed_insights_plan as ip
+from surfaces.srp.seat import seed_network_plan as npl
+from surfaces.srp.seat import seed_profile_plan as pp
+from surfaces.srp.seat import seed_web_plan as wpn
 
 DEFAULT_SCHEMA = "srp_cleanup"
 SEED_TAG = "home-v1"
@@ -197,7 +205,8 @@ _SEAT_COLUMN = {"user_search_rank_scores": "tier_agent_id", "voce_articles": "ti
                 "website_analytics_data": "tier_agent_id", "ai_authority_stats": "agent_id", "tier_agent_details": "tier_agent_id"}
 
 
-def _sync(conn: Any, schema: str, table: str, existing: list[dict], desired: dict[Any, dict], key_of: Any, tally: dict[str, int]) -> None:
+def _sync(conn: Any, schema: str, table: str, existing: list[dict], desired: dict[Any, dict], key_of: Any, tally: dict[str, int],
+          json_cols: frozenset[str] = frozenset()) -> None:
     """Make `table` hold exactly `desired` (key -> column values): update rows in place (lowest id kept), insert the missing,
     delete the rest, and skip an update when nothing differs, so a second run does no work."""
     by_key: dict[Any, list[dict]] = {}
@@ -210,7 +219,7 @@ def _sync(conn: Any, schema: str, table: str, existing: list[dict], desired: dic
             changed = {c: v for c, v in values.items() if _norm(keep.get(c)) != _norm(v)}
             if changed:
                 sets = ", ".join(f"{c} = %s" for c in changed)
-                conn.execute(f"update {schema}.{table} set {sets} where id = %s", [_wrap(v) for v in changed.values()] + [keep["id"]])
+                conn.execute(f"update {schema}.{table} set {sets} where id = %s", [_wrap(v, c in json_cols) for c, v in changed.items()] + [keep["id"]])
                 tally["updated"] += 1
             for extra in extras:
                 conn.execute(f"delete from {schema}.{table} where id = %s", (extra["id"],))
@@ -219,7 +228,7 @@ def _sync(conn: Any, schema: str, table: str, existing: list[dict], desired: dic
             cols = list(values)
             conn.execute(
                 f"insert into {schema}.{table} ({', '.join(cols)}) values ({', '.join(['%s'] * len(cols))})",
-                [_wrap(values[c]) for c in cols],
+                [_wrap(values[c], c in json_cols) for c in cols],
             )
             tally["inserted"] += 1
     for rows in by_key.values():  # old rows nothing in the plan asks for
@@ -228,8 +237,9 @@ def _sync(conn: Any, schema: str, table: str, existing: list[dict], desired: dic
             tally["deleted"] += 1
 
 
-def _wrap(value: Any) -> Any:
-    return Jsonb(value) if isinstance(value, (list, dict)) else value
+def _wrap(value: Any, as_json: bool = False) -> Any:
+    """A list or dict is always JSON; a plain value only when its column is known to be jsonb (a JSON string such as "123" must not be read as a number)."""
+    return Jsonb(value) if as_json and value is not None or isinstance(value, (list, dict)) else value
 
 
 def _norm(value: Any) -> Any:
@@ -283,9 +293,16 @@ def apply_plan(conn: Any, schema: str, plans: list[SeatPlan]) -> dict[str, int]:
 
 _HOME_REFERENCE = ("home_score_lanes", "home_score_bands", "home_plans", "home_peer_benchmarks")
 _HOME_PER_SEAT = ("home_seat_state", "home_snapshots", "home_competitors", "home_activity", "home_next_moves", "home_locked_features",
-                  "home_weekly_briefs", "home_review_drafts", "home_events", "home_nora_insights")
+                  "home_weekly_briefs", "home_review_drafts", "home_events", "home_nora_insights",
+                  "srs_lane_gaps",  # the SRS page's table (srp/srs-page-schema): per seat, backed up with the Home rows
+                  "profile_facts", "profile_graph_groups",  # the Profile page's tables (srp/profile-page-schema), likewise
+                  "insights_visibility", "insights_ai_engines", "insights_competitor_positions",  # the Insights page's seat tables (srp/insights-page-schema)
+                  "web_checks",  # the Web analytics page's table (srp/web-analytics-page-schema)
+                  "connected_accounts",  # the Connections page's table (srp/connections-page-schema)
+                  "network_partners", "network_referrals")  # the Network page's tables (srp/network-page-schema)
 _HOME_CHILDREN = {"home_snapshot_lanes": ("home_snapshots", "snapshot_id"), "home_map_cells": ("home_snapshots", "snapshot_id"),
-                  "home_weekly_brief_items": ("home_weekly_briefs", "brief_id")}
+                  "home_weekly_brief_items": ("home_weekly_briefs", "brief_id"),
+                  "insights_spot_leaders": ("home_map_cells", "cell_id")}  # after home_map_cells: the leaders of the map spots (srp/insights-page-schema)
 
 
 def _today() -> date:
@@ -315,7 +332,145 @@ def _home_planned(home: hp.HomePlan) -> dict[str, int]:
         "home_weekly_briefs": len(seats), "home_weekly_brief_items": sum(len(s.brief.items) for s in seats),
         "home_review_drafts": sum(len(s.drafts) for s in seats), "home_events": sum(len(s.events) for s in seats),
         "home_nora_insights": sum(len(s.insights) for s in seats),
+        "srs_lane_gaps": sum(len(s.gaps) for s in seats),
     }
+
+
+def _profile_planned(profile: pp.ProfilePlan) -> dict[str, int]:
+    return {"profile_facts": sum(len(s.facts) for s in profile.seats), "profile_graph_groups": sum(len(s.groups) for s in profile.seats)}
+
+
+def apply_profile(conn: Any, schema: str, profile: pp.ProfilePlan, tally: dict[str, int]) -> None:
+    """Make the Profile page's two tables hold exactly the plan for these seats, and put the corrected mock values into the `tier_agents` columns the page reads."""
+    seats = [s.seat_id for s in profile.seats]
+    facts = {(s.seat_id, f.field): {"tier_agent_id": s.seat_id, "field": f.field, "value": f.value, "source": f.source, "trust_tier": f.trust_tier,
+                                    "confirmed_at": f.confirmed_at, "is_mock": True} for s in profile.seats for f in s.facts}
+    _sync(conn, schema, "profile_facts", _of_seats(conn, schema, "profile_facts", seats), facts, lambda r: (r["tier_agent_id"], r["field"]), tally,
+          json_cols=frozenset({"value"}))
+    groups = {(s.seat_id, g.key): {"tier_agent_id": s.seat_id, "group_key": g.key, "facts": g.facts, "is_mock": True} for s in profile.seats for g in s.groups}
+    _sync(conn, schema, "profile_graph_groups", _of_seats(conn, schema, "profile_graph_groups", seats), groups, lambda r: (r["tier_agent_id"], r["group_key"]), tally)
+    for s in profile.seats:  # the seat columns: updated in place, only when they differ
+        c = s.columns
+        want = (c.title, c.description, c.phone_number, c.mobile_number, c.profile_photo)
+        row = conn.execute(
+            f"select title, description, phone_number, mobile_number, profile_photo from {schema}.tier_agents where id = %s", (s.seat_id,)).fetchone()
+        if row and (row["title"], row["description"], row["phone_number"], row["mobile_number"], row["profile_photo"]) != want:
+            conn.execute(
+                f"update {schema}.tier_agents set title = %s, description = %s, phone_number = %s, mobile_number = %s, profile_photo = %s where id = %s",
+                (*want, s.seat_id))
+            tally["updated"] += 1
+
+
+def _insights_planned(insights: ip.InsightsPlan) -> dict[str, int]:
+    return {"insights_visibility": sum(len(s.visibility) for s in insights.seats), "insights_ai_engines": sum(len(s.engines) for s in insights.seats),
+            "insights_competitor_positions": sum(len(s.positions) for s in insights.seats), "insights_spot_leaders": sum(len(s.leaders) for s in insights.seats)}
+
+
+def _web_planned(web: wpn.WebPlan) -> dict[str, int]:
+    return {"web_checks": sum(len(s.checks) for s in web.seats)}
+
+
+def apply_web(conn: Any, schema: str, web: wpn.WebPlan, tally: dict[str, int]) -> None:
+    """Make `web_checks` hold exactly the plan for these seats. The three corrections of existing mock values (the website tile column, the SRS website gap text and
+    Home's website move text) arrive through the plans `apply_plan` and `apply_home` write, which `seed` aligns with the checks first."""
+    seats = [s.seat_id for s in web.seats]
+    rows = {(s.seat_id, c.key): {"tier_agent_id": s.seat_id, "check_key": c.key, "state": c.state, "result": c.result, "headline": c.headline, "points": c.points,
+                                 "points_max": c.points_max, "source": c.source, "trust_tier": c.trust_tier, "is_mock": True} for s in web.seats for c in s.checks}
+    _sync(conn, schema, "web_checks", _of_seats(conn, schema, "web_checks", seats), rows, lambda r: (r["tier_agent_id"], r["check_key"]), tally)
+
+
+def _connections_planned(conns: cpn.ConnectionsPlan) -> dict[str, int]:
+    return {"connected_accounts": sum(len(s.accounts) for s in conns.seats)}
+
+
+def apply_connections(conn: Any, schema: str, conns: cpn.ConnectionsPlan, tally: dict[str, int]) -> None:
+    """Make `connected_accounts` hold exactly the plan for these seats. The two corrections of existing mock values (the SRS Connections gap text and the Web analytics
+    Indexing source) arrive through the plans `apply_home` and `apply_web` write, which `seed` aligns with the accounts first."""
+    seats = [s.seat_id for s in conns.seats]
+    rows = {(s.seat_id, a.provider): {"tier_agent_id": s.seat_id, "provider": a.provider, "state": a.state, "synced_at": a.synced_at, "source": a.source,
+                                      "trust_tier": a.trust_tier, "is_mock": True} for s in conns.seats for a in s.accounts}
+    _sync(conn, schema, "connected_accounts", _of_seats(conn, schema, "connected_accounts", seats), rows, lambda r: (r["tier_agent_id"], r["provider"]), tally)
+
+
+def _network_planned(net: npl.NetworkPlan) -> dict[str, int]:
+    return {"network_partners": sum(len(s.partners) for s in net.seats), "network_referrals": sum(len(s.referrals) for s in net.seats)}
+
+
+_PARTNER_COLS = ("position", "name", "company", "role", "state", "reason_kind", "reason_count", "reason_on", "source", "trust_tier")
+_REFERRAL_COLS = ("list_key", "position", "name", "detail", "status", "occurred_on", "source", "trust_tier")
+
+
+def apply_network(conn: Any, schema: str, net: npl.NetworkPlan, tally: dict[str, int]) -> None:
+    """Make `network_partners` and `network_referrals` hold exactly the plan for these seats. A seat whose rows already match keeps them (a changed date is updated in place, so the
+    rows keep their ids); a seat whose rows differ in anything else is rewritten whole (its referrals first, they point at its partners), because the two tables have more than
+    one unique key. shortcut: a one-field edit rewrites the seat's rows, fine for mock data, change to per-row updates if the rows ever carry state worth keeping."""
+    seats = [s.seat_id for s in net.seats]
+    have_p: dict[int, list[dict]] = {}
+    for r in _of_seats(conn, schema, "network_partners", seats):
+        have_p.setdefault(r["tier_agent_id"], []).append(r)
+    have_r: dict[int, list[dict]] = {}
+    for r in _of_seats(conn, schema, "network_referrals", seats):
+        have_r.setdefault(r["tier_agent_id"], []).append(r)
+    for s in net.seats:
+        old_p = sorted(have_p.get(s.seat_id, []), key=lambda r: r["position"])
+        old_r = sorted(have_r.get(s.seat_id, []), key=lambda r: (r["list_key"], r["position"]))
+        names = {r["id"]: r["name"] for r in old_p}
+        want_p = [{c: getattr(p, c) for c in _PARTNER_COLS} | {"is_mock": True} for p in s.partners]
+        want_r = [{c: getattr(r, c) for c in _REFERRAL_COLS} | {"partner_name": r.partner_name, "is_mock": True} for r in sorted(s.referrals, key=lambda r: (r.list_key, r.position))]
+        got_r = [{c: r[c] for c in _REFERRAL_COLS} | {"partner_name": names.get(r["partner_id"]), "is_mock": r["is_mock"]} for r in old_r]
+        got_p = [{c: r[c] for c in (*_PARTNER_COLS, "is_mock")} for r in old_p]
+        dated = lambda rows, col: [{k: v for k, v in r.items() if k != col} for r in rows]
+        if dated(got_p, "reason_on") == dated(want_p, "reason_on") and dated(got_r, "occurred_on") == dated(want_r, "occurred_on"):
+            for old, want in zip(old_p, want_p, strict=True):
+                if old["reason_on"] != want["reason_on"]:
+                    conn.execute(f"update {schema}.network_partners set reason_on = %s where id = %s", (want["reason_on"], old["id"]))
+                    tally["updated"] += 1
+            for old, want in zip(old_r, want_r, strict=True):
+                if old["occurred_on"] != want["occurred_on"]:
+                    conn.execute(f"update {schema}.network_referrals set occurred_on = %s where id = %s", (want["occurred_on"], old["id"]))
+                    tally["updated"] += 1
+            continue
+        conn.execute(f"delete from {schema}.network_referrals where tier_agent_id = %s", (s.seat_id,))
+        conn.execute(f"delete from {schema}.network_partners where tier_agent_id = %s", (s.seat_id,))
+        tally["deleted"] += len(old_p) + len(old_r)
+        ids: dict[str, int] = {}
+        for want in want_p:
+            cols = ["tier_agent_id", *want]
+            ids[want["name"]] = conn.execute(
+                f"insert into {schema}.network_partners ({', '.join(cols)}) values ({', '.join(['%s'] * len(cols))}) returning id", [s.seat_id, *want.values()]).fetchone()["id"]
+            tally["inserted"] += 1
+        for want in want_r:
+            row = {k: v for k, v in want.items() if k != "partner_name"} | {"partner_id": ids[want["partner_name"]] if want["partner_name"] else None}
+            cols = ["tier_agent_id", *row]
+            conn.execute(f"insert into {schema}.network_referrals ({', '.join(cols)}) values ({', '.join(['%s'] * len(cols))})", [s.seat_id, *row.values()])
+            tally["inserted"] += 1
+
+
+def apply_insights(conn: Any, schema: str, insights: ip.InsightsPlan, tally: dict[str, int]) -> None:
+    """Make the Insights page's four tables hold exactly the plan for these seats. Runs after `apply_home`: a rival is found by its Home `position` and a map
+    spot by its (row, col) in the seat's newest snapshot."""
+    seats = [s.seat_id for s in insights.seats]
+    vis = {(s.seat_id, v.metric): {"tier_agent_id": s.seat_id, "metric": v.metric, "value": v.value, "period_days": v.period_days, "source": v.source,
+                                   "trust_tier": v.trust_tier, "is_mock": True} for s in insights.seats for v in s.visibility}
+    _sync(conn, schema, "insights_visibility", _of_seats(conn, schema, "insights_visibility", seats), vis, lambda r: (r["tier_agent_id"], r["metric"]), tally)
+    eng = {(s.seat_id, e.engine): {"tier_agent_id": s.seat_id, "engine": e.engine, "cited": e.cited, "checked": e.checked, "note": e.note, "is_mock": True}
+           for s in insights.seats for e in s.engines}
+    _sync(conn, schema, "insights_ai_engines", _of_seats(conn, schema, "insights_ai_engines", seats), eng, lambda r: (r["tier_agent_id"], r["engine"]), tally)
+    rival = {(r["tier_agent_id"], r["position"]): r["id"] for r in _of_seats(conn, schema, "home_competitors", seats)}
+    by_rival = {v: k for k, v in rival.items()}
+    pos = {(s.seat_id, p.competitor_position): {"tier_agent_id": s.seat_id, "competitor_id": rival[(s.seat_id, p.competitor_position)],
+                                                "avg_position": p.avg_position, "is_mock": True} for s in insights.seats for p in s.positions}
+    _sync(conn, schema, "insights_competitor_positions", _of_seats(conn, schema, "insights_competitor_positions", seats), pos,
+          lambda r: by_rival.get(r["competitor_id"], (r["tier_agent_id"], -r["competitor_id"])), tally)
+    cells = conn.execute(
+        f"select c.id, c.row_no, c.col_no, s.tier_agent_id from {schema}.home_map_cells c join {schema}.home_snapshots s on s.id = c.snapshot_id "
+        "where s.tier_agent_id = any(%s) order by s.as_of, c.id", (seats,)).fetchall()
+    cell_id = {(c["tier_agent_id"], c["row_no"], c["col_no"]): c["id"] for c in cells}  # the newest snapshot wins
+    cell_ids = [c["id"] for c in cells]
+    lead = {(cell_id[(s.seat_id, l.row, l.col)], l.position): {"cell_id": cell_id[(s.seat_id, l.row, l.col)], "position": l.position, "name": l.name,
+                                                               "is_you": l.is_you, "is_mock": True} for s in insights.seats for l in s.leaders}
+    _sync(conn, schema, "insights_spot_leaders", _of_parents(conn, schema, "insights_spot_leaders", "cell_id", cell_ids), lead,
+          lambda r: (r["cell_id"], r["position"]), tally)
 
 
 def apply_home(conn: Any, schema: str, home: hp.HomePlan, tally: dict[str, int]) -> None:
@@ -328,8 +483,10 @@ def apply_home(conn: Any, schema: str, home: hp.HomePlan, tally: dict[str, int])
         return _all(conn, schema, table)
 
     lanes = sync("home_score_lanes", _all(conn, schema, "home_score_lanes"),
-                 {l.key: {"key": l.key, "name": l.name, "max_points": l.max_points, "position": l.position} for l in ref.lanes}, lambda r: r["key"])
+                 {l.key: {"key": l.key, "name": l.name, "max_points": l.max_points, "position": l.position, "short_name": l.short_name} for l in ref.lanes},
+                 lambda r: r["key"])
     lane_id = {r["key"]: r["id"] for r in lanes}
+    lane_key = {i: k for k, i in lane_id.items()}
     bands = sync("home_score_bands", _all(conn, schema, "home_score_bands"),
                  {b.name: {"name": b.name, "min_points": b.min_points, "position": b.position} for b in ref.bands}, lambda r: r["name"])
     band_id = {r["name"]: r["id"] for r in bands}
@@ -403,6 +560,11 @@ def apply_home(conn: Any, schema: str, home: hp.HomePlan, tally: dict[str, int])
          {(s.seat_id, e.kind): {"tier_agent_id": s.seat_id, "kind": e.kind, "title": e.title, "body": e.body, "action_label": e.action_label,
                                 "expires_at": e.expires_at} for s in home.seats for e in s.events},
          lambda r: (r["tier_agent_id"], r["kind"]))
+    sync("srs_lane_gaps", _of_seats(conn, schema, "srs_lane_gaps", seats),
+         {(s.seat_id, g.lane): {"tier_agent_id": s.seat_id, "lane_id": lane_id[g.lane], "you_text": g.you_text, "rival_text": g.rival_text, "note": g.note,
+                                "is_missing": g.is_missing, "action_label": g.action_label, "action_target": g.action_target, "is_mock": True}
+          for s in home.seats for g in s.gaps},
+         lambda r: (r["tier_agent_id"], lane_key[r["lane_id"]]))
     sync("home_nora_insights", _of_seats(conn, schema, "home_nora_insights", seats),
          {(s.seat_id, i.position): {"tier_agent_id": s.seat_id, "position": i.position, "title": i.title, "body": i.body, "cta": i.cta, "action": i.action}
           for s in home.seats for i in s.insights},
@@ -422,7 +584,7 @@ def _backup_rows(conn: Any, schema: str, seats: list[int]) -> dict[str, list[dic
     rows = {t: conn.execute(f"select * from {schema}.{t} where {_SEAT_COLUMN[t]} = any(%s) order by id", (seats,)).fetchall() for t in _TABLES}
     rows.update(_backup_home(conn, schema, seats))
     rows["tier_agents"] = conn.execute(
-        f"select id, year_started, zipcode, profile_photo from {schema}.tier_agents where id = any(%s) order by id", (seats,)
+        f"select id, year_started, zipcode, profile_photo, title, description, phone_number, mobile_number from {schema}.tier_agents where id = any(%s) order by id", (seats,)
     ).fetchall()
     return rows
 
@@ -439,6 +601,20 @@ def seed(*, dry_run: bool = False, backup_path: Path | None = None, as_of: date 
         cats = [Category(r["id"], r["score"]) for r in conn.execute(f"select id, score from {schema}.srs_config_categories order by id").fetchall()]
         plans = build_plan(seats, cats)
         home = hp.build_home_plan(seats, as_of or _today(), {p.seat_id: p.zipcode for p in plans})
+        profile = pp.build_profile_plan(seats, as_of or _today(), {p.seat_id: p.zipcode for p in plans})
+        # the Web analytics checks come from the Home and Profile plans; the Home plan and the website tile column are then aligned with them (spec W3, W4)
+        published = {p.seat_id: sum(1 for a in p.articles if a["published"] and not a["archived"]) for p in plans}
+        urls = {p.seat_id: p.website["website_url"] for p in plans}
+        web = wpn.build_web_plan(home, profile, published, urls)
+        home = wpn.align_home(home, web)
+        # the Connections accounts come from the Home and Profile plans; the Home plan (the SRS Connections count) and the Web plan (the Indexing source) follow them (spec C9 to C13)
+        conns = cpn.build_connections_plan(home, profile, as_of or _today())
+        home, web = cpn.align_home(home, conns), cpn.align_web(web, conns)
+        # the Network partners and referrals come from the Home and Connections plans (spec N9 to N13) and correct nothing that exists
+        net = npl.build_network_plan(home, conns, as_of or _today())
+        lane = {s.seat_id: s.lane_points for s in web.seats}
+        plans = [dataclasses.replace(p, website={**p.website, "total_score": lane[p.seat_id]}) for p in plans]
+        insights = ip.build_insights_plan(home)
         planned = {
             "user_search_rank_scores": sum(len(p.scores) for p in plans),
             "voce_articles": sum(len(p.articles) for p in plans),
@@ -446,6 +622,11 @@ def seed(*, dry_run: bool = False, backup_path: Path | None = None, as_of: date 
             "ai_authority_stats": sum(1 for p in plans if p.ai),
             "tier_agent_details": len(plans),
             **_home_planned(home),
+            **_profile_planned(profile),
+            **_insights_planned(insights),
+            **_web_planned(web),
+            **_connections_planned(conns),
+            **_network_planned(net),
         }
         rankless = rankless_count(plans)
         if dry_run:
@@ -454,6 +635,11 @@ def seed(*, dry_run: bool = False, backup_path: Path | None = None, as_of: date 
             write_backup(Path(backup_path), _backup_rows(conn, schema, seats))  # before any change
         changed = apply_plan(conn, schema, plans)
         apply_home(conn, schema, home, changed)
+        apply_profile(conn, schema, profile, changed)
+        apply_insights(conn, schema, insights, changed)
+        apply_web(conn, schema, web, changed)
+        apply_connections(conn, schema, conns, changed)
+        apply_network(conn, schema, net, changed)
     return Report(len(plans), planned, changed, False, rankless)
 
 
@@ -480,6 +666,9 @@ def main(argv: list[str] | None = None) -> int:
         report = seed(dry_run=args.dry_run, backup_path=Path(args.backup_to) if args.backup_to else None, as_of=as_of)
     except FileExistsError:
         print("the backup file already exists; nothing was changed", file=sys.stderr)
+        return 2
+    except ValueError as exc:  # a seat's website lane cannot be split into the audit's checks: stop before anything is written
+        print(f"{exc}; nothing was changed", file=sys.stderr)
         return 2
     finally:
         close_pools()  # the pool's threads must stop before the interpreter exits

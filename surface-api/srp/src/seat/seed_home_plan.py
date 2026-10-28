@@ -8,6 +8,9 @@ time of day, so adding a seat changes nothing for the others. Dates are relative
 date by the same amount and changes nothing else. Everything is labelled mock and names nobody (reviewer labels are generic;
 competitor names are business names).
 
+The SRS page's lane gaps (`srs_lane_gaps`, srp/srs-page-schema) and the lanes' short names are part of the same plan: 10 gap rows per seat,
+built from the same values as the snapshot and the competitors (the Reviews and Articles texts repeat their counts, and a test checks it).
+
 The invariants the Home depends on hold by construction (and are tested): lane points sum to the snapshot total; totals,
 profile strength, review and AI counts never fall; the market leader outscores the seat; the done activities add up to what the seat
 gained since the claim; the weekly brief adds up to the week's gain.
@@ -28,6 +31,8 @@ COMPETITOR_NAMES = (
 _LANES = (("reviews", "Reviews", 187), ("completeness", "Completeness", 182), ("website", "Website", 102), ("articles", "Articles", 103),
           ("gbp", "Google Business Profile", 68), ("directories", "Directories", 90), ("qa", "Q&A", 34),
           ("connections", "Connections", 51), ("videos", "Videos", 27), ("audio", "Audio", 6))
+_SHORT_NAMES = {"gbp": "GBP"}  # every other lane's short name is its name
+_MISSABLE = ("articles", "qa", "videos", "audio")  # the lanes whose measure a seat can have none of
 _BANDS = (("Building", 0), ("Established", 400), ("Leading", 600), ("Elite", 750))
 _ACTIVITY_LABELS = (
     "Adding your Google category and services", "Fixed 4 places", "Kept 9 loan products", "Built your profile · 67 facts",
@@ -54,6 +59,7 @@ class Lane:
     name: str
     max_points: int
     position: int
+    short_name: str | None = None
 
 
 @dataclass(frozen=True)
@@ -219,6 +225,17 @@ class Insight:
 
 
 @dataclass(frozen=True)
+class Gap:
+    lane: str
+    you_text: str
+    rival_text: str
+    note: str | None
+    is_missing: bool
+    action_label: str
+    action_target: str
+
+
+@dataclass(frozen=True)
 class SeatHome:
     seat_id: int
     layout: str
@@ -233,6 +250,7 @@ class SeatHome:
     drafts: list[Draft]
     events: list[Event]
     insights: list[Insight]
+    gaps: list[Gap] = field(default_factory=list)
 
 
 @dataclass(frozen=True)
@@ -299,7 +317,7 @@ def layout_of_day(n: int) -> str:
 # --- reference data ---------------------------------------------------------------------------------------------
 
 def reference() -> Reference:
-    lanes = [Lane(k, name, mx, i + 1) for i, (k, name, mx) in enumerate(_LANES)]
+    lanes = [Lane(k, name, mx, i + 1, _SHORT_NAMES.get(k, name)) for i, (k, name, mx) in enumerate(_LANES)]
     bands = [Band(name, lo, i + 1) for i, (name, lo) in enumerate(_BANDS)]
     plans = [
         Plan("core", "Core", "Free after your 30-day trial", 1, False,
@@ -476,6 +494,42 @@ def _insights(leader: Competitor, snap: Snapshot) -> list[Insight]:
     ]
 
 
+def _absent(seat: int) -> set[str]:
+    """The lanes this seat has none of the measure of (1 seat in 3 per lane that can be absent). Such a lane earns no points, so the page's
+    Missing status and its points agree; the Home brief's 'first article published' flag is the same fact for Articles."""
+    return {k for k in _MISSABLE if (_h(seat, "first") % 3 == 0 if k == "articles" else _h(seat, "gap", k) % 3 == 0)}
+
+
+def _gaps(seat: int, snap: Snapshot, leader: Competitor, plan: str, first_article: bool) -> list[Gap]:
+    """The SRS page's ten lane rows for a seat, in lane order. Texts are 'you vs rival': the page shows `you_text` vs `rival_text`."""
+    absent = _absent(seat)
+    mocks = {k: k in absent for k in _MISSABLE}
+    articles = 0 if not first_article else _between(1, 6, seat, "articles")
+    qa = 0 if mocks["qa"] else _between(1, 8, seat, "qa")
+    directories = _between(3, 20, seat, "dirs-have")
+    accounts = _between(0, 4, seat, "accounts")
+    site_partial = _h(seat, "markup") % 2 == 0
+    listings = ("Unlock Listings", "billing") if plan == "core" else ("Fix my listings", "chat")
+    rows = {
+        "reviews": Gap("reviews", str(snap.review_count), f"{leader.review_count} reviews",
+                       f"{_between(1, snap.review_count, seat, 'recent')} in the last 12 months", False, "See reviews", "reviews"),
+        "completeness": Gap("completeness", f"Profile {snap.profile_strength_pct}% complete, service areas missing", "a full profile with 3 designations",
+                            None, False, "Fill my profile", "profile"),
+        "website": Gap("website", "Partial markup" if site_partial else "No markup", "full markup", None, False, "Fix my website", "website"),
+        "articles": Gap("articles", str(articles), f"{leader.article_count} articles", None, articles == 0, "Start publishing", "voce"),
+        "gbp": Gap("gbp", "Connected", "Connected", f"{_between(1, 9, seat, 'services')} services added", False, "View connection", "connections"),
+        "directories": Gap("directories", f"{directories} consistent", f"{directories + _between(8, 20, seat, 'dirs-more')}", None, False, *listings),
+        "qa": Gap("qa", str(qa), f"{_between(6, 20, seat, 'qa-rival')} answered", None, qa == 0, "Answer questions", "chat"),
+        "connections": Gap("connections", str(accounts), f"{accounts + _between(1, 4, seat, 'accounts-more')} connected accounts", None, False,
+                           "Connect accounts", "connections"),
+        "videos": Gap("videos", "No videos" if mocks["videos"] else f"Last video {_between(2, 30, seat, 'video')} months old", "a video a month", None,
+                      mocks["videos"], "Plan a video", "chat"),
+        "audio": Gap("audio", "No audio" if mocks["audio"] else f"{_between(1, 3, seat, 'own-episodes')} episodes",
+                     f"{_between(4, 8, seat, 'episodes')} episodes", None, mocks["audio"], "Plan a podcast", "chat"),
+    }
+    return [rows[key] for key, _, _ in _LANES]
+
+
 def _seat(seat: int, zipcode: str, now: datetime, ref: Reference) -> SeatHome:
     layout = LAYOUTS[_h(seat, "layout") % 3]
     n = _trial_day(seat, layout)
@@ -485,6 +539,7 @@ def _seat(seat: int, zipcode: str, now: datetime, ref: Reference) -> SeatHome:
     city = CITIES[int(zipcode) % len(CITIES) if zipcode.isdigit() else 0]
     rank_of = _between(30, 50, "market", zipcode)
     maxima = {lane.key: lane.max_points for lane in ref.lanes}
+    caps = {k: 0 if k in _absent(seat) else mx for k, mx in maxima.items()}  # a lane the seat has none of earns nothing
     weights = {lane.key: 0.5 + _frac(seat, "lane", lane.key) for lane in ref.lanes}
     profile = (_between(35, 59, seat, "pc0"), {"day1": _between(60, 69, seat, "pc1"), "day7": _between(70, 82, seat, "pc1"),
                                               "day24": _between(82, 95, seat, "pc1")}[layout])
@@ -508,19 +563,21 @@ def _seat(seat: int, zipcode: str, now: datetime, ref: Reference) -> SeatHome:
             review_count=round(reviews[0] + (reviews[1] - reviews[0]) * progress),
             map_scanned_at=now - timedelta(days=_between(1, 9, seat, "scan")) if newest else None,
             ai_cited=round(ai[0] + (ai[1] - ai[0]) * progress), ai_checked=7, ai_checked_at=at - timedelta(hours=2),
-            lanes=_allocate(total, weights, maxima), cells=_cells(seat) if newest else [],
+            lanes=_allocate(total, weights, caps), cells=_cells(seat) if newest else [],
         ))
     leader_comps = _competitors(seat, latest_total, snaps[-1].rank_position)
     pick = _h(seat, "plan") % 10
     plan = "amplify" if pick == 0 else "engage" if pick <= 2 else "core"
     moves_done, streak = ((0, 0) if layout == "day1" else (_between(0, 3, seat, "moves"), 1 if layout == "day7" else _between(2, 4, seat, "streak")))
     state = State(plan, started, 30, moves_done, 3, streak, _NORA_TEXT_DAYS[_h(seat, "nora") % 3], True)
+    brief = _brief(seat, snaps, maxima)
     return SeatHome(
         seat_id=seat, layout=layout, day_n=n, state=state, snapshots=snaps, competitors=leader_comps,
         activities=_activities(seat, started, now, latest_total - claim_total),
         moves=_moves(seat, leader_comps[0], snaps[-1].lanes, maxima), locked=_locked(seat),
-        brief=_brief(seat, snaps, maxima), drafts=_drafts(seat, layout, now), events=_events(seat, layout, now),
+        brief=brief, drafts=_drafts(seat, layout, now), events=_events(seat, layout, now),
         insights=_insights(leader_comps[0], snaps[-1]),
+        gaps=_gaps(seat, snaps[-1], leader_comps[0], plan, brief.away_first_article),
     )
 
 

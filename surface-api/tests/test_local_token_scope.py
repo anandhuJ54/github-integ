@@ -1,4 +1,4 @@
-"""A local sign-in token reaches exactly five SRP routes and nothing else (srp/local-login-srp-home, srp/home-page-data).
+"""A local sign-in token reaches exactly ten SRP routes and nothing else (srp/local-login-srp-home, srp/home-page-data, srp/srs-page-schema, srp/profile-page-schema, srp/insights-page-schema, srp/web-analytics-page-schema, srp/connections-page-schema).
 
 Walks the real route table of the composed app, so a route that reuses the SRP check by accident, or a
 router that reaches the database as the `authenticated` role with local claims, fails here. A second-model
@@ -28,6 +28,11 @@ LOCAL_AWARE = {
     ("POST", "/srp/rpc/{name}"),
     ("GET", "/srp/seat/listings"),
     ("GET", "/srp/seat/professional/{pro_id}/home"),  # srp/home-page-data
+    ("GET", "/srp/seat/professional/{pro_id}/srs"),  # srp/srs-page-schema
+    ("GET", "/srp/seat/professional/{pro_id}/profile"),  # srp/profile-page-schema
+    ("GET", "/srp/seat/professional/{pro_id}/insights"),  # srp/insights-page-schema
+    ("GET", "/srp/seat/professional/{pro_id}/website"),  # srp/web-analytics-page-schema
+    ("GET", "/srp/seat/professional/{pro_id}/connections"),  # srp/connections-page-schema
 }
 
 
