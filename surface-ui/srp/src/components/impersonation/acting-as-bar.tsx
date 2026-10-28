@@ -2,6 +2,12 @@ import { useNavigate } from "@tanstack/react-router";
 import { ChevronRight, Eye, LogOut, ShieldCheck } from "lucide-react";
 import { useImpersonation } from "@v3/state/impersonation/impersonation";
 import { DemoChip } from "@v3/shared/components/ui/entity-avatar";
+import { usesLocalSignIn } from "@v3/srp/utils/local-sign-in";
+
+/** The bar shows while someone is acted as, except in the SRP (API) sign-in, which has no Super Admin to return to. */
+export function showActingAsBar(actingAs: unknown, local: boolean): boolean {
+  return Boolean(actingAs) && !local;
+}
 
 /**
  * Sticky bar shown whenever an admin is acting as another entity.
@@ -12,7 +18,8 @@ export function ActingAsBar() {
   const { stack, actingAs, returnToIndex, exit } = useImpersonation();
   const navigate = useNavigate();
 
-  if (!actingAs) return null;
+  if (!showActingAsBar(actingAs, usesLocalSignIn())) return null;
+  if (!actingAs) return null; // narrows the type
 
   const ancestors = stack.slice(0, -1);
 

@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import { HF_SAMPLE_BANNER_HEIGHT } from "./seat-nav";
 import { SAMPLE_DATA_NOTE, sampleNoticeFor } from "./persona";
 import { useHfPersona } from "./persona-context";
+import { usesLocalSignIn } from "@v3/srp/utils/local-sign-in";
 
 export const SAMPLE_DATA_LABEL = "Sample data";
 export { SAMPLE_DATA_NOTE };
@@ -13,6 +14,7 @@ export { SAMPLE_DATA_NOTE };
 export function SampleData({ children, note }: { children: ReactNode; note?: string }) {
   const { isReal } = useHfPersona();
   const text = note ?? sampleNoticeFor(isReal);
+  if (usesLocalSignIn()) return <div>{children}</div>; // the SRP sign-in shows no sample-data notice
   return (
     <div>
       <div

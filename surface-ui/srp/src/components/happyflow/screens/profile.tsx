@@ -3,6 +3,7 @@
  * Ported 1:1 from the Happyflow prototype (SRP App, `sProfile`).
  */
 import {
+  Fragment,
   createContext,
   useCallback,
   useContext,
@@ -12,9 +13,10 @@ import {
   useState,
   type CSSProperties,
 } from "react";
-import { PERSONA, PRODUCTS } from "../demo-data";
-import { useHfPersona, usePersonalize } from "../persona-context";
-import type { HfPersona } from "../persona";
+import { PERSONA } from "../demo-data";
+import { BIO_DRAFT, INITIAL } from "../sample-profile";
+import { useProfileModel } from "../profile-context";
+import { trustedText, type ProfileModel } from "@v3/srp/utils/profile-model";
 import { HappyflowShell, useHf, type HfApi, type Think } from "../shell";
 import { Hov, Ic, NoraFace, ProBadge } from "../primitives";
 import { useSpeech } from "../use-speech";
@@ -25,32 +27,11 @@ import { loadStored, saveStored } from "./profile-store";
 // Demo data (Happyflow prototype)
 const HEAD = ["Profile", "Every fact NORA knows about you, with its source."] as const;
 
-const BIO_DRAFT =
-  "Alex Sample has helped Quad Cities families buy and refinance homes for 12 years, with a focus on first-time buyers and FHA and VA loans.";
-
 const PEARL_BG =
   "radial-gradient(120% 90% at 0% 0%,oklch(0.965 0.021 30) 0%,transparent 55%),radial-gradient(110% 90% at 100% 0%,oklch(0.955 0.025 285) 0%,transparent 55%),linear-gradient(180deg,oklch(0.985 0.004 285),#fff)";
 
 /** Profile facts are editable for the demo session; `apply` writes changes and returns what changed. */
 type Apply = (changes: ProfileChanges, how: string) => ProfileField[];
-
-const INITIAL: Record<ProfileField, string> = {
-  Name: PERSONA.name,
-  Title: PERSONA.title,
-  Bio: "Thin",
-  "Year started": "",
-  Office: PERSONA.officePhone,
-  Mobile: PERSONA.mobile,
-  Email: PERSONA.email,
-  Address: PERSONA.address,
-  Hours: "Mon–Fri 9:00–5:00",
-  NMLS: PERSONA.nmls,
-  "Licensed in": PERSONA.states,
-  "Service areas": "",
-  Designations: "",
-  Awards: "",
-  Education: "",
-};
 
 /** Which demo fields each card's edit sheet shows (every one can be typed or dictated). */
 const CARD_FIELDS: Record<string, ProfileField[]> = {
@@ -79,14 +60,6 @@ function useProfile() {
 
 const FIELDS = Object.keys(INITIAL) as ProfileField[];
 
-/** The profile's starting facts for this person: their name, title, phone and email in place of the sample ones. */
-const initialFor = (p: HfPersona): Record<ProfileField, string> => ({
-  ...INITIAL,
-  Name: p.name,
-  Title: p.title,
-  Mobile: p.mobile,
-  Email: p.email,
-});
 const isField = (k: string): k is ProfileField => (FIELDS as string[]).includes(k);
 
 const CARD_ORDER = Object.keys(CARD_FIELDS);
@@ -191,20 +164,35 @@ function openBio(api: Pick<HfApi, "openSheet">, apply: Apply, bio: string = BIO_
   );
 }
 
-const makeThinks = (apply: Apply, bio: string): Think[] => [
-  {
-    t: "Your bio is thin.",
-    d: "I drafted a fuller one from your website and LinkedIn. It's ready for your OK.",
-    cta: "Review draft",
-    act: (api) => openBio(api, apply, bio),
-  },
-  {
-    t: "Two things are missing.",
-    d: "Year started and service areas both count toward Completeness — 55 points are open there.",
-    cta: "Add service areas",
-    act: (api) => openEdit(api, apply, "Service areas", ""),
-  },
-];
+export const makeThinks = (apply: Apply, model: ProfileModel): Think[] => {
+  const thin: Think[] = model.bio.thin
+    ? [
+        {
+          t: "Your bio is thin.",
+          d: "I drafted a fuller one from your website and LinkedIn. It's ready for your OK.",
+          cta: "Review draft",
+          act: (api) => openBio(api, apply, model.bio.draft),
+        },
+      ]
+    : [];
+  const missing = (["Year started", "Service areas"] as ProfileField[]).filter(
+    (k) => !model.initial[k],
+  );
+  const more: Think[] = missing.length
+    ? [
+        {
+          t: missing.length === 2 ? "Two things are missing." : "One thing is missing.",
+          d:
+            model.mode === "sample"
+              ? "Year started and service areas both count toward Completeness — 55 points are open there."
+              : `${missing.map((k, i) => (i ? k.charAt(0).toLowerCase() + k.slice(1) : k)).join(" and ")} count${missing.length === 1 ? "s" : ""} toward Completeness.`,
+          cta: "Add service areas",
+          act: (api) => openEdit(api, apply, "Service areas", ""),
+        },
+      ]
+    : [];
+  return [...thin, ...more];
+};
 
 type RowSpec = {
   k: string;
@@ -214,6 +202,8 @@ type RowSpec = {
   cta?: string;
   ctaOn?: () => void;
   missSrc?: string;
+  /** The source line reads as trusted (from the fact's tier); without it the prototype's wording rule applies. */
+  trusted?: boolean;
 };
 type CardSpec = {
   title: string;
@@ -226,6 +216,16 @@ type CardSpec = {
   bars?: [string, number, string][];
 };
 
+/** The colour of each expertise-graph bar. */
+const BAR_COLOUR: Record<string, string> = {
+  identity: "#4285f4",
+  contact: "#ea4335",
+  licence: "#fbbc04",
+  products: "#9b72f2",
+  reviews: "#34a853",
+  presence: "#4285f4",
+};
+
 const row = (
   k: string,
   v: string,
@@ -234,18 +234,16 @@ const row = (
 ): RowSpec => ({ k, v, src, ...o });
 
 export function ProfileScreen() {
-  const persona = useHfPersona();
-  const t = usePersonalize();
-  const initial = useMemo(() => initialFor(persona), [persona]);
-  const bioDraft = t(BIO_DRAFT);
-  const [stored] = useState(() => loadStored(initial));
+  const model = useProfileModel();
+  const initial = model.initial;
+  const [stored] = useState(() => loadStored(initial, model.storeKey));
   const [f, setF] = useState(stored?.f ?? initial);
   const [src, setSrc] = useState<Partial<Record<ProfileField, string>>>(stored?.src ?? {});
   const [recent, setRecent] = useState<ProfileField[]>([]);
 
   useEffect(() => {
-    saveStored(f, src);
-  }, [f, src]);
+    saveStored(f, src, model.storeKey);
+  }, [f, src, model.storeKey]);
 
   useEffect(() => {
     if (!recent.length) return;
@@ -268,7 +266,7 @@ export function ProfileScreen() {
     setRecent([]);
   }, [initial]);
   const state = useMemo(() => ({ f, src, apply, recent, reset }), [f, src, apply, recent, reset]);
-  const thinks = useMemo(() => makeThinks(apply, bioDraft), [apply, bioDraft]);
+  const thinks = useMemo(() => makeThinks(apply, model), [apply, model]);
   return (
     <ProfileCtx.Provider value={state}>
       <HappyflowShell
@@ -316,10 +314,18 @@ function ResetDemoButton() {
 }
 
 function ProfileBody() {
-  const bioDraft = usePersonalize()(BIO_DRAFT);
+  const model = useProfileModel();
+  const bioDraft = model.bio.draft;
+  const { preview, photo } = model;
   const hf = useHf();
   const { f, src, apply, recent } = useProfile();
   const from = (k: ProfileField, dflt: string) => src[k] ?? dflt;
+  /** A fact's row: its value, its source line (an edited one wins) and whether that source reads as trusted. */
+  const fact = (k: ProfileField, o: Omit<RowSpec, "k" | "v" | "src"> = {}) =>
+    row(k, f[k], from(k, model.sources[k]), {
+      trusted: src[k] ? undefined : model.trusted[k],
+      ...o,
+    });
   const { isD } = hf;
   const [creds, setCreds] = useState<"open" | "added" | "skip">("open");
   const [mini, setMini] = useState(false);
@@ -330,8 +336,10 @@ function ProfileBody() {
       ?.scrollIntoView({ behavior: "smooth", block: "start" });
   // Quick actions stay on the preview card in both its full and minimized form.
   const quick: [string, () => void][] = [
-    [`Reviews (${PERSONA.reviews})`, () => hf.go("reviews")],
-    [`★ ${PERSONA.rating} rating`, () => hf.go("reviews")],
+    [preview.reviews !== null ? `Reviews (${preview.reviews})` : "Reviews", () => hf.go("reviews")],
+    ...(preview.rating !== null
+      ? [[`★ ${preview.rating} rating`, () => hf.go("reviews")] as [string, () => void]]
+      : []),
     ["About", () => jump("Identity")],
     ["Services", () => jump("Services and areas")],
     ["Licences", () => jump("Licences")],
@@ -403,71 +411,59 @@ function ProfileBody() {
       title: "Identity",
       icon: "user",
       rows: [
-        row("Name", f.Name, from("Name", "From LinkedIn")),
-        row("Title", f.Title, from("Title", "From LinkedIn")),
-        row("Photo", "Profile photo", "From LinkedIn"),
+        fact("Name"),
+        fact("Title"),
+        row("Photo", photo.url ? "Profile photo" : "", photo.source, { trusted: photo.trusted }),
         src.Bio
           ? row("Bio", f.Bio, src.Bio)
-          : row("Bio", f.Bio, "NORA draft ready", {
-              nora: true,
-              cta: "Review draft",
-              ctaOn: () => openBio(hf, apply, bioDraft),
-            }),
-        row("Year started", f["Year started"], from("Year started", "")),
+          : model.bio.thin
+            ? row("Bio", f.Bio, "NORA draft ready", {
+                nora: true,
+                cta: "Review draft",
+                ctaOn: () => openBio(hf, apply, bioDraft),
+              })
+            : fact("Bio"),
+        fact("Year started"),
       ],
     },
     {
       title: "Contact",
       icon: "phone",
-      rows: [
-        row("Office", f.Office, from("Office", "Confirmed by you · Oct 16")),
-        row("Mobile", f.Mobile, from("Mobile", "Confirmed by you · Oct 16")),
-        row("Email", f.Email, from("Email", "Confirmed by you · Oct 16")),
-        row("Address", f.Address, from("Address", "Confirmed by you · Oct 16")),
-        row("Hours", f.Hours, from("Hours", "From Google")),
-      ],
+      rows: [fact("Office"), fact("Mobile"), fact("Email"), fact("Address"), fact("Hours")],
     },
     {
       title: "Licences",
       icon: "badge",
-      rows: [
-        row("NMLS", f.NMLS, from("NMLS", "Confirmed by you · Oct 16")),
-        row("Licensed in", f["Licensed in"], from("Licensed in", "From NMLS")),
-      ],
+      rows: [fact("NMLS"), fact("Licensed in")],
     },
     {
       title: "Services and areas",
       icon: "list",
-      note: "9 loan products",
-      noteFg: "#1967d2",
-      chips: PRODUCTS,
-      rows: [row("Service areas", f["Service areas"], from("Service areas", ""))],
+      note: model.products.length
+        ? `${model.products.length} loan ${model.products.length === 1 ? "product" : "products"}`
+        : "Missing",
+      noteFg: model.products.length ? "#1967d2" : "#b06000",
+      chips: model.products,
+      rows: [fact("Service areas")],
     },
     {
       title: "Credentials",
       icon: "award",
       note: credCount ? `${credCount} of 3 added` : "Missing",
       noteFg: credCount ? "#137333" : "#b06000",
-      rows: [
-        row("Designations", f.Designations, from("Designations", "")),
-        row("Awards", f.Awards, from("Awards", "")),
-        row("Education", f.Education, from("Education", "")),
-      ],
-      nora: creds !== "skip",
+      rows: [fact("Designations"), fact("Awards"), fact("Education")],
+      nora: model.linkedinOffer && creds !== "skip",
     },
     {
       title: "Expertise graph",
       icon: "share",
-      note: "67 facts from 6 sources",
+      note: `${model.graph.total} facts from ${model.graph.sources} sources`,
       noteFg: "#5f6368",
-      bars: [
-        ["Identity", 12, "#4285f4"],
-        ["Contact", 9, "#ea4335"],
-        ["Licence", 6, "#fbbc04"],
-        ["Products", 11, "#9b72f2"],
-        ["Reviews", 15, "#34a853"],
-        ["Presence", 14, "#4285f4"],
-      ],
+      bars: model.graph.groups.map((g): [string, number, string] => [
+        g.label,
+        g.facts,
+        BAR_COLOUR[g.key],
+      ]),
     },
   ];
 
@@ -479,12 +475,23 @@ function ProfileBody() {
         <ProBadge />
       </span>
       <span style={{ fontSize: 14, color: "#5f6368" }}>
-        {f.Title} · {PERSONA.company}
+        {f.Title}
+        {preview.company ? ` · ${preview.company}` : ""}
       </span>
       <span style={{ fontSize: 13, color: "#5f6368" }}>
-        <span style={{ color: "#f9ab00" }}>★</span>{" "}
-        <b style={{ color: "#202124" }}>{PERSONA.rating}</b> ({PERSONA.reviews}) · {PERSONA.city} · NMLS{" "}
-        {PERSONA.nmls}
+        {[
+          preview.rating !== null ? (
+            <Fragment key="rating">
+              <span style={{ color: "#f9ab00" }}>★</span>{" "}
+              <b style={{ color: "#202124" }}>{preview.rating}</b>
+              {preview.reviews !== null ? ` (${preview.reviews})` : ""}
+            </Fragment>
+          ) : null,
+          preview.city ? <Fragment key="city">{preview.city}</Fragment> : null,
+          preview.nmls ? <Fragment key="nmls">NMLS {preview.nmls}</Fragment> : null,
+        ]
+          .filter(Boolean)
+          .flatMap((part, i) => (i ? [" · ", part] : [part]))}
       </span>
     </div>
   );
@@ -548,7 +555,7 @@ function ProfileBody() {
             stroke: "url(#hf-prof-cmpG)",
             strokeWidth: 3.2,
             strokeLinecap: "round",
-            strokeDasharray: "64 100",
+            strokeDasharray: `${preview.strengthPct ?? 0} 100`,
           }}
         />
       </svg>
@@ -562,14 +569,16 @@ function ProfileBody() {
           justifyContent: "center",
         }}
       >
-        <b style={{ fontSize: 15, fontVariantNumeric: "tabular-nums" }}>64%</b>
+        <b style={{ fontSize: 15, fontVariantNumeric: "tabular-nums" }}>
+          {preview.strengthPct === null ? "—" : `${preview.strengthPct}%`}
+        </b>
         <span style={{ fontSize: 8, color: "#80868b" }}>complete</span>
       </div>
     </div>
   );
   const previewChips = (
     <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
-      {PRODUCTS.slice(0, 5).map((s) => (
+      {model.products.slice(0, 5).map((s) => (
         <span
           key={s}
           style={{
@@ -584,35 +593,58 @@ function ProfileBody() {
           {s}
         </span>
       ))}
-      <span
-        style={{
-          borderRadius: 999,
-          background: "#f1f3f4",
-          padding: "4px 10px",
-          fontSize: 12,
-          fontWeight: 600,
-          color: "#5f6368",
-        }}
-      >
-        +4
-      </span>
+      {model.products.length > 5 ? (
+        <span
+          style={{
+            borderRadius: 999,
+            background: "#f1f3f4",
+            padding: "4px 10px",
+            fontSize: 12,
+            fontWeight: 600,
+            color: "#5f6368",
+          }}
+        >
+          +{model.products.length - 5}
+        </span>
+      ) : null}
     </div>
   );
-  const previewPhoto = (size: number) => (
-    <img
-      src={PERSONA.photo}
-      alt=""
-      style={{
-        width: size,
-        height: size,
-        flex: "none",
-        borderRadius: "50%",
-        objectFit: "cover",
-        objectPosition: PERSONA.photoPos,
-        boxShadow: "0 0 0 4px #fff",
-      }}
-    />
-  );
+  const photoPos = model.mode === "sample" ? PERSONA.photoPos : undefined;
+  const previewPhoto = (size: number) =>
+    photo.url ? (
+      <img
+        src={photo.url}
+        alt=""
+        style={{
+          width: size,
+          height: size,
+          flex: "none",
+          borderRadius: "50%",
+          objectFit: "cover",
+          objectPosition: photoPos,
+          boxShadow: "0 0 0 4px #fff",
+        }}
+      />
+    ) : (
+      <span
+        aria-hidden
+        style={{
+          width: size,
+          height: size,
+          flex: "none",
+          borderRadius: "50%",
+          background: "#e8f0fe",
+          color: "#1967d2",
+          display: "grid",
+          placeItems: "center",
+          fontSize: Math.round(size / 3),
+          fontWeight: 700,
+          boxShadow: "0 0 0 4px #fff",
+        }}
+      >
+        {photo.initials}
+      </span>
+    );
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
       <section
@@ -629,26 +661,21 @@ function ProfileBody() {
         {mini ? (
           <div style={{ padding: "14px 16px", display: "flex", flexDirection: "column", gap: 10 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 12, paddingRight: 90 }}>
-              <img
-                src={PERSONA.photo}
-                alt=""
-                style={{
-                  width: 44,
-                  height: 44,
-                  flex: "none",
-                  borderRadius: "50%",
-                  objectFit: "cover",
-                  objectPosition: PERSONA.photoPos,
-                }}
-              />
+              {previewPhoto(44)}
               <div style={{ minWidth: 0, display: "flex", flexDirection: "column", gap: 2 }}>
                 <span style={{ display: "flex", alignItems: "center", gap: 8 }}>
                   <b style={{ fontSize: 15 }}>{f.Name}</b>
                   <ProBadge size="sm" />
                 </span>
                 <span style={{ fontSize: 12, color: "#5f6368" }}>
-                  <span style={{ color: "#f9ab00" }}>★</span> {PERSONA.rating} ({PERSONA.reviews}) · 64%
-                  complete
+                  {preview.rating !== null ? (
+                    <>
+                      <span style={{ color: "#f9ab00" }}>★</span> {preview.rating}
+                      {preview.reviews !== null ? ` (${preview.reviews})` : ""}
+                      {preview.strengthPct !== null ? " · " : ""}
+                    </>
+                  ) : null}
+                  {preview.strengthPct !== null ? `${preview.strengthPct}% complete` : ""}
                 </span>
               </div>
             </div>
@@ -790,10 +817,7 @@ function ProfileBody() {
                 ? "#7b4ce0"
                 : miss
                   ? "#b06000"
-                  : r.src.startsWith("Confirmed") ||
-                      r.src.startsWith("Verified") ||
-                      r.src.startsWith("Updated") ||
-                      r.src.startsWith("Approved")
+                  : (r.trusted ?? trustedText(r.src))
                     ? "#137333"
                     : "#80868b";
               return (
@@ -975,7 +999,9 @@ function ProfileBody() {
                         style={{
                           display: "block",
                           height: "100%",
-                          width: ((n / 15) * 100).toFixed(0) + "%",
+                          width:
+                            ((n / Math.max(15, ...c.bars!.map((b) => b[1]))) * 100).toFixed(0) +
+                            "%",
                           borderRadius: 4,
                           background: col,
                           transformOrigin: "left",

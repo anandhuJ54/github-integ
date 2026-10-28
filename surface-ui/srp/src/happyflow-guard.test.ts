@@ -42,7 +42,7 @@ const SCREEN_ROUTES = files(ROUTES).filter((f) =>
 
 describe("Happyflow port", () => {
   test("every route that shows a Happyflow screen wraps it in the sample-data notice", () => {
-    expect(SCREEN_ROUTES.length).toBe(9); // the seat index shows the Home through components/happyflow/home-page.tsx, which is checked below
+    expect(SCREEN_ROUTES.length).toBe(4); // the seat index shows the Home, the nora route the SRS, the profile route the Profile, the insights route the Insights, the website route the Web analytics and the connections route the Connections through components/happyflow/{home,srs,profile,insights,web-analytics,connections}-page.tsx, all checked below
     const missing = SCREEN_ROUTES.filter((f) => !/<SampleData[\s>]/.test(readFileSync(f, "utf8")));
     expect(missing.map((f) => f.replace(SRC, ""))).toEqual([]);
   });
@@ -54,8 +54,48 @@ describe("Happyflow port", () => {
     expect(/home-(day1|day7)/.test(readFileSync(join(ROUTES, "seat.$kind.$id.index.tsx"), "utf8"))).toBe(false);
   });
 
+  test("the SRS page component wraps the screen in the sample-data notice, and its route goes through it", () => {
+    const src = readFileSync(join(SRC, "components", "happyflow", "srs-page.tsx"), "utf8");
+    expect(/<SampleData[\s>]/.test(src) && /screens\/srs/.test(src)).toBe(true);
+    const route = readFileSync(join(ROUTES, "seat.$kind.$id.nora.tsx"), "utf8");
+    expect(/screens\/srs/.test(route)).toBe(false);
+    expect(/srs-page/.test(route)).toBe(true);
+  });
+
+  test("the Profile page component wraps the screen in the sample-data notice, and its route goes through it", () => {
+    const src = readFileSync(join(SRC, "components", "happyflow", "profile-page.tsx"), "utf8");
+    expect(/<SampleData[\s>]/.test(src) && /screens\/profile/.test(src)).toBe(true);
+    const route = readFileSync(join(ROUTES, "seat.$kind.$id.profile.tsx"), "utf8");
+    expect(/screens\/profile/.test(route)).toBe(false);
+    expect(/profile-page/.test(route)).toBe(true);
+  });
+
+  test("the Insights page component wraps the screen in the sample-data notice, and its route goes through it", () => {
+    const src = readFileSync(join(SRC, "components", "happyflow", "insights-page.tsx"), "utf8");
+    expect(/<SampleData[\s>]/.test(src) && /screens\/insights/.test(src)).toBe(true);
+    const route = readFileSync(join(ROUTES, "seat.$kind.$id.insights.tsx"), "utf8");
+    expect(/screens\/insights/.test(route)).toBe(false);
+    expect(/insights-page/.test(route)).toBe(true);
+  });
+
+  test("the Web analytics page component wraps the screen in the sample-data notice, and its route goes through it", () => {
+    const src = readFileSync(join(SRC, "components", "happyflow", "web-analytics-page.tsx"), "utf8");
+    expect(/<SampleData[\s>]/.test(src) && /screens\/website/.test(src)).toBe(true);
+    const route = readFileSync(join(ROUTES, "seat.$kind.$id.website.tsx"), "utf8");
+    expect(/screens\/website/.test(route)).toBe(false);
+    expect(/web-analytics-page/.test(route)).toBe(true);
+  });
+
+  test("the Connections page component wraps the screen in the sample-data notice, and its route goes through it", () => {
+    const src = readFileSync(join(SRC, "components", "happyflow", "connections-page.tsx"), "utf8");
+    expect(/<SampleData[\s>]/.test(src) && /screens\/connections/.test(src)).toBe(true);
+    const route = readFileSync(join(ROUTES, "seat.$kind.$id.connections.tsx"), "utf8");
+    expect(/screens\/connections/.test(route)).toBe(false);
+    expect(/connections-page/.test(route)).toBe(true);
+  });
+
   test("all Happyflow files are present", () => {
-    expect(hf.filter((f) => /\.tsx?$/.test(f)).length).toBe(28); // the clone's 20 plus screens/profile-store.ts, sample-data.tsx, persona.ts, persona-context.tsx, home-context.tsx, screens/greeting.ts, home-page.tsx and sample-home.ts
+    expect(hf.filter((f) => /\.tsx?$/.test(f)).length).toBe(43); // the clone's 20 plus screens/profile-store.ts, sample-data.tsx, persona.ts, persona-context.tsx, home-context.tsx, screens/greeting.ts, home-page.tsx, sample-home.ts, sample-srs.ts, srs-context.tsx, srs-page.tsx, sample-profile.ts, profile-context.tsx, profile-page.tsx, sample-insights.ts, insights-context.tsx, insights-page.tsx, sample-web-analytics.ts, web-analytics-context.tsx, web-analytics-page.tsx, sample-connections.ts, connections-context.tsx and connections-page.tsx
     expect(hf.filter((f) => f.endsWith("happyflow.css")).length).toBe(1);
     for (const f of [...NEW_ROUTES, ...ASSETS]) expect(existsSync(f)).toBe(true);
   });
