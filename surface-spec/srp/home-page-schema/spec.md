@@ -151,6 +151,7 @@ Ruled 2026-10-27 (answered in the planning step):
 - **R3.** The layout day comes from trial dates in the database; `?day=` stays as an override.
 - **R4.** Read-only: no write route in this increment.
 - **R5.** This supersedes S1, D1 and "no table, column or migration" from `srp/home-page-data`, for the Home only.
+- **R6.** `srp_cleanup` tables are a local schema outside Alembic and the closed SQL stream and get **no** `docs/ETL-Enhancements.md` entry; this covers the Home, SRS, Profile and Insights increments (ruled 2026-10-27).
 
 Needs your confirmation:
 - **N1.** Mock band thresholds: Building 0 to 399, Established 400 to 599, Leading 600 to 749, Elite 750 to 850 (the design only names Building and Established; the only written definition is on the stale 1000-point scale).

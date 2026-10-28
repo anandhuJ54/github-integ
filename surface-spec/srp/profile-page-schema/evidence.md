@@ -1,0 +1,64 @@
+# Evidence: Serve the Happyflow Profile page from the local database, read-only
+
+<!-- Stage: Test. Shared template — do not remove sections. Required for merge. -->
+
+Links: [intent](./intent.md) · [spec](./spec.md) · [plan](./plan.md) · [trace](./trace.md) · PR: not opened (nothing is committed for this increment)
+
+**Progress: tasks 0 to 11 are done.** The DDL script, the seed, and the seed re-run for the second review's seed-data fixes were each run on `v3_local` with your go-ahead. The DDL script was run on `v3_local` (task 2) and the seed was run on `v3_local` (task 4), each with your go-ahead, after a schema-only backup and a seed backup. Task 11 is done: the canon review of the finished diff and an independent second-model review are recorded in `spec.md`; it found 5 real issues (3 in the seed data, 2 in the browser store), all fixed in code with tests that fail without the fix, and the seed fixes are applied to the live data.
+
+## Acceptance criteria results
+| # | Criterion | Test / check | Result |
+|---|---|---|---|
+| 1 | `GET .../profile` returns the shape for the own seat (all 18 facts in order); another seat 403 before any other read; Supabase session 501; database error 503 | `srp/tests/test_seat_profile.py` (79, fake database), `test_seat_profile_route.py` (17: 200 shape equals `ProfileResponse` exactly, 403 with only the ownership query run, malformed ids 403 with no query, 501 with no query, no token and bad token refused, 503 without host or driver text, pool timeout 503, contract); live: 403 without a token, then 200 on 3 seats | **Pass** |
+| 2 | Read-only transaction, only `SELECT`, only `tier_agents`, `users`, `profile_facts`, `profile_graph_groups`, `home_snapshots`, nothing legacy | Unit: first statement `set transaction read only`, every later one a select with no lock, the table list asserted and the legacy, location and `public.` names must not appear, every per-seat query scoped to the owned seat; real Postgres: `transaction_read_only = on`, nothing written, and the database refuses an update inside it | **Pass** |
+| 3 | Existing-table facts come from their columns (a blank one is missing even when a source row exists); own facts from their row; a source line is built from the row | Unit and `test_seat_profile_integration.py` (23): all 22 live seats of a 26-seat scratch database equal the seed plan, including source line, tier and date; changing the name, email, title, bio, phones and year in the existing tables changes the response at once and appears in no `profile_facts` value; live: API vs independent SQL, 0 mismatches on 3 seats | **Pass** |
+| 4 | `credentials` and `graph` are computed from the rows | Unit (0 to 3 added; totals; a group with 0 facts is not a source; order; no group rows) and integration (a deleted group row is not invented); live trace | **Pass** |
+| 5 | The preview's rating, reviews, strength and city equal Home's; null with no snapshot | Integration: all 22 seats compare with `home.home`; a newer snapshot moves both; with no snapshot the figures are null; live: 3 seats via HTTP | **Pass** |
+| 6 | A seat with no fact rows is `ready: false` with null sections | Unit, route and integration tests; UI: `profileModel` returns null, the route falls back to the sample | **Pass** |
+| 7 | The database enforces: one row per seat and field, 18 fields, 5 tiers, `value` null exactly for the eight existing-table fields, a non-blank string or a non-empty list of strings, 6 groups, `facts >= 0`, seat foreign keys | `test_profile_schema.py` (83 on a scratch schema built from the real scripts: columns and types, keys, uniques, every check with accepted and refused values including nested arrays, objects, blanks and numbers, grants, no RLS, idempotence, other tables untouched, rollback present); integration (a second copy of an existing value, a bad tier and a negative count are refused); live catalog diff | **Pass** |
+| 8 | The seed writes the rows and the corrected columns; second run 0 changes; a later date moves dates only; the backup holds old rows and old column values; no person named; page rules hold in the data | `test_seed_profile_plan.py` (26: includes the rules the page applies, written first), `test_seed_home.py`, `test_seed_home_integration.py` (6 new: stored equals plan, strings stay JSON strings, columns corrected and others untouched, second run 0 and a later date moves dates only, backup holds the old rows and column values, drift put right, page rules in the written rows); live: inserted 804, updated 40, deleted 0; second run 0, 0, 0; JOINs: 40 seats with facts and 6 groups, 0 junk left, 0 existing-table presence mismatches | **Pass** |
+| 9 | UI model: maps every fact, missing is Missing, no photo gives initials, the bio draft is the template, the tier gives the colour, unknown stays unknown; the sample model equals every constant it replaces | `utils/profile-model.test.ts` (23: fixture of a seat whose every fact differs, thin-bio boundary 59/60/61, draft variants, phones, initials, trust text rule, sample parity) and 21 mutation checks | **Pass** |
+| 10 | A real seat shows its stored facts and none of the prototype's; the sample page is the prototype's | `screens/profile-real.test.ts` (24: facts, source lines, tier colours, preview, chips, notes, graph, photo and initials, thin and missing bio, unknown figures, bar overflow, NORA's notes, notice); the sample markup rendered with the old (`HEAD`) and the new `profile.tsx` is identical apart from React's `<!-- -->` separators, for the sample persona and for a real person's name with no data; live: 115 of 115 distinct page strings on 3 seats, none of the prototype's | **Pass** |
+| 11 | Edits stay in the browser; the store key is per seat; no write call | `profile-store.test.ts` (10: original key kept for the sample, one key per seat, one seat's edits not read by another, clearing one seat leaves the others) and a source test that `profile.tsx` loads and saves with `model.storeKey`; the Happyflow source guard (no `fetch`, 34 files); live: the page made one `GET .../profile` and no write | **Pass** |
+| 12 | The local token reaches exactly seven routes | `surface-api/tests/test_local_token_scope.py` (`.../profile` added; every other token-checking route still answers 401 to a local token) | **Pass** |
+| 13 | Other tables unchanged | Live before/after catalog diff after the script (only the two tables new; 0 lines removed or changed; row counts of all existing tables equal) and row counts after the seed (only the two tables changed; `users` 50, Home totals, SRS gap rows unchanged; only the five `tier_agents` columns of the 40 seats changed) | **Pass** |
+| 14 | Suites green | See CI gates | **Pass** except the 3 known failures |
+
+**Mutation checks** (break on purpose, confirm a test fails): the schema script 19 ways (3 survivors fixed with tests), the seed plan 21 (3 survivors fixed; one test compared the code with its own constant and was rewritten with an independent rule), the seed apply 13 (2 equivalent), the read service 21 (3 survivors fixed with SQL scope tests) and its SQL 15 on real Postgres (1 survivor fixed), the route 5, the UI model 24 (3 survivors fixed), the screen 22 (4 survivors fixed). Each survivor became a test.
+
+## CI gates
+No CI run: nothing is committed or pushed for this increment. Local runs on 2026-10-27 (`SRP_TEST_DATABASE_URL=postgresql://anandhu@localhost:5432/v3_local`):
+- `cd surface-api && uv run pytest` (run through `.venv/bin/python -m pytest`): 2,513 passed and the 3 known `test_migrations_security` failures (`_base`, `campaigns` and `xmp` migrations, none touched here); `ruff check .`: all checks passed.
+- `cd surface-ui && bun test`: 443 pass, 0 fail; `bunx tsc --noEmit -p .` and `-p srp`: clean.
+- No `srp_it_*` scratch schema is left in `v3_local`.
+- `python3 tools/lint/lint_all.py`, the secret scan, the AI review and `pr-evidence` were **not run** (no PR); `tools/hooks/guard.py` is missing from this checkout, so repo files were written through the shell, as already allowed.
+
+## Evals (Skills / NORA / AI output only)
+None: no model is involved; NORA's bio draft is a deterministic template.
+
+## Live verification (data changes only)
+Read-only queries and the two approved changes, all on `v3_local`:
+- **Catalog diff** after `profile_schema.sql`: only `profile_facts` (8 columns, 7 constraints, 3 indexes) and `profile_graph_groups` (5, 5, 3) are new, with comments on every column; 0 lines removed or changed; row counts of all existing tables equal; `public` empty; no RLS; grants `v3_app` only; a second run of the script is identical.
+- **Seed:** dry run planned 564 facts and 240 groups; the real run inserted 804 and updated 40 (the corrected `tier_agents` columns), deleted 0; the second run 0, 0, 0; Home totals, SRS gap rows and the legacy tables unchanged.
+- **JOINs:** 40 seats with facts (11 to 16 each) and exactly 6 graph groups; all 564 facts join to a seat; `value` is present exactly for the ten own fields (0 violations); title, bio, mobile and office phone have a fact row exactly when the column is present (0 mismatches); 0 legacy junk values left; the address city equals the Home market city on every seat with an address; bios: 6 missing, 13 thin, 21 full.
+- **Trace:** [trace.md](./trace.md): API vs independent SQL, 0 mismatches on 3 seats; preview equals Home; 115 of 115 distinct page strings found; the missing-row counts match; two negative controls caught. After the seed fixes: 0 inconsistent bios, licence rows or graph groups, 0 "Approved by you" on a thin bio, 0 mismatches again, 111 of 111 page strings.
+
+## Applied changes
+- `surface-api/srp/db/local/profile_schema.sql` applied to `v3_local` on 2026-10-27 after a schema-only `pg_dump` of `srp_cleanup` (`~/Documents/exp-v3/srp_cleanup_schema_backup_before_profile_20261027.sql`, mode 600, outside the repo), with your go-ahead.
+- The seed (`seed_home`, `--as-of 2026-10-27`, `--backup-to ~/Documents/exp-v3/seed_backup_profile_20261027.jsonl`, mode 600) run on `v3_local`, with your go-ahead. It wrote the two new tables and corrected the mock `title`, `description`, `phone_number`, `mobile_number` and `profile_photo` of the 40 seeded seats' `tier_agents` rows (the old values are in the backup).
+- The seed re-run for the second review's seed-data fixes (`--backup-to ~/Documents/exp-v3/seed_backup_profile_fix_20261027.jsonl`, mode 600; inserted 1, updated 40, deleted 2; second run 0, 0, 0), with your go-ahead. It rewrote the 21 full bios in `tier_agents` and some fact and group rows; Home totals and SRS gap rows are unchanged.
+- Nothing applied anywhere else: no Supabase, no `public`, no Alembic migration, no cron, no indexing, no enrichment. Nothing committed.
+
+## What remains unverified
+- **Not run in a browser:** the remount per seat and the edit store (reasoned from the code and covered by unit tests and a structural test).
+- **Accepted:** NORA's bio-thin note and the preview NMLS do not react to edits (as in the prototype); "52 facts from 6 sources" beside 11 visible rows (the graph counts facts from all sources); mock quirks such as an Iowa ZIP range on Illinois addresses.
+- **Rulings the page depends on and does not have:** identity and claim ownership, O5 (the "% complete" is Home's stored mock figure), the trust-tier rules (the label-to-tier mapping is mock), which location is a seat's office (address, hours and company live in `profile_facts`), the thin-bio limit of 60 characters, and the `srp_cleanup` name. The facts, sources and counts are mock.
+- **The photo-present path is not in the data:** no seat has a profile photo seeded (the Home seed keeps it null), so the image, its source line and its tier colour are covered by unit and render tests only.
+- **The bio draft sheet and the voice and typing edit flows** were not exercised in the browser; they are unchanged code reading the model's draft and values, covered by SSR tests of their inputs and by the source guard (no write).
+- **Only 3 of 40 seats** were traced in the browser; all 22 live seats of the scratch database are covered by the integration tests.
+- **Layouts:** the desktop and tablet-width layouts were seen on one seat; the mobile layout and dark themes were not checked.
+- **A local edit hides a later database change** for that browser until "Reset demo" (the edit overlay is on top of the database facts); the per-seat key stops cross-person leaks.
+- **The published artifact** of `schema-by-page.md` was not regenerated.
+
+## Change log
+Not applicable, **ruled 2026-10-27**: `srp_cleanup` is a local schema outside the Alembic and numbered SQL streams (same stance as `srp/home-page-schema` and `srp/srs-page-schema`), so no `docs/ETL-Enhancements.md` entry is required for this increment. The ruling covers the Home, SRS, Profile and Insights increments.

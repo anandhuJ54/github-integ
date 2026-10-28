@@ -73,4 +73,4 @@ Not applicable.
 - The script's rerun safety was tested on scratch schemas; it was not run a second time on `v3_local`.
 
 ## Change log
-Not required: `srp_cleanup` is a local schema outside the Alembic stream (same stance as `srp/local-login-srp-home`); no `docs/ETL-Enhancements.md` entry.
+Not required, **ruled 2026-10-27**: `srp_cleanup` is a local schema outside the Alembic stream (same stance as `srp/local-login-srp-home`); no `docs/ETL-Enhancements.md` entry. The ruling covers the Home, SRS, Profile and Insights increments.
